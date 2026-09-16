@@ -10,23 +10,45 @@ use Illuminate\Validation\Rule;
 class ProfileUpdateRequest extends FormRequest
 {
     /**
-     * Get the validation rules that apply to the request.
+     * Get the validation rules that apply
+     * to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'first_name' => ['required', 'string', 'max:255'],
-            'middle_name' => ['nullable', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
+            'first_name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'middle_name' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'last_name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
             'email' => [
                 'required',
                 'string',
                 'lowercase',
                 'email',
                 'max:255',
-                Rule::unique(User::class)->ignore($this->user()->id),
+
+                /*
+                 * Pass the whole model so Laravel uses
+                 * CitiRx's custom primary key: user_id.
+                 */
+                Rule::unique(User::class)
+                    ->ignore($this->user()),
             ],
         ];
     }
