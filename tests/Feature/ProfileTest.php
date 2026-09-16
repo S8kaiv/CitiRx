@@ -1,6 +1,9 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 
 test('profile page is displayed', function () {
     $user = User::factory()->create();
@@ -18,7 +21,9 @@ test('profile information can be updated', function () {
     $response = $this
         ->actingAs($user)
         ->patch('/profile', [
-            'name' => 'Test User',
+            'first_name' => 'Test',
+            'middle_name' => 'Middle',
+            'last_name' => 'Student',
             'email' => 'test@example.com',
         ]);
 
@@ -28,18 +33,38 @@ test('profile information can be updated', function () {
 
     $user->refresh();
 
-    $this->assertSame('Test User', $user->name);
-    $this->assertSame('test@example.com', $user->email);
-    $this->assertNull($user->email_verified_at);
+    expect($user->first_name)
+        ->toBe('Test');
+
+    expect($user->middle_name)
+        ->toBe('Middle');
+
+    expect($user->last_name)
+        ->toBe('Student');
+
+    expect($user->email)
+        ->toBe('test@example.com');
+
+    /*
+     * Changing the email should require
+     * verification again.
+     */
+    expect($user->email_verified_at)
+        ->toBeNull();
 });
 
 test('email verification status is unchanged when the email address is unchanged', function () {
     $user = User::factory()->create();
 
+    $originalVerifiedAt =
+        $user->email_verified_at;
+
     $response = $this
         ->actingAs($user)
         ->patch('/profile', [
-            'name' => 'Test User',
+            'first_name' => $user->first_name,
+            'middle_name' => $user->middle_name,
+            'last_name' => $user->last_name,
             'email' => $user->email,
         ]);
 
@@ -47,7 +72,16 @@ test('email verification status is unchanged when the email address is unchanged
         ->assertSessionHasNoErrors()
         ->assertRedirect('/profile');
 
-    $this->assertNotNull($user->refresh()->email_verified_at);
+    $user->refresh();
+
+    expect($user->email_verified_at)
+        ->not->toBeNull();
+
+    expect(
+        $user->email_verified_at->timestamp
+    )->toBe(
+        $originalVerifiedAt->timestamp
+    );
 });
 
 test('user can delete their account', function () {
@@ -64,7 +98,23 @@ test('user can delete their account', function () {
         ->assertRedirect('/');
 
     $this->assertGuest();
-    $this->assertNull($user->fresh());
+
+    /*
+     * CitiRx uses SoftDeletes.
+     *
+     * The record remains but deleted_at
+     * must now contain a timestamp.
+     */
+    $this->assertSoftDeleted(
+        'users',
+        [
+            'user_id' => $user->user_id,
+        ]
+    );
+
+    expect(
+        $user->fresh()->deleted_at
+    )->not->toBeNull();
 });
 
 test('correct password must be provided to delete account', function () {
@@ -78,8 +128,13 @@ test('correct password must be provided to delete account', function () {
         ]);
 
     $response
-        ->assertSessionHasErrorsIn('userDeletion', 'password')
+        ->assertSessionHasErrorsIn(
+            'userDeletion',
+            ['password']
+        )
         ->assertRedirect('/profile');
 
-    $this->assertNotNull($user->fresh());
+    expect(
+        $user->fresh()->deleted_at
+    )->toBeNull();
 });

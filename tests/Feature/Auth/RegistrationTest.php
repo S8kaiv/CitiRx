@@ -1,5 +1,9 @@
 <?php
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
+
 test('registration screen can be rendered', function () {
     $response = $this->get('/register');
 
@@ -8,12 +12,17 @@ test('registration screen can be rendered', function () {
 
 test('new users can register', function () {
     $response = $this->post('/register', [
-        'name' => 'Test User',
+        'first_name' => 'Test',
+        'middle_name' => null,
+        'last_name' => 'Student',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+
+    $response->assertRedirect(
+        route('dashboard', absolute: false)
+    );
 });
