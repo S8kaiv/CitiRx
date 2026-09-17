@@ -11,8 +11,11 @@ class Badge extends Model
     use HasUuids;
 
     protected $table = 'badges';
+
     protected $primaryKey = 'badge_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     // Only created_at exists
@@ -24,11 +27,13 @@ class Badge extends Model
         'description',
         'icon_path',
         'criteria_json',
+        'xp_reward',
     ];
 
     protected $casts = [
         'criteria_json' => 'array',   // auto JSON encode/decode
-        'created_at'    => 'datetime',
+        'xp_reward' => 'integer',
+        'created_at' => 'datetime',
     ];
 
     public function users(): BelongsToMany
