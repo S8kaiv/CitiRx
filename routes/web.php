@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiagnosticController;
 use App\Http\Controllers\PracticeController;
@@ -154,3 +155,23 @@ Route::middleware([
             ]
         )->name('summary');
     });
+
+/*|--------------------------------------------------------------------------
+| Badges Route
+|--------------------------------------------------------------------------*/
+
+Route::middleware([
+    'auth',
+    'verified',
+    'student',
+])
+    ->get(
+        '/badges',
+        [
+            BadgeController::class,
+            'index',
+        ]
+    )
+    ->name(
+        'badges.index'
+    );

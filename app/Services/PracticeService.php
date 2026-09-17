@@ -64,6 +64,7 @@ class PracticeService
     public function __construct(
         protected BktService $bkt,
         protected ReadinessService $readiness,
+        protected BadgeService $badges,
     ) {}
 
     // =============================================================
@@ -658,6 +659,20 @@ class PracticeService
 
             $user->save();
 
+            // -----------------------------------------------------
+            // BADGES
+            // -----------------------------------------------------
+
+            /*
+            * Only evaluate badges when this answer
+            * actually completed the Practice session.
+            */
+            if ($targetReached) {
+                $this->badges->evaluateAndAward(
+                    $user
+                );
+            }
+
             return [
                 'is_correct' => $isCorrect,
 
@@ -800,6 +815,14 @@ class PracticeService
                 $bonusXp;
 
             $user->save();
+
+            // -----------------------------------------------------
+            // BADGES
+            // -----------------------------------------------------
+
+            $this->badges->evaluateAndAward(
+                $user
+            );
 
             return $bonuses;
         });

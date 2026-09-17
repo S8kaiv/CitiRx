@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\AssessmentSession;
+use App\Models\Badge;
+use App\Models\UserBadge;
 use App\Services\ReadinessService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -42,6 +44,11 @@ class DashboardController extends Controller
                         (float) $user->predicted_readiness_pct
                     )
                     : null,
+                'unlockedBadgeCount' => UserBadge::query()
+                    ->where('user_id', $user->user_id)
+                    ->count(),
+                'totalBadgeCount' => Badge::query()
+                    ->count(),
             ]),
 
             default => abort(403, 'Unknown role.'),

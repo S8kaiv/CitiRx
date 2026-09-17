@@ -20,6 +20,7 @@ class DiagnosticService
     public function __construct(
         protected BktService $bkt,
         protected ReadinessService $readiness,
+        protected BadgeService $badges,
     ) {}
 
     /**
@@ -442,6 +443,9 @@ class DiagnosticService
             $user->predicted_readiness_pct = $this->readiness->compute($user);
             $user->is_diagnostic_completed = true;
             $user->save();
+            $this->badges->evaluateAndAward(
+                $user
+            );
 
             return [
                 'total' => $totalItems,

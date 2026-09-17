@@ -112,6 +112,7 @@
                     </div>
                 </div>
             @else
+            
                 {{-- Readiness --}}
                 <div
                     class="overflow-hidden border shadow-sm sm:rounded-lg
@@ -148,6 +149,35 @@
                             </p>
                         @endif
                     </div>
+                </div>
+
+                {{-- Badges --}}
+                <div class="mt-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
+
+                    <div class="p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">
+                                Achievements
+                            </h3>
+
+                            <p class="mt-1 text-sm text-gray-600">
+                                {{ $unlockedBadgeCount }}
+                                of
+                                {{ $totalBadgeCount }}
+                                badges unlocked
+                            </p>
+                        </div>
+
+                        <a
+                            href="{{ route('badges.index') }}"
+                            class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition"
+                        >
+                            View Badges
+                        </a>
+
+                    </div>
+
                 </div>
 
                 {{-- Practice Mode --}}
