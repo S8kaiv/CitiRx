@@ -6,6 +6,7 @@ use App\Http\Controllers\DiagnosticController;
 use App\Http\Controllers\PracticeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReadinessController;
+use App\Http\Controllers\RxVaultController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -156,9 +157,11 @@ Route::middleware([
         )->name('summary');
     });
 
-/*|--------------------------------------------------------------------------
+/*
+|--------------------------------------------------------------------------
 | Badges Route
-|--------------------------------------------------------------------------*/
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware([
     'auth',
@@ -174,4 +177,26 @@ Route::middleware([
     )
     ->name(
         'badges.index'
+    );
+
+/*
+|--------------------------------------------------------------------------
+| RxVault Route
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'verified',
+    'student',
+])
+    ->get(
+        '/vault',
+        [
+            RxVaultController::class,
+            'index',
+        ]
+    )
+    ->name(
+        'vault.index'
     );
