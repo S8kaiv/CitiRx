@@ -65,6 +65,7 @@ class PracticeService
         protected BktService $bkt,
         protected ReadinessService $readiness,
         protected BadgeService $badges,
+        protected RxVaultService $rxVault,
     ) {}
 
     // =============================================================
@@ -531,6 +532,17 @@ class PracticeService
                  */
                 'posterior_p_l' => $posterior,
             ]);
+
+            // -----------------------------------------------------
+            // RX VAULT
+            // -----------------------------------------------------
+
+            $this->rxVault->handleResponse(
+                $user,
+                $question->question_id,
+                $isCorrect,
+                $isSpeedFlagged,
+            );
 
             // -----------------------------------------------------
             // UPDATE KNOWLEDGE STATE

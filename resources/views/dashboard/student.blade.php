@@ -180,6 +180,51 @@
 
                 </div>
 
+                {{-- RxVault --}}
+                <div class="mt-6 overflow-hidden bg-white shadow-sm sm:rounded-lg">
+
+                    <div class="p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+                        <div>
+
+                            <h3 class="text-lg font-semibold text-gray-900">
+                                Rx Vault
+                            </h3>
+
+                            <p class="mt-1 text-sm text-gray-600">
+
+                                @if ($activeVaultCount > 0)
+
+                                    {{ $activeVaultCount }}
+
+                                    {{ \Illuminate\Support\Str::plural(
+                                        'question',
+                                        $activeVaultCount
+                                    ) }}
+
+                                    to review from Practice.
+
+                                @else
+
+                                    No questions to review right now.
+
+                                @endif
+
+                            </p>
+
+                        </div>
+
+                        <a
+                            href="{{ route('vault.index') }}"
+                            class="inline-flex items-center justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 transition"
+                        >
+                            Open Vault
+                        </a>
+
+                    </div>
+
+                </div>
+
                 {{-- Practice Mode --}}
                 <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                     <div class="p-6">
