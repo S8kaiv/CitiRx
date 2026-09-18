@@ -187,14 +187,15 @@ class DiagnosticController extends Controller
         }
 
         try {
-            $this->diagnostic->score(
-                $session,
-                $answers
-            );
+            $result =
+                $this->diagnostic->score(
+                    $session,
+                    $answers
+                );
         } catch (
             InvalidArgumentException
-            |LogicException
-            |RuntimeException $e
+            | LogicException
+            | RuntimeException $e
         ) {
             return redirect()
                 ->route(
@@ -222,6 +223,16 @@ class DiagnosticController extends Controller
                     'error',
                     'Could not score your diagnostic. Please try again.'
                 );
+        }
+
+        if (
+            ($levelUp = $result['level_up'] ?? null)
+            !== null
+        ) {
+            session()->flash(
+                'level_up',
+                $levelUp
+            );
         }
 
         return redirect()->route(
@@ -275,14 +286,14 @@ class DiagnosticController extends Controller
          */
         $perDomain = $logs
             ->groupBy(
-                fn ($log) => $log->question->competency->domain->domain_id
+                fn($log) => $log->question->competency->domain->domain_id
             )
             ->map(function ($group) {
                 $domain =
                     $group->first()
-                        ->question
-                        ->competency
-                        ->domain;
+                    ->question
+                    ->competency
+                    ->domain;
 
                 return [
                     'domain_id' => $domain->domain_id,
@@ -291,7 +302,7 @@ class DiagnosticController extends Controller
                     'total' => $group->count(),
                     'correct' => $group
                         ->filter(
-                            fn ($log) => (bool) $log->is_correct
+                            fn($log) => (bool) $log->is_correct
                         )
                         ->count(),
                 ];
@@ -335,13 +346,13 @@ class DiagnosticController extends Controller
 
                     'correct' => $group
                         ->filter(
-                            fn ($log) => (bool) $log->is_correct
+                            fn($log) => (bool) $log->is_correct
                         )
                         ->count(),
                 ];
             })
             ->sortBy(
-                fn ($row) => sprintf(
+                fn($row) => sprintf(
                     '%02d-%02d',
                     $row['domain_number'],
                     $row['order_index']
@@ -404,7 +415,7 @@ class DiagnosticController extends Controller
 
         $questions = Question::query()
             ->with([
-                'choices' => fn ($query) => $query->orderBy('choice_letter'),
+                'choices' => fn($query) => $query->orderBy('choice_letter'),
 
                 'competency.domain',
             ])
@@ -435,7 +446,7 @@ class DiagnosticController extends Controller
          */
         return collect($servedIds)
             ->map(
-                fn ($id) => $questions->get($id)
+                fn($id) => $questions->get($id)
             )
             ->values();
     }
@@ -473,8 +484,8 @@ class DiagnosticController extends Controller
                 'saved' => true,
             ]);
         } catch (
-            InvalidArgumentException|
-            LogicException|
+            InvalidArgumentException |
+            LogicException |
             RuntimeException $e
         ) {
             return response()->json([

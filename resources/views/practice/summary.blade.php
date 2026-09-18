@@ -8,6 +8,8 @@
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
+            <x-level-up-alert />
+
             {{-- Status Message --}}
             @if (session('status'))
                 <div role="status" class="mb-6 rounded-lg border border-[#6D4AFF] bg-[#F0EDFF] p-4 text-[#4A2FC4]">

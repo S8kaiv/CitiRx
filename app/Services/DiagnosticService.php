@@ -21,6 +21,7 @@ class DiagnosticService
         protected BktService $bkt,
         protected ReadinessService $readiness,
         protected BadgeService $badges,
+        protected LevelService $levels,
     ) {}
 
     /**
@@ -200,11 +201,11 @@ class DiagnosticService
              * Extra questions are also rejected.
              */
             $servedIds = collect($servedQuestionIds)
-                ->map(fn ($id) => (string) $id)
+                ->map(fn($id) => (string) $id)
                 ->values();
 
             $submittedIds = $submittedQuestionIds
-                ->map(fn ($id) => (string) $id)
+                ->map(fn($id) => (string) $id)
                 ->values();
 
             if (
@@ -446,11 +447,14 @@ class DiagnosticService
             $this->badges->evaluateAndAward(
                 $user
             );
+            $levelUp =
+                $this->levels->sync($user);
 
             return [
                 'total' => $totalItems,
                 'correct' => $correctItems,
                 'per_domain' => array_values($perDomain),
+                'level_up' => $levelUp,
             ];
         });
     }

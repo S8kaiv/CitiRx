@@ -8,6 +8,7 @@ use App\Http\Controllers\PracticeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReadinessController;
 use App\Http\Controllers\RxVaultController;
+use App\Http\Controllers\ProgressController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -93,7 +94,7 @@ Route::middleware([
     )
     ->name('readiness.show');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -241,3 +242,23 @@ Route::middleware([
             [BookmarkController::class, 'destroy']
         )->name('destroy');
     });
+
+/*
+|--------------------------------------------------------------------------
+| Progress Route
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'verified',
+    'student',
+])
+    ->get(
+        '/progress',
+        [
+            ProgressController::class,
+            'index',
+        ]
+    )
+    ->name('progress.index');
