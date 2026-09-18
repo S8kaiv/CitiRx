@@ -1,123 +1,180 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Badges') }}
-        </h2>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-6">
-
-            {{-- Summary --}}
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-center">
-
-                    <div class="text-sm text-gray-500 uppercase tracking-wide">
-                        Badges Unlocked
-                    </div>
-
-                    <div class="mt-2 text-4xl font-bold text-indigo-600">
-                        {{ $userBadges->count() }}
-
-                        <span class="text-2xl text-gray-400">
-                            /
-                            {{ $badges->count() }}
-                        </span>
-                    </div>
-
-                    <div class="mt-2 text-sm text-gray-600">
-                        Total XP earned from badges:
-
-                        <strong>
-                            +{{ $badgeXpTotal }}
-                        </strong>
-                    </div>
-
-                </div>
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="font-display text-xl font-bold text-slate-900 leading-tight">
+                    {{ __('Achievements & Badges') }}
+                </h2>
+                <p class="text-xs font-semibold uppercase tracking-wider text-muted-ink">
+                    Milestones, Streaks & Special Honors
+                </p>
             </div>
 
-            {{-- Badge grid --}}
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <a href="{{ route('dashboard') }}" 
+               class="font-display text-xs font-bold text-muted-ink hover:text-primary transition">
+                Back to Dashboard
+            </a>
+        </div>
+    </x-slot>
 
-                @foreach ($badges as $badge)
-                    @php
-                        $userBadge =
-                            $userBadges->get(
-                                $badge->badge_id
-                            );
+    @php
+        $unlockedCount = $userBadges->count();
+        $totalCount = $badges->count();
+        $progressPct = $totalCount > 0 ? round(($unlockedCount / $totalCount) * 100) : 0;
+    @endphp
 
-                        $isUnlocked =
-                            $userBadge !== null;
-                    @endphp
+    <div class="pt-6 pb-16 font-sans text-slate-900 antialiased">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-6">
 
-                    <div
-                        class="overflow-hidden rounded-lg border shadow-sm
-                            {{
-                                $isUnlocked
-                                    ? 'border-indigo-200 bg-white'
-                                    : 'border-gray-200 bg-gray-50 opacity-70'
-                            }}"
-                    >
-                        <div class="p-5">
-
-                            <div class="flex items-start justify-between">
-
-                                <div class="text-3xl">
-                                    {{ $isUnlocked ? '🏆' : '🔒' }}
-                                </div>
-
-                                <div
-                                    class="text-right text-xs font-semibold
-                                        {{
-                                            $isUnlocked
-                                                ? 'text-indigo-600'
-                                                : 'text-gray-400'
-                                        }}"
-                                >
-                                    +{{ $badge->xp_reward }} XP
-                                </div>
-
-                            </div>
-
-                            <h3 class="mt-3 font-semibold text-gray-900">
-                                {{ $badge->badge_name }}
+            {{-- TOP HERO CARD: TROPHY SHOWCASE & PROGRESSION --}}
+            <div class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-gradient-to-br from-primary-tint via-[#FAF8FF] to-white p-6 sm:p-8 shadow-sm">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+                    
+                    {{-- Trophy & Heading --}}
+                    <div class="flex items-center gap-5 text-center sm:text-left">
+                        <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-[#F5A623]/40 bg-gold-tint text-3xl shadow-sm">
+                            🏆
+                        </div>
+                        <div>
+                            <span class="inline-flex items-center rounded-full bg-white px-3 py-0.5 font-display text-[11px] font-bold text-primary shadow-sm ring-1 ring-primary/20">
+                                Review Milestone Honors
+                            </span>
+                            <h3 class="mt-1 font-display text-2xl font-extrabold text-slate-900 sm:text-3xl">
+                                {{ $unlockedCount }} of {{ $totalCount }} Unlocked
                             </h3>
-
-                            <p class="mt-1 text-sm text-gray-600">
-                                {{ $badge->description }}
+                            <p class="text-xs font-medium text-slate-600 mt-0.5">
+                                Earn badges by hitting daily streaks, mastering TOS modules, and completing practice drills.
                             </p>
-
-                            @if ($isUnlocked)
-
-                                <p class="mt-3 text-xs text-indigo-600 font-medium">
-                                    Unlocked
-                                    {{ $userBadge->unlocked_at->diffForHumans() }}
-                                </p>
-
-                            @else
-
-                                <p class="mt-3 text-xs text-gray-400">
-                                    Not yet unlocked
-                                </p>
-
-                            @endif
-
                         </div>
                     </div>
 
-                @endforeach
+                    {{-- Total Badge XP Pill --}}
+                    <div class="flex flex-col items-center sm:items-end shrink-0">
+                        <div class="flex items-center gap-2 rounded-2xl border-2 border-b-4 border-[#F5A623]/30 bg-white/90 px-4 py-2.5 shadow-sm">
+                            <svg class="h-5 w-5 text-gold shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M14.615 1.595a.75.75 0 0 1 .359.852L12.982 9.75h7.268a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262l10.5-11.25a.75.75 0 0 1 .913-.143Z"/>
+                            </svg>
+                            <div>
+                                <span class="block font-display text-base font-extrabold text-slate-900 leading-none">
+                                    +{{ number_format($badgeXpTotal) }} XP
+                                </span>
+                                <span class="block text-[10px] font-bold uppercase tracking-wider text-muted-ink mt-0.5">
+                                    Total Honor Bonus
+                                </span>
+                            </div>
+                        </div>
+                    </div>
 
+                </div>
+
+                {{-- Overall Badge Progress Track --}}
+                <div class="mt-6 pt-4 border-t border-primary/15">
+                    <div class="flex items-center justify-between text-xs mb-1.5">
+                        <span class="font-display font-bold text-slate-800">Collection Completion</span>
+                        <span class="font-display font-extrabold text-primary">{{ $progressPct }}%</span>
+                    </div>
+                    <div class="h-3 w-full overflow-hidden rounded-full bg-white ring-1 ring-inset ring-primary/20 p-0.5 shadow-inner">
+                        <div class="h-full rounded-full bg-primary transition-all duration-700 ease-out"
+                             style="width: {{ $progressPct }}%"></div>
+                    </div>
+                </div>
             </div>
 
-            <div class="text-center">
+            {{-- BADGES GRID --}}
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ($badges as $badge)
+                    @php
+                        $userBadge = $userBadges->get($badge->badge_id);
+                        $isUnlocked = $userBadge !== null;
+                    @endphp
 
-                <a
-                    href="{{ route('dashboard') }}"
-                    class="inline-block px-6 py-3 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-                >
-                    Back to Dashboard
+                    @if ($isUnlocked)
+                        {{-- UNLOCKED BADGE: Tactile 3D Card --}}
+                        <div class="group flex flex-col justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300">
+                            <div>
+                                <div class="flex items-start justify-between gap-3">
+                                    {{-- Badge Token --}}
+                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-[#F5A623]/30 bg-gold-tint text-2xl shadow-sm group-hover:scale-105 transition">
+                                        🏆
+                                    </div>
+
+                                    {{-- Reward XP Pill --}}
+                                    <span class="inline-flex items-center gap-1 rounded-full border border-[#F5A623]/40 bg-gold-tint px-2.5 py-0.5 font-display text-xs font-bold text-gold-ink shadow-sm">
+                                        <svg class="h-3.5 w-3.5 text-gold shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M14.615 1.595a.75.75 0 0 1 .359.852L12.982 9.75h7.268a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262l10.5-11.25a.75.75 0 0 1 .913-.143Z"/>
+                                        </svg>
+                                        +{{ $badge->xp_reward }} XP
+                                    </span>
+                                </div>
+
+                                <h4 class="mt-4 font-display text-base font-bold text-slate-900">
+                                    {{ $badge->badge_name }}
+                                </h4>
+                                <p class="mt-1 text-xs leading-relaxed text-slate-600">
+                                    {{ $badge->description }}
+                                </p>
+                            </div>
+
+                            <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
+                                <span class="inline-flex items-center gap-1 font-display text-[11px] font-bold text-strong-ink">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-strong"></span>
+                                    Unlocked
+                                </span>
+                                <span class="text-[10px] font-semibold text-muted-ink">
+                                    {{ $userBadge->unlocked_at ? $userBadge->unlocked_at->diffForHumans() : 'Earned' }}
+                                </span>
+                            </div>
+                        </div>
+                    @else
+                        {{-- LOCKED BADGE: Muted & Dashed Container --}}
+                        <div class="flex flex-col justify-between rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/70 p-5 opacity-75">
+                            <div>
+                                <div class="flex items-start justify-between gap-3">
+                                    {{-- Padlock Token --}}
+                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-slate-200 bg-slate-100 text-xl text-slate-400">
+                                        🔒
+                                    </div>
+
+                                    {{-- Dimmed Reward Pill --}}
+                                    <span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 font-display text-xs font-semibold text-slate-400">
+                                        +{{ $badge->xp_reward }} XP
+                                    </span>
+                                </div>
+
+                                <h4 class="mt-4 font-display text-base font-bold text-slate-700">
+                                    {{ $badge->badge_name }}
+                                </h4>
+                                <p class="mt-1 text-xs leading-relaxed text-muted-ink">
+                                    {{ $badge->description }}
+                                </p>
+                            </div>
+
+                            <div class="mt-5 pt-3 border-t border-slate-200/60 flex items-center justify-between">
+                                <span class="font-display text-[11px] font-bold text-muted-ink">
+                                    Locked
+                                </span>
+                                <span class="text-[10px] text-slate-400 font-medium">
+                                    Incomplete
+                                </span>
+                            </div>
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+
+            {{-- CALL TO ACTION BUTTONS --}}
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
+                <a href="{{ route('practice.intro') }}"
+                   style="--lip: #4A2FC4;"
+                   class="btn-press w-full sm:w-auto rounded-xl bg-primary px-8 py-3 text-center font-display text-sm font-bold text-white shadow-sm transition hover:bg-primary/95">
+                    Practice to Earn XP
                 </a>
 
+                <a href="{{ route('dashboard') }}"
+                   style="--lip: #CBD5E1;"
+                   class="btn-press w-full sm:w-auto rounded-xl border-2 border-slate-200 bg-white px-8 py-3 text-center font-display text-sm font-bold text-slate-700 transition hover:bg-slate-50">
+                    Back to Dashboard
+                </a>
             </div>
 
         </div>

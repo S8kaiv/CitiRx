@@ -1,63 +1,53 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Practice Mode') }}
-        </h2>
+        <div class="flex items-center justify-between">
+            <h2 class="font-display text-xl font-bold text-slate-900 leading-tight">
+                {{ __('Practice Session') }}
+            </h2>
+
+            <a href="{{ route('dashboard') }}" 
+               class="font-display text-xs font-bold text-muted-ink hover:text-primary transition">
+                Exit to Dashboard
+            </a>
+        </div>
     </x-slot>
 
     @php
-        /*
-         * During a question:
-         * total_items = already answered questions,
-         * so display total_items + 1.
-         *
-         * During feedback:
-         * total_items already includes the answer
-         * that produced the feedback.
-         */
         $displayQuestionNumber = $feedback
             ? min($session->total_items, $session->target_length)
             : min($session->total_items + 1, $session->target_length);
+
+        $progress = $session->target_length > 0 
+            ? min(100, ($session->total_items / $session->target_length) * 100) 
+            : 0;
     @endphp
 
-    <div class="py-12">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+    <div class="pt-8 pb-16 font-sans text-slate-900 antialiased">
+        <div class="max-w-2xl mx-auto px-4 sm:px-6">
 
             @if (session('error'))
-                <div class="mb-4 p-4 bg-red-100 text-red-800 rounded-lg">
+                <div class="mb-5 rounded-2xl border-2 border-b-4 border-weak/40 bg-weak-tint p-4 text-sm font-medium text-weak-ink">
                     {{ session('error') }}
                 </div>
             @endif
 
-            {{-- Progress --}}
-            <div class="mb-4 flex items-center justify-between text-sm text-gray-600">
-                <span>
-                    Question
-
-                    <span class="font-semibold">
-                        {{ $displayQuestionNumber }}
+            {{-- Progress Header --}}
+            <div class="mb-6 space-y-2">
+                <div class="flex items-center justify-between font-display text-xs font-bold uppercase tracking-wider">
+                    <span class="text-slate-700">
+                        Question {{ $displayQuestionNumber }} of {{ $session->target_length }}
                     </span>
 
-                    of {{ $session->target_length }}
-                </span>
-
-                <span>
-                    Correct so far:
-
-                    <span class="font-semibold text-green-700">
-                        {{ $session->correct_items }}
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-strong-tint px-2.5 py-0.5 text-strong-ink">
+                        <span class="h-2 w-2 rounded-full bg-strong"></span>
+                        {{ $session->correct_items }} Correct
                     </span>
-                </span>
-            </div>
+                </div>
 
-            {{-- Progress bar --}}
-            @php
-                $progress =
-                    $session->target_length > 0 ? min(100, ($session->total_items / $session->target_length) * 100) : 0;
-            @endphp
-
-            <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
-                <div class="bg-indigo-600 h-2 rounded-full transition-all" style="width: {{ $progress }}%"></div>
+                <div class="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 ring-1 ring-inset ring-slate-200/60">
+                    <div class="h-full rounded-full bg-primary transition-all duration-300"
+                         style="width: {{ $progress }}%"></div>
+                </div>
             </div>
 
             @if ($feedback)
@@ -72,227 +62,197 @@
                     $correctChoice = $answeredQuestion->choices->firstWhere(
                         'choice_id',
                         $feedback['correct_choice_id'],
-                    );
-
-                    if (!$correctChoice) {
-                        $correctChoice = $answeredQuestion->choices->firstWhere('is_correct', true);
-                    }
+                    ) ?? $answeredQuestion->choices->firstWhere('is_correct', true);
                 @endphp
 
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-4">
-                    <div class="p-6">
-
-                        <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">
+                <div class="overflow-hidden rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm sm:p-8 space-y-6">
+                    
+                    {{-- Domain Metadata (Inline) --}}
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="inline-flex items-center rounded-lg bg-clinical-tint px-2.5 py-1 font-display text-xs font-bold text-clinical-ink">
                             {{ $answeredQuestion->competency->domain->domain_name }}
-                        </div>
-
-                        <div class="text-xs text-gray-500 mb-3">
+                        </span>
+                        <span class="text-slate-300 font-bold">•</span>
+                        <span class="text-xs font-semibold text-muted-ink">
                             {{ $answeredQuestion->competency->title }}
-                        </div>
-
-                        <div class="text-lg font-medium mb-4">
-                            {{ $answeredQuestion->question_text }}
-                        </div>
-
-                        @if ($isCorrect)
-                            <div class="p-4 bg-green-50 border border-green-200 rounded-lg mb-4">
-                                <p class="text-green-800 font-medium">
-                                    Correct
-                                </p>
-
-                                @if ($correctChoice)
-                                    <p class="text-sm text-green-700 mt-1">
-                                        <strong>
-                                            {{ $correctChoice->choice_letter }}.
-                                        </strong>
-
-                                        {{ $correctChoice->choice_text }}
-                                    </p>
-                                @endif
-                            </div>
-                        @else
-                            <div class="p-4 bg-red-50 border border-red-200 rounded-lg mb-4">
-                                <p class="text-red-800 font-medium">
-                                    Incorrect
-                                </p>
-
-                                @if ($correctChoice)
-                                    <p class="text-sm text-red-700 mt-1">
-                                        Correct answer:
-
-                                        <strong>
-                                            {{ $correctChoice->choice_letter }}.
-                                        </strong>
-
-                                        {{ $correctChoice->choice_text }}
-                                    </p>
-                                @endif
-                            </div>
-                        @endif
-
-                        @if ($answeredQuestion->hypercorrection_rationale)
-                            <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
-                                <p class="text-sm text-blue-900">
-                                    <strong>
-                                        Why:
-                                    </strong>
-
-                                    {{ $answeredQuestion->hypercorrection_rationale }}
-                                </p>
-                            </div>
-                        @endif
-
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-
-                            <div>
-                                <div class="text-gray-500">
-                                    XP earned
-                                </div>
-
-                                <div class="font-semibold">
-                                    +{{ $feedback['answer_xp'] }}
-
-                                    @if ($feedback['is_speed_flagged'])
-                                        <span class="block text-xs text-amber-600 mt-1">
-                                            Speed-flagged
-                                        </span>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="text-gray-500">
-                                    Mastery before
-                                </div>
-
-                                <div class="font-semibold">
-                                    {{ number_format($feedback['prior_mastery'] * 100, 1) }}%
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="text-gray-500">
-                                    Mastery after
-                                </div>
-
-                                <div class="font-semibold">
-                                    {{ number_format($feedback['posterior_mastery'] * 100, 1) }}%
-                                </div>
-                            </div>
-
-                        </div>
-
-                        @if ($feedback['is_speed_flagged'])
-                            <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                                <p class="text-xs text-amber-800">
-                                    This response was submitted faster
-                                    than the CitiRx minimum-time heuristic.
-
-                                    Response:
-                                    {{ number_format($feedback['response_seconds'], 2) }}s.
-
-                                    Minimum:
-                                    {{ number_format($feedback['minimum_seconds'], 2) }}s.
-
-                                    No answer XP was awarded, and this
-                                    response is excluded from eligible
-                                    accuracy and streak calculations.
-                                </p>
-                            </div>
-                        @endif
-
+                        </span>
                     </div>
+
+                    {{-- Question Text --}}
+                    <div class="font-sans text-base font-semibold leading-relaxed text-slate-900 sm:text-lg">
+                        {{ $answeredQuestion->question_text }}
+                    </div>
+
+                    {{-- Outcome Banner --}}
+                    @if ($isCorrect)
+                        <div class="rounded-2xl border-2 border-b-4 border-strong/40 bg-strong-tint p-4 sm:p-5">
+                            <div class="flex items-center gap-2 font-display text-base font-bold text-strong-ink sm:text-lg">
+                                <svg class="h-5 w-5 text-strong shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
+                                </svg>
+                                <span>Correct Answer</span>
+                            </div>
+
+                            @if ($correctChoice)
+                                <p class="mt-2 text-sm text-strong-ink">
+                                    <strong>{{ $correctChoice->choice_letter }}.</strong> {{ $correctChoice->choice_text }}
+                                </p>
+                            @endif
+                        </div>
+                    @else
+                        <div class="rounded-2xl border-2 border-b-4 border-weak/40 bg-weak-tint p-4 sm:p-5">
+                            <div class="flex items-center gap-2 font-display text-base font-bold text-weak-ink sm:text-lg">
+                                <svg class="h-5 w-5 text-weak shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                                </svg>
+                                <span>Incorrect</span>
+                            </div>
+
+                            @if ($correctChoice)
+                                <p class="mt-2 text-sm text-weak-ink">
+                                    Correct answer: <strong>{{ $correctChoice->choice_letter }}.</strong> {{ $correctChoice->choice_text }}
+                                </p>
+                            @endif
+                        </div>
+                    @endif
+
+                    {{-- Clinical Rationale --}}
+                    @if ($answeredQuestion->hypercorrection_rationale)
+                        <div class="rounded-2xl border border-clinical/20 bg-clinical-tint/40 p-4 text-sm leading-relaxed text-slate-800">
+                            <span class="block font-display text-xs font-bold uppercase tracking-wider text-clinical-ink mb-1">
+                                Clinical Rationale
+                            </span>
+                            {{ $answeredQuestion->hypercorrection_rationale }}
+                        </div>
+                    @endif
+
+                    {{-- BKT & XP Telemetry Strip --}}
+                    <div class="grid grid-cols-3 gap-3 pt-2">
+                        <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-center">
+                            <span class="block text-[11px] font-bold uppercase tracking-wider text-muted-ink">XP Earned</span>
+                            <span class="font-display text-lg font-bold text-gold-ink">+{{ $feedback['answer_xp'] }}</span>
+                        </div>
+
+                        <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-center">
+                            <span class="block text-[11px] font-bold uppercase tracking-wider text-muted-ink">Prior Mastery</span>
+                            <span class="font-display text-lg font-bold text-slate-800">{{ number_format($feedback['prior_mastery'] * 100, 1) }}%</span>
+                        </div>
+
+                        <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-center">
+                            <span class="block text-[11px] font-bold uppercase tracking-wider text-muted-ink">Updated Mastery</span>
+                            <span class="font-display text-lg font-bold text-clinical-ink">{{ number_format($feedback['posterior_mastery'] * 100, 1) }}%</span>
+                        </div>
+                    </div>
+
+                    {{-- Speed Guessing Warning Flag --}}
+                    @if ($feedback['is_speed_flagged'])
+                        <div class="rounded-xl border border-gold/40 bg-gold-tint p-3.5 text-xs text-gold-ink leading-relaxed">
+                            <strong>Speed-Flagged:</strong> Response submitted in {{ number_format($feedback['response_seconds'], 2) }}s (minimum threshold: {{ number_format($feedback['minimum_seconds'], 2) }}s). No XP was awarded and this item is excluded from streak progression.
+                        </div>
+                    @endif
+
+                    {{-- Next Action --}}
+                    <form method="POST"
+                          action="{{ route('practice.next', ['session' => $session->session_id]) }}"
+                          class="pt-2">
+                        @csrf
+                        <button type="submit"
+                                style="--lip: #4A2FC4;"
+                                class="btn-press w-full rounded-2xl bg-primary py-3.5 font-display text-base font-bold text-white shadow-md transition hover:bg-primary/95">
+                            Continue
+                        </button>
+                    </form>
+
                 </div>
 
-                <form method="POST"
-                    action="{{ route('practice.next', [
-                        'session' => $session->session_id,
-                    ]) }}">
-                    @csrf
-
-                    <x-primary-button>
-                        Next Question
-                    </x-primary-button>
-                </form>
             @else
+
                 {{-- ============================================= --}}
                 {{-- QUESTION VIEW                                 --}}
                 {{-- ============================================= --}}
 
                 @if (!$question)
-                    <div class="bg-white rounded-lg shadow-sm p-6 text-center">
-                        <p class="text-gray-600">
+                    <div class="rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-8 text-center shadow-sm">
+                        <p class="text-slate-600 font-medium">
                             No Practice question is available right now.
                         </p>
-
-                        <a href="{{ route('practice.intro') }}"
-                            class="inline-block mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                            Back to Practice Setup
-                        </a>
+                        <div class="mt-5">
+                            <a href="{{ route('practice.intro') }}"
+                               style="--lip: #4A2FC4;"
+                               class="btn-press inline-flex items-center rounded-xl bg-primary px-6 py-2.5 font-display text-sm font-bold text-white">
+                                Back to Practice Setup
+                            </a>
+                        </div>
                     </div>
                 @else
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
-
-                            <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">
+                    <div class="overflow-hidden rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                        
+                        {{-- Domain Metadata (Inline) --}}
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="inline-flex items-center rounded-lg bg-clinical-tint px-2.5 py-1 font-display text-xs font-bold text-clinical-ink">
                                 {{ $question->competency->domain->domain_name }}
-                            </div>
-
-                            <div class="text-xs text-gray-500 mb-4">
+                            </span>
+                            <span class="text-slate-300 font-bold">•</span>
+                            <span class="text-xs font-semibold text-muted-ink">
                                 {{ $question->competency->title }}
-                            </div>
+                            </span>
+                        </div>
 
-                            <div class="text-lg font-medium mb-6">
-                                {{ $question->question_text }}
-                            </div>
+                        {{-- Question Stem --}}
+                        <div class="mt-4 font-sans text-base font-semibold leading-relaxed text-slate-900 sm:text-lg">
+                            {{ $question->question_text }}
+                        </div>
 
-                            <form method="POST"
-                                action="{{ route('practice.answer', [
-                                    'session' => $session->session_id,
-                                ]) }}">
-                                @csrf
+                        {{-- Answer Options Form --}}
+                        <form method="POST"
+                              action="{{ route('practice.answer', ['session' => $session->session_id]) }}"
+                              class="mt-6 space-y-3">
+                            @csrf
+                            <input type="hidden" name="question_id" value="{{ $question->question_id }}">
 
-                                <input type="hidden" name="question_id" value="{{ $question->question_id }}">
+                            @foreach ($question->choices as $choice)
+                                <label class="group relative block cursor-pointer">
+                                    <input type="radio" 
+                                           name="selected_choice_id"
+                                           value="{{ $choice->choice_id }}" 
+                                           @checked(old('selected_choice_id') === $choice->choice_id)
+                                           class="peer sr-only" 
+                                           required>
 
-                                @foreach ($question->choices as $choice)
-                                    <label
-                                        class="flex items-start p-3 mb-2 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                                        <input type="radio" name="selected_choice_id"
-                                            value="{{ $choice->choice_id }}" @checked(old('selected_choice_id') === $choice->choice_id)
-                                            class="mt-1 mr-3" required>
+                                    <div class="flex items-center gap-3.5 rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-3.5 sm:p-4 transition-all hover:border-slate-300 hover:bg-slate-50/80 peer-checked:border-primary peer-checked:border-b-primary-lip peer-checked:bg-primary-tint/30">
+                                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border-2 border-slate-200 font-display text-sm font-bold text-slate-600 transition group-hover:border-slate-300 peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white">
+                                            {{ $choice->choice_letter }}
+                                        </span>
 
-                                        <span>
-                                            <span class="font-semibold mr-2">
-                                                {{ $choice->choice_letter }}.
-                                            </span>
-
+                                        <span class="font-sans text-sm font-medium leading-relaxed text-slate-800">
                                             {{ $choice->choice_text }}
                                         </span>
-                                    </label>
-                                @endforeach
+                                    </div>
+                                </label>
+                            @endforeach
 
-                                @error('selected_choice_id')
-                                    <p class="mt-2 text-sm text-red-600">
-                                        {{ $message }}
-                                    </p>
-                                @enderror
+                            @error('selected_choice_id')
+                                <p class="mt-2 text-xs font-semibold text-weak-ink">
+                                    {{ $message }}
+                                </p>
+                            @enderror
 
-                                <div class="mt-6">
-                                    <x-primary-button>
-                                        Submit Answer
-                                    </x-primary-button>
-                                </div>
-                            </form>
+                            <div class="pt-4">
+                                <button type="submit"
+                                        style="--lip: #4A2FC4;"
+                                        class="btn-press w-full rounded-2xl bg-primary py-3.5 font-display text-base font-bold text-white shadow-md transition hover:bg-primary/95">
+                                    Submit Answer
+                                </button>
+                            </div>
+                        </form>
 
-                        </div>
                     </div>
                 @endif
 
             @endif
 
-            <div class="mt-6 text-center text-xs text-gray-500">
-                Session ID:
-                {{ $session->session_id }}
+            <div class="mt-6 text-center font-mono text-[11px] text-muted-ink">
+                Session Ref: {{ $session->session_id }}
             </div>
 
         </div>

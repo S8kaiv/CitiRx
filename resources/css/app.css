@@ -1,7 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-[x-cloak] {
-    display: none !important;
+.btn-press {
+    box-shadow: 0 4px 0 var(--lip, #4A2FC4);
+    transition: transform .08s ease, box-shadow .08s ease;
+}
+.btn-press:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 var(--lip, #4A2FC4);
 }
