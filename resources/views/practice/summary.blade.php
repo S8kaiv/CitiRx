@@ -8,6 +8,14 @@
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
+            {{-- Status Message --}}
+            @if (session('status'))
+                <div role="status" class="mb-6 rounded-lg border border-[#6D4AFF] bg-[#F0EDFF] p-4 text-[#4A2FC4]">
+                    {{ session('status') }}
+                </div>
+            @endif
+
+
             {{-- Main score --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-center">
@@ -119,29 +127,86 @@
             @endif
 
             {{-- Readiness --}}
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                 <div class="p-6 text-center">
 
-                    <div class="text-sm text-gray-500 uppercase tracking-wide">
+                    <div class="text-sm uppercase tracking-wide text-gray-500">
                         Current Board Readiness Estimate
                     </div>
 
-                    <div class="mt-2 text-4xl font-bold text-indigo-600">
-                        {{ number_format($currentReadiness, 2) }}%
-                    </div>
+                    @if ($currentReadiness !== null)
+                        <div class="mt-2 text-4xl font-bold text-[#6D4AFF]">
+                            {{ number_format($currentReadiness, 2) }}%
+                        </div>
 
-                    <p class="mt-2 text-xs text-gray-500">
-                        This estimate reflects your current competency
-                        mastery after this Practice session.
-                    </p>
+                        <p class="mt-2 text-xs text-gray-500">
+                            This estimate reflects your current competency
+                            mastery after this Practice session.
+                        </p>
 
-                    <a href="{{ route('readiness.show') }}"
-                        class="inline-block mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm">
-                        View Full Breakdown
-                    </a>
+                        <a href="{{ route('readiness.show') }}"
+                            class="mt-4 inline-block rounded bg-[#6D4AFF] px-4 py-2 text-sm text-white transition hover:bg-[#4A2FC4]">
+                            View Full Breakdown
+                        </a>
+                    @else
+                        <p class="mt-3 text-sm text-gray-600">
+                            Your readiness estimate is currently unavailable.
+                        </p>
+                    @endif
 
                 </div>
             </div>
+
+            {{-- Last Question --}}
+            @if ($lastQuestion)
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+
+                    <div class="relative p-6 pr-16">
+
+                        <form method="POST"
+                            action="{{ $lastQuestionIsBookmarked
+                                ? route('bookmarks.destroyQuestion', [
+                                    'question' => $lastQuestion->question_id,
+                                ])
+                                : route('bookmarks.store', [
+                                    'question' => $lastQuestion->question_id,
+                                ]) }}"
+                            class="absolute right-4 top-4">
+                            @csrf
+
+                            <input type="hidden" name="_method"
+                                value="{{ $lastQuestionIsBookmarked ? 'DELETE' : 'PUT' }}">
+
+                            <input type="hidden" name="practice_session_id" value="{{ $session->session_id }}">
+
+                            <button type="submit"
+                                aria-label="{{ $lastQuestionIsBookmarked ? 'Remove bookmark' : 'Bookmark last question' }}"
+                                title="{{ $lastQuestionIsBookmarked ? 'Remove bookmark' : 'Bookmark last question' }}"
+                                class="text-3xl leading-none transition
+                                    {{ $lastQuestionIsBookmarked ? 'text-[#6D4AFF]' : 'text-gray-400 hover:text-[#6D4AFF]' }}">
+                                <span aria-hidden="true">
+                                    {{ $lastQuestionIsBookmarked ? '★' : '☆' }}
+                                </span>
+                            </button>
+
+                        </form>
+
+                        <p class="text-sm font-medium text-gray-500">
+                            Last Question
+                        </p>
+
+                        <p class="mt-2 text-sm font-medium text-gray-900">
+                            {{ $lastQuestion->question_text }}
+                        </p>
+
+                        <p class="mt-3 text-xs text-gray-500">
+                            Star this question if you want to review it later.
+                        </p>
+
+                    </div>
+
+                </div>
+            @endif
 
             {{-- Actions --}}
             <div class="flex flex-wrap justify-center gap-4">
