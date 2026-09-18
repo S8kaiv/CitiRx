@@ -25,13 +25,22 @@
     <div class="pt-8 pb-16 font-sans text-slate-900 antialiased">
         <div class="max-w-2xl mx-auto px-4 sm:px-6">
 
+            {{-- Status message --}}
+            @if (session('status'))
+                <div role="status" class="mb-5 flex items-center gap-3 rounded-2xl border-2 border-b-4 border-primary/30 bg-primary-tint/60 p-4 font-display text-xs font-bold text-primary shadow-sm">
+                    <span class="text-base">ℹ️</span>
+                    <span>{{ session('status') }}</span>
+                </div>
+            @endif
+
+            {{-- Error message --}}
             @if (session('error'))
-                <div class="mb-5 rounded-2xl border-2 border-b-4 border-weak/40 bg-weak-tint p-4 text-sm font-medium text-weak-ink">
+                <div role="alert" class="mb-5 rounded-2xl border-2 border-b-4 border-weak/40 bg-weak-tint p-4 text-sm font-medium text-weak-ink">
                     {{ session('error') }}
                 </div>
             @endif
 
-            {{-- Progress Header --}}
+            {{-- Progress Header & Bar --}}
             <div class="mb-6 space-y-2">
                 <div class="flex items-center justify-between font-display text-xs font-bold uppercase tracking-wider">
                     <span class="text-slate-700">
@@ -44,7 +53,12 @@
                     </span>
                 </div>
 
-                <div class="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 ring-1 ring-inset ring-slate-200/60">
+                <div class="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 ring-1 ring-inset ring-slate-200/60"
+                     role="progressbar"
+                     aria-label="Practice progress"
+                     aria-valuemin="0"
+                     aria-valuemax="100"
+                     aria-valuenow="{{ round($progress) }}">
                     <div class="h-full rounded-full bg-primary transition-all duration-300"
                          style="width: {{ $progress }}%"></div>
                 </div>
@@ -61,14 +75,32 @@
 
                     $correctChoice = $answeredQuestion->choices->firstWhere(
                         'choice_id',
-                        $feedback['correct_choice_id'],
+                        $feedback['correct_choice_id']
                     ) ?? $answeredQuestion->choices->firstWhere('is_correct', true);
                 @endphp
 
-                <div class="overflow-hidden rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm sm:p-8 space-y-6">
+                <div class="relative overflow-hidden rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm sm:p-8 space-y-6">
                     
-                    {{-- Domain Metadata (Inline) --}}
-                    <div class="flex flex-wrap items-center gap-2">
+                    {{-- Feedback Bookmark / Vault Button (Teammate feature styled) --}}
+                    <form method="POST"
+                          action="{{ $isBookmarked
+                              ? route('bookmarks.destroyQuestion', ['question' => $answeredQuestion->question_id])
+                              : route('bookmarks.store', ['question' => $answeredQuestion->question_id]) }}"
+                          class="absolute right-6 top-6 z-10">
+                        @csrf
+                        @method($isBookmarked ? 'DELETE' : 'PUT')
+                        <input type="hidden" name="practice_session_id" value="{{ $session->session_id }}">
+
+                        <button type="submit"
+                                aria-label="{{ $isBookmarked ? 'Remove bookmark' : 'Bookmark this question' }}"
+                                title="{{ $isBookmarked ? 'Remove bookmark' : 'Bookmark this question' }}"
+                                class="flex h-9 w-9 items-center justify-center rounded-xl border-2 transition {{ $isBookmarked ? 'border-[#F5A623]/40 bg-gold-tint text-gold shadow-sm' : 'border-slate-200 bg-slate-50 text-slate-400 hover:text-gold hover:border-[#F5A623]/40' }}">
+                            <span class="text-xl leading-none">{{ $isBookmarked ? '★' : '☆' }}</span>
+                        </button>
+                    </form>
+
+                    {{-- Domain Metadata --}}
+                    <div class="flex flex-wrap items-center gap-2 pr-12">
                         <span class="inline-flex items-center rounded-lg bg-clinical-tint px-2.5 py-1 font-display text-xs font-bold text-clinical-ink">
                             {{ $answeredQuestion->competency->domain->domain_name }}
                         </span>
@@ -88,7 +120,7 @@
                         <div class="rounded-2xl border-2 border-b-4 border-strong/40 bg-strong-tint p-4 sm:p-5">
                             <div class="flex items-center gap-2 font-display text-base font-bold text-strong-ink sm:text-lg">
                                 <svg class="h-5 w-5 text-strong shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
                                 </svg>
                                 <span>Correct Answer</span>
                             </div>
@@ -185,10 +217,28 @@
                         </div>
                     </div>
                 @else
-                    <div class="overflow-hidden rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                    <div class="relative overflow-hidden rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                         
-                        {{-- Domain Metadata (Inline) --}}
-                        <div class="flex flex-wrap items-center gap-2">
+                        {{-- Question Bookmark / Vault Button (Teammate feature styled) --}}
+                        <form method="POST"
+                              action="{{ $isBookmarked
+                                  ? route('bookmarks.destroyQuestion', ['question' => $question->question_id])
+                                  : route('bookmarks.store', ['question' => $question->question_id]) }}"
+                              class="absolute right-6 top-6 z-10">
+                            @csrf
+                            @method($isBookmarked ? 'DELETE' : 'PUT')
+                            <input type="hidden" name="practice_session_id" value="{{ $session->session_id }}">
+
+                            <button type="submit"
+                                    aria-label="{{ $isBookmarked ? 'Remove bookmark' : 'Bookmark this question' }}"
+                                    title="{{ $isBookmarked ? 'Remove bookmark' : 'Bookmark this question' }}"
+                                    class="flex h-9 w-9 items-center justify-center rounded-xl border-2 transition {{ $isBookmarked ? 'border-[#F5A623]/40 bg-gold-tint text-gold shadow-sm' : 'border-slate-200 bg-slate-50 text-slate-400 hover:text-gold hover:border-[#F5A623]/40' }}">
+                                <span class="text-xl leading-none">{{ $isBookmarked ? '★' : '☆' }}</span>
+                            </button>
+                        </form>
+
+                        {{-- Domain Metadata --}}
+                        <div class="flex flex-wrap items-center gap-2 pr-12">
                             <span class="inline-flex items-center rounded-lg bg-clinical-tint px-2.5 py-1 font-display text-xs font-bold text-clinical-ink">
                                 {{ $question->competency->domain->domain_name }}
                             </span>
@@ -203,7 +253,7 @@
                             {{ $question->question_text }}
                         </div>
 
-                        {{-- Answer Options Form --}}
+                        {{-- Answer Options Form (3D Selectable Cards) --}}
                         <form method="POST"
                               action="{{ route('practice.answer', ['session' => $session->session_id]) }}"
                               class="mt-6 space-y-3">
@@ -213,7 +263,7 @@
                             @foreach ($question->choices as $choice)
                                 <label class="group relative block cursor-pointer">
                                     <input type="radio" 
-                                           name="selected_choice_id"
+                                           name="selected_choice_id" 
                                            value="{{ $choice->choice_id }}" 
                                            @checked(old('selected_choice_id') === $choice->choice_id)
                                            class="peer sr-only" 

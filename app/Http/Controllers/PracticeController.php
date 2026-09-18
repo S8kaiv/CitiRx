@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AssessmentSession;
 use App\Models\Question;
 use App\Models\TosDomain;
+use App\Services\BookmarkService;
 use App\Services\PracticeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class PracticeController extends Controller
 {
     public function __construct(
         protected PracticeService $practice,
+        protected BookmarkService $bookmarks,
     ) {}
 
     /**
@@ -133,6 +135,10 @@ class PracticeController extends Controller
          * Completed sessions belong on the summary page.
          */
         if ($session->completed_at !== null) {
+            session()->forget(
+                $this->feedbackSessionKey($session)
+            );
+
             return redirect()->route(
                 'practice.summary',
                 [
@@ -142,15 +148,21 @@ class PracticeController extends Controller
         }
 
         /*
-         * Check for feedback flashed by answer().
+         * Check for feedback stored for this
+         * specific Practice session.
          */
-        $feedback =
-            session('practice_feedback');
+        $feedbackState = session(
+            $this->feedbackSessionKey($session)
+        );
+
+        $feedback = is_array($feedbackState)
+            ? ($feedbackState['feedback'] ?? null)
+            : null;
 
         $answeredQuestionId =
-            session(
-                'practice_answered_question_id'
-            );
+            is_array($feedbackState)
+            ? ($feedbackState['question_id'] ?? null)
+            : null;
 
         if (
             $feedback &&
@@ -169,6 +181,12 @@ class PracticeController extends Controller
                         $answeredQuestionId
                     );
 
+            $isBookmarked =
+                $this->bookmarks->isBookmarked(
+                    $request->user(),
+                    $answeredQuestion
+                );
+
             return view(
                 'practice.show',
                 [
@@ -179,6 +197,8 @@ class PracticeController extends Controller
                     'answeredQuestion' => $answeredQuestion,
 
                     'question' => null,
+
+                    'isBookmarked' => $isBookmarked,
                 ]
             );
         }
@@ -253,6 +273,10 @@ class PracticeController extends Controller
                         );
                 }
 
+                session()->forget(
+                    $this->feedbackSessionKey($session)
+                );
+
                 return redirect()->route(
                     'practice.summary',
                     [
@@ -273,6 +297,12 @@ class PracticeController extends Controller
                 );
         }
 
+        $isBookmarked =
+            $this->bookmarks->isBookmarked(
+                $request->user(),
+                $question
+            );
+
         return view(
             'practice.show',
             [
@@ -283,6 +313,8 @@ class PracticeController extends Controller
                 'answeredQuestion' => null,
 
                 'question' => $question,
+
+                'isBookmarked' => $isBookmarked,
             ]
         );
     }
@@ -303,6 +335,10 @@ class PracticeController extends Controller
             $session->fresh();
 
         if ($session->completed_at !== null) {
+            session()->forget(
+                $this->feedbackSessionKey($session)
+            );
+
             return redirect()->route(
                 'practice.summary',
                 [
@@ -323,6 +359,14 @@ class PracticeController extends Controller
                     'uuid',
                 ],
             ]);
+
+        $feedbackKey =
+            $this->feedbackSessionKey($session);
+
+        /*
+        * Identify the feedback storage for this
+        * specific Practice session.
+        */
 
         try {
             $feedback =
@@ -368,12 +412,14 @@ class PracticeController extends Controller
         }
 
         /*
-         * submitAnswer() finalizes the session when
-         * the target question count has been reached.
-         *
-         * For the last answer, go directly to summary.
+         * For the final answer, remove any previous
+         * feedback before opening the summary.
          */
         if ($feedback['is_final']) {
+            session()->forget(
+                $feedbackKey
+            );
+
             return redirect()->route(
                 'practice.summary',
                 [
@@ -383,24 +429,23 @@ class PracticeController extends Controller
         }
 
         /*
-         * For non-final answers, show feedback before
-         * selecting the next question.
+         * For a non-final answer, replacing this key
+         * automatically overwrites any old feedback.
          */
-        return redirect()
-            ->route(
-                'practice.show',
-                [
-                    'session' => $session->session_id,
-                ]
-            )
-            ->with(
-                'practice_feedback',
-                $feedback
-            )
-            ->with(
-                'practice_answered_question_id',
-                $validated['question_id']
-            );
+        session([
+            $feedbackKey => [
+                'feedback' => $feedback,
+
+                'question_id' => $validated['question_id'],
+            ],
+        ]);
+
+        return redirect()->route(
+            'practice.show',
+            [
+                'session' => $session->session_id,
+            ]
+        );
     }
 
     /**
@@ -416,7 +461,18 @@ class PracticeController extends Controller
         );
 
         $session =
-            $session->fresh();
+            $session->refresh();
+
+        /*
+         * Feedback uses regular session storage so
+         * bookmark requests do not remove it.
+         *
+         * It must be cleared explicitly when the
+         * student moves to the next question.
+         */
+        session()->forget(
+            $this->feedbackSessionKey($session)
+        );
 
         if ($session->completed_at !== null) {
             return redirect()->route(
@@ -521,6 +577,10 @@ class PracticeController extends Controller
             );
         }
 
+        session()->forget(
+            $this->feedbackSessionKey($session)
+        );
+
         $logs =
             $session
                 ->telemetryLogs()
@@ -529,6 +589,22 @@ class PracticeController extends Controller
                 )
                 ->orderBy('item_position')
                 ->get();
+
+        /*
+         * The final answer redirects directly to the
+         * summary page, so expose its question and
+         * bookmark state here.
+         */
+        $lastQuestion =
+            $logs->last()?->question;
+
+        $lastQuestionIsBookmarked =
+            $lastQuestion !== null
+            ? $this->bookmarks->isBookmarked(
+                $request->user(),
+                $lastQuestion
+            )
+            : false;
 
         /*
          * Raw accuracy includes every submitted answer.
@@ -552,8 +628,7 @@ class PracticeController extends Controller
          */
         $eligible =
             $logs->filter(
-                fn ($log) => ! (bool)
-                $log->is_speed_flagged
+                fn ($log) => ! (bool) $log->is_speed_flagged
             );
 
         $eligibleCount =
@@ -561,8 +636,7 @@ class PracticeController extends Controller
 
         $eligibleCorrect =
             $eligible->filter(
-                fn ($log) => (bool)
-                $log->is_correct
+                fn ($log) => (bool) $log->is_correct
             )->count();
 
         $eligibleAccuracy =
@@ -626,12 +700,16 @@ class PracticeController extends Controller
          * rather than depending on an AssessmentSession
          * ->user relationship in the Blade view.
          */
-        $currentReadiness =
-            (float)
+        $readinessValue =
             $request
                 ->user()
                 ->fresh()
                 ->predicted_readiness_pct;
+
+        $currentReadiness =
+            $readinessValue !== null
+            ? (float) $readinessValue
+            : null;
 
         return view(
             'practice.summary',
@@ -651,6 +729,10 @@ class PracticeController extends Controller
                 'perDomain' => $perDomain,
 
                 'currentReadiness' => $currentReadiness,
+
+                'lastQuestion' => $lastQuestion,
+
+                'lastQuestionIsBookmarked' => $lastQuestionIsBookmarked,
             ]
         );
     }
@@ -682,5 +764,16 @@ class PracticeController extends Controller
                 'Not a practice session.'
             );
         }
+    }
+
+    /**
+     * Return the session-storage key used for feedback
+     * belonging to one specific Practice session.
+     */
+    private function feedbackSessionKey(
+        AssessmentSession $session
+    ): string {
+        return 'practice_feedback.'
+            .$session->session_id;
     }
 }

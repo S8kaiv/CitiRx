@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BadgeController;
+use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiagnosticController;
 use App\Http\Controllers\PracticeController;
@@ -200,3 +201,43 @@ Route::middleware([
     ->name(
         'vault.index'
     );
+
+/*
+|--------------------------------------------------------------------------
+| Bookmarks Route
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'verified',
+    'student',
+])
+    ->prefix('bookmarks')
+    ->name('bookmarks.')
+    ->group(function () {
+        Route::get(
+            '/',
+            [BookmarkController::class, 'index']
+        )->name('index');
+
+        Route::put(
+            '/questions/{question}',
+            [BookmarkController::class, 'store']
+        )->name('store');
+
+        Route::delete(
+            '/questions/{question}',
+            [BookmarkController::class, 'destroyQuestion']
+        )->name('destroyQuestion');
+
+        Route::patch(
+            '/{bookmark}/notes',
+            [BookmarkController::class, 'updateNotes']
+        )->name('updateNotes');
+
+        Route::delete(
+            '/{bookmark}',
+            [BookmarkController::class, 'destroy']
+        )->name('destroy');
+    });

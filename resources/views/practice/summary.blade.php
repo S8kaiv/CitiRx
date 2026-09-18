@@ -1,9 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-display text-xl font-bold text-slate-900 leading-tight">
-                {{ __('Practice Summary') }}
-            </h2>
+            <div>
+                <h2 class="font-display text-xl font-bold text-slate-900 leading-tight">
+                    {{ __('Practice Summary') }}
+                </h2>
+                <p class="text-xs font-semibold uppercase tracking-wider text-muted-ink">
+                    Session Mastery & Performance
+                </p>
+            </div>
 
             <a href="{{ route('dashboard') }}" 
                class="font-display text-xs font-bold text-muted-ink hover:text-primary transition">
@@ -13,7 +18,7 @@
     </x-slot>
 
     @php
-        // Scaled donut chart math (176px box, radius 70)
+        // Scaled donut chart math (176px box, radius 75)
         $radius = 75;
         $circumference = 2 * M_PI * $radius; // ~439.82
         $scoreRatio = $session->total_items > 0 ? min(1, $session->correct_items / $session->total_items) : 0;
@@ -38,10 +43,18 @@
     <div class="pt-6 pb-12 font-sans text-slate-900 antialiased">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-4">
 
+            {{-- Status Alert Message (From Teammate) --}}
+            @if (session('status'))
+                <div role="status" class="flex items-center gap-3 rounded-2xl border-2 border-b-4 border-primary/30 bg-primary-tint/60 p-4 font-display text-xs font-bold text-primary shadow-sm">
+                    <span class="text-base">ℹ️</span>
+                    <span>{{ session('status') }}</span>
+                </div>
+            @endif
+
             {{-- TOP ROW: SIDE-BY-SIDE CARDS --}}
             <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
                 
-                {{-- LEFT: Score Donut Card (Prominent Circle) --}}
+                {{-- LEFT: Score Donut Card --}}
                 <div class="md:col-span-5 lg:col-span-4 flex flex-col justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-sm text-center">
                     <div>
                         <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-0.5 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
@@ -146,7 +159,7 @@
                         @endif
                     </div>
 
-                    {{-- Clean Adaptive Note --}}
+                    {{-- Adaptive Remediation Note --}}
                     @if ($lowestDomain)
                         <div class="mt-4 rounded-xl border border-clinical/30 bg-clinical-tint/50 p-3 text-xs text-clinical-ink leading-relaxed">
                             Your accuracy was lowest in <strong>{{ $lowestDomain['domain_name'] }}</strong> ({{ $lowestPct }}%). Targeted questions will be prioritized in your next session.
@@ -156,6 +169,43 @@
 
             </div>
 
+            {{-- MIDDLE ROW: LAST QUESTION & BOOKMARK REMEDIATION (Teammate's feature in 3D Card) --}}
+            @if ($lastQuestion)
+                <div class="relative overflow-hidden rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-sm">
+                    {{-- Star / Bookmark Form --}}
+                    <form method="POST"
+                          action="{{ $lastQuestionIsBookmarked
+                              ? route('bookmarks.destroyQuestion', ['question' => $lastQuestion->question_id])
+                              : route('bookmarks.store', ['question' => $lastQuestion->question_id]) }}"
+                          class="absolute right-4 top-4">
+                        @csrf
+                        <input type="hidden" name="_method" value="{{ $lastQuestionIsBookmarked ? 'DELETE' : 'PUT' }}">
+                        <input type="hidden" name="practice_session_id" value="{{ $session->session_id }}">
+
+                        <button type="submit"
+                                aria-label="{{ $lastQuestionIsBookmarked ? 'Remove bookmark' : 'Bookmark last question' }}"
+                                title="{{ $lastQuestionIsBookmarked ? 'Remove bookmark' : 'Bookmark last question' }}"
+                                class="flex h-9 w-9 items-center justify-center rounded-xl border-2 transition {{ $lastQuestionIsBookmarked ? 'border-[#F5A623]/40 bg-gold-tint text-gold shadow-sm' : 'border-slate-200 bg-slate-50 text-slate-400 hover:text-gold hover:border-[#F5A623]/40' }}">
+                            <span class="text-xl leading-none">{{ $lastQuestionIsBookmarked ? '★' : '☆' }}</span>
+                        </button>
+                    </form>
+
+                    <div class="pr-12">
+                        <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                            Last Question Addressed
+                        </span>
+
+                        <p class="mt-2 text-sm font-bold text-slate-900 leading-snug">
+                            {{ $lastQuestion->question_text }}
+                        </p>
+
+                        <p class="mt-2 text-xs text-muted-ink">
+                            Star this question to save it directly to your <strong>Rx Vault</strong> for targeted review.
+                        </p>
+                    </div>
+                </div>
+            @endif
+
             {{-- BOTTOM ROW: UPDATED PHLE ESTIMATE --}}
             <div class="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-4 sm:px-6 shadow-sm">
                 <div>
@@ -164,7 +214,7 @@
                     </span>
                     <div class="mt-0.5 flex items-baseline gap-2">
                         <span class="font-display text-2xl sm:text-3xl font-extrabold text-slate-900">
-                            {{ number_format($currentReadiness, 1) }}%
+                            {{ $currentReadiness !== null ? number_format($currentReadiness, 1) . '%' : 'Pending' }}
                         </span>
                         <span class="text-xs font-medium text-muted-ink">Board Readiness</span>
                     </div>

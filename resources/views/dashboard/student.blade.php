@@ -75,6 +75,7 @@
             ['name' => 'Clinical Pharmacy',   'accuracy' => 84, 'answered' => 75],
         ];
         $weakest = collect($domains)->sortBy('accuracy')->first();
+        $bookmarkCount = $bookmarkCount ?? 0;
     @endphp
 
     <div class="py-6 font-sans text-slate-900 antialiased">
@@ -165,53 +166,77 @@
                         </section>
                     @endif
 
-                    {{-- 2. RX VAULT & ACHIEVEMENTS ROW (NOW ABOVE TOS) --}}
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div class="flex flex-col justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-sm">
-                            <div class="flex items-start gap-4">
-                                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-[#F5A623]/30 bg-gold-tint text-xl shadow-sm">
+                    {{-- 2. RX VAULT, BOOKMARKS & ACHIEVEMENTS ROW (3-CARD QUICK ACCESS) --}}
+                    <div class="grid gap-4 sm:grid-cols-3">
+                        
+                        {{-- Rx Vault Tile --}}
+                        <div class="flex flex-col justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                            <div>
+                                <div class="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-b-4 border-[#F5A623]/30 bg-gold-tint text-xl shadow-sm">
                                     💊
                                 </div>
-                                <div>
-                                    <h4 class="font-display text-lg font-bold text-slate-900">Rx Vault</h4>
-                                    <p class="text-xs font-medium text-muted-ink mt-0.5">
-                                        @if ($activeVaultCount > 0)
-                                            <span class="font-bold text-slate-900">{{ $activeVaultCount }}</span> questions flagged for review.
-                                        @else
-                                            No pending remediation items.
-                                        @endif
-                                    </p>
-                                </div>
+                                <h4 class="mt-3 font-display text-base font-bold text-slate-900">Rx Vault</h4>
+                                <p class="text-xs font-medium text-muted-ink mt-0.5">
+                                    @if ($activeVaultCount > 0)
+                                        <span class="font-bold text-slate-900">{{ $activeVaultCount }}</span> {{ \Illuminate\Support\Str::plural('item', $activeVaultCount) }} to review.
+                                    @else
+                                        No pending items.
+                                    @endif
+                                </p>
                             </div>
-                            <div class="mt-5">
+                            <div class="mt-4">
                                 <a href="{{ route('vault.index') }}"
                                    style="--lip: #CBD5E1;"
-                                   class="btn-press block w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-2 text-center font-display text-xs font-extrabold uppercase tracking-wider text-slate-700 hover:bg-slate-100">
+                                   class="btn-press block w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-1.5 text-center font-display text-[11px] font-extrabold uppercase tracking-wider text-slate-700 hover:bg-slate-100">
                                     Open Vault
                                 </a>
                             </div>
                         </div>
 
-                        <div class="flex flex-col justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-sm">
-                            <div class="flex items-start gap-4">
-                                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-[#F5A623]/30 bg-gold-tint text-xl shadow-sm">
+                        {{-- Bookmarks Tile (From Teammate) --}}
+                        <div class="flex flex-col justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                            <div>
+                                <div class="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-b-4 border-primary/30 bg-primary-tint text-xl shadow-sm">
+                                    ⭐
+                                </div>
+                                <h4 class="mt-3 font-display text-base font-bold text-slate-900">Bookmarks</h4>
+                                <p class="text-xs font-medium text-muted-ink mt-0.5">
+                                    @if ($bookmarkCount > 0)
+                                        <span class="font-bold text-slate-900">{{ $bookmarkCount }}</span> {{ \Illuminate\Support\Str::plural('question', $bookmarkCount) }} starred.
+                                    @else
+                                        No starred questions.
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="mt-4">
+                                <a href="{{ route('bookmarks.index') }}"
+                                   style="--lip: #CBD5E1;"
+                                   class="btn-press block w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-1.5 text-center font-display text-[11px] font-extrabold uppercase tracking-wider text-slate-700 hover:bg-slate-100">
+                                    Bookmarks
+                                </a>
+                            </div>
+                        </div>
+
+                        {{-- Achievements Tile --}}
+                        <div class="flex flex-col justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                            <div>
+                                <div class="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-b-4 border-[#F5A623]/30 bg-gold-tint text-xl shadow-sm">
                                     🏆
                                 </div>
-                                <div>
-                                    <h4 class="font-display text-lg font-bold text-slate-900">Achievements</h4>
-                                    <p class="text-xs font-medium text-muted-ink mt-0.5">
-                                        <span class="font-bold text-slate-900">{{ $unlockedBadgeCount }}</span> of {{ $totalBadgeCount }} badges unlocked
-                                    </p>
-                                </div>
+                                <h4 class="mt-3 font-display text-base font-bold text-slate-900">Badges</h4>
+                                <p class="text-xs font-medium text-muted-ink mt-0.5">
+                                    <span class="font-bold text-slate-900">{{ $unlockedBadgeCount }}</span> of {{ $totalBadgeCount }} unlocked
+                                </p>
                             </div>
-                            <div class="mt-5">
+                            <div class="mt-4">
                                 <a href="{{ route('badges.index') }}"
                                    style="--lip: #CBD5E1;"
-                                   class="btn-press block w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-2 text-center font-display text-xs font-extrabold uppercase tracking-wider text-slate-700 hover:bg-slate-100">
+                                   class="btn-press block w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-1.5 text-center font-display text-[11px] font-extrabold uppercase tracking-wider text-slate-700 hover:bg-slate-100">
                                     View Badges
                                 </a>
                             </div>
                         </div>
+
                     </div>
 
                     {{-- 3. DOMAIN MASTERY (TOS) SECTION --}}

@@ -6,6 +6,7 @@ use App\Models\AssessmentSession;
 use App\Models\Badge;
 use App\Models\UserBadge;
 use App\Models\RxVault;
+use App\Models\QuestionBookmark;
 use App\Services\ReadinessService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -53,6 +54,9 @@ class DashboardController extends Controller
                 'activeVaultCount' => RxVault::query()
                     ->where('user_id', $user->user_id)
                     ->where('is_cleared', false)
+                    ->count(),
+                'bookmarkCount' => QuestionBookmark::query()
+                    ->where('user_id', $user->user_id)
                     ->count(),
             ]),
 
