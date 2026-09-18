@@ -65,7 +65,7 @@ class PracticeController extends Controller
             'length' => [
                 'required',
                 'integer',
-                'in:'.implode(
+                'in:' . implode(
                     ',',
                     PracticeService::ALLOWED_LENGTHS
                 ),
@@ -90,8 +90,8 @@ class PracticeController extends Controller
                         : null,
                 );
         } catch (
-            LogicException|
-            RuntimeException|
+            LogicException |
+            RuntimeException |
             InvalidArgumentException $e
         ) {
             return redirect()
@@ -170,16 +170,16 @@ class PracticeController extends Controller
         ) {
             $answeredQuestion =
                 Question::query()
-                    ->with([
-                        'choices' => fn ($query) => $query->orderBy(
-                            'choice_letter'
-                        ),
+                ->with([
+                    'choices' => fn($query) => $query->orderBy(
+                        'choice_letter'
+                    ),
 
-                        'competency.domain',
-                    ])
-                    ->findOrFail(
-                        $answeredQuestionId
-                    );
+                    'competency.domain',
+                ])
+                ->findOrFail(
+                    $answeredQuestionId
+                );
 
             $isBookmarked =
                 $this->bookmarks->isBookmarked(
@@ -214,17 +214,17 @@ class PracticeController extends Controller
             ) {
                 $question =
                     Question::query()
-                        ->with([
-                            'choices' => fn ($query) => $query->orderBy(
-                                'choice_letter'
-                            ),
+                    ->with([
+                        'choices' => fn($query) => $query->orderBy(
+                            'choice_letter'
+                        ),
 
-                            'competency.domain',
-                        ])
-                        ->find(
-                            $session
-                                ->current_question_id
-                        );
+                        'competency.domain',
+                    ])
+                    ->find(
+                        $session
+                            ->current_question_id
+                    );
 
                 if (! $question) {
                     throw new RuntimeException(
@@ -239,13 +239,13 @@ class PracticeController extends Controller
                  */
                 $question =
                     $this->practice
-                        ->pickNextQuestion(
-                            $session
-                        );
+                    ->pickNextQuestion(
+                        $session
+                    );
 
                 if ($question) {
                     $question->load([
-                        'choices' => fn ($query) => $query->orderBy(
+                        'choices' => fn($query) => $query->orderBy(
                             'choice_letter'
                         ),
 
@@ -267,10 +267,15 @@ class PracticeController extends Controller
                     $session->completed_at
                     === null
                 ) {
-                    $this->practice
+                    $finalization =
+                        $this->practice
                         ->finalizeSession(
                             $session
                         );
+
+                    $this->flashLevelUp(
+                        $finalization['level_up'] ?? null
+                    );
                 }
 
                 session()->forget(
@@ -285,8 +290,8 @@ class PracticeController extends Controller
                 );
             }
         } catch (
-            LogicException|
-            RuntimeException|
+            LogicException |
+            RuntimeException |
             InvalidArgumentException $e
         ) {
             return redirect()
@@ -371,15 +376,15 @@ class PracticeController extends Controller
         try {
             $feedback =
                 $this->practice
-                    ->submitAnswer(
-                        $request->user(),
-                        $session,
-                        $validated['question_id'],
-                        $validated['selected_choice_id'],
-                    );
+                ->submitAnswer(
+                    $request->user(),
+                    $session,
+                    $validated['question_id'],
+                    $validated['selected_choice_id'],
+                );
         } catch (
-            LogicException|
-            InvalidArgumentException|
+            LogicException |
+            InvalidArgumentException |
             RuntimeException $e
         ) {
             return redirect()
@@ -410,6 +415,10 @@ class PracticeController extends Controller
                     'Could not record your answer. Please try again.'
                 );
         }
+
+        $this->flashLevelUp(
+            $feedback['level_up'] ?? null
+        );
 
         /*
          * For the final answer, remove any previous
@@ -502,9 +511,9 @@ class PracticeController extends Controller
         try {
             $question =
                 $this->practice
-                    ->pickNextQuestion(
-                        $session
-                    );
+                ->pickNextQuestion(
+                    $session
+                );
 
             if (! $question) {
                 $session =
@@ -514,10 +523,15 @@ class PracticeController extends Controller
                     $session->completed_at
                     === null
                 ) {
-                    $this->practice
+                    $finalization =
+                        $this->practice
                         ->finalizeSession(
                             $session
                         );
+
+                    $this->flashLevelUp(
+                        $finalization['level_up'] ?? null
+                    );
                 }
 
                 return redirect()->route(
@@ -528,8 +542,8 @@ class PracticeController extends Controller
                 );
             }
         } catch (
-            LogicException|
-            RuntimeException|
+            LogicException |
+            RuntimeException |
             InvalidArgumentException $e
         ) {
             return redirect()
@@ -583,12 +597,12 @@ class PracticeController extends Controller
 
         $logs =
             $session
-                ->telemetryLogs()
-                ->with(
-                    'question.competency.domain'
-                )
-                ->orderBy('item_position')
-                ->get();
+            ->telemetryLogs()
+            ->with(
+                'question.competency.domain'
+            )
+            ->orderBy('item_position')
+            ->get();
 
         /*
          * The final answer redirects directly to the
@@ -628,7 +642,7 @@ class PracticeController extends Controller
          */
         $eligible =
             $logs->filter(
-                fn ($log) => ! (bool) $log->is_speed_flagged
+                fn($log) => ! (bool) $log->is_speed_flagged
             );
 
         $eligibleCount =
@@ -636,7 +650,7 @@ class PracticeController extends Controller
 
         $eligibleCorrect =
             $eligible->filter(
-                fn ($log) => (bool) $log->is_correct
+                fn($log) => (bool) $log->is_correct
             )->count();
 
         $eligibleAccuracy =
@@ -654,46 +668,46 @@ class PracticeController extends Controller
          */
         $perDomain =
             $logs
-                ->groupBy(
-                    fn ($log) => $log
+            ->groupBy(
+                fn($log) => $log
+                    ->question
+                    ->competency
+                    ->domain
+                    ->domain_id
+            )
+            ->map(
+                function ($group) {
+                    $domain =
+                        $group
+                        ->first()
                         ->question
                         ->competency
-                        ->domain
-                        ->domain_id
-                )
-                ->map(
-                    function ($group) {
-                        $domain =
-                            $group
-                                ->first()
-                                ->question
-                                ->competency
-                                ->domain;
+                        ->domain;
 
-                        return [
-                            'domain_id' => $domain->domain_id,
+                    return [
+                        'domain_id' => $domain->domain_id,
 
-                            'domain_number' => $domain->domain_number,
+                        'domain_number' => $domain->domain_number,
 
-                            'domain_name' => $domain->domain_name,
+                        'domain_name' => $domain->domain_name,
 
-                            'total' => $group->count(),
+                        'total' => $group->count(),
 
-                            'correct' => $group
-                                ->filter(
-                                    fn ($log) => (bool)
-                                    $log
-                                        ->is_correct
-                                )
-                                ->count(),
-                        ];
-                    }
-                )
-                ->sortBy(
-                    'domain_number'
-                )
-                ->values()
-                ->all();
+                        'correct' => $group
+                            ->filter(
+                                fn($log) => (bool)
+                                $log
+                                    ->is_correct
+                            )
+                            ->count(),
+                    ];
+                }
+            )
+            ->sortBy(
+                'domain_number'
+            )
+            ->values()
+            ->all();
 
         /*
          * Use the student's current cached readiness
@@ -702,9 +716,9 @@ class PracticeController extends Controller
          */
         $readinessValue =
             $request
-                ->user()
-                ->fresh()
-                ->predicted_readiness_pct;
+            ->user()
+            ->fresh()
+            ->predicted_readiness_pct;
 
         $currentReadiness =
             $readinessValue !== null
@@ -767,6 +781,23 @@ class PracticeController extends Controller
     }
 
     /**
+     * Store a level-up notification for the next page request.
+     *
+     * @param array{level_number: int, tier_name: string}|null $levelUp
+     */
+
+    private function flashLevelUp(
+        ?array $levelUp
+    ): void {
+        if ($levelUp !== null) {
+            session()->flash(
+                'level_up',
+                $levelUp
+            );
+        }
+    }
+
+    /**
      * Return the session-storage key used for feedback
      * belonging to one specific Practice session.
      */
@@ -774,6 +805,6 @@ class PracticeController extends Controller
         AssessmentSession $session
     ): string {
         return 'practice_feedback.'
-            .$session->session_id;
+            . $session->session_id;
     }
 }
