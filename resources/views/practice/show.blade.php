@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="text-xl font-semibold leading-tight text-gray-800">
             {{ __('Practice Mode') }}
         </h2>
     </x-slot>
@@ -16,21 +16,54 @@
          * that produced the feedback.
          */
         $displayQuestionNumber = $feedback
-            ? min($session->total_items, $session->target_length)
-            : min($session->total_items + 1, $session->target_length);
+            ? min(
+                $session->total_items,
+                $session->target_length
+            )
+            : min(
+                $session->total_items + 1,
+                $session->target_length
+            );
+
+        $progress =
+            $session->target_length > 0
+                ? min(
+                    100,
+                    (
+                        $session->total_items
+                        / $session->target_length
+                    ) * 100
+                )
+                : 0;
     @endphp
 
     <div class="py-12">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-3xl sm:px-6 lg:px-8">
 
+            {{-- Error message --}}
             @if (session('error'))
-                <div class="mb-4 p-4 bg-red-100 text-red-800 rounded-lg">
+                <div
+                    role="alert"
+                    class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800"
+                >
                     {{ session('error') }}
                 </div>
             @endif
 
-            {{-- Progress --}}
-            <div class="mb-4 flex items-center justify-between text-sm text-gray-600">
+            {{-- Status message --}}
+            @if (session('status'))
+                <div
+                    role="status"
+                    class="mb-4 rounded-lg border border-[#6D4AFF] bg-[#F0EDFF] p-4 text-[#4A2FC4]"
+                >
+                    {{ session('status') }}
+                </div>
+            @endif
+
+            {{-- Progress information --}}
+            <div
+                class="mb-4 flex items-center justify-between text-sm text-gray-600"
+            >
                 <span>
                     Question
 
@@ -51,13 +84,18 @@
             </div>
 
             {{-- Progress bar --}}
-            @php
-                $progress =
-                    $session->target_length > 0 ? min(100, ($session->total_items / $session->target_length) * 100) : 0;
-            @endphp
-
-            <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
-                <div class="bg-indigo-600 h-2 rounded-full transition-all" style="width: {{ $progress }}%"></div>
+            <div
+                class="mb-6 h-2 w-full rounded-full bg-gray-200"
+                role="progressbar"
+                aria-label="Practice progress"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="{{ round($progress) }}"
+            >
+                <div
+                    class="h-2 rounded-full bg-[#6D4AFF] transition-all"
+                    style="width: {{ $progress }}%"
+                ></div>
             </div>
 
             @if ($feedback)
@@ -67,83 +105,199 @@
                 {{-- ============================================= --}}
 
                 @php
-                    $isCorrect = (bool) $feedback['is_correct'];
+                    $isCorrect =
+                        (bool) $feedback['is_correct'];
 
-                    $correctChoice = $answeredQuestion->choices->firstWhere(
-                        'choice_id',
-                        $feedback['correct_choice_id'],
-                    );
+                    $correctChoice =
+                        $answeredQuestion
+                            ->choices
+                            ->firstWhere(
+                                'choice_id',
+                                $feedback[
+                                    'correct_choice_id'
+                                ]
+                            );
 
-                    if (!$correctChoice) {
-                        $correctChoice = $answeredQuestion->choices->firstWhere('is_correct', true);
+                    if (! $correctChoice) {
+                        $correctChoice =
+                            $answeredQuestion
+                                ->choices
+                                ->firstWhere(
+                                    'is_correct',
+                                    true
+                                );
                     }
                 @endphp
 
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-4">
-                    <div class="p-6">
+                <div
+                    class="mb-4 overflow-hidden bg-white shadow-sm sm:rounded-lg"
+                >
+                    <div class="relative p-6 pr-16">
 
-                        <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">
-                            {{ $answeredQuestion->competency->domain->domain_name }}
+                        {{-- Feedback bookmark button --}}
+                        <form
+                            method="POST"
+                            action="{{ $isBookmarked
+                                ? route(
+                                    'bookmarks.destroyQuestion',
+                                    [
+                                        'question' =>
+                                            $answeredQuestion
+                                                ->question_id,
+                                    ]
+                                )
+                                : route(
+                                    'bookmarks.store',
+                                    [
+                                        'question' =>
+                                            $answeredQuestion
+                                                ->question_id,
+                                    ]
+                                ) }}"
+                            class="absolute right-4 top-4"
+                        >
+                            @csrf
+                            @method(
+                                $isBookmarked
+                                    ? 'DELETE'
+                                    : 'PUT'
+                            )
+
+                            <input
+                                type="hidden"
+                                name="practice_session_id"
+                                value="{{ $session->session_id }}"
+                            >
+
+                            <button
+                                type="submit"
+                                aria-label="{{ $isBookmarked
+                                    ? 'Remove bookmark'
+                                    : 'Bookmark this question' }}"
+                                title="{{ $isBookmarked
+                                    ? 'Remove bookmark'
+                                    : 'Bookmark this question' }}"
+                                class="text-3xl leading-none transition
+                                    {{ $isBookmarked
+                                        ? 'text-[#6D4AFF]'
+                                        : 'text-gray-400 hover:text-[#6D4AFF]' }}"
+                            >
+                                <span aria-hidden="true">
+                                    @if ($isBookmarked)
+                                        &#9733;
+                                    @else
+                                        &#9734;
+                                    @endif
+                                </span>
+                            </button>
+                        </form>
+
+                        {{-- Question metadata --}}
+                        <div
+                            class="mb-1 text-xs uppercase tracking-wide text-[#0EA5A4]"
+                        >
+                            {{
+                                $answeredQuestion
+                                    ->competency
+                                    ->domain
+                                    ->domain_name
+                            }}
                         </div>
 
-                        <div class="text-xs text-gray-500 mb-3">
-                            {{ $answeredQuestion->competency->title }}
+                        <div class="mb-3 text-xs text-gray-500">
+                            {{
+                                $answeredQuestion
+                                    ->competency
+                                    ->title
+                            }}
                         </div>
 
-                        <div class="text-lg font-medium mb-4">
+                        <div class="mb-4 text-lg font-medium">
                             {{ $answeredQuestion->question_text }}
                         </div>
 
+                        {{-- Correct/incorrect feedback --}}
                         @if ($isCorrect)
-                            <div class="p-4 bg-green-50 border border-green-200 rounded-lg mb-4">
-                                <p class="text-green-800 font-medium">
+                            <div
+                                class="mb-4 rounded-lg border border-green-200 bg-green-50 p-4"
+                            >
+                                <p class="font-medium text-green-800">
                                     Correct
                                 </p>
 
                                 @if ($correctChoice)
-                                    <p class="text-sm text-green-700 mt-1">
+                                    <p
+                                        class="mt-1 text-sm text-green-700"
+                                    >
                                         <strong>
-                                            {{ $correctChoice->choice_letter }}.
+                                            {{
+                                                $correctChoice
+                                                    ->choice_letter
+                                            }}.
                                         </strong>
 
-                                        {{ $correctChoice->choice_text }}
+                                        {{
+                                            $correctChoice
+                                                ->choice_text
+                                        }}
                                     </p>
                                 @endif
                             </div>
                         @else
-                            <div class="p-4 bg-red-50 border border-red-200 rounded-lg mb-4">
-                                <p class="text-red-800 font-medium">
+                            <div
+                                class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4"
+                            >
+                                <p class="font-medium text-red-800">
                                     Incorrect
                                 </p>
 
                                 @if ($correctChoice)
-                                    <p class="text-sm text-red-700 mt-1">
+                                    <p
+                                        class="mt-1 text-sm text-red-700"
+                                    >
                                         Correct answer:
 
                                         <strong>
-                                            {{ $correctChoice->choice_letter }}.
+                                            {{
+                                                $correctChoice
+                                                    ->choice_letter
+                                            }}.
                                         </strong>
 
-                                        {{ $correctChoice->choice_text }}
+                                        {{
+                                            $correctChoice
+                                                ->choice_text
+                                        }}
                                     </p>
                                 @endif
                             </div>
                         @endif
 
-                        @if ($answeredQuestion->hypercorrection_rationale)
-                            <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
-                                <p class="text-sm text-blue-900">
+                        {{-- Explanation --}}
+                        @if (
+                            $answeredQuestion
+                                ->hypercorrection_rationale
+                        )
+                            <div
+                                class="mb-4 rounded-lg border border-[#0EA5A4]/30 bg-teal-50 p-4"
+                            >
+                                <p class="text-sm text-teal-900">
                                     <strong>
                                         Why:
                                     </strong>
 
-                                    {{ $answeredQuestion->hypercorrection_rationale }}
+                                    {{
+                                        $answeredQuestion
+                                            ->hypercorrection_rationale
+                                    }}
                                 </p>
                             </div>
                         @endif
 
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-
+                        {{-- Answer statistics --}}
+                        <div
+                            class="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3"
+                        >
                             <div>
                                 <div class="text-gray-500">
                                     XP earned
@@ -152,8 +306,14 @@
                                 <div class="font-semibold">
                                     +{{ $feedback['answer_xp'] }}
 
-                                    @if ($feedback['is_speed_flagged'])
-                                        <span class="block text-xs text-amber-600 mt-1">
+                                    @if (
+                                        $feedback[
+                                            'is_speed_flagged'
+                                        ]
+                                    )
+                                        <span
+                                            class="mt-1 block text-xs text-[#F0524F]"
+                                        >
                                             Speed-flagged
                                         </span>
                                     @endif
@@ -166,7 +326,14 @@
                                 </div>
 
                                 <div class="font-semibold">
-                                    {{ number_format($feedback['prior_mastery'] * 100, 1) }}%
+                                    {{
+                                        number_format(
+                                            $feedback[
+                                                'prior_mastery'
+                                            ] * 100,
+                                            1
+                                        )
+                                    }}%
                                 </div>
                             </div>
 
@@ -176,23 +343,51 @@
                                 </div>
 
                                 <div class="font-semibold">
-                                    {{ number_format($feedback['posterior_mastery'] * 100, 1) }}%
+                                    {{
+                                        number_format(
+                                            $feedback[
+                                                'posterior_mastery'
+                                            ] * 100,
+                                            1
+                                        )
+                                    }}%
                                 </div>
                             </div>
-
                         </div>
 
-                        @if ($feedback['is_speed_flagged'])
-                            <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                                <p class="text-xs text-amber-800">
+                        {{-- Speed warning --}}
+                        @if (
+                            $feedback[
+                                'is_speed_flagged'
+                            ]
+                        )
+                            <div
+                                class="mt-4 rounded-lg border border-red-200 bg-red-50 p-3"
+                            >
+                                <p class="text-xs text-red-800">
                                     This response was submitted faster
-                                    than the CitiRx minimum-time heuristic.
+                                    than the CitiRx minimum-time
+                                    heuristic.
 
                                     Response:
-                                    {{ number_format($feedback['response_seconds'], 2) }}s.
+                                    {{
+                                        number_format(
+                                            $feedback[
+                                                'response_seconds'
+                                            ],
+                                            2
+                                        )
+                                    }}s.
 
                                     Minimum:
-                                    {{ number_format($feedback['minimum_seconds'], 2) }}s.
+                                    {{
+                                        number_format(
+                                            $feedback[
+                                                'minimum_seconds'
+                                            ],
+                                            2
+                                        )
+                                    }}s.
 
                                     No answer XP was awarded, and this
                                     response is excluded from eligible
@@ -204,10 +399,17 @@
                     </div>
                 </div>
 
-                <form method="POST"
-                    action="{{ route('practice.next', [
-                        'session' => $session->session_id,
-                    ]) }}">
+                {{-- Continue to next question --}}
+                <form
+                    method="POST"
+                    action="{{ route(
+                        'practice.next',
+                        [
+                            'session' =>
+                                $session->session_id,
+                        ]
+                    ) }}"
+                >
                     @csrf
 
                     <x-primary-button>
@@ -215,64 +417,178 @@
                     </x-primary-button>
                 </form>
             @else
+
                 {{-- ============================================= --}}
                 {{-- QUESTION VIEW                                 --}}
                 {{-- ============================================= --}}
 
-                @if (!$question)
-                    <div class="bg-white rounded-lg shadow-sm p-6 text-center">
+                @if (! $question)
+                    <div
+                        class="rounded-lg bg-white p-6 text-center shadow-sm"
+                    >
                         <p class="text-gray-600">
-                            No Practice question is available right now.
+                            No Practice question is available right
+                            now.
                         </p>
 
-                        <a href="{{ route('practice.intro') }}"
-                            class="inline-block mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                        <a
+                            href="{{ route('practice.intro') }}"
+                            class="mt-4 inline-block rounded bg-[#6D4AFF] px-4 py-2 text-white transition hover:bg-[#4A2FC4]"
+                        >
                             Back to Practice Setup
                         </a>
                     </div>
                 @else
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
+                    <div
+                        class="overflow-hidden bg-white shadow-sm sm:rounded-lg"
+                    >
+                        <div class="relative p-6 pr-16">
 
-                            <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">
-                                {{ $question->competency->domain->domain_name }}
+                            {{-- Question bookmark button --}}
+                            <form
+                                method="POST"
+                                action="{{ $isBookmarked
+                                    ? route(
+                                        'bookmarks.destroyQuestion',
+                                        [
+                                            'question' =>
+                                                $question
+                                                    ->question_id,
+                                        ]
+                                    )
+                                    : route(
+                                        'bookmarks.store',
+                                        [
+                                            'question' =>
+                                                $question
+                                                    ->question_id,
+                                        ]
+                                    ) }}"
+                                class="absolute right-4 top-4"
+                            >
+                                @csrf
+                                @method(
+                                    $isBookmarked
+                                        ? 'DELETE'
+                                        : 'PUT'
+                                )
+
+                                <input
+                                    type="hidden"
+                                    name="practice_session_id"
+                                    value="{{ $session->session_id }}"
+                                >
+
+                                <button
+                                    type="submit"
+                                    aria-label="{{ $isBookmarked
+                                        ? 'Remove bookmark'
+                                        : 'Bookmark this question' }}"
+                                    title="{{ $isBookmarked
+                                        ? 'Remove bookmark'
+                                        : 'Bookmark this question' }}"
+                                    class="text-3xl leading-none transition
+                                        {{ $isBookmarked
+                                            ? 'text-[#6D4AFF]'
+                                            : 'text-gray-400 hover:text-[#6D4AFF]' }}"
+                                >
+                                    <span aria-hidden="true">
+                                        @if ($isBookmarked)
+                                            &#9733;
+                                        @else
+                                            &#9734;
+                                        @endif
+                                    </span>
+                                </button>
+                            </form>
+
+                            {{-- Question metadata --}}
+                            <div
+                                class="mb-1 text-xs uppercase tracking-wide text-[#0EA5A4]"
+                            >
+                                {{
+                                    $question
+                                        ->competency
+                                        ->domain
+                                        ->domain_name
+                                }}
                             </div>
 
-                            <div class="text-xs text-gray-500 mb-4">
-                                {{ $question->competency->title }}
+                            <div class="mb-4 text-xs text-gray-500">
+                                {{
+                                    $question
+                                        ->competency
+                                        ->title
+                                }}
                             </div>
 
-                            <div class="text-lg font-medium mb-6">
+                            <div class="mb-6 text-lg font-medium">
                                 {{ $question->question_text }}
                             </div>
 
-                            <form method="POST"
-                                action="{{ route('practice.answer', [
-                                    'session' => $session->session_id,
-                                ]) }}">
+                            {{-- Answer form --}}
+                            <form
+                                method="POST"
+                                action="{{ route(
+                                    'practice.answer',
+                                    [
+                                        'session' =>
+                                            $session->session_id,
+                                    ]
+                                ) }}"
+                            >
                                 @csrf
 
-                                <input type="hidden" name="question_id" value="{{ $question->question_id }}">
+                                <input
+                                    type="hidden"
+                                    name="question_id"
+                                    value="{{ $question->question_id }}"
+                                >
 
-                                @foreach ($question->choices as $choice)
+                                @foreach (
+                                    $question->choices
+                                    as $choice
+                                )
                                     <label
-                                        class="flex items-start p-3 mb-2 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                                        <input type="radio" name="selected_choice_id"
-                                            value="{{ $choice->choice_id }}" @checked(old('selected_choice_id') === $choice->choice_id)
-                                            class="mt-1 mr-3" required>
+                                        class="mb-2 flex cursor-pointer items-start rounded-lg border p-3 transition hover:bg-gray-50 focus-within:border-[#6D4AFF] focus-within:ring-2 focus-within:ring-[#6D4AFF]/20"
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="selected_choice_id"
+                                            value="{{ $choice->choice_id }}"
+                                            @checked(
+                                                old(
+                                                    'selected_choice_id'
+                                                )
+                                                ===
+                                                $choice->choice_id
+                                            )
+                                            class="mr-3 mt-1 text-[#6D4AFF] focus:ring-[#6D4AFF]"
+                                            required
+                                        >
 
                                         <span>
-                                            <span class="font-semibold mr-2">
-                                                {{ $choice->choice_letter }}.
+                                            <span
+                                                class="mr-2 font-semibold"
+                                            >
+                                                {{
+                                                    $choice
+                                                        ->choice_letter
+                                                }}.
                                             </span>
 
-                                            {{ $choice->choice_text }}
+                                            {{
+                                                $choice
+                                                    ->choice_text
+                                            }}
                                         </span>
                                     </label>
                                 @endforeach
 
                                 @error('selected_choice_id')
-                                    <p class="mt-2 text-sm text-red-600">
+                                    <p
+                                        class="mt-2 text-sm text-[#F0524F]"
+                                    >
                                         {{ $message }}
                                     </p>
                                 @enderror
@@ -290,7 +606,9 @@
 
             @endif
 
-            <div class="mt-6 text-center text-xs text-gray-500">
+            <div
+                class="mt-6 text-center text-xs text-gray-500"
+            >
                 Session ID:
                 {{ $session->session_id }}
             </div>
