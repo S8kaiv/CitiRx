@@ -6,9 +6,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiagnosticController;
 use App\Http\Controllers\PracticeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\ReadinessController;
 use App\Http\Controllers\RxVaultController;
-use App\Http\Controllers\ProgressController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -20,7 +20,6 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
 
@@ -45,7 +44,6 @@ Route::middleware([
     ->prefix('diagnostic')
     ->name('diagnostic.')
     ->group(function () {
-
         Route::get(
             '/',
             [DiagnosticController::class, 'intro']
@@ -93,8 +91,6 @@ Route::middleware([
         [ReadinessController::class, 'show']
     )
     ->name('readiness.show');
-
-require __DIR__ . '/auth.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -177,13 +173,11 @@ Route::middleware([
             'index',
         ]
     )
-    ->name(
-        'badges.index'
-    );
+    ->name('badges.index');
 
 /*
 |--------------------------------------------------------------------------
-| RxVault Route
+| RxVault Routes
 |--------------------------------------------------------------------------
 */
 
@@ -192,20 +186,37 @@ Route::middleware([
     'verified',
     'student',
 ])
-    ->get(
-        '/vault',
-        [
-            RxVaultController::class,
-            'index',
-        ]
-    )
-    ->name(
-        'vault.index'
-    );
+    ->prefix('vault')
+    ->name('vault.')
+    ->group(function () {
+        Route::get(
+            '/',
+            [
+                RxVaultController::class,
+                'index',
+            ]
+        )->name('index');
+
+        Route::post(
+            '/drill/mistakes',
+            [
+                RxVaultController::class,
+                'drillMistakes',
+            ]
+        )->name('drill.mistakes');
+
+        Route::post(
+            '/drill/bookmarks',
+            [
+                RxVaultController::class,
+                'drillBookmarks',
+            ]
+        )->name('drill.bookmarks');
+    });
 
 /*
 |--------------------------------------------------------------------------
-| Bookmarks Route
+| Bookmarks Actions (Storage & Updates)
 |--------------------------------------------------------------------------
 */
 
@@ -217,11 +228,6 @@ Route::middleware([
     ->prefix('bookmarks')
     ->name('bookmarks.')
     ->group(function () {
-        Route::get(
-            '/',
-            [BookmarkController::class, 'index']
-        )->name('index');
-
         Route::put(
             '/questions/{question}',
             [BookmarkController::class, 'store']
@@ -262,3 +268,5 @@ Route::middleware([
         ]
     )
     ->name('progress.index');
+
+require __DIR__ . '/auth.php';
