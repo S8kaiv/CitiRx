@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-slate-50">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-[#FAF8FF]">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,7 +12,20 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-full font-sans text-slate-900 antialiased selection:bg-primary-tint selection:text-primary">
+<body class="h-full font-sans text-slate-900 antialiased selection:bg-primary-tint selection:text-primary relative">
+
+    {{-- ============================================================ --}}
+    {{-- ATMOSPHERIC CANVAS: VIOLET AMBIENT GLOW + CLINICAL DOTS      --}}
+    {{-- ============================================================ --}}
+    <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10" aria-hidden="true">
+        <div class="absolute inset-0 opacity-[0.035]" 
+             style="background-image: radial-gradient(#4A2FC4 1.2px, transparent 1.2px); background-size: 22px 22px;">
+        </div>
+
+        <div class="absolute -top-24 right-10 h-[36rem] w-[36rem] rounded-full bg-[#6D4AFF]/14 blur-[120px]"></div>
+        <div class="absolute -bottom-24 -left-10 h-[32rem] w-[32rem] rounded-full bg-[#4A2FC4]/10 blur-[130px]"></div>
+        <div class="absolute top-1/2 left-1/3 h-[26rem] w-[26rem] rounded-full bg-[#0EA5A4]/8 blur-[140px]"></div>
+    </div>
 
     @php
         $isFocusMode = request()->routeIs('practice.show', 'practice.answer', 'diagnostic.take', 'diagnostic.answer');
@@ -33,6 +46,91 @@
         $initials = count($nameParts) >= 2
             ? strtoupper(substr($nameParts[0], 0, 1) . substr(end($nameParts), 0, 1))
             : strtoupper(substr($displayName, 0, 2));
+
+        // ========================================================
+        // COMPREHENSIVE LEVEL & TIER RESOLUTION
+        // ========================================================
+        $userLevel = $currentLevel ?? null;
+        $attrs = $authUser ? $authUser->getAttributes() : [];
+
+        // 1. Check direct relations or methods on Auth::user()
+        if (!$userLevel && $authUser) {
+            try {
+                if (isset($authUser->currentLevel) && is_object($authUser->currentLevel)) {
+                    $userLevel = $authUser->currentLevel;
+                } elseif (isset($authUser->level) && is_object($authUser->level)) {
+                    $userLevel = $authUser->level;
+                }
+            } catch (\Throwable $e) {}
+
+            if (!$userLevel) {
+                if (method_exists($authUser, 'currentLevel')) {
+                    try {
+                        $res = $authUser->currentLevel();
+                        $userLevel = ($res instanceof \Illuminate\Database\Eloquent\Relations\Relation) ? $res->first() : (is_object($res) ? $res : null);
+                    } catch (\Throwable $e) {}
+                } elseif (method_exists($authUser, 'getCurrentLevel')) {
+                    try {
+                        $userLevel = $authUser->getCurrentLevel();
+                    } catch (\Throwable $e) {}
+                } elseif (method_exists($authUser, 'level')) {
+                    try {
+                        $res = $authUser->level();
+                        $userLevel = ($res instanceof \Illuminate\Database\Eloquent\Relations\Relation) ? $res->first() : (is_object($res) ? $res : null);
+                    } catch (\Throwable $e) {}
+                }
+            }
+        }
+
+        // 2. Query Level model dynamically if not yet resolved
+        if (!$userLevel && class_exists(\App\Models\Level::class)) {
+            try {
+                $levelClass = \App\Models\Level::class;
+                $levelId = $attrs['current_level_id'] ?? $attrs['level_id'] ?? null;
+                $rawLevelNum = $attrs['current_level'] ?? $attrs['level_number'] ?? (is_numeric($attrs['level'] ?? null) ? $attrs['level'] : null);
+
+                if ($levelId) {
+                    $userLevel = $levelClass::with('tier')->find($levelId);
+                } elseif ($rawLevelNum) {
+                    $userLevel = $levelClass::with('tier')->where('level_number', $rawLevelNum)->first();
+                } elseif (isset($attrs['total_xp'])) {
+                    $allLevels = $levelClass::with('tier')->get();
+                    if ($allLevels->isNotEmpty()) {
+                        $first = $allLevels->first();
+                        $xpCol = collect(['required_xp', 'min_xp', 'threshold_xp', 'xp_required', 'xp'])
+                            ->first(fn($col) => isset($first->$col));
+                        if ($xpCol) {
+                            $userLevel = $allLevels->where($xpCol, '<=', (int)$attrs['total_xp'])->sortByDesc('level_number')->first();
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        // 3. Final Level Number & Tier Extraction
+        $levelNumber = $userLevel?->level_number
+            ?? $userLevel?->level
+            ?? $attrs['current_level']
+            ?? $attrs['level_number']
+            ?? (is_numeric($attrs['level'] ?? null) ? $attrs['level'] : null)
+            ?? 1;
+
+        $tierName = strtolower($userLevel?->tier?->tier_name ?? 'beginner');
+
+        // Dynamic styling tokens based on tier
+        $tierRingClasses = match (true) {
+            str_contains($tierName, 'master') || str_contains($tierName, 'expert') => 'ring-2 ring-primary border-primary/40 bg-primary-tint text-primary shadow-[0_0_10px_rgba(109,74,255,0.35)]',
+            str_contains($tierName, 'advanced') => 'ring-2 ring-[#0EA5A4] border-[#0EA5A4]/40 bg-[#0EA5A4]/10 text-[#0E7A79] shadow-[0_0_10px_rgba(14,165,164,0.35)]',
+            str_contains($tierName, 'intermediate') => 'ring-2 ring-[#F5A623] border-[#F5A623]/40 bg-[#F5A623]/10 text-[#B45309] shadow-[0_0_10px_rgba(245,166,35,0.3)]',
+            default => 'ring-2 ring-slate-300 border-slate-200 bg-slate-100 text-slate-700',
+        };
+
+        $levelBadgeBg = match (true) {
+            str_contains($tierName, 'master') || str_contains($tierName, 'expert') => 'bg-primary text-white',
+            str_contains($tierName, 'advanced') => 'bg-[#0EA5A4] text-white',
+            str_contains($tierName, 'intermediate') => 'bg-[#F5A623] text-white',
+            default => 'bg-slate-700 text-white',
+        };
     @endphp
 
     <div class="min-h-screen flex flex-col md:flex-row">
@@ -61,8 +159,6 @@
 
                     {{-- Navigation Rail --}}
                     <nav class="space-y-1.5 font-display text-sm font-bold">
-                        
-                        {{-- Dashboard (Visible to all roles) --}}
                         @php $active = request()->routeIs('dashboard'); @endphp
                         <a href="{{ route('dashboard') }}"
                            class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all {{ $active ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary' : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
@@ -72,10 +168,7 @@
                             <span>Dashboard</span>
                         </a>
 
-                        {{-- STUDENT EXCLUSIVE ROUTES --}}
                         @if ($authUser?->role === 'student')
-
-                            {{-- Practice Hub --}}
                             @php $active = request()->routeIs('practice.*'); @endphp
                             <a href="{{ route('practice.intro') }}"
                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all {{ $active ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary' : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
@@ -85,7 +178,6 @@
                                 <span>Practice</span>
                             </a>
 
-                            {{-- Progress Breakdown --}}
                             @php $active = request()->routeIs('progress.*'); @endphp
                             <a href="{{ route('progress.index') }}"
                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all {{ $active ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary' : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
@@ -95,7 +187,6 @@
                                 <span>Progress</span>
                             </a>
 
-                            {{-- Rx Vault --}}
                             @php $active = request()->routeIs('vault.*'); @endphp
                             <a href="{{ route('vault.index') }}"
                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all {{ $active ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary' : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
@@ -105,7 +196,6 @@
                                 <span>Rx Vault</span>
                             </a>
 
-                            {{-- Bookmarks --}}
                             @php $active = request()->routeIs('bookmarks.*'); @endphp
                             <a href="{{ route('bookmarks.index') }}"
                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all {{ $active ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary' : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
@@ -115,7 +205,6 @@
                                 <span>Bookmarks</span>
                             </a>
 
-                            {{-- Readiness Report --}}
                             @php $active = request()->routeIs('readiness.*'); @endphp
                             <a href="{{ route('readiness.show') }}"
                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all {{ $active ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary' : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
@@ -125,7 +214,6 @@
                                 <span>Readiness</span>
                             </a>
 
-                            {{-- Badges --}}
                             @php $active = request()->routeIs('badges.*'); @endphp
                             <a href="{{ route('badges.index') }}"
                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all {{ $active ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary' : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
@@ -135,25 +223,32 @@
                                 <span>Badges</span>
                             </a>
                         @endif
-
                     </nav>
                 </div>
 
-                {{-- User Profile Card --}}
+                {{-- User Profile Card with Dynamic Tier Avatar Ring --}}
                 <div class="border-t border-slate-100 pt-3 px-1">
                     <div class="flex items-center justify-between gap-2">
                         <a href="{{ route('profile.edit') }}" 
                            title="Account Settings"
                            class="group flex flex-1 items-center gap-2.5 rounded-xl p-1.5 transition hover:bg-slate-100/80 min-w-0">
-                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-b-4 border-primary/20 bg-primary-tint font-display text-xs font-extrabold text-primary shadow-sm">
-                                {{ $initials }}
+                            
+                            {{-- DYNAMIC TIER-BASED AVATAR RING & LEVEL BADGE --}}
+                            <div class="relative shrink-0">
+                                <div class="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-b-4 font-display text-xs font-black transition-all {{ $tierRingClasses }}">
+                                    {{ $initials }}
+                                </div>
+                                <span class="absolute -bottom-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full font-mono text-[9px] font-black ring-2 ring-white shadow-xs {{ $levelBadgeBg }}">
+                                    {{ $levelNumber }}
+                                </span>
                             </div>
+
                             <div class="min-w-0 flex-1 text-left">
                                 <span class="block font-display text-xs font-extrabold text-slate-900 truncate group-hover:text-primary transition">
                                     {{ $displayName }}
                                 </span>
                                 <span class="block text-[10px] font-semibold text-muted-ink capitalize truncate">
-                                    {{ $authUser->role ?? 'Reviewee' }}
+                                    {{ $tierName !== 'beginner' ? ucfirst($tierName) : ($authUser->role ?? 'Reviewee') }}
                                 </span>
                             </div>
                         </a>
@@ -173,7 +268,7 @@
             </aside>
 
             {{-- MOBILE BOTTOM NAVIGATION BAR --}}
-            <nav class="fixed bottom-0 inset-x-0 z-40 flex md:hidden items-center justify-around border-t-2 border-slate-200 bg-white py-2 px-2 shadow-lg font-display text-[10px] font-bold">
+            <nav class="fixed bottom-0 inset-x-0 z-40 flex md:hidden items-center justify-around border-t-2 border-slate-200 bg-white/95 backdrop-blur-md py-2 px-2 shadow-lg font-display text-[10px] font-bold">
                 <a href="{{ route('dashboard') }}" class="flex flex-col items-center gap-1 {{ request()->routeIs('dashboard') ? 'text-primary' : 'text-slate-500' }}">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
@@ -223,7 +318,7 @@
         {{-- MAIN CONTENT AREA --}}
         <div class="flex-1 flex flex-col min-w-0 {{ !$isFocusMode ? 'md:pl-64 pb-16 md:pb-0' : '' }}">
             @isset($header)
-                <header class="border-b-2 border-slate-200/80 bg-white/80 backdrop-blur-sm sticky top-0 z-20">
+                <header class="border-b-2 border-slate-200/80 bg-white/70 backdrop-blur-md sticky top-0 z-20">
                     <div class="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
