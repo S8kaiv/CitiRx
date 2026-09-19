@@ -20,7 +20,6 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
 
@@ -45,7 +44,6 @@ Route::middleware([
     ->prefix('diagnostic')
     ->name('diagnostic.')
     ->group(function () {
-
         Route::get(
             '/',
             [DiagnosticController::class, 'intro']
@@ -93,25 +91,6 @@ Route::middleware([
         [ReadinessController::class, 'show']
     )
     ->name('readiness.show');
-
-/*
-|--------------------------------------------------------------------------
-| Progress Route
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware([
-    'auth',
-    'verified',
-    'student',
-])
-    ->get(
-        '/progress',
-        [ProgressController::class, 'index']
-    )
-    ->name('progress.index');
-
-require __DIR__.'/auth.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -194,9 +173,7 @@ Route::middleware([
             'index',
         ]
     )
-    ->name(
-        'badges.index'
-    );
+    ->name('badges.index');
 
 /*
 |--------------------------------------------------------------------------
@@ -216,9 +193,7 @@ Route::middleware([
             'index',
         ]
     )
-    ->name(
-        'vault.index'
-    );
+    ->name('vault.index');
 
 /*
 |--------------------------------------------------------------------------
@@ -259,3 +234,25 @@ Route::middleware([
             [BookmarkController::class, 'destroy']
         )->name('destroy');
     });
+
+/*
+|--------------------------------------------------------------------------
+| Progress Route
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'verified',
+    'student',
+])
+    ->get(
+        '/progress',
+        [
+            ProgressController::class,
+            'index',
+        ]
+    )
+    ->name('progress.index');
+
+require __DIR__ . '/auth.php';

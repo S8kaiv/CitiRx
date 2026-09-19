@@ -39,7 +39,7 @@
     </x-slot>
 
     @php
-        // Readiness badge styles
+        // Readiness badge styles with CitiRx design tokens
         $readinessStyles = match ($readinessBand ?? null) {
             'board_ready' => ['label' => 'Board Ready',           'bg' => 'bg-strong-tint',   'text' => 'text-strong-ink',   'border' => 'border-[#22C55E]/40'],
             'approaching' => ['label' => 'Approaching Readiness', 'bg' => 'bg-clinical-tint', 'text' => 'text-clinical-ink', 'border' => 'border-[#0EA5A4]/40'],
@@ -211,7 +211,7 @@
                 {{-- SIDEBAR: Level & Readiness Widgets --}}
                 <aside class="space-y-6">
 
-                    {{-- Level & Progression Widget (Real Database Relations) --}}
+                    {{-- Level & Progression Widget --}}
                     <section class="rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">

@@ -1,12 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-display text-xl font-bold text-slate-900 leading-tight">
+            <h2 class="font-display text-xl font-bold leading-tight text-slate-900">
                 {{ __('Practice Session') }}
             </h2>
 
             <a href="{{ route('dashboard') }}" 
-               class="font-display text-xs font-bold text-muted-ink hover:text-primary transition">
+               class="font-display text-xs font-bold text-muted-ink transition hover:text-primary">
                 Exit to Dashboard
             </a>
         </div>
@@ -22,12 +22,12 @@
             : 0;
     @endphp
 
-    <div class="pt-8 pb-16 font-sans text-slate-900 antialiased">
-        <div class="max-w-2xl mx-auto px-4 sm:px-6">
+    <div class="pt-8 pb-16 font-sans antialiased text-slate-900">
+        <div class="max-w-2xl px-4 mx-auto sm:px-6">
 
             {{-- Status message --}}
             @if (session('status'))
-                <div role="status" class="mb-5 flex items-center gap-3 rounded-2xl border-2 border-b-4 border-primary/30 bg-primary-tint/60 p-4 font-display text-xs font-bold text-primary shadow-sm">
+                <div role="status" class="flex items-center gap-3 p-4 mb-5 border-2 border-b-4 shadow-sm rounded-2xl border-primary/30 bg-primary-tint/60 font-display text-xs font-bold text-primary">
                     <span class="text-base">ℹ️</span>
                     <span>{{ session('status') }}</span>
                 </div>
@@ -35,15 +35,13 @@
 
             {{-- Error message --}}
             @if (session('error'))
-                <div role="alert" class="mb-5 rounded-2xl border-2 border-b-4 border-weak/40 bg-weak-tint p-4 text-sm font-medium text-weak-ink">
+                <div role="alert" class="p-4 mb-5 text-sm font-medium border-2 border-b-4 rounded-2xl border-weak/40 bg-weak-tint text-weak-ink">
                     {{ session('error') }}
                 </div>
             @endif
 
             {{-- Level Up Notification Banner --}}
-            <div class="mb-5">
-                <x-level-up-alert />
-            </div>
+            <x-level-up-alert />
 
             {{-- Progress Header & Bar --}}
             <div class="mb-6 space-y-2">
@@ -62,7 +60,6 @@
                      role="progressbar"
                      aria-label="Practice progress"
                      aria-valuemin="0"
-                     aria-valuemax="100"
                      aria-valuemax="100"
                      aria-valuenow="{{ round($progress) }}">
                     <div class="h-full rounded-full bg-primary transition-all duration-300"
@@ -85,14 +82,14 @@
                     ) ?? $answeredQuestion->choices->firstWhere('is_correct', true);
                 @endphp
 
-                <div class="relative overflow-hidden rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm sm:p-8 space-y-6">
+                <div class="relative p-6 bg-white border-2 border-b-4 shadow-sm overflow-hidden rounded-2xl border-slate-200 sm:p-8 space-y-6">
                     
                     {{-- Feedback Bookmark Button --}}
                     <form method="POST"
                           action="{{ $isBookmarked
                               ? route('bookmarks.destroyQuestion', ['question' => $answeredQuestion->question_id])
                               : route('bookmarks.store', ['question' => $answeredQuestion->question_id]) }}"
-                          class="absolute right-6 top-6 z-10">
+                          class="absolute z-10 right-6 top-6">
                         @csrf
                         @method($isBookmarked ? 'DELETE' : 'PUT')
                         <input type="hidden" name="practice_session_id" value="{{ $session->session_id }}">
@@ -110,21 +107,21 @@
                         <span class="inline-flex items-center rounded-lg bg-clinical-tint px-2.5 py-1 font-display text-xs font-bold text-clinical-ink">
                             {{ $answeredQuestion->competency->domain->domain_name }}
                         </span>
-                        <span class="text-slate-300 font-bold">•</span>
+                        <span class="font-bold text-slate-300">•</span>
                         <span class="text-xs font-semibold text-muted-ink">
                             {{ $answeredQuestion->competency->title }}
                         </span>
                     </div>
 
                     {{-- Question Text --}}
-                    <div class="font-sans text-base font-semibold leading-relaxed text-slate-900 sm:text-lg">
+                    <div class="text-base font-semibold leading-relaxed font-sans text-slate-900 sm:text-lg">
                         {{ $answeredQuestion->question_text }}
                     </div>
 
                     {{-- Outcome Banner --}}
                     @if ($isCorrect)
-                        <div class="rounded-2xl border-2 border-b-4 border-strong/40 bg-strong-tint p-4 sm:p-5">
-                            <div class="flex items-center gap-2 font-display text-base font-bold text-strong-ink sm:text-lg">
+                        <div class="p-4 border-2 border-b-4 rounded-2xl border-strong/40 bg-strong-tint sm:p-5">
+                            <div class="flex items-center gap-2 text-base font-bold font-display text-strong-ink sm:text-lg">
                                 <svg class="h-5 w-5 text-strong shrink-0" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
                                 </svg>
@@ -138,8 +135,8 @@
                             @endif
                         </div>
                     @else
-                        <div class="rounded-2xl border-2 border-b-4 border-weak/40 bg-weak-tint p-4 sm:p-5">
-                            <div class="flex items-center gap-2 font-display text-base font-bold text-weak-ink sm:text-lg">
+                        <div class="p-4 border-2 border-b-4 rounded-2xl border-weak/40 bg-weak-tint sm:p-5">
+                            <div class="flex items-center gap-2 text-base font-bold font-display text-weak-ink sm:text-lg">
                                 <svg class="h-5 w-5 text-weak shrink-0" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
                                 </svg>
@@ -156,7 +153,7 @@
 
                     {{-- Clinical Rationale --}}
                     @if ($answeredQuestion->hypercorrection_rationale)
-                        <div class="rounded-2xl border border-clinical/20 bg-clinical-tint/40 p-4 text-sm leading-relaxed text-slate-800">
+                        <div class="p-4 text-sm leading-relaxed border rounded-2xl border-clinical/20 bg-clinical-tint/40 text-slate-800">
                             <span class="block font-display text-xs font-bold uppercase tracking-wider text-clinical-ink mb-1">
                                 Clinical Rationale
                             </span>
@@ -166,19 +163,19 @@
 
                     {{-- BKT & XP Telemetry Strip --}}
                     <div class="grid grid-cols-3 gap-3 pt-2">
-                        <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-center">
+                        <div class="p-3 text-center border rounded-xl border-slate-200 bg-slate-50/70">
                             <span class="block text-[11px] font-bold uppercase tracking-wider text-muted-ink">XP Earned</span>
-                            <span class="font-display text-lg font-bold text-gold-ink">+{{ $feedback['answer_xp'] }}</span>
+                            <span class="text-lg font-bold font-display text-gold-ink">+{{ $feedback['answer_xp'] }}</span>
                         </div>
 
-                        <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-center">
+                        <div class="p-3 text-center border rounded-xl border-slate-200 bg-slate-50/70">
                             <span class="block text-[11px] font-bold uppercase tracking-wider text-muted-ink">Prior Mastery</span>
-                            <span class="font-display text-lg font-bold text-slate-800">{{ number_format($feedback['prior_mastery'] * 100, 1) }}%</span>
+                            <span class="text-lg font-bold font-display text-slate-800">{{ number_format($feedback['prior_mastery'] * 100, 1) }}%</span>
                         </div>
 
-                        <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-center">
+                        <div class="p-3 text-center border rounded-xl border-slate-200 bg-slate-50/70">
                             <span class="block text-[11px] font-bold uppercase tracking-wider text-muted-ink">Updated Mastery</span>
-                            <span class="font-display text-lg font-bold text-clinical-ink">{{ number_format($feedback['posterior_mastery'] * 100, 1) }}%</span>
+                            <span class="text-lg font-bold font-display text-clinical-ink">{{ number_format($feedback['posterior_mastery'] * 100, 1) }}%</span>
                         </div>
                     </div>
 
@@ -210,8 +207,8 @@
                 {{-- ============================================= --}}
 
                 @if (!$question)
-                    <div class="rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-8 text-center shadow-sm">
-                        <p class="text-slate-600 font-medium">
+                    <div class="p-8 text-center bg-white border-2 border-b-4 shadow-sm rounded-2xl border-slate-200">
+                        <p class="font-medium text-slate-600">
                             No Practice question is available right now.
                         </p>
                         <div class="mt-5">
@@ -223,14 +220,14 @@
                         </div>
                     </div>
                 @else
-                    <div class="relative overflow-hidden rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                    <div class="relative p-6 bg-white border-2 border-b-4 shadow-sm overflow-hidden rounded-2xl border-slate-200 sm:p-8">
                         
                         {{-- Question Bookmark Button --}}
                         <form method="POST"
                               action="{{ $isBookmarked
                                   ? route('bookmarks.destroyQuestion', ['question' => $question->question_id])
                                   : route('bookmarks.store', ['question' => $question->question_id]) }}"
-                              class="absolute right-6 top-6 z-10">
+                              class="absolute z-10 right-6 top-6">
                             @csrf
                             @method($isBookmarked ? 'DELETE' : 'PUT')
                             <input type="hidden" name="practice_session_id" value="{{ $session->session_id }}">
@@ -248,18 +245,18 @@
                             <span class="inline-flex items-center rounded-lg bg-clinical-tint px-2.5 py-1 font-display text-xs font-bold text-clinical-ink">
                                 {{ $question->competency->domain->domain_name }}
                             </span>
-                            <span class="text-slate-300 font-bold">•</span>
+                            <span class="font-bold text-slate-300">•</span>
                             <span class="text-xs font-semibold text-muted-ink">
                                 {{ $question->competency->title }}
                             </span>
                         </div>
 
                         {{-- Question Stem --}}
-                        <div class="mt-4 font-sans text-base font-semibold leading-relaxed text-slate-900 sm:text-lg">
+                        <div class="mt-4 text-base font-semibold leading-relaxed font-sans text-slate-900 sm:text-lg">
                             {{ $question->question_text }}
                         </div>
 
-                        {{-- Answer Options Form --}}
+                        {{-- Answer Options Form (3D Selectable Cards) --}}
                         <form method="POST"
                               action="{{ route('practice.answer', ['session' => $session->session_id]) }}"
                               class="mt-6 space-y-3">
@@ -267,7 +264,7 @@
                             <input type="hidden" name="question_id" value="{{ $question->question_id }}">
 
                             @foreach ($question->choices as $choice)
-                                <label class="group relative block cursor-pointer">
+                                <label class="relative block cursor-pointer group">
                                     <input type="radio" 
                                            name="selected_choice_id" 
                                            value="{{ $choice->choice_id }}" 
@@ -276,11 +273,11 @@
                                            required>
 
                                     <div class="flex items-center gap-3.5 rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-3.5 sm:p-4 transition-all hover:border-slate-300 hover:bg-slate-50/80 peer-checked:border-primary peer-checked:border-b-primary-lip peer-checked:bg-primary-tint/30">
-                                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border-2 border-slate-200 font-display text-sm font-bold text-slate-600 transition group-hover:border-slate-300 peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white">
+                                        <span class="flex items-center justify-center w-8 h-8 font-bold transition border-2 rounded-xl shrink-0 border-slate-200 font-display text-sm text-slate-600 group-hover:border-slate-300 peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white">
                                             {{ $choice->choice_letter }}
                                         </span>
 
-                                        <span class="font-sans text-sm font-medium leading-relaxed text-slate-800">
+                                        <span class="text-sm font-medium leading-relaxed font-sans text-slate-800">
                                             {{ $choice->choice_text }}
                                         </span>
                                     </div>

@@ -62,6 +62,10 @@ class DashboardController extends Controller
                 'bookmarkCount' => QuestionBookmark::query()
                     ->where('user_id', $user->user_id)
                     ->count(),
+                'user' => $user->loadMissing([
+                    'cohort',
+                    'level.tier',
+                ]),
             ]),
 
             default => abort(403, 'Unknown role.'),

@@ -46,7 +46,7 @@
             {{-- Level Up Notification Banner --}}
             <x-level-up-alert />
 
-            {{-- Status Alert Message (From Teammate) --}}
+            {{-- Status Alert Message --}}
             @if (session('status'))
                 <div role="status" class="flex items-center gap-3 rounded-2xl border-2 border-b-4 border-primary/30 bg-primary-tint/60 p-4 font-display text-xs font-bold text-primary shadow-sm">
                     <span class="text-base">ℹ️</span>

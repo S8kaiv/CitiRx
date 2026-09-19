@@ -35,13 +35,13 @@ class PracticeService
     private const XP_COMPLETION_BONUS = 20;
 
     private const REASON_CORRECT =
-        'Correct practice answer';
+    'Correct practice answer';
 
     private const REASON_ACCURACY_BONUS =
-        'Practice accuracy bonus';
+    'Practice accuracy bonus';
 
     private const REASON_COMPLETION_BONUS =
-        'Practice completion bonus';
+    'Practice completion bonus';
 
     private const ACCURACY_BONUS_THRESHOLD = 0.80;
 
@@ -66,6 +66,7 @@ class PracticeService
         protected ReadinessService $readiness,
         protected BadgeService $badges,
         protected RxVaultService $rxVault,
+        protected LevelService $levels,
     ) {}
 
     // =============================================================
@@ -84,8 +85,8 @@ class PracticeService
         )) {
             throw new InvalidArgumentException(
                 'Practice length must be one of: '
-                    .implode(', ', self::ALLOWED_LENGTHS)
-                    .'.'
+                    . implode(', ', self::ALLOWED_LENGTHS)
+                    . '.'
             );
         }
 
@@ -685,6 +686,20 @@ class PracticeService
                 );
             }
 
+            /*
+            * Sync after all XP for this answer has been recorded.
+            *
+            * targetReached also covers badge XP that may have been
+            * awarded using a separately loaded User model.
+            */
+
+            $levelUp = (
+                $sessionXp > 0
+                || $targetReached
+            )
+                ? $this->levels->sync($user)
+                : null;
+
             return [
                 'is_correct' => $isCorrect,
 
@@ -714,6 +729,8 @@ class PracticeService
                 'response_seconds' => $responseSeconds,
 
                 'minimum_seconds' => $minimumSeconds,
+
+                'level_up' => $levelUp,
             ];
         });
     }
@@ -752,6 +769,7 @@ class PracticeService
                     'accuracy_xp' => 0,
                     'completion_xp' => 0,
                     'streak_incremented' => false,
+                    'level_up' => null,
                 ];
             }
 
@@ -836,6 +854,9 @@ class PracticeService
                 $user
             );
 
+            $bonuses['level_up'] =
+                $this->levels->sync($user);
+
             return $bonuses;
         });
     }
@@ -868,11 +889,11 @@ class PracticeService
 
         $eligibleCorrect =
             (clone $eligible)
-                ->where(
-                    'is_correct',
-                    true
-                )
-                ->count();
+            ->where(
+                'is_correct',
+                true
+            )
+            ->count();
 
         $accuracy =
             $eligibleCount > 0
@@ -1034,7 +1055,7 @@ class PracticeService
 
         if (
             $user->last_active_date
-                ?->toDateString()
+            ?->toDateString()
             === $today
         ) {
             /*
@@ -1045,12 +1066,12 @@ class PracticeService
 
         $yesterday =
             now()
-                ->subDay()
-                ->toDateString();
+            ->subDay()
+            ->toDateString();
 
         if (
             $user->last_active_date
-                ?->toDateString()
+            ?->toDateString()
             === $yesterday
         ) {
             $user->streak_count += 1;
@@ -1152,11 +1173,11 @@ class PracticeService
     ): float {
         $visibleText =
             $question->question_text
-            .' '
-            .$question
-                ->choices
-                ->pluck('choice_text')
-                ->implode(' ');
+            . ' '
+            . $question
+            ->choices
+            ->pluck('choice_text')
+            ->implode(' ');
 
         $wordCount =
             str_word_count(
@@ -1236,16 +1257,16 @@ class PracticeService
 
         $recentIds =
             ResponseTelemetryLog::query()
-                ->where(
-                    'user_id',
-                    $user->user_id
-                )
-                ->orderByDesc('created_at')
-                ->limit(
-                    self::RECENT_EXCLUSION_LIMIT
-                )
-                ->pluck('question_id')
-                ->all();
+            ->where(
+                'user_id',
+                $user->user_id
+            )
+            ->orderByDesc('created_at')
+            ->limit(
+                self::RECENT_EXCLUSION_LIMIT
+            )
+            ->pluck('question_id')
+            ->all();
 
         $recentSet =
             array_flip(
@@ -1258,19 +1279,19 @@ class PracticeService
 
         $masteries =
             UserKnowledgeState::query()
-                ->where(
-                    'user_id',
-                    $user->user_id
-                )
-                ->whereIn(
-                    'competency_id',
-                    $competencies
-                        ->pluck('competency_id')
-                )
-                ->pluck(
-                    'current_mastery_p_l',
-                    'competency_id'
-                );
+            ->where(
+                'user_id',
+                $user->user_id
+            )
+            ->whereIn(
+                'competency_id',
+                $competencies
+                    ->pluck('competency_id')
+            )
+            ->pluck(
+                'current_mastery_p_l',
+                'competency_id'
+            );
 
         // ---------------------------------------------------------
         // TIER 1
@@ -1308,7 +1329,7 @@ class PracticeService
             $this->pickFromTier(
                 $competencies,
                 $masteries,
-                fn (Question $question) => ! isset(
+                fn(Question $question) => ! isset(
                     $servedSet[$question->question_id]
                 )
             );
@@ -1324,7 +1345,7 @@ class PracticeService
         return $this->pickFromTier(
             $competencies,
             $masteries,
-            fn (Question $question) => true
+            fn(Question $question) => true
         );
     }
 

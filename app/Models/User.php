@@ -51,6 +51,7 @@ class User extends Authenticatable
         'is_diagnostic_completed'  => 'boolean',
         'predicted_readiness_pct'  => 'decimal:2',
         'total_xp'                 => 'integer',
+        'current_level'             => 'integer',
         'streak_count'             => 'integer',
         'last_active_date'         => 'date',
         'deleted_at'               => 'datetime',

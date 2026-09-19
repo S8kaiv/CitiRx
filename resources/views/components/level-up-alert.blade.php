@@ -1,18 +1,34 @@
-@if (session('level_up') || session('level_up_alert'))
-    @php
-        $levelData = session('level_up') ?? session('level_up_alert');
-    @endphp
+@props([
+    'levelUp' => session('level_up'),
+])
 
-    <div role="alert" class="flex items-center gap-3.5 rounded-2xl border-2 border-b-4 border-[#F5A623]/40 bg-gold-tint p-4 font-display text-gold-ink shadow-sm">
-        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-xs">
-            🎉
-        </div>
-        <div class="min-w-0 flex-1">
-            <h4 class="text-sm font-extrabold tracking-tight text-slate-900">
-                Level Up!
-            </h4>
-            <p class="text-xs font-semibold text-slate-700">
-                {{ is_array($levelData) ? ($levelData['message'] ?? 'Congratulations on advancing to the next level!') : $levelData }}
+@if (
+    is_array($levelUp)
+    && isset(
+        $levelUp['level_number'],
+        $levelUp['tier_name']
+    )
+)
+    <div
+        role="status"
+        class="mb-4 flex items-center gap-3.5 rounded-2xl border-2 border-b-4 border-[#4A2FC4] bg-[#6D4AFF] p-4 text-white shadow-sm"
+    >
+        <span
+            class="text-3xl shrink-0"
+            aria-hidden="true"
+        >
+            &#127881;
+        </span>
+
+        <div>
+            <p class="font-display text-xs font-bold uppercase tracking-wider text-white/85">
+                Level Up
+            </p>
+
+            <p class="font-display text-lg font-extrabold text-white">
+                Level {{ $levelUp['level_number'] }}
+                &mdash;
+                {{ $levelUp['tier_name'] }}
             </p>
         </div>
     </div>
