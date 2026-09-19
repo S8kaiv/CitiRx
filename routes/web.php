@@ -177,7 +177,7 @@ Route::middleware([
 
 /*
 |--------------------------------------------------------------------------
-| RxVault Route
+| RxVault Routes
 |--------------------------------------------------------------------------
 */
 
@@ -186,18 +186,37 @@ Route::middleware([
     'verified',
     'student',
 ])
-    ->get(
-        '/vault',
-        [
-            RxVaultController::class,
-            'index',
-        ]
-    )
-    ->name('vault.index');
+    ->prefix('vault')
+    ->name('vault.')
+    ->group(function () {
+        Route::get(
+            '/',
+            [
+                RxVaultController::class,
+                'index',
+            ]
+        )->name('index');
+
+        Route::post(
+            '/drill/mistakes',
+            [
+                RxVaultController::class,
+                'drillMistakes',
+            ]
+        )->name('drill.mistakes');
+
+        Route::post(
+            '/drill/bookmarks',
+            [
+                RxVaultController::class,
+                'drillBookmarks',
+            ]
+        )->name('drill.bookmarks');
+    });
 
 /*
 |--------------------------------------------------------------------------
-| Bookmarks Route
+| Bookmarks Actions (Storage & Updates)
 |--------------------------------------------------------------------------
 */
 
@@ -209,11 +228,6 @@ Route::middleware([
     ->prefix('bookmarks')
     ->name('bookmarks.')
     ->group(function () {
-        Route::get(
-            '/',
-            [BookmarkController::class, 'index']
-        )->name('index');
-
         Route::put(
             '/questions/{question}',
             [BookmarkController::class, 'store']

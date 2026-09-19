@@ -176,7 +176,7 @@
                                 </p>
                             </div>
                             <div class="mt-4">
-                                <a href="{{ route('bookmarks.index') }}"
+                                <a href="{{ route('vault.index', ['tab' => 'bookmarks']) }}"
                                    style="--lip: #CBD5E1;"
                                    class="btn-press block w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-1.5 text-center font-display text-[11px] font-extrabold uppercase tracking-wider text-slate-700 hover:bg-slate-100">
                                     Bookmarks
