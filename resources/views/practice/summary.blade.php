@@ -43,6 +43,9 @@
     <div class="pt-6 pb-12 font-sans text-slate-900 antialiased">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-4">
 
+            {{-- Level Up Notification Banner --}}
+            <x-level-up-alert />
+
             {{-- Status Alert Message (From Teammate) --}}
             @if (session('status'))
                 <div role="status" class="flex items-center gap-3 rounded-2xl border-2 border-b-4 border-primary/30 bg-primary-tint/60 p-4 font-display text-xs font-bold text-primary shadow-sm">
@@ -169,7 +172,7 @@
 
             </div>
 
-            {{-- MIDDLE ROW: LAST QUESTION & BOOKMARK REMEDIATION (Teammate's feature in 3D Card) --}}
+            {{-- MIDDLE ROW: LAST QUESTION & BOOKMARK REMEDIATION --}}
             @if ($lastQuestion)
                 <div class="relative overflow-hidden rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-sm">
                     {{-- Star / Bookmark Form --}}
@@ -200,7 +203,7 @@
                         </p>
 
                         <p class="mt-2 text-xs text-muted-ink">
-                            Star this question to save it directly to your <strong>Rx Vault</strong> for targeted review.
+                            Star this question to save it to your <strong>Bookmarks</strong> for later review.
                         </p>
                     </div>
                 </div>

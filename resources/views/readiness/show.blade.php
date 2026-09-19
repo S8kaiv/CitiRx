@@ -59,14 +59,14 @@
         $scoreRatio = min(1, max(0, $totalReadiness / 100));
         $ringOffset = $circumference * (1 - $scoreRatio);
 
-        // Benchmark delta (PRC passing benchmark is typically 75.0%)
-        $passingThreshold = 75.0;
-        $pointsNeeded = max(0, $passingThreshold - $totalReadiness);
+        // CitiRx board-ready display threshold
+        $boardReadyThreshold = 75.0;
+        $pointsNeeded = max(0, $boardReadyThreshold - $totalReadiness);
 
         // Domains count & weakest domain
         $domains = collect($breakdown['domains']);
         $weakestDomain = $domains->sortBy('mastery')->first();
-        $strongDomainsCount = $domains->filter(fn($d) => ($d['mastery'] * 100) >= 75)->count();
+        $strongDomainsCount = $domains->filter(fn($d) => ($d['mastery'] * 100) >= $boardReadyThreshold)->count();
     @endphp
 
     <div class="pt-6 pb-16 font-sans text-slate-900 antialiased">
@@ -122,19 +122,19 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
                             <div class="rounded-xl border border-primary/20 bg-white/90 p-3 shadow-sm">
                                 <span class="block font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
-                                    PRC Target
+                                    Board Ready Target
                                 </span>
                                 <span class="font-display text-lg font-bold text-slate-900">
-                                    {{ number_format($passingThreshold, 0) }}%
+                                    {{ number_format($boardReadyThreshold, 0) }}%
                                 </span>
                             </div>
 
                             <div class="rounded-xl border border-primary/20 bg-white/90 p-3 shadow-sm">
-                                <span class="block font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                                <span class="block font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink" title="Points needed to reach the CitiRx Board Ready category">
                                     Points to Target
                                 </span>
                                 <span class="font-display text-lg font-bold {{ $pointsNeeded > 0 ? 'text-weak-ink' : 'text-strong-ink' }}">
-                                    {{ $pointsNeeded > 0 ? '+' . number_format($pointsNeeded, 1) . '%' : 'Passing' }}
+                                    {{ $pointsNeeded > 0 ? '+' . number_format($pointsNeeded, 1) . '%' : 'Board Ready' }}
                                 </span>
                             </div>
 
@@ -147,6 +147,10 @@
                                 </span>
                             </div>
                         </div>
+
+                        <p class="text-[11px] text-muted-ink font-medium">
+                            {{ $pointsNeeded > 0 ? number_format($pointsNeeded, 1) . '% needed to reach the CitiRx Board Ready category.' : 'You have reached the CitiRx Board Ready category.' }}
+                        </p>
 
                         @if ($weakestDomain)
                             <div class="rounded-xl border border-clinical/30 bg-white/85 p-3.5 text-xs text-clinical-ink leading-relaxed shadow-sm">
@@ -181,12 +185,12 @@
                         @php
                             $domainPct = $domain['mastery'] * 100;
                             $barColor = match (true) {
-                                $domainPct >= 75 => 'bg-strong',
+                                $domainPct >= $boardReadyThreshold => 'bg-strong',
                                 $domainPct >= 50 => 'bg-clinical',
                                 default          => 'bg-weak',
                             };
                             $badgeColor = match (true) {
-                                $domainPct >= 75 => 'border-[#22C55E]/40 bg-strong-tint text-strong-ink',
+                                $domainPct >= $boardReadyThreshold => 'border-[#22C55E]/40 bg-strong-tint text-strong-ink',
                                 $domainPct >= 50 => 'border-[#0EA5A4]/40 bg-clinical-tint text-clinical-ink',
                                 default          => 'border-[#F0524F]/40 bg-weak-tint text-weak-ink',
                             };
@@ -247,10 +251,10 @@
                 </div>
             </div>
 
-            {{-- METHODOLOGY NOTE (Plain text, no unrendered LaTeX) --}}
+            {{-- METHODOLOGY NOTE --}}
             <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4 text-xs text-muted-ink leading-relaxed">
                 <span class="font-bold text-slate-700">Computation Note:</span>
-                Each domain contribution is calculated as (Domain Mastery × PRC Weight) ÷ Total PRC Weight × 100. Readiness bands are application guidance categories designed to steer adaptive study paths and do not represent official PRC licensure determinations.
+                Each domain contribution is calculated as (Domain Mastery × PRC Weight) ÷ Total PRC Weight × 100. Readiness bands are internal CitiRx guidance categories designed to steer adaptive study paths and do not represent official PRC licensure determinations.
             </div>
 
             {{-- ACTION BUTTONS --}}

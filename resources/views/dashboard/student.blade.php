@@ -10,11 +10,11 @@
                 </p>
             </div>
 
-            {{-- Tactile Streak & XP Counters --}}
+            {{-- Streak & XP Counters --}}
             <div class="flex items-center gap-2.5">
                 @php
-                    $streak = $user->streak_days ?? $user->current_streak ?? 0;
-                    $xp = $user->total_xp ?? 0;
+                    $streak = (int) ($user->streak_count ?? 0);
+                    $xp = (int) ($user->total_xp ?? 0);
                 @endphp
 
                 <div class="flex items-center gap-2 rounded-2xl border-2 border-b-4 border-[#F5A623]/30 bg-gold-tint px-4 py-2 font-display font-bold text-gold-ink shadow-sm"
@@ -39,25 +39,6 @@
     </x-slot>
 
     @php
-        $user = Auth::user();
-
-        // Tier & Rank Title
-        $totalXp       = (int) ($user->total_xp ?? 0);
-        $tierName      = $user->tier?->tier_name ?? $tierName ?? 'Bronze Tier';
-        $nextTierName  = $nextTierName ?? 'Silver Tier';
-        $tierFloorXp   = $tierFloorXp ?? 0;
-        $tierCeilingXp = $tierCeilingXp ?? 2500;
-        $tierProgress  = max(0, min(100, round((($totalXp - $tierFloorXp) / max(1, ($tierCeilingXp - $tierFloorXp))) * 100)));
-        $xpToNextTier  = max(0, $tierCeilingXp - $totalXp);
-
-        // Daily goal calculations
-        $solvedToday   = $solvedToday ?? 0;
-        $dailyGoal     = $dailyGoal ?? 20;
-        $goalRatio     = $dailyGoal > 0 ? min(1, $solvedToday / $dailyGoal) : 0;
-        $ringRadius    = 44;
-        $ringLength    = 2 * M_PI * $ringRadius;
-        $ringOffset    = $ringLength * (1 - $goalRatio);
-
         // Readiness badge styles
         $readinessStyles = match ($readinessBand ?? null) {
             'board_ready' => ['label' => 'Board Ready',           'bg' => 'bg-strong-tint',   'text' => 'text-strong-ink',   'border' => 'border-[#22C55E]/40'],
@@ -66,16 +47,6 @@
             'at_risk'     => ['label' => 'At Risk',               'bg' => 'bg-weak-tint',     'text' => 'text-weak-ink',     'border' => 'border-[#F0524F]/40'],
             default       => ['label' => 'Pending Diagnostic',    'bg' => 'bg-slate-100',     'text' => 'text-muted-ink',    'border' => 'border-slate-200'],
         };
-
-        // Fallback domain data
-        $domains = $domains ?? [
-            ['name' => 'Pharmacology',        'accuracy' => 78, 'answered' => 64],
-            ['name' => 'Pharmaceutics',       'accuracy' => 54, 'answered' => 42],
-            ['name' => 'Medicinal Chemistry', 'accuracy' => 71, 'answered' => 50],
-            ['name' => 'Clinical Pharmacy',   'accuracy' => 84, 'answered' => 75],
-        ];
-        $weakest = collect($domains)->sortBy('accuracy')->first();
-        $bookmarkCount = $bookmarkCount ?? 0;
     @endphp
 
     <div class="py-6 font-sans text-slate-900 antialiased">
@@ -141,14 +112,10 @@
                             </div>
 
                             <h2 class="mt-3 font-display text-2xl font-extrabold text-slate-900 sm:text-3xl">
-                                {{ $weakest ? $weakest['name'] : 'Adaptive Practice' }}
+                                Adaptive Practice
                             </h2>
                             <p class="mt-2 max-w-xl text-sm leading-relaxed text-slate-700">
-                                @if ($weakest)
-                                    Current accuracy is <strong class="text-slate-900">{{ $weakest['accuracy'] }}%</strong>. Targeted practice questions will reinforce this domain.
-                                @else
-                                    Continue adaptive sessions to expand your mastery scores.
-                                @endif
+                                Continue targeted practice sessions to expand your mastery scores across pharmacy domains.
                             </p>
 
                             <div class="mt-6 flex flex-wrap items-center gap-4">
@@ -166,7 +133,7 @@
                         </section>
                     @endif
 
-                    {{-- 2. RX VAULT, BOOKMARKS & ACHIEVEMENTS ROW (3-CARD QUICK ACCESS) --}}
+                    {{-- 2. RX VAULT, BOOKMARKS & ACHIEVEMENTS ROW --}}
                     <div class="grid gap-4 sm:grid-cols-3">
                         
                         {{-- Rx Vault Tile --}}
@@ -193,7 +160,7 @@
                             </div>
                         </div>
 
-                        {{-- Bookmarks Tile (From Teammate) --}}
+                        {{-- Bookmarks Tile --}}
                         <div class="flex flex-col justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
                             <div>
                                 <div class="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-b-4 border-primary/30 bg-primary-tint text-xl shadow-sm">
@@ -201,7 +168,7 @@
                                 </div>
                                 <h4 class="mt-3 font-display text-base font-bold text-slate-900">Bookmarks</h4>
                                 <p class="text-xs font-medium text-muted-ink mt-0.5">
-                                    @if ($bookmarkCount > 0)
+                                    @if (($bookmarkCount ?? 0) > 0)
                                         <span class="font-bold text-slate-900">{{ $bookmarkCount }}</span> {{ \Illuminate\Support\Str::plural('question', $bookmarkCount) }} starred.
                                     @else
                                         No starred questions.
@@ -239,75 +206,38 @@
 
                     </div>
 
-                    {{-- 3. DOMAIN MASTERY (TOS) SECTION --}}
-                    @if ($user->is_diagnostic_completed)
-                        <section>
-                            <div class="flex items-center justify-between">
-                                <h3 class="font-display text-xl font-extrabold text-slate-900">
-                                    Domain Mastery (Table of Specifications)
-                                </h3>
-                                <span class="text-xs font-semibold uppercase tracking-wider text-muted-ink">
-                                    {{ count($domains) }} Modules
-                                </span>
-                            </div>
-
-                            <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                                @foreach ($domains as $domain)
-                                    @php
-                                        $accuracy = $domain['accuracy'];
-                                        $isStrong = $accuracy >= 80;
-                                        $isWeak   = $accuracy < 60;
-                                        $barColor = $isStrong ? 'bg-strong' : ($isWeak ? 'bg-weak' : 'bg-clinical');
-                                    @endphp
-
-                                    <div class="flex flex-col justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-5 transition duration-150 hover:-translate-y-0.5 hover:border-slate-300">
-                                        <div>
-                                            <div class="flex items-start justify-between gap-2">
-                                                <span class="rounded-xl bg-clinical-tint px-2.5 py-1 font-display text-xs font-bold text-clinical-ink">
-                                                    {{ $domain['name'] }}
-                                                </span>
-
-                                                @if ($isStrong)
-                                                    <span class="rounded-full border border-[#22C55E]/30 bg-strong-tint px-2.5 py-0.5 font-display text-[11px] font-bold text-strong-ink">
-                                                        Strong
-                                                    </span>
-                                                @elseif ($isWeak)
-                                                    <span class="rounded-full border border-[#F0524F]/30 bg-weak-tint px-2.5 py-0.5 font-display text-[11px] font-bold text-weak-ink">
-                                                        Needs Review
-                                                    </span>
-                                                @endif
-                                            </div>
-
-                                            <div class="mt-4 flex items-baseline gap-2">
-                                                <span class="font-display text-3xl font-extrabold text-slate-900">{{ $accuracy }}%</span>
-                                                <span class="text-xs font-semibold text-muted-ink">{{ $domain['answered'] }} answered</span>
-                                            </div>
-
-                                            {{-- Chunky Progress Bar --}}
-                                            <div class="mt-3 h-3 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 ring-1 ring-inset ring-slate-200/60">
-                                                <div class="h-full rounded-full {{ $barColor }} transition-all duration-500"
-                                                     style="width: {{ $accuracy }}%"></div>
-                                            </div>
-                                        </div>
-
-                                        {{-- 3D Secondary Button --}}
-                                        <div class="mt-5">
-                                            <a href="{{ route('practice.intro') }}"
-                                               style="--lip: #CBD5E1;"
-                                               class="btn-press block w-full rounded-xl border-2 border-slate-200 bg-white py-2 text-center font-display text-xs font-extrabold uppercase tracking-wider text-slate-700 transition hover:bg-slate-50">
-                                                Practice Domain
-                                            </a>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </section>
-                    @endif
-
                 </div>
 
-                {{-- SIDEBAR: Gamification Widgets --}}
+                {{-- SIDEBAR: Level & Readiness Widgets --}}
                 <aside class="space-y-6">
+
+                    {{-- Level & Progression Widget (Real Database Relations) --}}
+                    <section class="rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-tint text-xl">
+                                    🛡️
+                                </div>
+                                <div>
+                                    <h3 class="font-display text-base font-extrabold text-slate-900 leading-snug">
+                                        Level {{ $user->current_level ?? 1 }}
+                                        @if ($user->level?->tier)
+                                            — {{ $user->level->tier->tier_name }}
+                                        @endif
+                                    </h3>
+                                    <p class="text-xs font-semibold text-muted-ink">
+                                        {{ number_format((int) $user->total_xp) }} Total XP
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 border-t border-slate-100 pt-4">
+                            <a href="{{ route('progress.index') }}" class="font-display text-xs font-bold text-primary hover:underline">
+                                View Full Progress Breakdown →
+                            </a>
+                        </div>
+                    </section>
 
                     {{-- Board Readiness Prediction Widget --}}
                     @if ($user->is_diagnostic_completed)
@@ -332,68 +262,6 @@
                             </div>
                         </section>
                     @endif
-
-                    {{-- Daily Goal Ring --}}
-                    <section class="rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 text-center shadow-sm">
-                        <div class="flex items-center justify-between">
-                            <h3 class="font-display text-xs font-extrabold uppercase tracking-wider text-muted-ink">
-                                Daily Goal
-                            </h3>
-                            <span class="rounded-md bg-gold-tint px-2 py-0.5 font-display text-[10px] font-bold text-gold-ink">
-                                STREAK
-                            </span>
-                        </div>
-
-                        <div class="relative mx-auto mt-4 h-32 w-32">
-                            <svg class="h-full w-full -rotate-90" viewBox="0 0 120 120">
-                                <circle cx="60" cy="60" r="{{ $ringRadius }}" fill="none" stroke="#F1F5F9" stroke-width="12"/>
-                                <circle cx="60" cy="60" r="{{ $ringRadius }}" fill="none" stroke="#F5A623" stroke-width="12"
-                                        stroke-linecap="round"
-                                        stroke-dasharray="{{ round($ringLength, 2) }}"
-                                        stroke-dashoffset="{{ round($ringOffset, 2) }}"
-                                        class="transition-all duration-500 ease-out"/>
-                            </svg>
-                            <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                <span class="font-display text-3xl font-extrabold text-slate-900">{{ $solvedToday }}</span>
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-muted-ink">of {{ $dailyGoal }}</span>
-                            </div>
-                        </div>
-
-                        <p class="mt-3 text-xs font-medium text-muted-ink">
-                            @if ($solvedToday >= $dailyGoal)
-                                🎉 Goal completed! Streak protected.
-                            @else
-                                {{ max(0, $dailyGoal - $solvedToday) }} questions left to maintain your streak.
-                            @endif
-                        </p>
-                    </section>
-
-                    {{-- Tier Widget --}}
-                    <section class="rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xl">🛡️</span>
-                                <h3 class="font-display text-base font-extrabold text-slate-900">{{ $tierName }}</h3>
-                            </div>
-                            <span class="rounded-md bg-gold-tint px-2 py-0.5 font-display text-[11px] font-bold text-gold-ink">
-                                Rank
-                            </span>
-                        </div>
-
-                        <p class="mt-1 text-xs font-medium text-muted-ink">
-                            {{ number_format($xpToNextTier) }} XP until {{ $nextTierName }}
-                        </p>
-
-                        <div class="mt-4 h-3.5 overflow-hidden rounded-full bg-slate-100 p-0.5 ring-1 ring-inset ring-slate-200/60">
-                            <div class="h-full rounded-full bg-gold transition-all duration-500"
-                                 style="width: {{ $tierProgress }}%"></div>
-                        </div>
-
-                        <div class="mt-2 flex justify-between font-display text-[11px] font-bold text-muted-ink">
-                            <span>{{ number_format($tierFloorXp) }} XP</span>
-                            <span>{{ number_format($tierCeilingXp) }} XP</span>
-                        </div>
-                    </section>
 
                 </aside>
 

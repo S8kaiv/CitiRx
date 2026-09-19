@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiagnosticController;
 use App\Http\Controllers\PracticeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\ReadinessController;
 use App\Http\Controllers\RxVaultController;
 use Illuminate\Support\Facades\Route;
@@ -92,6 +93,23 @@ Route::middleware([
         [ReadinessController::class, 'show']
     )
     ->name('readiness.show');
+
+/*
+|--------------------------------------------------------------------------
+| Progress Route
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'verified',
+    'student',
+])
+    ->get(
+        '/progress',
+        [ProgressController::class, 'index']
+    )
+    ->name('progress.index');
 
 require __DIR__.'/auth.php';
 

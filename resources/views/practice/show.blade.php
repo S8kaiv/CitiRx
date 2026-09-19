@@ -40,6 +40,11 @@
                 </div>
             @endif
 
+            {{-- Level Up Notification Banner --}}
+            <div class="mb-5">
+                <x-level-up-alert />
+            </div>
+
             {{-- Progress Header & Bar --}}
             <div class="mb-6 space-y-2">
                 <div class="flex items-center justify-between font-display text-xs font-bold uppercase tracking-wider">
@@ -57,6 +62,7 @@
                      role="progressbar"
                      aria-label="Practice progress"
                      aria-valuemin="0"
+                     aria-valuemax="100"
                      aria-valuemax="100"
                      aria-valuenow="{{ round($progress) }}">
                     <div class="h-full rounded-full bg-primary transition-all duration-300"
@@ -81,7 +87,7 @@
 
                 <div class="relative overflow-hidden rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm sm:p-8 space-y-6">
                     
-                    {{-- Feedback Bookmark / Vault Button (Teammate feature styled) --}}
+                    {{-- Feedback Bookmark Button --}}
                     <form method="POST"
                           action="{{ $isBookmarked
                               ? route('bookmarks.destroyQuestion', ['question' => $answeredQuestion->question_id])
@@ -219,7 +225,7 @@
                 @else
                     <div class="relative overflow-hidden rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                         
-                        {{-- Question Bookmark / Vault Button (Teammate feature styled) --}}
+                        {{-- Question Bookmark Button --}}
                         <form method="POST"
                               action="{{ $isBookmarked
                                   ? route('bookmarks.destroyQuestion', ['question' => $question->question_id])
@@ -253,7 +259,7 @@
                             {{ $question->question_text }}
                         </div>
 
-                        {{-- Answer Options Form (3D Selectable Cards) --}}
+                        {{-- Answer Options Form --}}
                         <form method="POST"
                               action="{{ route('practice.answer', ['session' => $session->session_id]) }}"
                               class="mt-6 space-y-3">

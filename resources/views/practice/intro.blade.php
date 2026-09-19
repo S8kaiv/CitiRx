@@ -1,63 +1,77 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-display text-xl font-bold text-slate-900 leading-tight">
-            {{ __('Practice Mode') }}
-        </h2>
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="font-display text-xl font-bold leading-tight text-slate-900">
+                    {{ __('Practice Setup') }}
+                </h2>
+                <p class="text-xs font-semibold uppercase tracking-wider text-muted-ink">
+                    Adaptive Bayesian Knowledge Tracing
+                </p>
+            </div>
+
+            <a href="{{ route('dashboard') }}" 
+               class="font-display text-xs font-bold text-muted-ink transition hover:text-primary">
+                Back to Dashboard
+            </a>
+        </div>
     </x-slot>
 
-    {{-- Added pt-10 pb-16 for breathing room below the header bar --}}
-    <div class="pt-10 pb-16 font-sans text-slate-900 antialiased">
-        <div class="max-w-xl mx-auto px-4 sm:px-6">
+    <div class="pt-8 pb-16 font-sans antialiased text-slate-900">
+        <div class="max-w-xl px-4 mx-auto space-y-6 sm:px-6">
 
-            {{-- Flash alerts --}}
+            {{-- Flash Alert Messages --}}
             @if (session('status'))
-                <div class="mb-5 rounded-xl border border-strong/30 bg-strong-tint p-3.5 text-sm font-medium text-strong-ink">
-                    {{ session('status') }}
+                <div role="status" class="flex items-center gap-3 p-4 border-2 border-b-4 shadow-sm rounded-2xl border-primary/30 bg-primary-tint/60 font-display text-xs font-bold text-primary">
+                    <span class="text-base">ℹ️</span>
+                    <span>{{ session('status') }}</span>
                 </div>
             @endif
 
             @if (session('error'))
-                <div class="mb-5 rounded-xl border border-weak/30 bg-weak-tint p-3.5 text-sm font-medium text-weak-ink">
-                    {{ session('error') }}
+                <div role="alert" class="flex items-center gap-3 p-4 border-2 border-b-4 shadow-sm rounded-2xl border-weak/40 bg-weak-tint font-display text-xs font-bold text-weak-ink">
+                    <span class="text-base">⚠️</span>
+                    <span>{{ session('error') }}</span>
                 </div>
             @endif
 
-            {{-- Centered Form Card --}}
-            <div class="overflow-hidden rounded-2xl border border-muted-line bg-white p-6 shadow-sm sm:p-8">
+            {{-- Main Setup Card --}}
+            <div class="p-6 overflow-hidden bg-white border-2 border-b-4 border-slate-200 shadow-sm rounded-2xl sm:p-8 space-y-6">
                 
-                <h3 class="font-display text-xl font-bold text-slate-900">
-                    Adaptive Practice
-                </h3>
+                {{-- Standard Intro Text --}}
+                <div>
+                    <h3 class="font-display text-lg font-bold text-slate-900">
+                        Adaptive Practice
+                    </h3>
+                    <p class="mt-1 text-xs leading-relaxed text-muted-ink sm:text-sm">
+                        Questions are weighted based on your Bayesian mastery. Competencies requiring reinforcement are prioritized, while previously mastered topics cycle in to ensure long-term retention.
+                    </p>
+                </div>
 
-                <p class="mt-2 text-sm leading-relaxed text-muted-ink">
-                    Questions are selected adaptively based on your current mastery. Competencies that need more improvement have a greater chance of appearing, while all eligible competencies remain available. Your Board Readiness Estimate is updated as you answer questions.
-                </p>
-
-                <form method="POST" action="{{ route('practice.start') }}" class="mt-6 space-y-6">
+                <form method="POST" action="{{ route('practice.start') }}" class="space-y-6">
                     @csrf
 
-                    {{-- Single-line 10 / 20 / 30 selector --}}
+                    {{-- Question Count Selector (Tactile 3D Radio Cards) --}}
                     <div>
                         <label class="block font-display text-xs font-bold uppercase tracking-wider text-slate-700 mb-2.5">
-                            Number of questions
+                            Session Length
                         </label>
 
-                        {{-- flex flex-row ensures all 3 stay on one single line --}}
-                        <div class="flex flex-row items-center gap-3 w-full">
+                        <div class="grid w-full grid-cols-3 gap-3">
                             @foreach ($allowedLengths as $length)
-                                <label class="flex-1 min-w-0 cursor-pointer">
+                                <label class="relative block cursor-pointer group">
                                     <input type="radio" 
                                            name="length" 
                                            value="{{ $length }}"
                                            @checked((int) old('length', 10) === $length)
                                            class="peer sr-only">
 
-                                    <div class="w-full text-center rounded-xl border border-muted-line bg-white py-2.5 px-2 transition-all hover:border-primary/50 peer-checked:border-primary peer-checked:bg-primary-tint peer-checked:text-primary shadow-sm">
-                                        <span class="font-display text-sm font-bold text-slate-800 peer-checked:text-primary">
+                                    <div class="flex flex-col items-center justify-center px-2 py-3 text-center transition-all bg-white border-2 border-b-4 border-slate-200 rounded-xl hover:border-slate-300 hover:bg-slate-50/80 peer-checked:border-primary peer-checked:border-b-primary-lip peer-checked:bg-primary-tint/30 shadow-xs">
+                                        <span class="font-display text-lg font-extrabold leading-none text-slate-800 peer-checked:text-primary">
                                             {{ $length }}
                                         </span>
-                                        <span class="font-sans text-xs text-muted-ink peer-checked:text-primary font-medium ml-1">
-                                            questions
+                                        <span class="font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink peer-checked:text-primary mt-1">
+                                            Items
                                         </span>
                                     </div>
                                 </label>
@@ -65,23 +79,28 @@
                         </div>
 
                         @error('length')
-                            <p class="mt-1.5 text-xs font-medium text-weak-ink">
+                            <p class="mt-2 text-xs font-semibold text-weak-ink">
                                 {{ $message }}
                             </p>
                         @enderror
                     </div>
 
-                    {{-- Focus Area Dropdown --}}
+                    {{-- Domain Filter Dropdown --}}
                     <div>
-                        <label for="domain_filter_id" class="block font-display text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-                            Focus area (optional)
-                        </label>
+                        <div class="flex items-center justify-between mb-2">
+                            <label for="domain_filter_id" class="font-display text-xs font-bold uppercase tracking-wider text-slate-700">
+                                Domain Focus (Optional)
+                            </label>
+                            <span class="font-display text-[10px] font-semibold text-muted-ink uppercase tracking-wider">
+                                Adaptive Filter
+                            </span>
+                        </div>
 
                         <select name="domain_filter_id" 
                                 id="domain_filter_id"
-                                class="block w-full rounded-xl border border-muted-line bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20">
+                                class="block w-full px-3.5 py-2.5 text-sm font-semibold transition bg-white border-2 border-slate-200 rounded-xl text-slate-900 shadow-xs focus:border-primary focus:outline-none focus:ring-0">
                             <option value="">
-                                All domains (adaptive)
+                                All Domains (Full Table of Specifications)
                             </option>
 
                             @foreach ($domains as $domain)
@@ -93,23 +112,29 @@
                         </select>
 
                         @error('domain_filter_id')
-                            <p class="mt-1.5 text-xs font-medium text-weak-ink">
+                            <p class="mt-2 text-xs font-semibold text-weak-ink">
                                 {{ $message }}
                             </p>
                         @enderror
 
-                        <p class="mt-2 text-xs text-muted-ink">
-                            For the current development question bank, All Domains is recommended for testing.
+                        <p class="mt-2 text-[11px] text-muted-ink leading-normal">
+                            Leaving this set to <strong>All Domains</strong> provides the most balanced calibration toward your Board Readiness score.
                         </p>
                     </div>
 
-                    {{-- Primary Submit Button --}}
-                    <div class="pt-2">
+                    {{-- Action Buttons --}}
+                    <div class="pt-3 space-y-3">
                         <button type="submit"
                                 style="--lip: #4A2FC4;"
-                                class="btn-press inline-flex items-center justify-center rounded-xl bg-primary px-7 py-3 font-display text-sm font-bold text-white transition hover:bg-primary/95">
-                            Start Practice
+                                class="btn-press w-full rounded-2xl bg-primary py-3.5 font-display text-sm font-bold text-white shadow-md transition hover:bg-primary/95">
+                            Start Practice Session
                         </button>
+
+                        <a href="{{ route('dashboard') }}"
+                           style="--lip: #CBD5E1;"
+                           class="block w-full py-3 text-xs font-bold text-center transition bg-white border-2 border-slate-200 btn-press rounded-2xl font-display text-slate-700 hover:bg-slate-50">
+                            Return
+                        </a>
                     </div>
 
                 </form>

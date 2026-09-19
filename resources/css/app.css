@@ -1,14 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+[x-cloak] {
+    display: none !important;
+}
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-.btn-press {
-    box-shadow: 0 4px 0 var(--lip, #4A2FC4);
-    transition: transform .08s ease, box-shadow .08s ease;
-}
-.btn-press:active {
-    transform: translateY(4px);
-    box-shadow: 0 0 0 var(--lip, #4A2FC4);
+@layer components {
+    .btn-press {
+        border-bottom-width: 4px;
+        border-bottom-color: var(--lip, rgba(0, 0, 0, 0.15));
+        transition: transform 100ms ease, border-bottom-width 100ms ease;
+    }
+    .btn-press:active {
+        transform: translateY(2px);
+        border-bottom-width: 2px;
+    }
 }
