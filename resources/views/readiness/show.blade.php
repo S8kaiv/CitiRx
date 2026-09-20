@@ -18,8 +18,8 @@
     </x-slot>
 
     @php
-        $band = $breakdown['band'];
-        $totalReadiness = (float) $breakdown['total'];
+        $band = $breakdown['band'] ?? 'developing';
+        $totalReadiness = (float) ($breakdown['total'] ?? 0);
 
         // Readiness band styles
         $bandConfig = match ($band) {
@@ -53,20 +53,18 @@
             ],
         };
 
-        // Donut Chart Math (160px box, radius 64)
+        // Donut Chart Geometry (160px container, radius 64)
         $radius = 64;
         $circumference = 2 * M_PI * $radius; // ~402.12
-        $scoreRatio = min(1, max(0, $totalReadiness / 100));
-        $ringOffset = $circumference * (1 - $scoreRatio);
 
         // CitiRx board-ready display threshold
         $boardReadyThreshold = 75.0;
         $pointsNeeded = max(0, $boardReadyThreshold - $totalReadiness);
 
         // Domains count & weakest domain
-        $domains = collect($breakdown['domains']);
+        $domains = collect($breakdown['domains'] ?? []);
         $weakestDomain = $domains->sortBy('mastery')->first();
-        $strongDomainsCount = $domains->filter(fn($d) => ($d['mastery'] * 100) >= $boardReadyThreshold)->count();
+        $strongDomainsCount = $domains->filter(fn($d) => (($d['mastery'] ?? 0) * 100) >= $boardReadyThreshold)->count();
     @endphp
 
     <div class="pt-6 pb-16 font-sans text-slate-900 antialiased">
@@ -76,25 +74,65 @@
             <div class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-gradient-to-br from-primary-tint via-[#FAF8FF] to-white p-6 sm:p-8 shadow-sm">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
                     
-                    {{-- Left: Donut Chart --}}
+                    {{-- Left: Synchronized Dial & Rolling Odometer --}}
                     <div class="md:col-span-5 flex flex-col items-center text-center border-b md:border-b-0 md:border-r border-primary/15 pb-6 md:pb-0 md:pr-6">
                         <span class="inline-flex items-center rounded-full bg-white px-3 py-1 font-display text-xs font-bold text-primary shadow-sm ring-1 ring-primary/20">
                             Estimated Readiness
                         </span>
 
-                        <div class="relative my-4" style="width: 160px; height: 160px;">
-                            <svg style="width: 160px; height: 160px;" class="-rotate-90" viewBox="0 0 160 160">
+                        <div class="relative my-4" style="width: 160px; height: 160px;"
+                             x-data="{
+                                 target: {{ (float) $totalReadiness }},
+                                 displayScore: '0.0',
+                                 circumference: {{ round($circumference, 2) }}
+                             }"
+                             x-init="
+                                 $nextTick(() => {
+                                     let start = performance.now();
+                                     let duration = 1200;
+                                     let animate = (now) => {
+                                         let progress = Math.min((now - start) / duration, 1);
+                                         let ease = 1 - Math.pow(1 - progress, 3);
+                                         let val = ease * target;
+                                         
+                                         displayScore = val.toFixed(1);
+                                         
+                                         if ($refs.ring) {
+                                             let offset = circumference - (val / 100) * circumference;
+                                             $refs.ring.setAttribute('stroke-dashoffset', offset);
+                                         }
+
+                                         if (progress < 1) {
+                                             requestAnimationFrame(animate);
+                                         } else {
+                                             displayScore = target.toFixed(1);
+                                             if ($refs.ring) {
+                                                 let finalOffset = circumference - (target / 100) * circumference;
+                                                 $refs.ring.setAttribute('stroke-dashoffset', finalOffset);
+                                             }
+                                         }
+                                     };
+                                     requestAnimationFrame(animate);
+                                 });
+                             ">
+                            
+                            <svg style="width: 160px; height: 160px;" class="-rotate-90 transform" viewBox="0 0 160 160">
+                                {{-- Background Track --}}
                                 <circle cx="80" cy="80" r="{{ $radius }}" fill="none" stroke="#FFFFFF" stroke-width="14" />
-                                <circle cx="80" cy="80" r="{{ $radius }}" fill="none" stroke="{{ $bandConfig['stroke'] }}" stroke-width="14"
+                                
+                                {{-- Animated Ring: Starts at circumference (100% empty) and fills up to score --}}
+                                <circle x-ref="ring"
+                                        cx="80" cy="80" r="{{ $radius }}" fill="none" 
+                                        stroke="{{ $bandConfig['stroke'] }}" 
+                                        stroke-width="14"
                                         stroke-linecap="round"
                                         stroke-dasharray="{{ round($circumference, 2) }}"
-                                        stroke-dashoffset="{{ round($ringOffset, 2) }}"
-                                        class="transition-all duration-1000 ease-out" />
+                                        stroke-dashoffset="{{ round($circumference, 2) }}" />
                             </svg>
 
                             <div class="absolute inset-0 flex flex-col items-center justify-center">
                                 <span class="font-display text-4xl font-extrabold text-slate-900 leading-none">
-                                    {{ number_format($totalReadiness, 1) }}<span class="text-xl font-bold text-muted-ink">%</span>
+                                    <span x-text="displayScore">0.0</span><span class="text-xl font-bold text-muted-ink">%</span>
                                 </span>
                                 <span class="font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink mt-1">
                                     Weighted TOS
@@ -120,28 +158,37 @@
 
                         {{-- Metric Chips --}}
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
-                            <div class="rounded-xl border border-primary/20 bg-white/90 p-3 shadow-sm">
-                                <span class="block font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
-                                    Board Ready Target
-                                </span>
+                            <div class="rounded-xl border border-primary/20 bg-white/90 p-3 shadow-sm flex flex-col justify-between">
+                                <div class="flex items-center gap-1.5 mb-1">
+                                    <span class="text-base">🎯</span>
+                                    <span class="block font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                                        Board Target
+                                    </span>
+                                </div>
                                 <span class="font-display text-lg font-bold text-slate-900">
                                     {{ number_format($boardReadyThreshold, 0) }}%
                                 </span>
                             </div>
 
-                            <div class="rounded-xl border border-primary/20 bg-white/90 p-3 shadow-sm">
-                                <span class="block font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink" title="Points needed to reach the CitiRx Board Ready category">
-                                    Points to Target
-                                </span>
+                            <div class="rounded-xl border border-primary/20 bg-white/90 p-3 shadow-sm flex flex-col justify-between">
+                                <div class="flex items-center gap-1.5 mb-1">
+                                    <span class="text-base">🚀</span>
+                                    <span class="block font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink" title="Points needed to reach the CitiRx Board Ready category">
+                                        Pts to Target
+                                    </span>
+                                </div>
                                 <span class="font-display text-lg font-bold {{ $pointsNeeded > 0 ? 'text-weak-ink' : 'text-strong-ink' }}">
                                     {{ $pointsNeeded > 0 ? '+' . number_format($pointsNeeded, 1) . '%' : 'Board Ready' }}
                                 </span>
                             </div>
 
-                            <div class="col-span-2 sm:col-span-1 rounded-xl border border-primary/20 bg-white/90 p-3 shadow-sm">
-                                <span class="block font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
-                                    Strong Modules
-                                </span>
+                            <div class="col-span-2 sm:col-span-1 rounded-xl border border-primary/20 bg-white/90 p-3 shadow-sm flex flex-col justify-between">
+                                <div class="flex items-center gap-1.5 mb-1">
+                                    <span class="text-base">🧠</span>
+                                    <span class="block font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                                        Strong Modules
+                                    </span>
+                                </div>
                                 <span class="font-display text-lg font-bold text-slate-900">
                                     {{ $strongDomainsCount }} of {{ count($domains) }}
                                 </span>
@@ -155,7 +202,7 @@
                         @if ($weakestDomain)
                             <div class="rounded-xl border border-clinical/30 bg-white/85 p-3.5 text-xs text-clinical-ink leading-relaxed shadow-sm">
                                 <span class="font-bold">Remediation Priority:</span>
-                                Your lowest mastery is in <strong>{{ $weakestDomain['domain_name'] }}</strong> ({{ number_format($weakestDomain['mastery'] * 100, 1) }}%). Prioritizing practice questions here provides the fastest path toward closing your readiness gap.
+                                Your lowest mastery is in <strong>{{ $weakestDomain['domain_name'] }}</strong> ({{ number_format(($weakestDomain['mastery'] ?? 0) * 100, 1) }}%). Prioritizing practice questions here provides the fastest path toward closing your readiness gap.
                             </div>
                         @endif
                     </div>
@@ -183,7 +230,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                     @foreach ($breakdown['domains'] as $domain)
                         @php
-                            $domainPct = $domain['mastery'] * 100;
+                            $domainPct = ($domain['mastery'] ?? 0) * 100;
                             $barColor = match (true) {
                                 $domainPct >= $boardReadyThreshold => 'bg-strong',
                                 $domainPct >= 50 => 'bg-clinical',
@@ -209,16 +256,19 @@
                                     </span>
                                 </div>
 
-                                {{-- Chunky Mastery Bar --}}
-                                <div class="mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-inset ring-slate-200/60">
-                                    <div class="h-full rounded-full {{ $barColor }} transition-all duration-700"
-                                         style="width: {{ min(100, $domainPct) }}%"></div>
+                                {{-- Progress bar starts at 0% and expands rightward to current score --}}
+                                <div class="mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-inset ring-slate-200/60"
+                                     x-data="{ currentWidth: '0%' }"
+                                     x-init="$nextTick(() => { setTimeout(() => currentWidth = '{{ min(100, max(0, round($domainPct, 1))) }}%', 120) })">
+                                    <div class="h-full rounded-full {{ $barColor }} transition-all duration-1000 ease-out"
+                                         style="width: 0%;"
+                                         :style="'width: ' + currentWidth"></div>
                                 </div>
 
                                 {{-- PRC Weight & Contribution Strip --}}
                                 <div class="mt-2.5 flex items-center justify-between text-[11px] text-muted-ink border-b border-slate-100 pb-2">
-                                    <span>PRC Weight: <strong class="text-slate-700">{{ number_format($domain['weight'], 1) }}%</strong></span>
-                                    <span>Contribution: <strong class="text-slate-900">+{{ number_format($domain['contribution'], 2) }}%</strong></span>
+                                    <span>PRC Weight: <strong class="text-slate-700">{{ number_format($domain['weight'] ?? 0, 1) }}%</strong></span>
+                                    <span>Contribution: <strong class="text-slate-900">+{{ number_format($domain['contribution'] ?? 0, 2) }}%</strong></span>
                                 </div>
                             </div>
 
@@ -231,7 +281,7 @@
                                 <div class="space-y-1.5">
                                     @foreach ($domain['competencies'] as $competency)
                                         @php
-                                            $compPct = $competency['mastery'] * 100;
+                                            $compPct = ($competency['mastery'] ?? 0) * 100;
                                         @endphp
 
                                         <div class="flex items-center justify-between gap-2 text-xs">

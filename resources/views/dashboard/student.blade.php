@@ -26,6 +26,7 @@
                     <span class="text-xs tracking-wider opacity-80">DAYS</span>
                 </div>
 
+                {{-- XP Counter (Clean & Static) --}}
                 <div class="flex items-center gap-2 rounded-2xl border-2 border-b-4 border-[#F5A623]/30 bg-gold-tint px-4 py-2 font-display font-bold text-gold-ink shadow-sm"
                      title="Total experience points">
                     <svg class="h-5 w-5 text-gold" viewBox="0 0 24 24" fill="currentColor">
@@ -41,11 +42,11 @@
     @php
         // Readiness badge styles with CitiRx design tokens
         $readinessStyles = match ($readinessBand ?? null) {
-            'board_ready' => ['label' => 'Board Ready',           'bg' => 'bg-strong-tint',   'text' => 'text-strong-ink',   'border' => 'border-[#22C55E]/40'],
-            'approaching' => ['label' => 'Approaching Readiness', 'bg' => 'bg-clinical-tint', 'text' => 'text-clinical-ink', 'border' => 'border-[#0EA5A4]/40'],
-            'developing'  => ['label' => 'Developing',            'bg' => 'bg-gold-tint',     'text' => 'text-gold-ink',     'border' => 'border-[#F5A623]/40'],
-            'at_risk'     => ['label' => 'At Risk',               'bg' => 'bg-weak-tint',     'text' => 'text-weak-ink',     'border' => 'border-[#F0524F]/40'],
-            default       => ['label' => 'Pending Diagnostic',    'bg' => 'bg-slate-100',     'text' => 'text-muted-ink',    'border' => 'border-slate-200'],
+            'board_ready' => ['label' => 'Board Ready',           'bg' => 'bg-strong-tint',   'text' => 'text-strong-ink',   'border' => 'border-[#22C55E]/40', 'hex' => '#22C55E'],
+            'approaching' => ['label' => 'Approaching Readiness', 'bg' => 'bg-clinical-tint', 'text' => 'text-clinical-ink', 'border' => 'border-[#0EA5A4]/40', 'hex' => '#0EA5A4'],
+            'developing'  => ['label' => 'Developing',            'bg' => 'bg-gold-tint',     'text' => 'text-gold-ink',     'border' => 'border-[#F5A623]/40', 'hex' => '#F5A623'],
+            'at_risk'     => ['label' => 'At Risk',               'bg' => 'bg-weak-tint',     'text' => 'text-weak-ink',     'border' => 'border-[#F0524F]/40', 'hex' => '#F0524F'],
+            default       => ['label' => 'Pending Diagnostic',    'bg' => 'bg-slate-100',     'text' => 'text-muted-ink',    'border' => 'border-slate-200',    'hex' => '#94A3B8'],
         };
     @endphp
 
@@ -247,10 +248,71 @@
                             </h3>
 
                             <div class="mt-4 flex flex-col items-center">
-                                <span class="font-display text-5xl font-extrabold tracking-tight text-slate-900">
-                                    {{ number_format((float) ($user->predicted_readiness_pct ?? 0), 1) }}<span class="text-2xl font-bold text-muted-ink">%</span>
-                                </span>
-                                <span class="mt-3 inline-flex items-center rounded-full border px-3 py-1 font-display text-xs font-bold {{ $readinessStyles['bg'] }} {{ $readinessStyles['text'] }} {{ $readinessStyles['border'] }}">
+                                @php 
+                                    $pct = (float) ($user->predicted_readiness_pct ?? 0); 
+                                    // Circumference for r=40 (2 * pi * 40 ≈ 251.33)
+                                    $dashCircumference = 251.33;
+                                @endphp
+                                
+                                {{-- Synchronized Dial: Starts empty (0%) and fills clockwise via requestAnimationFrame --}}
+                                <div class="relative flex items-center justify-center w-32 h-32 mb-4"
+                                     x-data="{
+                                         target: {{ (float) $pct }},
+                                         displayScore: '0.0',
+                                         circumference: {{ $dashCircumference }}
+                                     }"
+                                     x-init="
+                                         $nextTick(() => {
+                                             let start = performance.now();
+                                             let duration = 1200;
+                                             let animate = (now) => {
+                                                 let progress = Math.min((now - start) / duration, 1);
+                                                 let ease = 1 - Math.pow(1 - progress, 3);
+                                                 let val = ease * target;
+                                                 
+                                                 displayScore = val.toFixed(1);
+                                                 
+                                                 if ($refs.ring) {
+                                                     let offset = circumference - (val / 100) * circumference;
+                                                     $refs.ring.setAttribute('stroke-dashoffset', offset);
+                                                 }
+
+                                                 if (progress < 1) {
+                                                     requestAnimationFrame(animate);
+                                                 } else {
+                                                     displayScore = target.toFixed(1);
+                                                     if ($refs.ring) {
+                                                         let finalOffset = circumference - (target / 100) * circumference;
+                                                         $refs.ring.setAttribute('stroke-dashoffset', finalOffset);
+                                                     }
+                                                 }
+                                             };
+                                             requestAnimationFrame(animate);
+                                         });
+                                     ">
+                                    
+                                    {{-- SVG Dial Track & Progress Ring --}}
+                                    <svg class="absolute inset-0 h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="40" fill="none" stroke="#E2E8F0" stroke-width="10" />
+                                        
+                                        <circle x-ref="ring"
+                                                cx="50" cy="50" r="40" fill="none" 
+                                                stroke="{{ $readinessStyles['hex'] }}" 
+                                                stroke-width="10" 
+                                                stroke-linecap="round"
+                                                stroke-dasharray="{{ $dashCircumference }}"
+                                                stroke-dashoffset="{{ $dashCircumference }}" />
+                                    </svg>
+                                
+                                    {{-- Center Text --}}
+                                    <div class="absolute flex flex-col items-center justify-center">
+                                        <span class="font-display text-2xl font-extrabold text-slate-900 leading-none">
+                                            <span x-text="displayScore">0.0</span><span class="text-sm font-bold text-muted-ink">%</span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <span class="inline-flex items-center rounded-full border px-3 py-1 font-display text-xs font-bold {{ $readinessStyles['bg'] }} {{ $readinessStyles['text'] }} {{ $readinessStyles['border'] }}">
                                     {{ $readinessStyles['label'] }}
                                 </span>
                             </div>
