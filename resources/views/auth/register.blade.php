@@ -39,18 +39,23 @@
     </style>
 
     {{-- Full-screen breakout container compatible across all devices --}}
-    <div class="fixed inset-0 z-50 overflow-y-auto bg-slate-50 lg:bg-white text-slate-800">
+    <div class="min-h-screen overflow-y-auto bg-slate-50 lg:bg-white text-slate-800">
         <div class="min-h-full grid grid-cols-1 lg:grid-cols-[0.80fr_1fr]">
 
             {{-- ============ LEFT: brand + live feature highlights (Desktop / Large Screens) ============ --}}
-            <aside class="relative hidden lg:flex flex-col justify-start overflow-hidden bg-[#4A2FC4] p-8 xl:p-12 text-white min-h-screen">
+            <aside
+                class="relative hidden lg:flex flex-col justify-start overflow-hidden bg-[#4A2FC4] p-8 xl:p-12 text-white min-h-screen">
 
                 {{-- Floating capsules --}}
                 <div class="pointer-events-none absolute inset-0" aria-hidden="true">
-                    <div class="capsule absolute -top-4 right-16 h-10 w-28 rounded-full bg-[linear-gradient(90deg,#fbbf24_50%,#ffffff_50%)] opacity-90 shadow-lg" style="--r:-28deg"></div>
-                    <div class="capsule absolute top-1/3 -right-6 h-9 w-24 rounded-full bg-[linear-gradient(90deg,#34d399_50%,#ffffff_50%)] opacity-80 shadow-lg" style="--r:35deg"></div>
-                    <div class="capsule absolute bottom-24 -left-6 h-10 w-28 rounded-full bg-[linear-gradient(90deg,#fb7185_50%,#ffffff_50%)] opacity-80 shadow-lg" style="--r:20deg"></div>
-                    <div class="capsule absolute bottom-6 right-24 h-8 w-20 rounded-full bg-[linear-gradient(90deg,#38bdf8_50%,#ffffff_50%)] opacity-80 shadow-lg" style="--r:-15deg"></div>
+                    <div class="capsule absolute -top-4 right-16 h-10 w-28 rounded-full bg-[linear-gradient(90deg,#fbbf24_50%,#ffffff_50%)] opacity-90 shadow-lg"
+                        style="--r:-28deg"></div>
+                    <div class="capsule absolute top-1/3 -right-6 h-9 w-24 rounded-full bg-[linear-gradient(90deg,#34d399_50%,#ffffff_50%)] opacity-80 shadow-lg"
+                        style="--r:35deg"></div>
+                    <div class="capsule absolute bottom-24 -left-6 h-10 w-28 rounded-full bg-[linear-gradient(90deg,#fb7185_50%,#ffffff_50%)] opacity-80 shadow-lg"
+                        style="--r:20deg"></div>
+                    <div class="capsule absolute bottom-6 right-24 h-8 w-20 rounded-full bg-[linear-gradient(90deg,#38bdf8_50%,#ffffff_50%)] opacity-80 shadow-lg"
+                        style="--r:-15deg"></div>
                 </div>
 
                 {{-- Brand Header --}}
@@ -155,10 +160,12 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('register') }}" class="space-y-5"
-                        x-data="{ show: false, busy: false }"
-                        @submit="busy = true"
-                        @pageshow.window="busy = false">
+                    <form method="POST" action="{{ route('register') }}" class="space-y-5" x-data="{
+                        showPass: false,
+                        showConfirm: false,
+                        busy: false
+                    }"
+                        @submit="busy = true" @pageshow.window="busy = false">
                         @csrf
 
                         {{-- Name fields --}}
@@ -247,7 +254,7 @@
                                             d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
                                     </svg>
                                 </span>
-                                <input id="password" :type="showPass ? 'text' : 'password'" name="password" required
+                                <input id="password" type="password" :type="showPass ? 'text' : 'password'" name="password" required
                                     autocomplete="new-password"
                                     class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-16 text-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
                                     placeholder="Create a password">
@@ -270,7 +277,7 @@
                                             d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751A11.959 11.959 0 0 1 12 2.714Z" />
                                     </svg>
                                 </span>
-                                <input id="password_confirmation" :type="showConfirm ? 'text' : 'password'"
+                                <input id="password_confirmation" type="password" :type="showConfirm ? 'text' : 'password'"
                                     name="password_confirmation" required autocomplete="new-password"
                                     class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-16 text-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
                                     placeholder="Confirm password">
@@ -280,10 +287,8 @@
                             </div>
                         </div>
 
-                        <button type="submit"
-                            :disabled="busy"
-                            style="--lip: #4A2FC4;"
-                            class="btn-press flex w-full items-center justify-center rounded-2xl bg-primary px-7 py-3.5 font-display text-base font-bold text-white shadow-md disabled:opacity-70">
+                        <button type="submit" :disabled="busy" style="--lip: #4A2FC4;"
+                            class="btn-press flex w-full items-center justify-center rounded-2xl bg-primary px-7 py-3.5 font-display text-base font-bold text-white shadow-md disabled:opacity-70 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
                             <span x-text="busy ? 'Creating Account…' : 'Create Account'">Create Account</span>
                         </button>
                     </form>

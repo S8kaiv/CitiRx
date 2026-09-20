@@ -86,7 +86,7 @@
                 <div class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-indigo-100/60 lg:border-0 lg:p-0 lg:shadow-none">
                     <div class="mb-7">
                         <h1 class="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Reset your password</h1>
-                        <p class="mt-2 text-sm text-slate-500">Enter your email and we'll send you a code to ctreate a new password.</p>
+                        <p class="mt-2 text-sm text-slate-500">Enter your email and we'll send you a link to create a new password.</p>
                     </div>
 
                     @if (session('status'))
@@ -97,7 +97,7 @@
                     @endif
 
                     <form method="POST" action="{{ route('password.email') }}" class="space-y-5"
-                        x-data="{ show: false, busy: false }"
+                        x-data="{ busy: false }"
                         @submit="busy = true"
                         @pageshow.window="busy = false">
                         @csrf
@@ -118,8 +118,8 @@
                         <button type="submit"
                             :disabled="busy"
                             style="--lip: #4A2FC4;"
-                            class="btn-press flex w-full items-center justify-center rounded-2xl bg-primary px-7 py-3.5 font-display text-base font-bold text-white shadow-md disabled:opacity-70">
-                            <span x-text="busy ? 'Sending Code…' : 'Send Code'">Send Code</span>
+                            class="btn-press flex w-full items-center justify-center rounded-2xl bg-primary px-7 py-3.5 font-display text-base font-bold text-white shadow-md disabled:opacity-70 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
+                            <span x-text="busy ? 'Sending Link…' : 'Send reset link'">Send reset link</span>
                         </button>
                     </form>
 
