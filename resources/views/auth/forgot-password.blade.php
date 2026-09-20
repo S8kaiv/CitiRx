@@ -19,7 +19,7 @@
         <div class="min-h-full grid grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
 
             {{-- ============ LEFT: brand + what happens next (Desktop / Large Screens) ============ --}}
-            <aside class="relative hidden lg:flex flex-col justify-between overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-8 xl:p-12 text-white min-h-screen">
+            <aside class="relative hidden lg:flex flex-col justify-between overflow-hidden bg-[#4A2FC4] p-8 xl:p-12 text-white min-h-screen">
 
                 {{-- Floating capsules background --}}
                 <div class="pointer-events-none absolute inset-0" aria-hidden="true">
@@ -27,7 +27,6 @@
                     <div class="capsule absolute top-1/3 -right-6 h-9 w-24 rounded-full bg-[linear-gradient(90deg,#34d399_50%,#ffffff_50%)] opacity-80 shadow-lg" style="--r:35deg"></div>
                     <div class="capsule absolute bottom-24 -left-6 h-10 w-28 rounded-full bg-[linear-gradient(90deg,#fb7185_50%,#ffffff_50%)] opacity-80 shadow-lg" style="--r:20deg"></div>
                     <div class="capsule absolute bottom-6 right-24 h-8 w-20 rounded-full bg-[linear-gradient(90deg,#38bdf8_50%,#ffffff_50%)] opacity-80 shadow-lg" style="--r:-15deg"></div>
-                    <div class="absolute -bottom-32 -left-24 h-96 w-96 rounded-full bg-white/10 blur-3xl"></div>
                 </div>
 
                 {{-- Brand Header --}}
@@ -87,7 +86,7 @@
                 <div class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-indigo-100/60 lg:border-0 lg:p-0 lg:shadow-none">
                     <div class="mb-7">
                         <h1 class="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Reset your password</h1>
-                        <p class="mt-2 text-sm text-slate-500">Enter your email and we'll send you a link to choose a new password.</p>
+                        <p class="mt-2 text-sm text-slate-500">Enter your email and we'll send you a code to ctreate a new password.</p>
                     </div>
 
                     @if (session('status'))
