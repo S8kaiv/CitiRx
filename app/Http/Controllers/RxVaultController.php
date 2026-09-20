@@ -2,107 +2,112 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\QuestionBookmark;
 use App\Models\RxVault;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class RxVaultController extends Controller
 {
-    public function index(
-        Request $request
-    ): View {
+    public function index(Request $request): View
+    {
         $user = $request->user();
 
-        /*
-         * Active questions still needing review.
-         */
-        $active = RxVault::query()
+        $requestedTab = $request->query(
+            'tab',
+            'mistakes'
+        );
+
+        $activeTab = in_array(
+            $requestedTab,
+            ['mistakes', 'bookmarks'],
+            true
+        ) ? $requestedTab : 'mistakes';
+
+        $vaultQuery = RxVault::query()
             ->where(
                 'user_id',
                 $user->user_id
-            )
+            );
+
+        $active = (clone $vaultQuery)
+            ->where('is_cleared', false)
+            ->with([
+                'question.correctChoice',
+                'question.competency.domain',
+            ])
+            ->orderByDesc('added_at')
+            ->get();
+
+        $clearedCount = (clone $vaultQuery)
+            ->where('is_cleared', true)
+            ->count();
+
+        $bookmarks = QuestionBookmark::query()
             ->where(
-                'is_cleared',
-                false
+                'user_id',
+                $user->user_id
             )
             ->with([
                 'question.correctChoice',
                 'question.competency.domain',
             ])
-            ->orderByDesc(
-                'added_at'
-            )
+            ->latest()
             ->get();
 
-        /*
-         * Historical cleared count.
-         */
-        $clearedCount =
-            RxVault::query()
-                ->where(
-                    'user_id',
-                    $user->user_id
-                )
-                ->where(
-                    'is_cleared',
-                    true
-                )
-                ->count();
+        return view('vault.index', [
+            'activeTab' => $activeTab,
 
-        /*
-         * Group active questions by domain.
-         *
-         * domain_id is used for ordering so we do not
-         * depend on a possibly different display-order
-         * column name.
-         */
-        $grouped =
-            $active
-                ->groupBy(
-                    fn ($entry) => $entry
-                        ->question
-                        ->competency
-                        ->domain
-                        ->domain_id
-                )
-                ->sortBy(
-                    fn ($group) => $group
-                        ->first()
-                        ->question
-                        ->competency
-                        ->domain
-                        ->domain_id
-                )
-                ->map(
-                    function ($group) {
+            'grouped' => $this->groupByDomain(
+                $active
+            ),
 
-                        $domain =
-                            $group
-                                ->first()
-                                ->question
-                                ->competency
-                                ->domain;
+            'groupedBookmarks' => $this->groupByDomain(
+                $bookmarks
+            ),
 
-                        return [
-                            'domain_id' => $domain->domain_id,
+            'activeCount' => $active->count(),
 
-                            'domain_name' => $domain->domain_name,
+            'clearedCount' => $clearedCount,
 
-                            'entries' => $group,
-                        ];
-                    }
-                )
-                ->values();
+            'bookmarksCount' => $bookmarks->count(),
+        ]);
+    }
 
-        return view(
-            'vault.index',
-            [
-                'grouped' => $grouped,
+    /**
+     * Group Rx Vault entries or bookmarks by TOS domain.
+     */
+    private function groupByDomain(
+        Collection $records
+    ): Collection {
+        return $records
+            ->filter(
+                fn ($record) =>
+                    $record->question?->competency?->domain
+                    !== null
+            )
+            ->groupBy(
+                fn ($record) => $record
+                    ->question
+                    ->competency
+                    ->domain
+                    ->domain_id
+            )
+            ->map(function (Collection $records): array {
+                $domain = $records
+                    ->first()
+                    ->question
+                    ->competency
+                    ->domain;
 
-                'activeCount' => $active->count(),
-
-                'clearedCount' => $clearedCount,
-            ]
-        );
+                return [
+                    'domain_id' => $domain->domain_id,
+                    'domain_name' => $domain->domain_name,
+                    'entries' => $records,
+                ];
+            })
+            ->sortBy('domain_id')
+            ->values();
     }
 }

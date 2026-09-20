@@ -8,62 +8,12 @@ use App\Models\QuestionBookmark;
 use App\Services\BookmarkService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 class BookmarkController extends Controller
 {
     public function __construct(
         protected BookmarkService $bookmarks,
     ) {}
-
-    public function index(Request $request): View
-    {
-        $bookmarks = QuestionBookmark::query()
-            ->where('user_id', $request->user()->user_id)
-            ->with([
-                'question.correctChoice',
-                'question.competency.domain',
-            ])
-            ->orderByDesc('created_at')
-            ->get();
-
-        $grouped = $bookmarks
-            ->groupBy(
-                fn ($bookmark) => $bookmark
-                    ->question
-                    ->competency
-                    ->domain
-                    ->domain_id
-            )
-            ->sortBy(
-                fn ($group) => $group
-                    ->first()
-                    ->question
-                    ->competency
-                    ->domain
-                    ->domain_number
-            )
-            ->map(function ($group) {
-                $domain = $group
-                    ->first()
-                    ->question
-                    ->competency
-                    ->domain;
-
-                return [
-                    'domain_id' => $domain->domain_id,
-                    'domain_name' => $domain->domain_name,
-                    'domain_number' => $domain->domain_number,
-                    'bookmarks' => $group,
-                ];
-            })
-            ->values();
-
-        return view('bookmarks.index', [
-            'grouped' => $grouped,
-            'total' => $bookmarks->count(),
-        ]);
-    }
 
     public function store(
         Request $request,
@@ -129,8 +79,14 @@ class BookmarkController extends Controller
         );
 
         return redirect()
-            ->route('bookmarks.index')
-            ->with('status', 'Notes saved.');
+            ->route(
+                'vault.index',
+                ['tab' => 'bookmarks']
+            )
+            ->with(
+                'status',
+                'Notes saved.'
+            );
     }
 
     public function destroy(
@@ -146,8 +102,14 @@ class BookmarkController extends Controller
         $bookmark->delete();
 
         return redirect()
-            ->route('bookmarks.index')
-            ->with('status', 'Bookmark removed.');
+            ->route(
+                'vault.index',
+                ['tab' => 'bookmarks']
+            )
+            ->with(
+                'status',
+                'Bookmark removed.'
+            );
     }
 
     private function practiceSessionFor(

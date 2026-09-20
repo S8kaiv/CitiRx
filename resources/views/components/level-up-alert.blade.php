@@ -10,28 +10,37 @@
     )
 )
     <div
+        x-data
+        x-init="
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 50,
+                    spread: 60,
+                    origin: { y: 0.3 },
+                    colors: ['#6D4AFF', '#0EA5A4', '#F5A623', '#22C55E']
+                });
+            }
+        "
         role="status"
-        class="mb-4 rounded-lg bg-[#6D4AFF] p-4 text-white shadow-lg"
+        class="animate-pop mb-4 flex items-center gap-3.5 rounded-2xl border-2 border-b-4 border-[#4A2FC4] bg-[#6D4AFF] p-4 text-white shadow-sm"
     >
-        <div class="flex items-center gap-3">
-            <span
-                class="text-3xl"
-                aria-hidden="true"
-            >
-                &#127881;
-            </span>
+        {{-- Load canvas-confetti via lightweight CDN only when alert triggers --}}
+        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
-            <div>
-                <p class="text-xs font-semibold uppercase tracking-wide text-white/80">
-                    Level Up
-                </p>
+        <span class="text-3xl shrink-0" aria-hidden="true">
+            &#127881;
+        </span>
 
-                <p class="text-lg font-bold">
-                    Level {{ $levelUp['level_number'] }}
-                    &mdash;
-                    {{ $levelUp['tier_name'] }}
-                </p>
-            </div>
+        <div>
+            <p class="font-display text-xs font-bold uppercase tracking-wider text-white/85">
+                Level Up
+            </p>
+
+            <p class="font-display text-lg font-extrabold text-white">
+                Level {{ $levelUp['level_number'] }}
+                &mdash;
+                {{ $levelUp['tier_name'] }}
+            </p>
         </div>
     </div>
 @endif
