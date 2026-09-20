@@ -22,8 +22,8 @@ export default {
                 canvas:    '#F8FAFC',
             },
             fontFamily: {
-                display: ['"Baloo 2"', ...defaultTheme.fontFamily.sans],
-                sans:    ['Inter', ...defaultTheme.fontFamily.sans],
+                display: ["Figtree", ...defaultTheme.fontFamily.sans],
+                sans: ["Figtree", ...defaultTheme.fontFamily.sans],
             },
             borderRadius: {
                 card: '1rem',
