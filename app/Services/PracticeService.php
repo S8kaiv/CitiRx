@@ -3,15 +3,17 @@
 namespace App\Services;
 
 use App\Models\AssessmentSession;
+use App\Models\QuestionBookmark;
+use App\Models\RxVault;
 use App\Models\Question;
 use App\Models\ResponseTelemetryLog;
-use App\Models\TosCompetency;
 use App\Models\TosDomain;
 use App\Models\User;
 use App\Models\UserKnowledgeState;
 use App\Models\XpTransaction;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Builder;
 use InvalidArgumentException;
 use LogicException;
 use RuntimeException;
@@ -27,6 +29,25 @@ class PracticeService
         20,
         30,
     ];
+
+    public const MODE_ADAPTIVE = 'adaptive';
+
+    public const MODE_MISTAKES = 'mistakes';
+
+    public const MODE_BOOKMARKS = 'bookmarks';
+
+    public const ALLOWED_MODES = [
+        self::MODE_ADAPTIVE,
+        self::MODE_MISTAKES,
+        self::MODE_BOOKMARKS,
+    ];
+
+    public const DRILL_MODES = [
+        self::MODE_MISTAKES,
+        self::MODE_BOOKMARKS,
+    ];
+
+    public const DEFAULT_DRILL_LENGTH = 10;
 
     private const XP_CORRECT = 10;
 
@@ -77,12 +98,9 @@ class PracticeService
         User $user,
         int $length,
         ?int $domainFilterId = null,
+        string $mode = self::MODE_ADAPTIVE,
     ): AssessmentSession {
-        if (! in_array(
-            $length,
-            self::ALLOWED_LENGTHS,
-            true
-        )) {
+        if (! in_array($length, self::ALLOWED_LENGTHS, true)) {
             throw new InvalidArgumentException(
                 'Practice length must be one of: '
                     . implode(', ', self::ALLOWED_LENGTHS)
@@ -90,45 +108,49 @@ class PracticeService
             );
         }
 
-        /*
-         * Validate the optional domain filter before creating
-         * anything.
-         */
-        if ($domainFilterId !== null) {
-            $domainExists = TosDomain::query()
-                ->where(
-                    'domain_id',
-                    $domainFilterId
-                )
-                ->exists();
+        if (! in_array($mode, self::ALLOWED_MODES, true)) {
+            throw new InvalidArgumentException(
+                'The selected Practice mode is invalid.'
+            );
+        }
 
-            if (! $domainExists) {
-                throw new InvalidArgumentException(
-                    'The selected practice domain does not exist.'
-                );
-            }
+        /*
+     * Domain filtering belongs only to normal adaptive Practice.
+     */
+        if (
+            $mode !== self::MODE_ADAPTIVE
+            && $domainFilterId !== null
+        ) {
+            throw new InvalidArgumentException(
+                'Targeted drills cannot be combined with a domain filter.'
+            );
+        }
+
+        if (
+            $domainFilterId !== null
+            && ! TosDomain::query()
+                ->where('domain_id', $domainFilterId)
+                ->exists()
+        ) {
+            throw new InvalidArgumentException(
+                'The selected Practice domain does not exist.'
+            );
         }
 
         return DB::transaction(function () use (
             $user,
             $length,
-            $domainFilterId
+            $domainFilterId,
+            $mode,
         ) {
             /*
-             * Lock the user so two rapid Start requests cannot
-             * create duplicate sessions of the same scope.
-             */
+         * Prevent duplicate sessions caused by rapid double-clicking.
+         */
             $user = User::query()
-                ->where(
-                    'user_id',
-                    $user->user_id
-                )
+                ->where('user_id', $user->user_id)
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            /*
-             * Adaptive practice requires the baseline diagnostic.
-             */
             if (! $user->is_diagnostic_completed) {
                 throw new LogicException(
                     'Complete the diagnostic test before starting practice.'
@@ -136,87 +158,54 @@ class PracticeService
             }
 
             /*
-             * Verify that at least one active question exists
-             * inside the requested scope.
-             */
-            $questionExists = Question::query()
-                ->where('is_active', true)
-                ->when(
-                    $domainFilterId !== null,
-                    function ($query) use ($domainFilterId) {
-                        $query->whereHas(
-                            'competency',
-                            function ($competencyQuery) use (
-                                $domainFilterId
-                            ) {
-                                $competencyQuery->where(
-                                    'domain_id',
-                                    $domainFilterId
-                                );
-                            }
-                        );
-                    }
-                )
-                ->exists();
-
-            if (! $questionExists) {
-                throw new RuntimeException(
-                    'No active practice questions are available for the selected scope.'
-                );
-            }
-
-            /*
-             * Resume an unfinished practice session that has
-             * exactly the same length and domain scope.
-             */
+         * Only resume a session with the exact same mode and scope.
+         */
             $existing = AssessmentSession::query()
-                ->where(
-                    'user_id',
-                    $user->user_id
-                )
-                ->where(
-                    'session_type',
-                    'practice'
-                )
+                ->where('user_id', $user->user_id)
+                ->where('session_type', 'practice')
                 ->whereNull('completed_at')
-                ->where(
-                    'target_length',
-                    $length
-                )
-                ->where(
-                    'domain_filter_id',
-                    $domainFilterId
-                )
-                ->orderByDesc('started_at')
+                ->where('practice_mode', $mode)
+                ->where('target_length', $length)
+                ->where('domain_filter_id', $domainFilterId)
+                ->latest('started_at')
                 ->first();
 
             if ($existing) {
                 return $existing;
             }
 
+            if (! $this->questionPoolQuery(
+                $user->user_id,
+                $mode,
+                $domainFilterId,
+            )->exists()) {
+                $message = match ($mode) {
+                    self::MODE_MISTAKES =>
+                    'Your Mistake Locker is currently empty.',
+
+                    self::MODE_BOOKMARKS =>
+                    'You have not bookmarked any active questions yet.',
+
+                    default =>
+                    'No active Practice questions are available for the selected scope.',
+                };
+
+                throw new RuntimeException($message);
+            }
+
             return AssessmentSession::create([
                 'user_id' => $user->user_id,
-
                 'session_type' => 'practice',
-
                 'research_phase' => 'none',
-
                 'served_question_ids' => [],
-
                 'target_length' => $length,
-
+                'practice_mode' => $mode,
                 'domain_filter_id' => $domainFilterId,
-
                 'current_question_id' => null,
-
                 'current_question_started_at' => null,
-
                 'total_items' => 0,
-
                 'correct_items' => 0,
-
                 'xp_awarded' => 0,
-
                 'started_at' => now(),
             ]);
         });
@@ -1199,243 +1188,216 @@ class PracticeService
     // =============================================================
     // ADAPTIVE QUESTION SELECTION
     // =============================================================
+    /**
+     * Build the question pool for the selected Practice mode.
+     */
+    private function questionPoolQuery(
+        string $userId,
+        string $mode,
+        ?int $domainFilterId,
+    ): Builder {
+        $query = Question::query()
+            ->where('is_active', true);
+
+        if ($mode === self::MODE_MISTAKES) {
+            return $query->whereIn(
+                'question_id',
+                RxVault::query()
+                    ->select('question_id')
+                    ->where('user_id', $userId)
+                    ->where('is_cleared', false)
+            );
+        }
+
+        if ($mode === self::MODE_BOOKMARKS) {
+            return $query->whereIn(
+                'question_id',
+                QuestionBookmark::query()
+                    ->select('question_id')
+                    ->where('user_id', $userId)
+            );
+        }
+
+        if ($mode !== self::MODE_ADAPTIVE) {
+            throw new InvalidArgumentException(
+                'The Practice session contains an invalid mode.'
+            );
+        }
+
+        if ($domainFilterId !== null) {
+            $query->whereHas(
+                'competency',
+                fn(Builder $competencyQuery) =>
+                $competencyQuery->where(
+                    'domain_id',
+                    $domainFilterId
+                )
+            );
+        }
+
+        return $query;
+    }
 
     /**
-     * Three-tier repeat exclusion:
-     *
-     * Tier 1:
-     *   not served this session
-     *   AND not among the user's recent 20 responses
-     *
-     * Tier 2:
-     *   not served this session
-     *   but recent questions may return
-     *
-     * Tier 3:
-     *   repeats from the current session are allowed only
-     *   after the available pool has been exhausted.
+     * Select the next question while avoiding unnecessary
+     * per-competency database queries.
      */
     private function selectNextQuestion(
         AssessmentSession $session,
         array $servedIds,
     ): ?Question {
-        $user =
-            $session->user;
-
-        $servedSet =
-            array_flip(
-                $servedIds
-            );
-
-        // ---------------------------------------------------------
-        // COMPETENCY SCOPE
-        // ---------------------------------------------------------
-
-        $competencyQuery =
-            TosCompetency::query();
-
-        if (
-            $session->domain_filter_id
-            !== null
-        ) {
-            $competencyQuery->where(
-                'domain_id',
-                $session->domain_filter_id
-            );
-        }
-
-        $competencies =
-            $competencyQuery->get();
-
-        if ($competencies->isEmpty()) {
-            return null;
-        }
-
-        // ---------------------------------------------------------
-        // RECENT RESPONSES
-        // ---------------------------------------------------------
-
-        $recentIds =
-            ResponseTelemetryLog::query()
-            ->where(
-                'user_id',
-                $user->user_id
-            )
-            ->orderByDesc('created_at')
-            ->limit(
-                self::RECENT_EXCLUSION_LIMIT
-            )
+        $recentIds = ResponseTelemetryLog::query()
+            ->where('user_id', $session->user_id)
+            ->latest('created_at')
+            ->limit(self::RECENT_EXCLUSION_LIMIT)
             ->pluck('question_id')
             ->all();
 
-        $recentSet =
-            array_flip(
-                $recentIds
+        $mode = $session->practice_mode
+            ?: self::MODE_ADAPTIVE;
+
+        /*
+     * Tier 1:
+     * Exclude current-session and recently answered questions.
+     *
+     * Tier 2:
+     * Exclude only current-session questions.
+     *
+     * Tier 3:
+     * Allow current-session repeats, but only for adaptive Practice.
+     *
+     * Targeted drills intentionally stop after every scoped
+     * question has appeared once. This prevents a single bookmark
+     * from repeating ten times and producing excessive XP.
+     */
+        $exclusionTiers = [
+            array_values(array_unique([
+                ...$servedIds,
+                ...$recentIds,
+            ])),
+
+            array_values(array_unique($servedIds)),
+        ];
+
+        if ($mode === self::MODE_ADAPTIVE) {
+            $exclusionTiers[] = [];
+        }
+
+        /*
+     * Avoid repeating an identical query when two tiers
+     * happen to contain the same exclusions.
+     */
+        $seenTiers = [];
+
+        foreach ($exclusionTiers as $excludedIds) {
+            sort($excludedIds);
+
+            $tierKey = implode('|', $excludedIds);
+
+            if (isset($seenTiers[$tierKey])) {
+                continue;
+            }
+
+            $seenTiers[$tierKey] = true;
+
+            $query = $this->questionPoolQuery(
+                $session->user_id,
+                $mode,
+                $session->domain_filter_id,
             );
 
-        // ---------------------------------------------------------
-        // CURRENT MASTERY MAP
-        // ---------------------------------------------------------
+            if ($excludedIds !== []) {
+                $query->whereNotIn(
+                    'question_id',
+                    $excludedIds
+                );
+            }
 
-        $masteries =
-            UserKnowledgeState::query()
-            ->where(
-                'user_id',
-                $user->user_id
-            )
+            /*
+         * Only fetch the two small columns required to perform
+         * weighted selection. The complete chosen question is
+         * fetched afterward.
+         */
+            $candidates = $query->get([
+                'question_id',
+                'competency_id',
+            ]);
+
+            if ($candidates->isEmpty()) {
+                continue;
+            }
+
+            return $this->pickWeightedQuestion(
+                $session->user_id,
+                $candidates,
+            );
+        }
+
+        return null;
+    }
+
+    /**
+     * Weight candidate competencies according to current BKT mastery,
+     * then return one complete Question model.
+     */
+    private function pickWeightedQuestion(
+        string $userId,
+        Collection $candidates,
+    ): ?Question {
+        $byCompetency = $candidates->groupBy(
+            fn(Question $question) =>
+            (string) $question->competency_id
+        );
+
+        $masteries = UserKnowledgeState::query()
+            ->where('user_id', $userId)
             ->whereIn(
                 'competency_id',
-                $competencies
-                    ->pluck('competency_id')
+                $byCompetency->keys()->all()
             )
             ->pluck(
                 'current_mastery_p_l',
                 'competency_id'
             );
 
-        // ---------------------------------------------------------
-        // TIER 1
-        // ---------------------------------------------------------
-
-        $question =
-            $this->pickFromTier(
-                $competencies,
-                $masteries,
-                function (
-                    Question $question
-                ) use (
-                    $servedSet,
-                    $recentSet
-                ) {
-                    return
-                        ! isset(
-                            $servedSet[$question->question_id]
-                        )
-                        && ! isset(
-                            $recentSet[$question->question_id]
-                        );
-                }
-            );
-
-        if ($question) {
-            return $question;
-        }
-
-        // ---------------------------------------------------------
-        // TIER 2
-        // ---------------------------------------------------------
-
-        $question =
-            $this->pickFromTier(
-                $competencies,
-                $masteries,
-                fn(Question $question) => ! isset(
-                    $servedSet[$question->question_id]
-                )
-            );
-
-        if ($question) {
-            return $question;
-        }
-
-        // ---------------------------------------------------------
-        // TIER 3
-        // ---------------------------------------------------------
-
-        return $this->pickFromTier(
-            $competencies,
-            $masteries,
-            fn(Question $question) => true
-        );
-    }
-
-    /**
-     * Build an eligible question pool per competency.
-     *
-     * Competencies without eligible questions are removed BEFORE
-     * weighted selection.
-     */
-    private function pickFromTier(
-        Collection $competencies,
-        Collection $masteries,
-        callable $eligible,
-    ): ?Question {
-        $pool = [];
-
-        foreach ($competencies as $competency) {
-            $questions = Question::query()
-                ->where(
-                    'is_active',
-                    true
-                )
-                ->where(
-                    'competency_id',
-                    $competency->competency_id
-                )
-                ->get()
-                ->filter(
-                    $eligible
-                )
-                ->values();
-
-            if ($questions->isNotEmpty()) {
-                $pool[$competency->competency_id] = [
-                    'questions' => $questions,
-                ];
-            }
-        }
-
-        if (empty($pool)) {
-            return null;
-        }
-
-        /*
-         * Adaptive weight:
-         *
-         * (1 - mastery) + 0.10
-         *
-         * Low mastery => larger probability.
-         *
-         * Clamp mastery defensively to [0, 1].
-         */
         $weights = [];
 
-        foreach ($pool as $competencyId => $entry) {
-            $mastery =
-                (float) (
-                    $masteries[$competencyId]
-                    ?? BktService::DEFAULT_INITIAL_MASTERY
-                );
+        foreach ($byCompetency as $competencyId => $questions) {
+            $mastery = (float) (
+                $masteries[$competencyId]
+                ?? BktService::DEFAULT_INITIAL_MASTERY
+            );
 
-            $mastery =
-                max(
-                    0.0,
-                    min(
-                        1.0,
-                        $mastery
-                    )
-                );
+            $mastery = max(
+                0.0,
+                min(1.0, $mastery)
+            );
 
-            $weights[$competencyId] =
-                (1.0 - $mastery)
-                + 0.10;
+            $weights[(string) $competencyId] =
+                (1.0 - $mastery) + 0.10;
         }
 
         $chosenCompetencyId =
-            $this->weightedRandomPick(
-                $weights
-            );
+            $this->weightedRandomPick($weights);
 
-        if (
-            $chosenCompetencyId
-            === null
-        ) {
+        if ($chosenCompetencyId === null) {
             return null;
         }
 
-        return $pool[$chosenCompetencyId]['questions']->random();
-    }
+        $questions =
+            $byCompetency->get($chosenCompetencyId);
 
+        if (! $questions || $questions->isEmpty()) {
+            return null;
+        }
+
+        $questionId =
+            $questions->random()->question_id;
+
+        return Question::query()
+            ->where('is_active', true)
+            ->find($questionId);
+    }
     /**
      * Non-cryptographic weighted-random selection.
      *

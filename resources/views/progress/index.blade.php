@@ -2,167 +2,271 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="font-display text-xl font-bold leading-tight text-slate-900">
+                <h1 class="font-display text-xl font-black text-slate-900 leading-tight">
                     {{ __('Level Progression') }}
-                </h2>
-                <p class="text-xs font-semibold uppercase tracking-wider text-muted-ink">
+                </h1>
+                <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
                     Experience & Tier Milestones
                 </p>
             </div>
-
-            <a href="{{ route('dashboard') }}" 
-               class="font-display text-xs font-bold text-muted-ink transition hover:text-primary">
-                Back to Dashboard
-            </a>
         </div>
     </x-slot>
 
+    @php
+        // Group levels by Tier for segmented roadmap chapters
+        $groupedLevels = $levels->groupBy(fn($l) => $l->tier->tier_name ?? 'Standard');
+
+        // Tier theme accents
+        $tierStyles = [
+            'Beginner'     => ['border' => 'border-amber-300',   'badge' => 'bg-amber-100 border-amber-300 text-amber-900',    'accent' => '#F5A623', 'icon' => '🥉'],
+            'Intermediate' => ['border' => 'border-teal-300',    'badge' => 'bg-teal-100 border-teal-300 text-teal-900',      'accent' => '#0EA5A4', 'icon' => '🥈'],
+            'Advanced'     => ['border' => 'border-indigo-300',  'badge' => 'bg-indigo-100 border-indigo-300 text-indigo-900',  'accent' => '#6366F1', 'icon' => '🥇'],
+            'Board Ready'  => ['border' => 'border-emerald-300', 'badge' => 'bg-emerald-100 border-emerald-300 text-emerald-900', 'accent' => '#22C55E', 'icon' => '👑'],
+        ];
+    @endphp
+
     <div class="pt-6 pb-16 font-sans antialiased text-slate-900">
-        <div class="max-w-4xl px-4 mx-auto space-y-6 sm:px-6">
+        <div class="max-w-3xl px-4 mx-auto space-y-8 sm:px-6">
 
             {{-- ========================================= --}}
-            {{-- CURRENT LEVEL HERO CARD                   --}}
+            {{-- 1. CURRENT LEVEL HERO CARD (Chunky 2.5D)  --}}
             {{-- ========================================= --}}
-            <section class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-[#F5A623]/30 bg-gradient-to-br from-gold-tint via-[#FFFBF2] to-white p-6 sm:p-8 shadow-sm text-center">
+            <section class="relative overflow-hidden rounded-3xl border-2 border-b-4 border-amber-300 bg-gradient-to-br from-amber-50 via-white to-orange-50/30 p-6 sm:p-8 shadow-sm">
                 
-                {{-- Level Badge Icon --}}
-                <div class="flex items-center justify-center w-14 h-14 mx-auto mb-3 text-3xl bg-white border-2 border-b-4 rounded-2xl border-[#F5A623]/40 shadow-xs">
-                    🛡️
-                </div>
+                <div class="flex flex-col sm:flex-row items-center sm:items-center gap-5 text-center sm:text-left">
+                    
+                    {{-- Tactile 3D Crest --}}
+                    <div style="--lip: #D97706;" 
+                         class="btn-press flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-amber-400 bg-gradient-to-b from-amber-100 to-amber-200/70 text-3xl shadow-sm">
+                        🛡️
+                    </div>
 
-                <p class="font-display text-xs font-bold uppercase tracking-wider text-muted-ink">
-                    Current Standing
-                </p>
+                    {{-- Content Block --}}
+                    <div class="flex-1">
+                        {{-- Unified Tier Pill --}}
+                        <div class="flex items-center justify-center sm:justify-start gap-2">
+                            <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100/70 px-2.5 py-0.5 font-display text-[11px] font-extrabold uppercase tracking-wider text-amber-900">
+                                <span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                {{ $currentLevel->tier->tier_name }} Tier
+                            </span>
+                            <span class="font-display text-xs font-bold text-muted-ink">• Active Rank</span>
+                        </div>
 
-                <h3 class="mt-1 font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
-                    Level {{ $currentLevel->level_number }}
-                </h3>
+                        {{-- Level Title + XP Badge Row --}}
+                        <div class="mt-1 flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                            <h3 class="font-display text-3xl sm:text-4xl font-black tracking-tight text-slate-900 leading-none">
+                                Level {{ $currentLevel->level_number }}
+                            </h3>
 
-                <div class="mt-2.5 flex items-center justify-center gap-2">
-                    <span class="inline-flex items-center rounded-full bg-clinical-tint px-3 py-1 font-display text-xs font-bold text-clinical-ink shadow-xs ring-1 ring-clinical/30">
-                        {{ $currentLevel->tier->tier_name }} Tier
-                    </span>
-                    <span class="font-bold text-slate-300">•</span>
-                    <span class="font-display text-xs font-bold text-gold-ink">
-                        {{ number_format((int) $user->total_xp) }} Total XP
-                    </span>
+                            {{-- Tactile XP Chip --}}
+                            <div class="inline-flex items-center gap-1.5 rounded-xl border-2 border-b-3 border-amber-300/80 bg-amber-50 px-2.5 py-1 shadow-2xs">
+                                <span class="font-mono text-xs font-black text-amber-900">
+                                    {{ number_format((int) $user->total_xp) }}
+                                </span>
+                                <span class="font-display text-[10px] font-extrabold uppercase text-amber-700/80">XP</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Progression Toward Next Level --}}
                 @if ($nextLevel)
-                    <div class="max-w-md mx-auto mt-6">
-                        <div class="flex items-center justify-between mb-2 font-display text-xs font-bold uppercase tracking-wider text-muted-ink">
+                    <div class="mt-6 pt-6 border-t border-amber-200/60"
+                         x-data="{ barWidth: '0%' }"
+                         x-init="$nextTick(() => { setTimeout(() => barWidth = '{{ min(100, max(0, round($progressPercent, 1))) }}%', 120) })">
+                        
+                        <div class="flex items-center justify-between mb-2 font-display text-xs font-extrabold uppercase tracking-wider text-slate-600">
                             <span>Level {{ $currentLevel->level_number }}</span>
-                            <span>Level {{ $nextLevel->level_number }}</span>
+                            <span class="text-primary font-black">Level {{ $nextLevel->level_number }}</span>
                         </div>
 
-                        {{-- Progress Bar --}}
-                        <div role="progressbar"
-                             aria-label="Progress toward Level {{ $nextLevel->level_number }}"
-                             aria-valuemin="0"
-                             aria-valuemax="100"
-                             aria-valuenow="{{ round($progressPercent) }}"
-                             class="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 ring-1 ring-inset ring-slate-200/60">
-                            <div class="h-full rounded-full bg-primary transition-all duration-700"
-                                 style="width: {{ $progressPercent }}%"></div>
+                        {{-- Chunky Progress Track --}}
+                        <div class="h-4 w-full overflow-hidden rounded-full bg-slate-200/70 p-0.5 ring-1 ring-inset ring-slate-300">
+                            <div class="h-full rounded-full bg-gradient-to-r from-primary to-indigo-600 transition-all duration-1000 ease-out shadow-inner"
+                                 style="width: 0%;"
+                                 :style="'width: ' + barWidth"></div>
                         </div>
 
                         <div class="flex items-center justify-between mt-2.5 text-xs">
                             <span class="font-medium text-slate-600">
                                 <strong>{{ number_format($xpToNext) }} XP</strong> needed for Level {{ $nextLevel->level_number }} ({{ $nextLevel->tier->tier_name }})
                             </span>
-                            <span class="font-display font-bold text-slate-800 shrink-0">
+                            <span class="font-display font-extrabold text-slate-900 shrink-0">
                                 {{ number_format($progressPercent, 1) }}%
                             </span>
                         </div>
                     </div>
                 @else
-                    <div class="mt-6 inline-flex items-center gap-2 rounded-xl border border-strong/30 bg-strong-tint/60 px-4 py-2 font-display text-xs font-bold text-strong-ink shadow-xs">
-                        <span>✨</span>
-                        <span>Maximum level reached! Continue practice sessions to refine board readiness.</span>
+                    <div class="mt-6 inline-flex items-center gap-2 rounded-2xl border-2 border-b-4 border-strong/40 bg-strong-tint/60 px-4 py-2 font-display text-xs font-bold text-strong-ink shadow-xs">
+                        <span>👑</span>
+                        <span>Maximum level reached! Continue drilling to sharpen your PRC TOS readiness.</span>
                     </div>
                 @endif
             </section>
 
             {{-- ========================================= --}}
-            {{-- LEVEL LADDER MILESTONES                   --}}
+            {{-- 2. CONNECTED TROPHY ROAD TIMELINE         --}}
             {{-- ========================================= --}}
-            <section class="overflow-hidden bg-white border-2 border-b-4 border-slate-200 rounded-2xl shadow-sm">
-                <div class="p-6 border-b border-slate-100 sm:px-8">
-                    <h3 class="font-display text-base sm:text-lg font-bold text-slate-900">
-                        Level Ladder
+            <div class="space-y-8">
+                <div>
+                    <h3 class="font-display text-xl font-black text-slate-900">
+                        Milestone Trophy Road
                     </h3>
-                    <p class="mt-0.5 text-xs text-muted-ink">
-                        Advance through tiers by earning XP during practice sessions and unlocking milestones.
+                    <p class="text-xs font-medium text-muted-ink">
+                        Climb through each professional competency tier by earning practice XP.
                     </p>
                 </div>
 
-                <div class="p-6 sm:px-8 space-y-2.5">
-                    @foreach ($levels as $level)
-                        @php
-                            $isCurrent = (int) $level->level_number === (int) $currentLevel->level_number;
-                            $isReached = (int) $level->min_xp <= (int) $user->total_xp;
-                        @endphp
+                @foreach ($groupedLevels as $tierName => $tierLevels)
+                    @php
+                        $style = $tierStyles[$tierName] ?? [
+                            'border' => 'border-slate-300',
+                            'badge'  => 'bg-slate-100 border-slate-300 text-slate-800',
+                            'accent' => '#64748B',
+                            'icon'   => '⭐',
+                        ];
 
-                        <div @class([
-                            'flex items-center justify-between rounded-xl px-4 py-3 transition-all',
-                            'border-2 border-b-4 border-primary/40 bg-primary-tint/30 shadow-xs' => $isCurrent,
-                            'border-2 border-b-4 border-strong/30 bg-strong-tint/30' => $isReached && !$isCurrent,
-                            'border-2 border-slate-200 bg-slate-50/60 opacity-60' => !$isReached,
-                        ])>
-                            <div class="flex items-center gap-3.5">
-                                {{-- Status Icon Pip --}}
-                                <span class="flex items-center justify-center w-8 h-8 rounded-lg font-display text-sm font-bold shrink-0
-                                    {{ $isCurrent ? 'bg-primary text-white shadow-xs' : ($isReached ? 'bg-strong text-white' : 'bg-slate-200 text-slate-500') }}">
-                                    @if ($isCurrent)
-                                        🎯
-                                    @elseif ($isReached)
-                                        ✓
-                                    @else
-                                        🔒
-                                    @endif
-                                </span>
+                        // Calculate connector line fill percentage for this tier
+                        $totalTierLevels = $tierLevels->count();
+                        $currentIndex = $tierLevels->values()->search(fn($l) => (int)$l->level_number === (int)$currentLevel->level_number);
+                        $allReached = $tierLevels->every(fn($l) => (int)$l->min_xp <= (int)$user->total_xp);
+                        $noneReached = $tierLevels->every(fn($l) => (int)$l->min_xp > (int)$user->total_xp);
 
+                        if ($allReached) {
+                            $tierProgressPercent = 100;
+                        } elseif ($noneReached || $totalTierLevels <= 1) {
+                            $tierProgressPercent = 0;
+                        } elseif ($currentIndex !== false) {
+                            $tierProgressPercent = round(($currentIndex / ($totalTierLevels - 1)) * 100);
+                        } else {
+                            $reachedCount = $tierLevels->filter(fn($l) => (int)$l->min_xp <= (int)$user->total_xp)->count();
+                            $tierProgressPercent = round((max(0, $reachedCount - 1) / max(1, $totalTierLevels - 1)) * 100);
+                        }
+                    @endphp
+
+                    <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-7 shadow-sm">
+                        
+                        {{-- Chapter Header --}}
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+                            <div class="flex items-center gap-2.5">
+                                <span class="text-xl">{{ $style['icon'] }}</span>
                                 <div>
-                                    <div class="flex items-center gap-2">
-                                        <p class="font-display text-sm font-bold text-slate-900">
-                                            Level {{ $level->level_number }}
-                                        </p>
-                                        @if ($isCurrent)
-                                            <span class="rounded-md bg-primary px-1.5 py-0.5 font-display text-[10px] font-bold text-white uppercase tracking-wider">
-                                                Current
-                                            </span>
-                                        @endif
-                                    </div>
-                                    <p class="text-xs font-semibold text-muted-ink">
-                                        {{ $level->tier->tier_name }} Tier
+                                    <h4 class="font-display text-base font-extrabold text-slate-900">
+                                        {{ $tierName }} Tier
+                                    </h4>
+                                    <p class="text-[11px] font-semibold text-muted-ink">
+                                        Levels {{ $tierLevels->first()->level_number }} – {{ $tierLevels->last()->level_number }}
                                     </p>
                                 </div>
                             </div>
 
-                            <div class="text-right">
-                                <span class="font-display text-xs font-bold text-slate-800">
-                                    {{ number_format((int) $level->min_xp) }} XP
-                                </span>
-                            </div>
+                            <span class="rounded-full border px-3 py-0.5 font-display text-[11px] font-bold uppercase tracking-wider {{ $style['badge'] }}">
+                                {{ $tierName }}
+                            </span>
                         </div>
-                    @endforeach
-                </div>
-            </section>
+
+                        {{-- Timeline Track Wrapper --}}
+                        <div class="relative space-y-6"
+                             x-data="{ fillHeight: '0%' }"
+                             x-init="$nextTick(() => { setTimeout(() => fillHeight = '{{ $tierProgressPercent }}%', 150) })">
+                            
+                            {{-- Base Track (Gray spine centered at left-6 = 24px) --}}
+                            <div class="absolute left-6 top-6 bottom-6 w-1.5 -translate-x-1/2 rounded-full bg-slate-200"></div>
+
+                            {{-- Animated Progress Track (Fills down to the active level puck) --}}
+                            <div class="absolute left-6 top-6 w-1.5 -translate-x-1/2 rounded-full bg-gradient-to-b from-emerald-500 via-emerald-500 to-primary transition-all duration-1000 ease-out"
+                                 style="height: 0%;"
+                                 :style="'height: ' + fillHeight"></div>
+
+                            @foreach ($tierLevels as $level)
+                                @php
+                                    $isCurrent = (int) $level->level_number === (int) $currentLevel->level_number;
+                                    $isReached = (int) $level->min_xp <= (int) $user->total_xp;
+                                @endphp
+
+                                <div class="relative flex items-center gap-4">
+                                    
+                                    {{-- Tactile Node Puck --}}
+                                    @if ($isCurrent)
+                                        <div style="--lip: #4A2FC4;"
+                                             class="btn-press relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-primary/50 bg-primary text-white shadow-md ring-4 ring-primary/20">
+                                            <span class="font-display text-base font-black">🎯</span>
+                                        </div>
+                                    @elseif ($isReached)
+                                        <div style="--lip: #15803D;"
+                                             class="btn-press relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-strong/50 bg-strong text-white shadow-xs">
+                                            <span class="font-display text-base font-black">✓</span>
+                                        </div>
+                                    @else
+                                        <div style="--lip: #94A3B8;"
+                                             class="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-slate-300 bg-slate-100 text-slate-400 shadow-xs">
+                                            <span class="text-sm">🔒</span>
+                                        </div>
+                                    @endif
+
+                                    {{-- Level Milestone Card (Fixed mobile spacing) --}}
+                                    <div @class([
+                                        'flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-2xl p-3.5 sm:p-4 transition-all',
+                                        'border-2 border-b-4 border-primary/40 bg-primary-tint/30 shadow-xs ring-1 ring-primary/20' => $isCurrent,
+                                        'border-2 border-b-4 border-strong/30 bg-strong-tint/20' => $isReached && !$isCurrent,
+                                        'border-2 border-b-4 border-slate-200 bg-slate-50/50 opacity-75' => !$isReached,
+                                    ])>
+                                        <div>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <h5 class="font-display text-sm sm:text-base font-black text-slate-900 leading-none">
+                                                    Level {{ $level->level_number }}
+                                                </h5>
+                                                
+                                                @if ($isCurrent)
+                                                    <span class="rounded-full bg-primary px-2 py-0.5 font-display text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-white shadow-xs">
+                                                        Active Standing
+                                                    </span>
+                                                @elseif ($isReached)
+                                                    <span class="font-display text-[11px] font-bold text-strong-ink">
+                                                        Unlocked
+                                                    </span>
+                                                @endif
+                                            </div>
+
+                                            <p class="text-xs font-semibold text-muted-ink mt-1">
+                                                {{ $tierName }} Tier
+                                            </p>
+                                        </div>
+
+                                        {{-- XP Target Pill --}}
+                                        <div class="self-start sm:self-auto">
+                                            <span @class([
+                                                'inline-flex items-center rounded-xl border px-2.5 py-1 font-display text-xs font-extrabold shadow-2xs',
+                                                'border-primary/30 bg-white text-primary' => $isCurrent,
+                                                'border-strong/30 bg-white text-strong-ink' => $isReached && !$isCurrent,
+                                                'border-slate-200 bg-white/70 text-slate-600' => !$isReached,
+                                            ])>
+                                                {{ number_format((int) $level->min_xp) }} XP
+                                            </span>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            @endforeach
+
+                        </div>
+                    </div>
+                @endforeach
+            </div>
 
             {{-- ========================================= --}}
-            {{-- ACTION BUTTONS                            --}}
+            {{-- 3. ACTION BUTTONS                         --}}
             {{-- ========================================= --}}
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
                 <a href="{{ route('practice.intro') }}"
                    style="--lip: #4A2FC4;"
-                   class="btn-press w-full sm:w-auto rounded-xl bg-primary px-8 py-3 text-center font-display text-sm font-bold text-white shadow-sm transition hover:bg-primary/95">
-                    Earn More XP
+                   class="btn-press w-full sm:w-auto rounded-2xl bg-primary px-8 py-3.5 text-center font-display text-sm font-black text-white shadow-sm transition hover:bg-primary/95">
+                    Earn More XP →
                 </a>
 
                 <a href="{{ route('dashboard') }}"
                    style="--lip: #CBD5E1;"
-                   class="btn-press w-full sm:w-auto rounded-xl border-2 border-slate-200 bg-white px-8 py-3 text-center font-display text-sm font-bold text-slate-700 transition hover:bg-slate-50">
+                   class="btn-press w-full sm:w-auto rounded-2xl border-2 border-slate-200 bg-white px-8 py-3.5 text-center font-display text-sm font-bold text-slate-700 transition hover:bg-slate-50">
                     Back to Dashboard
                 </a>
             </div>

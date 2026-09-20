@@ -2,18 +2,14 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="font-display text-xl font-bold leading-tight text-slate-900">
+                <h1 class="font-display text-xl font-black text-slate-900 leading-tight">
                     {{ __('Practice Setup') }}
-                </h2>
-                <p class="text-xs font-semibold uppercase tracking-wider text-muted-ink">
+                </h1>
+                <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
                     Adaptive Bayesian Knowledge Tracing
                 </p>
             </div>
 
-            <a href="{{ route('dashboard') }}" 
-               class="font-display text-xs font-bold text-muted-ink transition hover:text-primary">
-                Back to Dashboard
-            </a>
         </div>
     </x-slot>
 

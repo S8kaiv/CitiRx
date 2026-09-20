@@ -2,9 +2,9 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="font-display text-xl font-bold text-slate-900 leading-tight">
+                <h1 class="font-display text-xl font-black text-slate-900 leading-tight">
                     {{ __('Practice Summary') }}
-                </h2>
+                </h1>
                 <p class="text-xs font-semibold uppercase tracking-wider text-muted-ink">
                     Session Mastery & Performance
                 </p>
