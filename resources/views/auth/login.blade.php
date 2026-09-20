@@ -1,28 +1,46 @@
-<x-guest-layout>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
-
+<x-guest-layout fullscreen>
     <style>
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-
         @keyframes capsule-float {
-            0%, 100% { transform: translateY(0) rotate(var(--r)); }
-            50%      { transform: translateY(-14px) rotate(calc(var(--r) + 6deg)); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(var(--r));
+            }
+
+            50% {
+                transform: translateY(-14px) rotate(calc(var(--r) + 6deg));
+            }
         }
-        .capsule { animation: capsule-float 7s ease-in-out infinite; }
-        .capsule:nth-child(2) { animation-delay: -2s; animation-duration: 9s; }
-        .capsule:nth-child(3) { animation-delay: -4s; animation-duration: 8s; }
-        .capsule:nth-child(4) { animation-delay: -1s; animation-duration: 10s; }
+
+        .capsule {
+            animation: capsule-float 7s ease-in-out infinite;
+        }
+
+        .capsule:nth-child(2) {
+            animation-delay: -2s;
+            animation-duration: 9s;
+        }
+
+        .capsule:nth-child(3) {
+            animation-delay: -4s;
+            animation-duration: 8s;
+        }
+
+        .capsule:nth-child(4) {
+            animation-delay: -1s;
+            animation-duration: 10s;
+        }
 
         @media (prefers-reduced-motion: reduce) {
-            .capsule { animation: none; }
+            .capsule {
+                animation: none;
+            }
         }
     </style>
 
     {{-- Full-screen breakout container compatible across all devices --}}
-    <div class="fixed inset-0 z-50 overflow-y-auto bg-slate-50 lg:bg-white text-slate-800">
-        <div class="min-h-full grid grid-cols-1 lg:grid-cols-[0.80fr_1fr]">
+    <div class="min-h-screen overflow-y-auto bg-slate-50 lg:bg-white text-slate-800">
+        <div class="min-h-full grid grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
 
             {{-- ============ LEFT: brand + live sample question (Desktop / Large Screens) ============ --}}
             <aside class="relative hidden lg:flex flex-col justify-between overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-8 xl:p-12 text-white min-h-screen">
@@ -49,7 +67,7 @@
 
                 {{-- Headline + interactive sample --}}
                 <div class="relative max-w-lg my-auto py-8">
-                    <h2 class="font-display text-4xl xl:text-4xl font-extrabold leading-[1.08] tracking-tight">
+                    <h2 class="font-display text-4xl xl:text-5xl font-extrabold leading-[1.08] tracking-tight">
                         Every question you answer gets you closer to your license.
                     </h2>
                     <p class="mt-4 text-sm xl:text-base text-indigo-100">
@@ -58,8 +76,7 @@
 
                     <div
                         x-data="{ picked: null, correct: 'b' }"
-                        class="mt-8 rounded-3xl bg-white p-6 text-slate-800 shadow-2xl shadow-indigo-900/30"
-                    >
+                        class="mt-8 rounded-3xl bg-white p-6 text-slate-800 shadow-2xl shadow-indigo-900/30">
                         <div class="flex items-center justify-between text-xs font-semibold text-slate-500">
                             <span class="rounded-full bg-indigo-50 px-3 py-1 text-indigo-700">Pharmacology</span>
                             <span>Sample question</span>
@@ -69,28 +86,27 @@
                             Which drug is the antidote for acetaminophen overdose?
                         </p>
 
-                        <div class="mt-4 grid gap-1">
+                        <div class="mt-4 grid gap-2">
                             @foreach ([
-                                'a' => 'Naloxone',
-                                'b' => 'N-acetylcysteine',
-                                'c' => 'Flumazenil',
-                                'd' => 'Atropine',
+                            'a' => 'Naloxone',
+                            'b' => 'N-acetylcysteine',
+                            'c' => 'Flumazenil',
+                            'd' => 'Atropine',
                             ] as $key => $label)
-                                <button
-                                    type="button"
-                                    @click="picked = '{{ $key }}'"
-                                    :disabled="picked !== null"
-                                    class="flex items-center gap-3 rounded-xl border px-4 py-2.5 text-left text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
-                                    :class="{
+                            <button
+                                type="button"
+                                @click="picked = '{{ $key }}'"
+                                :disabled="picked !== null"
+                                class="flex items-center gap-3 rounded-xl border px-4 py-2.5 text-left text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                                :class="{
                                         'border-slate-200 hover:border-indigo-300 hover:bg-indigo-50': picked === null,
                                         'border-emerald-400 bg-emerald-50 text-emerald-800': picked !== null && '{{ $key }}' === correct,
                                         'border-rose-300 bg-rose-50 text-rose-800': picked === '{{ $key }}' && '{{ $key }}' !== correct,
                                         'border-slate-100 text-slate-400': picked !== null && '{{ $key }}' !== correct && picked !== '{{ $key }}'
-                                    }"
-                                >
-                                    <span class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">{{ strtoupper($key) }}</span>
-                                    {{ $label }}
-                                </button>
+                                    }">
+                                <span class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">{{ strtoupper($key) }}</span>
+                                {{ $label }}
+                            </button>
                             @endforeach
                         </div>
 
@@ -106,7 +122,7 @@
                     </div>
                 </div>
 
-                <p class="relative mt-auto pt-8 text-xs text-indigo-100">Built for future pharmacists.</p>
+                <p class="relative text-xs text-indigo-100">Built for future pharmacists.</p>
             </aside>
 
             {{-- ============ RIGHT: sign-in form ============ --}}
@@ -131,30 +147,35 @@
 
                     {{-- Native Validation Errors --}}
                     @if ($errors->any())
-                        <div class="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-700">
-                            <div class="font-bold">Whoops! Something went wrong.</div>
-                            <ul class="mt-2 list-disc pl-5 space-y-1">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
+                    <div class="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-700">
+                        <div class="font-bold">Whoops! Something went wrong.</div>
+                        <ul class="mt-2 list-disc pl-5 space-y-1">
+                            @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
                     @endif
 
                     @session('status')
-                        <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-700">
-                            {{ $value }}
-                        </div>
+                    <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-700">
+                        {{ $value }}
+                    </div>
                     @endsession
 
-                    <form method="POST" action="{{ route('login') }}" class="space-y-5" x-data="{ show: false }">
+                    <form method="POST" action="{{ route('login') }}" class="space-y-5"
+                        x-data="{ show: false, busy: false }"
+                        @submit="busy = true"
+                        @pageshow.window="busy = false">
                         @csrf
 
                         <div>
                             <label for="email" class="mb-2 block text-sm font-semibold text-slate-700">Email address</label>
                             <div class="relative">
                                 <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                                    </svg>
                                 </span>
                                 <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
                                     class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
@@ -166,14 +187,16 @@
                             <div class="mb-2 flex items-center justify-between">
                                 <label for="password" class="block text-sm font-semibold text-slate-700">Password</label>
                                 @if (Route::has('password.request'))
-                                    <a href="{{ route('password.request') }}" class="text-xs font-semibold text-indigo-600 hover:text-fuchsia-600">Forgot password?</a>
+                                <a href="{{ route('password.request') }}" class="text-xs font-semibold text-indigo-600 hover:text-fuchsia-600">Forgot password?</a>
                                 @endif
                             </div>
                             <div class="relative">
                                 <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/></svg>
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                                    </svg>
                                 </span>
-                                <input id="password" :type="show ? 'text' : 'password'" name="password" required autocomplete="current-password"
+                                <input id="password" type="password" :type="show ? 'text' : 'password'" name="password" required autocomplete="current-password"
                                     class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-16 text-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
                                     placeholder="Your password">
                                 <button type="button" @click="show = !show"
@@ -188,16 +211,18 @@
                         </label>
 
                         <button type="submit"
-                            class="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition hover:shadow-xl hover:shadow-fuchsia-200 hover:brightness-110 focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-200 active:scale-[0.99]">
-                            Sign in
+                            :disabled="busy"
+                            style="--lip: #4A2FC4;"
+                            class="btn-press flex w-full items-center justify-center rounded-2xl bg-primary px-7 py-3.5 font-display text-base font-bold text-white shadow-md disabled:opacity-70">
+                            <span x-text="busy ? 'Signing in…' : 'Sign In'">Sign In</span>
                         </button>
                     </form>
 
                     @if (Route::has('register'))
-                        <p class="mt-8 text-center text-sm text-slate-500">
-                            New to CitiRx?
-                            <a href="{{ route('register') }}" class="font-bold text-indigo-600 hover:text-fuchsia-600">Create a free account</a>
-                        </p>
+                    <p class="mt-8 text-center text-sm text-slate-500">
+                        New to CitiRx?
+                        <a href="{{ route('register') }}" class="font-bold text-indigo-600 hover:text-fuchsia-600">Create a free account</a>
+                    </p>
                     @endif
                 </div>
             </main>

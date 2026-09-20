@@ -1,11 +1,5 @@
-<x-guest-layout>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
-
+<x-guest-layout fullscreen>
     <style>
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-
         @keyframes capsule-float {
             0%, 100% { transform: translateY(0) rotate(var(--r)); }
             50%      { transform: translateY(-14px) rotate(calc(var(--r) + 6deg)); }
@@ -21,11 +15,11 @@
     </style>
 
     {{-- Full-screen breakout container compatible across all devices --}}
-    <div class="fixed inset-0 z-50 overflow-y-auto bg-slate-50 lg:bg-white text-slate-800">
-        <div class="min-h-full grid grid-cols-1 lg:grid-cols-[0.80fr_1fr]">
+    <div class="min-h-screen overflow-y-auto bg-slate-50 lg:bg-white text-slate-800">
+        <div class="min-h-full grid grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
 
             {{-- ============ LEFT: brand + what happens next (Desktop / Large Screens) ============ --}}
-            <aside class="relative hidden lg:flex flex-col justify-start overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-8 xl:p-12 text-white min-h-screen">
+            <aside class="relative hidden lg:flex flex-col justify-between overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-8 xl:p-12 text-white min-h-screen">
 
                 {{-- Floating capsules background --}}
                 <div class="pointer-events-none absolute inset-0" aria-hidden="true">
@@ -48,8 +42,8 @@
                 </a>
 
                 {{-- Password Recovery Steps Showcase --}}
-                <div class="relative max-w-lg my-10 x1:mt-14">
-                    <h2 class="font-display text-4xl xl:text-4xl font-extrabold leading-[1.2] tracking-tight">
+                <div class="relative max-w-lg my-auto py-8">
+                    <h2 class="font-display text-4xl xl:text-5xl font-extrabold leading-[1.08] tracking-tight">
                         Locked out? You'll be back in shortly.
                     </h2>
                     <p class="mt-4 text-sm xl:text-base text-indigo-100">
@@ -73,7 +67,7 @@
                     </ol>
                 </div>
 
-                <p class="relative mt-auto pt-8 text-xs text-indigo-100">Built for future pharmacists.</p>
+                <p class="relative text-xs text-indigo-100">Built for future pharmacists.</p>
             </aside>
 
             {{-- ============ RIGHT: reset form ============ --}}
@@ -103,7 +97,10 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('password.email') }}" class="space-y-5">
+                    <form method="POST" action="{{ route('password.email') }}" class="space-y-5"
+                        x-data="{ show: false, busy: false }"
+                        @submit="busy = true"
+                        @pageshow.window="busy = false">
                         @csrf
 
                         <div>
@@ -120,8 +117,10 @@
                         </div>
 
                         <button type="submit"
-                            class="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition hover:shadow-xl hover:shadow-fuchsia-200 hover:brightness-110 focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-200 active:scale-[0.99]">
-                            Send reset link
+                            :disabled="busy"
+                            style="--lip: #4A2FC4;"
+                            class="btn-press flex w-full items-center justify-center rounded-2xl bg-primary px-7 py-3.5 font-display text-base font-bold text-white shadow-md disabled:opacity-70">
+                            <span x-text="busy ? 'Sending Code…' : 'Send Code'">Send Code</span>
                         </button>
                     </form>
 

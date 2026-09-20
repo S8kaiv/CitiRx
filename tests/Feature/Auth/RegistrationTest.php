@@ -26,3 +26,13 @@ test('new users can register', function () {
         route('dashboard', absolute: false)
     );
 });
+
+test('registration form uses the required name fields', function () {
+    $response = $this->get('/register');
+
+    $response
+        ->assertOk()
+        ->assertSee('name="first_name"', false)
+        ->assertSee('name="middle_name"', false)
+        ->assertSee('name="last_name"', false);
+});
