@@ -4,93 +4,46 @@ namespace App\Http\Controllers;
 
 use App\Models\QuestionBookmark;
 use App\Models\RxVault;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class RxVaultController extends Controller
 {
-    public function index(
-        Request $request
-    ): View {
+    public function index(Request $request): View
+    {
         $user = $request->user();
 
-        $activeTab = $request->query('tab', 'mistakes');
+        $requestedTab = $request->query(
+            'tab',
+            'mistakes'
+        );
 
-        /*
-         * Active questions still needing review.
-         */
-        $active = RxVault::query()
+        $activeTab = in_array(
+            $requestedTab,
+            ['mistakes', 'bookmarks'],
+            true
+        ) ? $requestedTab : 'mistakes';
+
+        $vaultQuery = RxVault::query()
             ->where(
                 'user_id',
                 $user->user_id
-            )
-            ->where(
-                'is_cleared',
-                false
-            )
+            );
+
+        $active = (clone $vaultQuery)
+            ->where('is_cleared', false)
             ->with([
                 'question.correctChoice',
                 'question.competency.domain',
             ])
-            ->orderByDesc(
-                'added_at'
-            )
+            ->orderByDesc('added_at')
             ->get();
 
-        /*
-         * Historical cleared count.
-         */
-        $clearedCount = RxVault::query()
-            ->where(
-                'user_id',
-                $user->user_id
-            )
-            ->where(
-                'is_cleared',
-                true
-            )
+        $clearedCount = (clone $vaultQuery)
+            ->where('is_cleared', true)
             ->count();
 
-        /*
-         * Group active questions by domain.
-         */
-        $grouped = $active
-            ->groupBy(
-                fn ($entry) => $entry
-                    ->question
-                    ->competency
-                    ->domain
-                    ->domain_id
-            )
-            ->sortBy(
-                fn ($group) => $group
-                    ->first()
-                    ->question
-                    ->competency
-                    ->domain
-                    ->domain_id
-            )
-            ->map(
-                function ($group) {
-                    $domain = $group
-                        ->first()
-                        ->question
-                        ->competency
-                        ->domain;
-
-                    return [
-                        'domain_id' => $domain->domain_id,
-                        'domain_name' => $domain->domain_name,
-                        'entries' => $group,
-                    ];
-                }
-            )
-            ->values();
-
-        /*
-         * Bookmarked questions saved for revision.
-         */
         $bookmarks = QuestionBookmark::query()
             ->where(
                 'user_id',
@@ -103,110 +56,58 @@ class RxVaultController extends Controller
             ->latest()
             ->get();
 
-        /*
-         * Group bookmarked questions by domain.
-         */
-        $groupedBookmarks = $bookmarks
+        return view('vault.index', [
+            'activeTab' => $activeTab,
+
+            'grouped' => $this->groupByDomain(
+                $active
+            ),
+
+            'groupedBookmarks' => $this->groupByDomain(
+                $bookmarks
+            ),
+
+            'activeCount' => $active->count(),
+
+            'clearedCount' => $clearedCount,
+
+            'bookmarksCount' => $bookmarks->count(),
+        ]);
+    }
+
+    /**
+     * Group Rx Vault entries or bookmarks by TOS domain.
+     */
+    private function groupByDomain(
+        Collection $records
+    ): Collection {
+        return $records
+            ->filter(
+                fn ($record) =>
+                    $record->question?->competency?->domain
+                    !== null
+            )
             ->groupBy(
-                fn ($bookmark) => $bookmark
+                fn ($record) => $record
                     ->question
                     ->competency
                     ->domain
                     ->domain_id
             )
-            ->sortBy(
-                fn ($group) => $group
+            ->map(function (Collection $records): array {
+                $domain = $records
                     ->first()
                     ->question
                     ->competency
-                    ->domain
-                    ->domain_id
-            )
-            ->map(
-                function ($group) {
-                    $domain = $group
-                        ->first()
-                        ->question
-                        ->competency
-                        ->domain;
+                    ->domain;
 
-                    return [
-                        'domain_id' => $domain->domain_id,
-                        'domain_name' => $domain->domain_name,
-                        'entries' => $group,
-                    ];
-                }
-            )
+                return [
+                    'domain_id' => $domain->domain_id,
+                    'domain_name' => $domain->domain_name,
+                    'entries' => $records,
+                ];
+            })
+            ->sortBy('domain_id')
             ->values();
-
-        return view(
-            'vault.index',
-            [
-                'activeTab' => $activeTab,
-                'grouped' => $grouped,
-                'groupedBookmarks' => $groupedBookmarks,
-                'activeCount' => $active->count(),
-                'clearedCount' => $clearedCount,
-                'bookmarksCount' => $bookmarks->count(),
-            ]
-        );
-    }
-
-    public function drillMistakes(
-        Request $request
-    ): RedirectResponse {
-        $user = $request->user();
-
-        $hasMistakes = RxVault::query()
-            ->where(
-                'user_id',
-                $user->user_id
-            )
-            ->where(
-                'is_cleared',
-                false
-            )
-            ->exists();
-
-        if (! $hasMistakes) {
-            return redirect()
-                ->route('vault.index', ['tab' => 'mistakes'])
-                ->with(
-                    'status',
-                    'Your Mistake Locker is clear! Keep practicing to identify weak spots.'
-                );
-        }
-
-        return redirect()->route(
-            'practice.start',
-            ['mode' => 'mistakes']
-        );
-    }
-
-    public function drillBookmarks(
-        Request $request
-    ): RedirectResponse {
-        $user = $request->user();
-
-        $hasBookmarks = QuestionBookmark::query()
-            ->where(
-                'user_id',
-                $user->user_id
-            )
-            ->exists();
-
-        if (! $hasBookmarks) {
-            return redirect()
-                ->route('vault.index', ['tab' => 'bookmarks'])
-                ->with(
-                    'error',
-                    'You have not bookmarked any questions yet.'
-                );
-        }
-
-        return redirect()->route(
-            'practice.start',
-            ['mode' => 'bookmarks']
-        );
     }
 }
