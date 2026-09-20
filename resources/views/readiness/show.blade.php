@@ -2,18 +2,14 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="font-display text-xl font-bold text-slate-900 leading-tight">
+                <h1 class="font-display text-xl font-black text-slate-900 leading-tight">
                     {{ __('Board Readiness Report') }}
-                </h2>
+                </h1>
                 <p class="text-xs font-semibold uppercase tracking-wider text-muted-ink">
                     PRC Table of Specifications (TOS) Telemetry
                 </p>
             </div>
 
-            <a href="{{ route('dashboard') }}" 
-               class="font-display text-xs font-bold text-muted-ink hover:text-primary transition">
-                Back to Dashboard
-            </a>
         </div>
     </x-slot>
 

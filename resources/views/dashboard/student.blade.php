@@ -1,39 +1,38 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center justify-between gap-2">
             <div>
-                <h2 class="font-display text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
-                    Student Dashboard
+                {{-- Responsive text size so it stays compact on mobile --}}
+                <h2 class="font-display text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
+                    <span class="block sm:hidden">Dashboard</span>
+                    <span class="hidden sm:block">Student Dashboard</span>
                 </h2>
-                <p class="text-xs font-semibold uppercase tracking-wider text-muted-ink">
+                <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
                     PhLE Adaptive Review Engine
                 </p>
             </div>
 
-            {{-- Streak & XP Counters --}}
-            <div class="flex items-center gap-2.5">
+            {{-- Compact badges with smaller mobile padding to guarantee 1-row fit --}}
+            <div class="flex items-center gap-1.5 shrink-0">
                 @php
                     $streak = (int) ($user->streak_count ?? 0);
                     $xp = (int) ($user->total_xp ?? 0);
                 @endphp
 
-                <div class="flex items-center gap-2 rounded-2xl border-2 border-b-4 border-[#F5A623]/30 bg-gold-tint px-4 py-2 font-display font-bold text-gold-ink shadow-sm"
+                {{-- Streak Pill --}}
+                <div class="flex items-center gap-1 rounded-xl border-2 border-b-2 sm:border-b-4 border-[#F5A623]/30 bg-gold-tint px-2.5 py-1 sm:px-3.5 sm:py-1.5 font-display font-bold text-gold-ink shadow-2xs"
                      title="{{ $streak }}-day study streak">
-                    <svg class="h-5 w-5 text-gold" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12.963 2.286a.75.75 0 0 0-1.071-.136 9.742 9.742 0 0 0-3.539 6.176A7.547 7.547 0 0 1 6.648 6.61a.75.75 0 0 0-1.152-.082A9 9 0 1 0 15.68 4.534a7.46 7.46 0 0 1-2.717-2.248ZM15.75 14.25a3.75 3.75 0 1 1-7.313-1.172c.628.465 1.35.81 2.133 1a5.99 5.99 0 0 1 1.925-3.547 3.75 3.75 0 0 1 3.255 3.719Z"/>
-                    </svg>
-                    <span class="text-base font-extrabold">{{ $streak }}</span>
-                    <span class="text-xs tracking-wider opacity-80">DAYS</span>
+                    <span class="text-xs sm:text-sm">🔥</span>
+                    <span class="text-xs sm:text-sm font-black">{{ $streak }}</span>
+                    <span class="text-[9px] tracking-wider opacity-80 hidden xs:inline">DAYS</span>
                 </div>
 
-                {{-- XP Counter (Clean & Static) --}}
-                <div class="flex items-center gap-2 rounded-2xl border-2 border-b-4 border-[#F5A623]/30 bg-gold-tint px-4 py-2 font-display font-bold text-gold-ink shadow-sm"
+                {{-- XP Pill --}}
+                <div class="flex items-center gap-1 rounded-xl border-2 border-b-2 sm:border-b-4 border-[#F5A623]/30 bg-gold-tint px-2.5 py-1 sm:px-3.5 sm:py-1.5 font-display font-bold text-gold-ink shadow-2xs"
                      title="Total experience points">
-                    <svg class="h-5 w-5 text-gold" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M14.615 1.595a.75.75 0 0 1 .359.852L12.982 9.75h7.268a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262l10.5-11.25a.75.75 0 0 1 .913-.143Z"/>
-                    </svg>
-                    <span class="text-base font-extrabold">{{ number_format($xp) }}</span>
-                    <span class="text-xs tracking-wider opacity-80">XP</span>
+                    <span class="text-xs sm:text-sm">⚡</span>
+                    <span class="text-xs sm:text-sm font-black">{{ number_format($xp) }}</span>
+                    <span class="text-[9px] tracking-wider opacity-80 hidden xs:inline">XP</span>
                 </div>
             </div>
         </div>
@@ -54,16 +53,13 @@
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
 
             {{-- Welcome Bar --}}
-            <div class="flex items-center justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
                 <div class="flex items-center gap-4">
-                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-tint font-display text-xl font-bold text-primary">
-                        🎓
-                    </div>
                     <div>
                         <h1 class="font-display text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
                             Welcome back, {{ method_exists($user, 'fullName') ? $user->fullName() : $user->name }}!
                         </h1>
-                        <p class="text-xs font-medium text-muted-ink">
+                        <p class="text-xs font-medium text-muted-ink mt-0.5">
                             @if ($user->cohort)
                                 <span class="font-semibold text-slate-800">{{ $user->cohort->cohort_name }}</span> · 
                             @endif
@@ -80,7 +76,7 @@
 
                     {{-- 1. HERO CARD: Focus / Diagnostic --}}
                     @if (!$user->is_diagnostic_completed)
-                        <section class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/40 bg-gradient-to-br from-primary-tint via-[#EDE8FF] to-white p-6 sm:p-8">
+                        <section class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/40 bg-gradient-to-br from-primary-tint via-[#EDE8FF] to-white p-6 sm:p-8 shadow-sm">
                             <span class="inline-flex items-center rounded-full border border-primary/30 bg-white px-3 py-1 font-display text-xs font-bold text-primary shadow-sm">
                                 Step 1: Baseline Assessment
                             </span>
@@ -99,7 +95,7 @@
                             </div>
                         </section>
                     @else
-                        <section class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-gradient-to-br from-primary-tint via-[#FAF8FF] to-white p-6 sm:p-8">
+                        <section class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-gradient-to-br from-primary-tint via-[#FAF8FF] to-white p-6 sm:p-8 shadow-sm">
                             <div class="flex items-center gap-2">
                                 <span class="inline-flex items-center rounded-full bg-white px-3 py-1 font-display text-xs font-bold text-primary shadow-sm ring-1 ring-primary/20">
                                     Recommended Focus
@@ -134,17 +130,51 @@
                         </section>
                     @endif
 
-                    {{-- 2. RX VAULT, BOOKMARKS & ACHIEVEMENTS ROW --}}
-                    <div class="grid gap-4 sm:grid-cols-3">
+                    {{-- MOBILE-ONLY LEVEL WIDGET (Appears first on mobile screens before Hub cards) --}}
+                    <div class="block lg:hidden">
+                        <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm">
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gold-tint text-xl shadow-2xs">
+                                        🛡️
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <h3 class="font-display text-base font-extrabold text-slate-900 leading-tight">
+                                                Level {{ $user->current_level ?? 1 }}
+                                            </h3>
+                                            @if ($user->level?->tier)
+                                                <span class="inline-flex items-center rounded-lg bg-primary-tint px-2 py-0.5 font-display text-[10px] font-bold text-primary">
+                                                    {{ $user->level->tier->tier_name }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <p class="text-xs font-semibold text-muted-ink mt-0.5">
+                                            {{ number_format((int) $user->total_xp) }} Total XP
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-5 border-t border-slate-100 pt-4">
+                                <a href="{{ route('progress.index') }}" class="font-display text-xs font-bold text-primary hover:underline">
+                                    View Full Progress Breakdown →
+                                </a>
+                            </div>
+                        </section>
+                    </div>
+
+                    {{-- 2. RX VAULT, BOOKMARKS & ACHIEVEMENTS ROW (Duolingo Tactile Button Vibe) --}}
+                    <div class="grid gap-5 sm:grid-cols-3">
                         
-                        {{-- Rx Vault Tile --}}
-                        <div class="flex flex-col justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                        {{-- Rx Vault Tile (Rose Theme) --}}
+                        <div class="flex flex-col justify-between rounded-3xl border-2 border-b-4 border-rose-300 bg-gradient-to-br from-rose-50/80 via-white to-white p-5 sm:p-6 shadow-sm">
                             <div>
-                                <div class="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-b-4 border-[#F5A623]/30 bg-gold-tint text-xl shadow-sm">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-b-3 border-rose-300 bg-rose-100 text-2xl shadow-2xs">
                                     💊
                                 </div>
-                                <h4 class="mt-3 font-display text-base font-bold text-slate-900">Rx Vault</h4>
-                                <p class="text-xs font-medium text-muted-ink mt-0.5">
+                                <h4 class="mt-4 font-display text-lg font-black text-slate-900">Rx Vault</h4>
+                                <p class="text-xs font-semibold text-muted-ink mt-0.5">
                                     @if ($activeVaultCount > 0)
                                         <span class="font-bold text-slate-900">{{ $activeVaultCount }}</span> {{ \Illuminate\Support\Str::plural('item', $activeVaultCount) }} to review.
                                     @else
@@ -152,23 +182,23 @@
                                     @endif
                                 </p>
                             </div>
-                            <div class="mt-4">
+                            <div class="mt-6">
                                 <a href="{{ route('vault.index') }}"
-                                   style="--lip: #CBD5E1;"
-                                   class="btn-press block w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-1.5 text-center font-display text-[11px] font-extrabold uppercase tracking-wider text-slate-700 hover:bg-slate-100">
+                                   style="--lip: #BE123C;"
+                                   class="btn-press block w-full rounded-2xl bg-rose-500 py-3 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-md transition hover:bg-rose-600">
                                     Open Vault
                                 </a>
                             </div>
                         </div>
 
-                        {{-- Bookmarks Tile --}}
-                        <div class="flex flex-col justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                        {{-- Bookmarks Tile (Amber Theme) --}}
+                        <div class="flex flex-col justify-between rounded-3xl border-2 border-b-4 border-amber-300 bg-gradient-to-br from-amber-50/80 via-white to-white p-5 sm:p-6 shadow-sm">
                             <div>
-                                <div class="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-b-4 border-primary/30 bg-primary-tint text-xl shadow-sm">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-b-3 border-amber-300 bg-amber-100 text-2xl shadow-2xs">
                                     ⭐
                                 </div>
-                                <h4 class="mt-3 font-display text-base font-bold text-slate-900">Bookmarks</h4>
-                                <p class="text-xs font-medium text-muted-ink mt-0.5">
+                                <h4 class="mt-4 font-display text-lg font-black text-slate-900">Bookmarks</h4>
+                                <p class="text-xs font-semibold text-muted-ink mt-0.5">
                                     @if (($bookmarkCount ?? 0) > 0)
                                         <span class="font-bold text-slate-900">{{ $bookmarkCount }}</span> {{ \Illuminate\Support\Str::plural('question', $bookmarkCount) }} starred.
                                     @else
@@ -176,30 +206,30 @@
                                     @endif
                                 </p>
                             </div>
-                            <div class="mt-4">
+                            <div class="mt-6">
                                 <a href="{{ route('vault.index', ['tab' => 'bookmarks']) }}"
-                                   style="--lip: #CBD5E1;"
-                                   class="btn-press block w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-1.5 text-center font-display text-[11px] font-extrabold uppercase tracking-wider text-slate-700 hover:bg-slate-100">
-                                    Bookmarks
+                                   style="--lip: #B45309;"
+                                   class="btn-press block w-full rounded-2xl bg-amber-500 py-3 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-md transition hover:bg-amber-600">
+                                    View Bookmarks
                                 </a>
                             </div>
                         </div>
 
-                        {{-- Achievements Tile --}}
-                        <div class="flex flex-col justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                        {{-- Achievements Tile (Indigo Theme) --}}
+                        <div class="flex flex-col justify-between rounded-3xl border-2 border-b-4 border-indigo-300 bg-gradient-to-br from-indigo-50/80 via-white to-white p-5 sm:p-6 shadow-sm">
                             <div>
-                                <div class="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-b-4 border-[#F5A623]/30 bg-gold-tint text-xl shadow-sm">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-b-3 border-indigo-300 bg-indigo-100 text-2xl shadow-2xs">
                                     🏆
                                 </div>
-                                <h4 class="mt-3 font-display text-base font-bold text-slate-900">Badges</h4>
-                                <p class="text-xs font-medium text-muted-ink mt-0.5">
+                                <h4 class="mt-4 font-display text-lg font-black text-slate-900">Badges</h4>
+                                <p class="text-xs font-semibold text-muted-ink mt-0.5">
                                     <span class="font-bold text-slate-900">{{ $unlockedBadgeCount }}</span> of {{ $totalBadgeCount }} unlocked
                                 </p>
                             </div>
-                            <div class="mt-4">
+                            <div class="mt-6">
                                 <a href="{{ route('badges.index') }}"
-                                   style="--lip: #CBD5E1;"
-                                   class="btn-press block w-full rounded-xl border-2 border-slate-200 bg-slate-50 py-1.5 text-center font-display text-[11px] font-extrabold uppercase tracking-wider text-slate-700 hover:bg-slate-100">
+                                   style="--lip: #4338CA;"
+                                   class="btn-press block w-full rounded-2xl bg-indigo-600 py-3 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-md transition hover:bg-indigo-700">
                                     View Badges
                                 </a>
                             </div>
@@ -212,37 +242,43 @@
                 {{-- SIDEBAR: Level & Readiness Widgets --}}
                 <aside class="space-y-6">
 
-                    {{-- Level & Progression Widget --}}
-                    <section class="rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-tint text-xl">
-                                    🛡️
-                                </div>
-                                <div>
-                                    <h3 class="font-display text-base font-extrabold text-slate-900 leading-snug">
-                                        Level {{ $user->current_level ?? 1 }}
-                                        @if ($user->level?->tier)
-                                            — {{ $user->level->tier->tier_name }}
-                                        @endif
-                                    </h3>
-                                    <p class="text-xs font-semibold text-muted-ink">
-                                        {{ number_format((int) $user->total_xp) }} Total XP
-                                    </p>
+                    {{-- Level & Progression Widget (Hidden on mobile since it's displayed above on mobile) --}}
+                    <div class="hidden lg:block">
+                        <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm">
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gold-tint text-xl shadow-2xs">
+                                        🛡️
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <h3 class="font-display text-base font-extrabold text-slate-900 leading-tight">
+                                                Level {{ $user->current_level ?? 1 }}
+                                            </h3>
+                                            @if ($user->level?->tier)
+                                                <span class="inline-flex items-center rounded-lg bg-primary-tint px-2 py-0.5 font-display text-[10px] font-bold text-primary">
+                                                    {{ $user->level->tier->tier_name }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <p class="text-xs font-semibold text-muted-ink mt-0.5">
+                                            {{ number_format((int) $user->total_xp) }} Total XP
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="mt-5 border-t border-slate-100 pt-4">
-                            <a href="{{ route('progress.index') }}" class="font-display text-xs font-bold text-primary hover:underline">
-                                View Full Progress Breakdown →
-                            </a>
-                        </div>
-                    </section>
+                            <div class="mt-5 border-t border-slate-100 pt-4">
+                                <a href="{{ route('progress.index') }}" class="font-display text-xs font-bold text-primary hover:underline">
+                                    View Full Progress Breakdown →
+                                </a>
+                            </div>
+                        </section>
+                    </div>
 
                     {{-- Board Readiness Prediction Widget --}}
                     @if ($user->is_diagnostic_completed)
-                        <section class="rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-6 text-center shadow-sm">
+                        <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 text-center shadow-sm">
                             <h3 class="font-display text-xs font-extrabold uppercase tracking-wider text-muted-ink">
                                 Predicted PhLE Readiness
                             </h3>
@@ -250,11 +286,9 @@
                             <div class="mt-4 flex flex-col items-center">
                                 @php 
                                     $pct = (float) ($user->predicted_readiness_pct ?? 0); 
-                                    // Circumference for r=40 (2 * pi * 40 ≈ 251.33)
                                     $dashCircumference = 251.33;
                                 @endphp
                                 
-                                {{-- Synchronized Dial: Starts empty (0%) and fills clockwise via requestAnimationFrame --}}
                                 <div class="relative flex items-center justify-center w-32 h-32 mb-4"
                                      x-data="{
                                          target: {{ (float) $pct }},
@@ -291,10 +325,8 @@
                                          });
                                      ">
                                     
-                                    {{-- SVG Dial Track & Progress Ring --}}
                                     <svg class="absolute inset-0 h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
                                         <circle cx="50" cy="50" r="40" fill="none" stroke="#E2E8F0" stroke-width="10" />
-                                        
                                         <circle x-ref="ring"
                                                 cx="50" cy="50" r="40" fill="none" 
                                                 stroke="{{ $readinessStyles['hex'] }}" 
@@ -304,7 +336,6 @@
                                                 stroke-dashoffset="{{ $dashCircumference }}" />
                                     </svg>
                                 
-                                    {{-- Center Text --}}
                                     <div class="absolute flex flex-col items-center justify-center">
                                         <span class="font-display text-2xl font-extrabold text-slate-900 leading-none">
                                             <span x-text="displayScore">0.0</span><span class="text-sm font-bold text-muted-ink">%</span>

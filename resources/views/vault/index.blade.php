@@ -6,15 +6,11 @@
                 <h1 class="font-display text-xl font-black text-slate-900 leading-tight">
                     {{ __('Rx Vault') }}
                 </h1>
-                <p class="font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
                     Remediation & Spaced Recovery Hub
                 </p>
             </div>
 
-            <a href="{{ route('dashboard') }}" 
-               class="font-display text-xs font-bold text-muted-ink hover:text-primary transition">
-                Back to Dashboard
-            </a>
         </div>
     </x-slot>
 
@@ -132,11 +128,17 @@
             <div class="flex items-center gap-3">
                 <button type="button"
                         @click="activeTab = 'mistakes'"
-                        class="btn-press inline-flex items-center gap-2 rounded-2xl border-2 border-b-4 px-5 py-2.5 font-display text-xs font-black uppercase tracking-wider transition-all"
+                        class="btn-press inline-flex items-center gap-2 rounded-2xl border-2 border-b-4 px-4 sm:px-5 py-2.5 font-display text-xs font-black uppercase tracking-wider transition-all"
                         :class="activeTab === 'mistakes'
                             ? 'border-primary-lip bg-primary text-white shadow-xs'
                             : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'">
-                    <span>Mistake Locker</span>
+                    
+                    {{-- Responsive label: "Mistakes" on mobile, "Mistake Locker" on web --}}
+                    <span>
+                        <span class="inline sm:hidden">Mistakes</span>
+                        <span class="hidden sm:inline">Mistake Locker</span>
+                    </span>
+
                     <span class="rounded-full px-2 py-0.5 text-[10px]"
                           :class="activeTab === 'mistakes' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'">
                         {{ $activeCount }}
@@ -145,7 +147,7 @@
 
                 <button type="button"
                         @click="activeTab = 'bookmarks'"
-                        class="btn-press inline-flex items-center gap-2 rounded-2xl border-2 border-b-4 px-5 py-2.5 font-display text-xs font-black uppercase tracking-wider transition-all"
+                        class="btn-press inline-flex items-center gap-2 rounded-2xl border-2 border-b-4 px-4 sm:px-5 py-2.5 font-display text-xs font-black uppercase tracking-wider transition-all"
                         :class="activeTab === 'bookmarks'
                             ? 'border-amber-700 bg-amber-500 text-white shadow-xs'
                             : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'">

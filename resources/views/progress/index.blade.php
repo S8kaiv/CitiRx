@@ -2,18 +2,13 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="font-display text-xl font-bold leading-tight text-slate-900">
+                <h1 class="font-display text-xl font-black text-slate-900 leading-tight">
                     {{ __('Level Progression') }}
-                </h2>
-                <p class="text-xs font-semibold uppercase tracking-wider text-muted-ink">
+                </h1>
+                <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
                     Experience & Tier Milestones
                 </p>
             </div>
-
-            <a href="{{ route('dashboard') }}" 
-               class="font-display text-xs font-bold text-muted-ink transition hover:text-primary">
-                Back to Dashboard
-            </a>
         </div>
     </x-slot>
 
@@ -23,9 +18,9 @@
 
         // Tier theme accents
         $tierStyles = [
-            'Beginner'     => ['border' => 'border-amber-300',   'badge' => 'bg-amber-100 border-amber-300 text-amber-900',     'accent' => '#F5A623', 'icon' => '🥉'],
-            'Intermediate' => ['border' => 'border-teal-300',    'badge' => 'bg-teal-100 border-teal-300 text-teal-900',       'accent' => '#0EA5A4', 'icon' => '🥈'],
-            'Advanced'     => ['border' => 'border-indigo-300',  'badge' => 'bg-indigo-100 border-indigo-300 text-indigo-900',   'accent' => '#6366F1', 'icon' => '🥇'],
+            'Beginner'     => ['border' => 'border-amber-300',   'badge' => 'bg-amber-100 border-amber-300 text-amber-900',    'accent' => '#F5A623', 'icon' => '🥉'],
+            'Intermediate' => ['border' => 'border-teal-300',    'badge' => 'bg-teal-100 border-teal-300 text-teal-900',      'accent' => '#0EA5A4', 'icon' => '🥈'],
+            'Advanced'     => ['border' => 'border-indigo-300',  'badge' => 'bg-indigo-100 border-indigo-300 text-indigo-900',  'accent' => '#6366F1', 'icon' => '🥇'],
             'Board Ready'  => ['border' => 'border-emerald-300', 'badge' => 'bg-emerald-100 border-emerald-300 text-emerald-900', 'accent' => '#22C55E', 'icon' => '👑'],
         ];
     @endphp
@@ -209,21 +204,21 @@
                                         </div>
                                     @endif
 
-                                    {{-- Level Milestone Card --}}
+                                    {{-- Level Milestone Card (Fixed mobile spacing) --}}
                                     <div @class([
-                                        'flex-1 flex items-center justify-between rounded-2xl p-3.5 sm:p-4 transition-all',
+                                        'flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-2xl p-3.5 sm:p-4 transition-all',
                                         'border-2 border-b-4 border-primary/40 bg-primary-tint/30 shadow-xs ring-1 ring-primary/20' => $isCurrent,
                                         'border-2 border-b-4 border-strong/30 bg-strong-tint/20' => $isReached && !$isCurrent,
                                         'border-2 border-b-4 border-slate-200 bg-slate-50/50 opacity-75' => !$isReached,
                                     ])>
                                         <div>
-                                            <div class="flex items-center gap-2">
+                                            <div class="flex flex-wrap items-center gap-2">
                                                 <h5 class="font-display text-sm sm:text-base font-black text-slate-900 leading-none">
                                                     Level {{ $level->level_number }}
                                                 </h5>
                                                 
                                                 @if ($isCurrent)
-                                                    <span class="rounded-full bg-primary px-2 py-0.5 font-display text-[10px] font-black uppercase tracking-wider text-white shadow-xs">
+                                                    <span class="rounded-full bg-primary px-2 py-0.5 font-display text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-white shadow-xs">
                                                         Active Standing
                                                     </span>
                                                 @elseif ($isReached)
@@ -239,7 +234,7 @@
                                         </div>
 
                                         {{-- XP Target Pill --}}
-                                        <div class="text-right">
+                                        <div class="self-start sm:self-auto">
                                             <span @class([
                                                 'inline-flex items-center rounded-xl border px-2.5 py-1 font-display text-xs font-extrabold shadow-2xs',
                                                 'border-primary/30 bg-white text-primary' => $isCurrent,

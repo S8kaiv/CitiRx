@@ -1,9 +1,9 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-display text-lg sm:text-xl font-bold leading-tight text-slate-900">
+            <h1 class="font-display text-xl font-black text-slate-900 leading-tight">
                 {{ __('Practice Session') }}
-            </h2>
+            </h1>
 
             <a href="{{ route('dashboard') }}" 
                class="font-display text-xs font-bold text-muted-ink transition hover:text-primary">
