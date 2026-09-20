@@ -125,23 +125,6 @@
                             'accent' => '#64748B',
                             'icon'   => '⭐',
                         ];
-
-                        // Calculate connector line fill percentage for this tier
-                        $totalTierLevels = $tierLevels->count();
-                        $currentIndex = $tierLevels->values()->search(fn($l) => (int)$l->level_number === (int)$currentLevel->level_number);
-                        $allReached = $tierLevels->every(fn($l) => (int)$l->min_xp <= (int)$user->total_xp);
-                        $noneReached = $tierLevels->every(fn($l) => (int)$l->min_xp > (int)$user->total_xp);
-
-                        if ($allReached) {
-                            $tierProgressPercent = 100;
-                        } elseif ($noneReached || $totalTierLevels <= 1) {
-                            $tierProgressPercent = 0;
-                        } elseif ($currentIndex !== false) {
-                            $tierProgressPercent = round(($currentIndex / ($totalTierLevels - 1)) * 100);
-                        } else {
-                            $reachedCount = $tierLevels->filter(fn($l) => (int)$l->min_xp <= (int)$user->total_xp)->count();
-                            $tierProgressPercent = round((max(0, $reachedCount - 1) / max(1, $totalTierLevels - 1)) * 100);
-                        }
                     @endphp
 
                     <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-7 shadow-sm">
@@ -166,17 +149,10 @@
                         </div>
 
                         {{-- Timeline Track Wrapper --}}
-                        <div class="relative space-y-6"
-                             x-data="{ fillHeight: '0%' }"
-                             x-init="$nextTick(() => { setTimeout(() => fillHeight = '{{ $tierProgressPercent }}%', 150) })">
+                        <div class="relative space-y-4 pl-2">
                             
-                            {{-- Base Track (Gray spine centered at left-6 = 24px) --}}
-                            <div class="absolute left-6 top-6 bottom-6 w-1.5 -translate-x-1/2 rounded-full bg-slate-200"></div>
-
-                            {{-- Animated Progress Track (Fills down to the active level puck) --}}
-                            <div class="absolute left-6 top-6 w-1.5 -translate-x-1/2 rounded-full bg-gradient-to-b from-emerald-500 via-emerald-500 to-primary transition-all duration-1000 ease-out"
-                                 style="height: 0%;"
-                                 :style="'height: ' + fillHeight"></div>
+                            {{-- Base Gray Spine (Contained securely inside this tier card) --}}
+                            <div class="absolute left-8 top-6 bottom-6 w-1.5 -translate-x-1/2 rounded-full bg-slate-200 z-0"></div>
 
                             @foreach ($tierLevels as $level)
                                 @php
@@ -184,27 +160,27 @@
                                     $isReached = (int) $level->min_xp <= (int) $user->total_xp;
                                 @endphp
 
-                                <div class="relative flex items-center gap-4">
+                                <div class="relative z-10 flex items-center gap-4">
                                     
                                     {{-- Tactile Node Puck --}}
                                     @if ($isCurrent)
                                         <div style="--lip: #4A2FC4;"
-                                             class="btn-press relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-primary/50 bg-primary text-white shadow-md ring-4 ring-primary/20">
+                                             class="btn-press flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-primary/50 bg-primary text-white shadow-md ring-4 ring-primary/20">
                                             <span class="font-display text-base font-black">🎯</span>
                                         </div>
                                     @elseif ($isReached)
                                         <div style="--lip: #15803D;"
-                                             class="btn-press relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-strong/50 bg-strong text-white shadow-xs">
+                                             class="btn-press flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-strong/50 bg-strong text-white shadow-xs">
                                             <span class="font-display text-base font-black">✓</span>
                                         </div>
                                     @else
                                         <div style="--lip: #94A3B8;"
-                                             class="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-slate-300 bg-slate-100 text-slate-400 shadow-xs">
+                                             class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-slate-300 bg-slate-100 text-slate-400 shadow-xs">
                                             <span class="text-sm">🔒</span>
                                         </div>
                                     @endif
 
-                                    {{-- Level Milestone Card (Fixed mobile spacing) --}}
+                                    {{-- Level Milestone Card --}}
                                     <div @class([
                                         'flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-2xl p-3.5 sm:p-4 transition-all',
                                         'border-2 border-b-4 border-primary/40 bg-primary-tint/30 shadow-xs ring-1 ring-primary/20' => $isCurrent,
