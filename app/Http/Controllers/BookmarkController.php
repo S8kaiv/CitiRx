@@ -8,7 +8,6 @@ use App\Models\QuestionBookmark;
 use App\Services\BookmarkService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 class BookmarkController extends Controller
 {
@@ -16,7 +15,6 @@ class BookmarkController extends Controller
         protected BookmarkService $bookmarks,
     ) {}
 
-    public function index(Request $request): View
     {
         $bookmarks = QuestionBookmark::query()
             ->where('user_id', $request->user()->user_id)
@@ -129,8 +127,14 @@ class BookmarkController extends Controller
         );
 
         return redirect()
-            ->route('bookmarks.index')
-            ->with('status', 'Notes saved.');
+            ->route(
+                'vault.index',
+                ['tab' => 'bookmarks']
+            )
+            ->with(
+                'status',
+                'Notes saved.'
+            );
     }
 
     public function destroy(
@@ -146,8 +150,14 @@ class BookmarkController extends Controller
         $bookmark->delete();
 
         return redirect()
-            ->route('bookmarks.index')
-            ->with('status', 'Bookmark removed.');
+            ->route(
+                'vault.index',
+                ['tab' => 'bookmarks']
+            )
+            ->with(
+                'status',
+                'Bookmark removed.'
+            );
     }
 
     private function practiceSessionFor(
