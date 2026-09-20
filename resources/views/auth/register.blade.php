@@ -4,7 +4,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
 
     <style>
-        .font-display { font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif; }
+        .font-display { font-family: 'Baloo 2', sans-serif; }
 
         @keyframes capsule-float {
             0%, 100% { transform: translateY(0) rotate(var(--r)); }
@@ -22,10 +22,10 @@
 
     {{-- Full-screen breakout container compatible across all devices --}}
     <div class="fixed inset-0 z-50 overflow-y-auto bg-slate-50 lg:bg-white text-slate-800">
-        <div class="min-h-full grid grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
+        <div class="min-h-full grid grid-cols-1 lg:grid-cols-[0.80fr_1fr]">
 
             {{-- ============ LEFT: brand + live feature highlights (Desktop / Large Screens) ============ --}}
-            <aside class="relative hidden lg:flex flex-col justify-between overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-8 xl:p-12 text-white min-h-screen">
+            <aside class="relative hidden lg:flex flex-col justify-start overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-8 xl:p-12 text-white min-h-screen">
 
                 {{-- Floating capsules --}}
                 <div class="pointer-events-none absolute inset-0" aria-hidden="true">
@@ -48,8 +48,8 @@
                 </div>
 
                 {{-- Headline + Features showcase --}}
-                <div class="relative max-w-lg my-auto py-8">
-                    <h2 class="font-display text-4xl xl:text-5xl font-extrabold leading-[1.08] tracking-tight">
+                <div class="relative max-w-lg mt-10 xl:mt-9">
+                    <h2 class="font-display text-4xl xl:text-4xl font-extrabold leading-[1.08] tracking-tight">
                         Start your journey to becoming a registered pharmacist.
                     </h2>
                     <p class="mt-4 text-sm xl:text-base text-indigo-100">
@@ -89,7 +89,7 @@
                     </div>
                 </div>
 
-                <p class="relative text-xs text-indigo-100">Built for future pharmacists.</p>
+                <p class="relative mt-auto pt-8 text-xs text-indigo-100">Built for future pharmacists.</p>
             </aside>
 
             {{-- ============ RIGHT: register form ============ --}}
