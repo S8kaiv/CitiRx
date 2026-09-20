@@ -1,11 +1,5 @@
-<x-guest-layout>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
-
+<x-guest-layout fullscreen>
     <style>
-        .font-display { font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif; }
-
         @keyframes capsule-float {
             0%, 100% { transform: translateY(0) rotate(var(--r)); }
             50%      { transform: translateY(-14px) rotate(calc(var(--r) + 6deg)); }
@@ -21,7 +15,7 @@
     </style>
 
     {{-- Full-screen breakout container compatible across all devices --}}
-    <div class="fixed inset-0 z-50 overflow-y-auto bg-slate-50 lg:bg-white text-slate-800">
+    <div class="min-h-screen overflow-y-auto bg-slate-50 lg:bg-white text-slate-800">
         <div class="min-h-full grid grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
 
             {{-- ============ LEFT: brand + what happens next (Desktop / Large Screens) ============ --}}
