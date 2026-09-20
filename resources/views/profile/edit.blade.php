@@ -18,14 +18,17 @@
     </x-slot>
 
     @php
-        $displayName = trim($user->fullName());
+        $user = $user ?? Auth::user();
+
+        // Teammate's standardized full name and initials resolution
+        $displayName = method_exists($user, 'fullName') ? trim($user->fullName()) : trim($user->name ?? 'User');
+        if ($displayName === '') {
+            $displayName = 'User';
+        }
 
         $nameParts = preg_split('/\s+/', $displayName, -1, PREG_SPLIT_NO_EMPTY);
-
         $firstName = $nameParts[0] ?? 'U';
-
         $lastName = count($nameParts) > 1 ? $nameParts[array_key_last($nameParts)] : '';
-
         $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
     @endphp
 
@@ -52,9 +55,10 @@
                 </div>
 
                 <div class="flex items-center gap-2">
+                    {{-- Teammate's corrected Level -> Tier relationship check --}}
                     <span class="rounded-full border border-primary/30 bg-primary-tint px-3 py-1 font-display text-xs font-bold text-primary">
                         @if ($user->role === 'student')
-                            {{ $user->level?->tier?->tier_name ?? 'Beginner' }}
+                            {{ $user->level?->tier?->tier_name ?? 'Beginner' }} Tier
                         @else
                             {{ ucfirst($user->role) }}
                         @endif

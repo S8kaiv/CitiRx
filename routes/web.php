@@ -177,7 +177,7 @@ Route::middleware([
 
 /*
 |--------------------------------------------------------------------------
-| Rx Vault Route
+| RxVault Routes
 |--------------------------------------------------------------------------
 */
 
@@ -186,14 +186,30 @@ Route::middleware([
     'verified',
     'student',
 ])
-    ->get(
-        '/vault',
-        [
-            RxVaultController::class,
-            'index',
-        ]
-    )
-    ->name('vault.index');
+    ->prefix('vault')
+    ->name('vault.')
+    ->group(function () {
+        Route::get(
+            '/',
+            [
+                RxVaultController::class,
+                'index',
+            ]
+        )->name('index');
+
+        Route::post(
+            '/drill/{mode}',
+            [
+                RxVaultController::class,
+                'startDrill',
+            ]
+        )
+            ->where(
+                'mode',
+                'mistakes|bookmarks'
+            )
+            ->name('drill');
+    });
 
 /*
 |--------------------------------------------------------------------------

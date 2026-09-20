@@ -2,18 +2,13 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="font-display text-xl font-bold text-slate-900 leading-tight">
+                <h1 class="font-display text-xl font-black text-slate-900 leading-tight">
                     {{ __('Achievements & Badges') }}
-                </h2>
-                <p class="text-xs font-semibold uppercase tracking-wider text-muted-ink">
+                </h1>
+                <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
                     Milestones, Streaks & Special Honors
                 </p>
             </div>
-
-            <a href="{{ route('dashboard') }}" 
-               class="font-display text-xs font-bold text-muted-ink hover:text-primary transition">
-                Back to Dashboard
-            </a>
         </div>
     </x-slot>
 
