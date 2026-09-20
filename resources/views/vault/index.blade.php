@@ -291,14 +291,18 @@
                                         $q = $bookmark->question;
                                         $correctChoice = $q->correctChoice;
                                     @endphp
-                                    <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 space-y-3 shadow-xs flex flex-col justify-between">
+
+                                    <div
+                                        class="flex flex-col justify-between space-y-3 rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-xs">
                                         <div class="space-y-3">
+
+                                            {{-- Header and Unbookmark Button --}}
                                             <div class="flex items-center justify-between">
-                                                <span class="inline-flex items-center rounded-md bg-clinical-tint px-2 py-0.5 font-display text-[10px] font-bold text-clinical-ink">
+                                                <span
+                                                    class="inline-flex items-center rounded-md bg-clinical-tint px-2 py-0.5 font-display text-[10px] font-bold text-clinical-ink">
                                                     {{ $q->competency->title ?? 'Core Competency' }}
                                                 </span>
 
-                                                {{-- Unbookmark Action Button --}}
                                                 <form method="POST"
                                                     action="{{ route('bookmarks.destroy', [
                                                         'bookmark' => $bookmark->bookmark_id,
@@ -315,20 +319,29 @@
                                             </div>
 
                                             {{-- Question Text --}}
-                                            <div class="font-sans text-sm font-semibold leading-relaxed text-slate-900">
+                                            <div
+                                                class="font-sans text-sm font-semibold leading-relaxed text-slate-900">
                                                 {{ $q->question_text }}
                                             </div>
 
-                                            {{-- Solution --}}
+                                            {{-- Correct Solution --}}
                                             @if ($correctChoice)
-                                                <div class="rounded-xl border-2 border-b-4 border-slate-200 bg-slate-50 p-3 text-xs text-slate-800">
+                                                <div
+                                                    class="rounded-xl border-2 border-b-4 border-slate-200 bg-slate-50 p-3 text-xs text-slate-800">
                                                     <div class="flex items-start gap-2">
-                                                        <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-primary font-display text-[11px] font-bold text-white">
+                                                        <span
+                                                            class="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-primary font-display text-[11px] font-bold text-white">
                                                             {{ $correctChoice->choice_letter }}
                                                         </span>
+
                                                         <div class="leading-relaxed">
-                                                            <span class="font-bold">Correct Solution:</span>
-                                                            <span>{{ $correctChoice->choice_text }}</span>
+                                                            <span class="font-bold">
+                                                                Correct Solution:
+                                                            </span>
+
+                                                            <span>
+                                                                {{ $correctChoice->choice_text }}
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -336,13 +349,43 @@
 
                                             {{-- Clinical Rationale --}}
                                             @if ($q->hypercorrection_rationale)
-                                                <div class="rounded-xl border border-clinical/20 bg-clinical-tint/40 p-2.5 text-xs text-slate-800 leading-relaxed">
-                                                    <span class="block font-display text-[10px] font-bold uppercase tracking-wider text-clinical-ink mb-0.5">
+                                                <div
+                                                    class="rounded-xl border border-clinical/20 bg-clinical-tint/40 p-2.5 text-xs leading-relaxed text-slate-800">
+                                                    <span
+                                                        class="mb-0.5 block font-display text-[10px] font-bold uppercase tracking-wider text-clinical-ink">
                                                         Clinical Rationale
                                                     </span>
+
                                                     {{ $q->hypercorrection_rationale }}
                                                 </div>
                                             @endif
+
+                                            {{-- Personal Notes Form: PUT IT HERE --}}
+                                            <form method="POST"
+                                                action="{{ route('bookmarks.updateNotes', [
+                                                    'bookmark' => $bookmark->bookmark_id,
+                                                ]) }}"
+                                                class="mt-3 space-y-2 border-t border-slate-100 pt-3">
+                                                @csrf
+                                                @method('PATCH')
+
+                                                <label for="notes-{{ $bookmark->bookmark_id }}"
+                                                    class="block font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                                                    Personal Notes
+                                                </label>
+
+                                                <textarea id="notes-{{ $bookmark->bookmark_id }}" name="personal_notes" rows="2" maxlength="2000"
+                                                    placeholder="Add a memory aid or review note..."
+                                                    class="w-full rounded-xl border-slate-200 text-xs shadow-xs focus:border-primary focus:ring-primary">{{ old('personal_notes', $bookmark->personal_notes) }}</textarea>
+
+                                                <div class="flex justify-end">
+                                                    <button type="submit"
+                                                        class="rounded-xl border-2 border-slate-200 bg-white px-3 py-1.5 font-display text-[11px] font-bold text-slate-700 transition hover:bg-slate-50">
+                                                        Save Notes
+                                                    </button>
+                                                </div>
+                                            </form>
+
                                         </div>
                                     </div>
                                 @endforeach
