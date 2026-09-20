@@ -14,7 +14,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="h-full font-sans text-slate-900 antialiased selection:bg-primary-tint selection:text-primary relative">
+<body data-authenticated-page="true" class="h-full font-sans text-slate-900 antialiased selection:bg-primary-tint selection:text-primary relative">
 
     {{-- ============================================================ --}}
     {{-- ATMOSPHERIC CANVAS: VIOLET AMBIENT GLOW + CLINICAL DOTS      --}}

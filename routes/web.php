@@ -10,9 +10,12 @@ use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\ReadinessController;
 use App\Http\Controllers\RxVaultController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route(
+        Auth::check() ? 'dashboard' : 'login'
+    );
 });
 
 Route::get('/dashboard', [DashboardController::class, 'index'])

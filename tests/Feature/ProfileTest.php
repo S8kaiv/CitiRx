@@ -95,7 +95,7 @@ test('user can delete their account', function () {
 
     $response
         ->assertSessionHasNoErrors()
-        ->assertRedirect('/');
+        ->assertRedirect(route('login'));
 
     $this->assertGuest();
 
@@ -137,4 +137,42 @@ test('correct password must be provided to delete account', function () {
     expect(
         $user->fresh()->deleted_at
     )->toBeNull();
+});
+
+test('email can be reused after account deletion', function () {
+    $email = 'reusable@example.com';
+
+    $user = User::factory()->create([
+        'email' => $email,
+    ]);
+
+    $this
+        ->actingAs($user)
+        ->delete('/profile', [
+            'password' => 'password',
+        ])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('login'));
+
+    $this->assertGuest();
+
+    $response = $this->post('/register', [
+        'first_name' => 'New',
+        'middle_name' => null,
+        'last_name' => 'Student',
+        'email' => $email,
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('dashboard', absolute: false));
+
+    $this->assertAuthenticated();
+
+    $this->assertDatabaseHas('users', [
+        'email' => $email,
+        'deleted_at' => null,
+    ]);
 });
