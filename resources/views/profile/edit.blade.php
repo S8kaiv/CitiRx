@@ -130,7 +130,7 @@
                 {{-- Settings Tab Switcher Button --}}
                 <div class="flex items-center shrink-0">
                     <button @click="activeTab = (activeTab === 'overview' ? 'settings' : 'overview')" style="--lip: #4A2FC4;" class="btn-press w-full sm:w-auto inline-flex justify-center items-center gap-2 rounded-2xl bg-primary px-5 py-3 font-display text-xs font-black uppercase tracking-wider text-white shadow-sm transition hover:bg-primary/95">
-                        <span x-text="activeTab === 'overview' ? '⚙️ Settings' : '📊 Overview'">⚙️ Settings</span>
+                        <span x-text="activeTab === 'overview' ? 'Settings' : 'Overview'">Settings</span>
                     </button>
                 </div>
             </div>
@@ -284,8 +284,8 @@
                 <div class="pt-6 flex justify-center">
                     <form method="POST" action="{{ route('logout') }}" class="w-full sm:w-auto">
                         @csrf
-                        <button type="submit" style="--lip: #E11D48;" class="btn-press w-full sm:w-80 rounded-2xl border-2 border-b-4 border-rose-300 bg-rose-500 py-3.5 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-md transition hover:bg-rose-600">
-                            🚪 Log Out of Account
+                        <button type="submit" style="--lip: #E11D48;" class="btn-press w-full sm:w-80 rounded-2xl border-2 border-b-4 border-rose-300 bg-rose-500 py-3.5 text-center font-display text-s font-black tracking-wider text-white shadow-md transition hover:bg-rose-600">
+                            Log Out
                         </button>
                     </form>
                 </div>
