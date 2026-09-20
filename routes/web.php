@@ -198,20 +198,17 @@ Route::middleware([
         )->name('index');
 
         Route::post(
-            '/drill/mistakes',
+            '/drill/{mode}',
             [
                 RxVaultController::class,
-                'drillMistakes',
+                'startDrill',
             ]
-        )->name('drill.mistakes');
-
-        Route::post(
-            '/drill/bookmarks',
-            [
-                RxVaultController::class,
-                'drillBookmarks',
-            ]
-        )->name('drill.bookmarks');
+        )
+            ->where(
+                'mode',
+                'mistakes|bookmarks'
+            )
+            ->name('drill');
     });
 
 /*

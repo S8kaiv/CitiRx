@@ -35,6 +35,7 @@ class AssessmentSession extends Model
         'completed_at',
         'target_length',
         'domain_filter_id',
+        'practice_mode',
         'current_question_id',
         'current_question_started_at',
         'draft_answers',
