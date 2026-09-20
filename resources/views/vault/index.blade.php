@@ -24,7 +24,7 @@
 
     {{-- Main Container --}}
     <div class="py-6 sm:py-8 font-sans text-slate-900 antialiased"
-         x-data="{ activeTab: '{{ $activeTab ?? 'mistakes' }}' }">
+         x-data="{ activeTab: @js($activeTab) }">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
 
             {{-- Status & Error Alerts --}}
