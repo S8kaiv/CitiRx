@@ -8,7 +8,8 @@
     <title>{{ config('app.name', 'CitiRx') }} - PhLE Review</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
+    {{-- Kept teammate's font weights (includes 900) --}}
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -28,103 +29,84 @@
     </div>
 
     @php
+        /*
+         * Hide navigation while the student is actively
+         * answering Practice or Diagnostic questions.
+         */
         $isFocusMode = request()->routeIs('practice.show', 'practice.answer', 'diagnostic.take', 'diagnostic.answer');
 
+        /*
+         * Auth::user() is appropriate in this shared layout.
+         * Route middleware still provides the actual security.
+         */
         $authUser = Auth::user();
-        $displayName = 'User';
-        if ($authUser) {
-            if (method_exists($authUser, 'fullName') && !empty($authUser->fullName())) {
-                $displayName = $authUser->fullName();
-            } elseif (!empty($authUser->name)) {
-                $displayName = $authUser->name;
-            } elseif (!empty($authUser->first_name) || !empty($authUser->last_name)) {
-                $displayName = trim(($authUser->first_name ?? '') . ' ' . ($authUser->last_name ?? ''));
-            }
+
+        /*
+         * Levels only apply to student accounts.
+         * (Teammate's optimization)
+         */
+        if ($authUser?->role === 'student') {
+            $authUser->loadMissing('level.tier');
         }
 
-        $nameParts = array_values(array_filter(explode(' ', trim($displayName))));
-        $initials = count($nameParts) >= 2
-            ? strtoupper(substr($nameParts[0], 0, 1) . substr(end($nameParts), 0, 1))
-            : strtoupper(substr($displayName, 0, 2));
+        /*
+         * User display name.
+         * (Teammate's logic)
+         */
+        $displayName = trim($authUser?->fullName() ?? '');
 
-        // ========================================================
-        // COMPREHENSIVE LEVEL & TIER RESOLUTION
-        // ========================================================
-        $userLevel = $currentLevel ?? null;
-        $attrs = $authUser ? $authUser->getAttributes() : [];
-
-        // 1. Check direct relations or methods on Auth::user()
-        if (!$userLevel && $authUser) {
-            try {
-                if (isset($authUser->currentLevel) && is_object($authUser->currentLevel)) {
-                    $userLevel = $authUser->currentLevel;
-                } elseif (isset($authUser->level) && is_object($authUser->level)) {
-                    $userLevel = $authUser->level;
-                }
-            } catch (\Throwable $e) {}
-
-            if (!$userLevel) {
-                if (method_exists($authUser, 'currentLevel')) {
-                    try {
-                        $res = $authUser->currentLevel();
-                        $userLevel = ($res instanceof \Illuminate\Database\Eloquent\Relations\Relation) ? $res->first() : (is_object($res) ? $res : null);
-                    } catch (\Throwable $e) {}
-                } elseif (method_exists($authUser, 'getCurrentLevel')) {
-                    try {
-                        $userLevel = $authUser->getCurrentLevel();
-                    } catch (\Throwable $e) {}
-                } elseif (method_exists($authUser, 'level')) {
-                    try {
-                        $res = $authUser->level();
-                        $userLevel = ($res instanceof \Illuminate\Database\Eloquent\Relations\Relation) ? $res->first() : (is_object($res) ? $res : null);
-                    } catch (\Throwable $e) {}
-                }
-            }
+        if ($displayName === '') {
+            $displayName = 'User';
         }
 
-        // 2. Query Level model dynamically if not yet resolved
-        if (!$userLevel && class_exists(\App\Models\Level::class)) {
-            try {
-                $levelClass = \App\Models\Level::class;
-                $levelId = $attrs['current_level_id'] ?? $attrs['level_id'] ?? null;
-                $rawLevelNum = $attrs['current_level'] ?? $attrs['level_number'] ?? (is_numeric($attrs['level'] ?? null) ? $attrs['level'] : null);
+        /*
+         * Build profile initials from the first and last
+         * parts of the user's full name.
+         * (Teammate's logic)
+        */
+        $nameParts = preg_split('/\s+/', $displayName, -1, PREG_SPLIT_NO_EMPTY);
+        $firstName = $nameParts[0] ?? 'U';
+        $lastName = count($nameParts) > 1 ? $nameParts[array_key_last($nameParts)] : '';
+        $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
 
-                if ($levelId) {
-                    $userLevel = $levelClass::with('tier')->find($levelId);
-                } elseif ($rawLevelNum) {
-                    $userLevel = $levelClass::with('tier')->where('level_number', $rawLevelNum)->first();
-                } elseif (isset($attrs['total_xp'])) {
-                    $allLevels = $levelClass::with('tier')->get();
-                    if ($allLevels->isNotEmpty()) {
-                        $first = $allLevels->first();
-                        $xpCol = collect(['required_xp', 'min_xp', 'threshold_xp', 'xp_required', 'xp'])
-                            ->first(fn($col) => isset($first->$col));
-                        if ($xpCol) {
-                            $userLevel = $allLevels->where($xpCol, '<=', (int)$attrs['total_xp'])->sortByDesc('level_number')->first();
-                        }
-                    }
-                }
-            } catch (\Throwable $e) {}
-        }
-
-        // 3. Final Level Number & Tier Extraction
-        $levelNumber = $userLevel?->level_number
-            ?? $userLevel?->level
-            ?? $attrs['current_level']
-            ?? $attrs['level_number']
-            ?? (is_numeric($attrs['level'] ?? null) ? $attrs['level'] : null)
-            ?? 1;
-
+        /*
+         * Resolve Level and Tier using the CitiRx User relationship.
+         * (Supports teammate's model + optional view override)
+         */
+        $userLevel = $currentLevel ?? ($authUser?->role === 'student' ? $authUser->level : null);
+        $levelNumber = (int) ($userLevel?->level_number ?? ($authUser?->current_level ?? 1));
         $tierName = strtolower($userLevel?->tier?->tier_name ?? 'beginner');
 
-        // Dynamic styling tokens based on tier
+        /*
+         * Text shown below the user's name.
+         * (Teammate's logic)
+         */
+        $profileLabel =
+            $authUser?->role === 'student'
+                ? $userLevel?->tier?->tier_name ?? 'Beginner'
+                : ucfirst($authUser?->role ?? 'Reviewee');
+
+        /*
+         * Avatar border styling based on the student's tier.
+         * (Teammate's logic)
+         */
         $tierRingClasses = match (true) {
-            str_contains($tierName, 'master') || str_contains($tierName, 'expert') => 'ring-2 ring-primary border-primary/40 bg-primary-tint text-primary shadow-[0_0_10px_rgba(109,74,255,0.35)]',
-            str_contains($tierName, 'advanced') => 'ring-2 ring-[#0EA5A4] border-[#0EA5A4]/40 bg-[#0EA5A4]/10 text-[#0E7A79] shadow-[0_0_10px_rgba(14,165,164,0.35)]',
-            str_contains($tierName, 'intermediate') => 'ring-2 ring-[#F5A623] border-[#F5A623]/40 bg-[#F5A623]/10 text-[#B45309] shadow-[0_0_10px_rgba(245,166,35,0.3)]',
+            str_contains($tierName, 'master') || str_contains($tierName, 'expert')
+                => 'ring-2 ring-primary border-primary/40 bg-primary-tint text-primary shadow-[0_0_10px_rgba(109,74,255,0.35)]',
+
+            str_contains($tierName, 'advanced')
+                => 'ring-2 ring-[#0EA5A4] border-[#0EA5A4]/40 bg-[#0EA5A4]/10 text-[#0E7A79] shadow-[0_0_10px_rgba(14,165,164,0.35)]',
+
+            str_contains($tierName, 'intermediate')
+                => 'ring-2 ring-[#F5A623] border-[#F5A623]/40 bg-[#F5A623]/10 text-[#B45309] shadow-[0_0_10px_rgba(245,166,35,0.3)]',
+
             default => 'ring-2 ring-slate-300 border-slate-200 bg-slate-100 text-slate-700',
         };
 
+        /*
+         * Small Level badge attached to the avatar.
+         * (Teammate's logic)
+         */
         $levelBadgeBg = match (true) {
             str_contains($tierName, 'master') || str_contains($tierName, 'expert') => 'bg-primary text-white',
             str_contains($tierName, 'advanced') => 'bg-[#0EA5A4] text-white',
@@ -238,8 +220,9 @@
                                 <span class="block font-display text-xs font-extrabold text-slate-900 truncate group-hover:text-primary transition">
                                     {{ $displayName }}
                                 </span>
+                                {{-- Kept teammate's profile label --}}
                                 <span class="block text-[10px] font-semibold text-muted-ink capitalize truncate">
-                                    {{ $tierName !== 'beginner' ? ucfirst($tierName) : ($authUser->role ?? 'Reviewee') }}
+                                    {{ $profileLabel }}
                                 </span>
                             </div>
                         </a>

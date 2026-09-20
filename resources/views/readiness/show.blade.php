@@ -124,7 +124,7 @@
                                 <circle x-ref="ring"
                                         cx="80" cy="80" r="{{ $radius }}" fill="none" 
                                         stroke="{{ $bandConfig['stroke'] }}" 
-                                        stroke-width="14"
+                                        stroke-width="14" 
                                         stroke-linecap="round"
                                         stroke-dasharray="{{ round($circumference, 2) }}"
                                         stroke-dashoffset="{{ round($circumference, 2) }}" />

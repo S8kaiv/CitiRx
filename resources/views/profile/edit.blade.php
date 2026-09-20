@@ -18,11 +18,18 @@
     </x-slot>
 
     @php
-        $user = Auth::user();
-        $nameParts = explode(' ', trim($user->name));
-        $initials = count($nameParts) >= 2 
-            ? strtoupper(substr($nameParts[0], 0, 1) . substr(end($nameParts), 0, 1))
-            : strtoupper(substr($user->name, 0, 2));
+        $user = $user ?? Auth::user();
+
+        // Teammate's standardized full name and initials resolution
+        $displayName = method_exists($user, 'fullName') ? trim($user->fullName()) : trim($user->name ?? 'User');
+        if ($displayName === '') {
+            $displayName = 'User';
+        }
+
+        $nameParts = preg_split('/\s+/', $displayName, -1, PREG_SPLIT_NO_EMPTY);
+        $firstName = $nameParts[0] ?? 'U';
+        $lastName = count($nameParts) > 1 ? $nameParts[array_key_last($nameParts)] : '';
+        $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
     @endphp
 
     <div class="pt-6 pb-16 font-sans text-slate-900 antialiased">
@@ -36,7 +43,7 @@
                     </div>
                     <div>
                         <h3 class="font-display text-lg font-bold text-slate-900">
-                            {{ method_exists($user, 'fullName') ? $user->fullName() : $user->name }}
+                            {{ $displayName }}
                         </h3>
                         <p class="text-xs text-muted-ink font-medium">
                             {{ $user->email }}
@@ -48,8 +55,13 @@
                 </div>
 
                 <div class="flex items-center gap-2">
+                    {{-- Teammate's corrected Level -> Tier relationship check --}}
                     <span class="rounded-full border border-primary/30 bg-primary-tint px-3 py-1 font-display text-xs font-bold text-primary">
-                        {{ $user->tier?->tier_name ?? 'Reviewee' }}
+                        @if ($user->role === 'student')
+                            {{ $user->level?->tier?->tier_name ?? 'Beginner' }} Tier
+                        @else
+                            {{ ucfirst($user->role) }}
+                        @endif
                     </span>
                     <span class="rounded-full border border-[#F5A623]/40 bg-gold-tint px-3 py-1 font-display text-xs font-bold text-gold-ink">
                         {{ number_format($user->total_xp ?? 0) }} XP

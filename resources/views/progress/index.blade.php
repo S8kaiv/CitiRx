@@ -42,7 +42,7 @@
                     
                     {{-- Tactile 3D Crest --}}
                     <div style="--lip: #D97706;" 
-                        class="btn-press flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-amber-400 bg-gradient-to-b from-amber-100 to-amber-200/70 text-3xl shadow-sm">
+                         class="btn-press flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-amber-400 bg-gradient-to-b from-amber-100 to-amber-200/70 text-3xl shadow-sm">
                         🛡️
                     </div>
 
@@ -72,7 +72,6 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
 
                 {{-- Progression Toward Next Level --}}
@@ -176,10 +175,10 @@
                              x-data="{ fillHeight: '0%' }"
                              x-init="$nextTick(() => { setTimeout(() => fillHeight = '{{ $tierProgressPercent }}%', 150) })">
                             
-                            {{-- 1. Base Track (Gray spine centered at left-6 = 24px) --}}
+                            {{-- Base Track (Gray spine centered at left-6 = 24px) --}}
                             <div class="absolute left-6 top-6 bottom-6 w-1.5 -translate-x-1/2 rounded-full bg-slate-200"></div>
 
-                            {{-- 2. Animated Progress Track (Fills down to the active level puck) --}}
+                            {{-- Animated Progress Track (Fills down to the active level puck) --}}
                             <div class="absolute left-6 top-6 w-1.5 -translate-x-1/2 rounded-full bg-gradient-to-b from-emerald-500 via-emerald-500 to-primary transition-all duration-1000 ease-out"
                                  style="height: 0%;"
                                  :style="'height: ' + fillHeight"></div>
@@ -192,7 +191,7 @@
 
                                 <div class="relative flex items-center gap-4">
                                     
-                                    {{-- Tactile Node Puck (w-12 h-12 ensures the center aligns exactly at left-6) --}}
+                                    {{-- Tactile Node Puck --}}
                                     @if ($isCurrent)
                                         <div style="--lip: #4A2FC4;"
                                              class="btn-press relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-primary/50 bg-primary text-white shadow-md ring-4 ring-primary/20">
