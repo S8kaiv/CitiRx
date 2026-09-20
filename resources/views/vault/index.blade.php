@@ -93,31 +93,16 @@
 
                         {{-- Drill Action Buttons --}}
                         <div class="flex flex-wrap gap-2.5 pt-1">
-                            <form method="POST" action="{{ route('vault.drill.mistakes') }}">
-                                @csrf
-                                <button type="submit"
-                                        @disabled($activeCount === 0)
-                                        style="--lip: #E11D48;"
-                                        class="btn-press inline-flex items-center gap-2 rounded-xl bg-rose-500 px-4 py-2.5 font-display text-xs font-black uppercase tracking-wider text-white shadow-xs transition hover:bg-rose-600 disabled:opacity-40 disabled:cursor-not-allowed">
-                                    <span>Drill Active Mistakes ({{ $activeCount }})</span>
-                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                    </svg>
-                                </button>
-                            </form>
+                            <a href="{{ route('practice.intro') }}" style="--lip: #4A2FC4;"
+                                class="btn-press inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-display text-xs font-black uppercase tracking-wider text-white shadow-xs transition hover:bg-primary/95">
+                                <span>Start Adaptive Practice</span>
 
-                            <form method="POST" action="{{ route('vault.drill.bookmarks') }}">
-                                @csrf
-                                <button type="submit"
-                                        @disabled($bookmarksCount === 0)
-                                        style="--lip: #B45309;"
-                                        class="btn-press inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 font-display text-xs font-black uppercase tracking-wider text-white shadow-xs transition hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed">
-                                    <span>Drill Bookmarks ({{ $bookmarksCount }})</span>
-                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                    </svg>
-                                </button>
-                            </form>
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                                </svg>
+                            </a>
                         </div>
                     </div>
 
@@ -314,12 +299,16 @@
                                                 </span>
 
                                                 {{-- Unbookmark Action Button --}}
-                                                <form method="POST" action="{{ route('bookmarks.destroyQuestion', ['question' => $q->question_id]) }}">
+                                                <form method="POST"
+                                                    action="{{ route('bookmarks.destroy', [
+                                                        'bookmark' => $bookmark->bookmark_id,
+                                                    ]) }}">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit"
-                                                            title="Remove Bookmark"
-                                                            class="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-amber-500 shadow-2xs hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition">
+
+                                                    <button type="submit" title="Remove Bookmark"
+                                                        aria-label="Remove bookmark"
+                                                        class="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-amber-500 shadow-2xs transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500">
                                                         <span class="text-xs">★</span>
                                                     </button>
                                                 </form>
