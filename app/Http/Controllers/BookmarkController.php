@@ -15,54 +15,6 @@ class BookmarkController extends Controller
         protected BookmarkService $bookmarks,
     ) {}
 
-    {
-        $bookmarks = QuestionBookmark::query()
-            ->where('user_id', $request->user()->user_id)
-            ->with([
-                'question.correctChoice',
-                'question.competency.domain',
-            ])
-            ->orderByDesc('created_at')
-            ->get();
-
-        $grouped = $bookmarks
-            ->groupBy(
-                fn ($bookmark) => $bookmark
-                    ->question
-                    ->competency
-                    ->domain
-                    ->domain_id
-            )
-            ->sortBy(
-                fn ($group) => $group
-                    ->first()
-                    ->question
-                    ->competency
-                    ->domain
-                    ->domain_number
-            )
-            ->map(function ($group) {
-                $domain = $group
-                    ->first()
-                    ->question
-                    ->competency
-                    ->domain;
-
-                return [
-                    'domain_id' => $domain->domain_id,
-                    'domain_name' => $domain->domain_name,
-                    'domain_number' => $domain->domain_number,
-                    'bookmarks' => $group,
-                ];
-            })
-            ->values();
-
-        return view('bookmarks.index', [
-            'grouped' => $grouped,
-            'total' => $bookmarks->count(),
-        ]);
-    }
-
     public function store(
         Request $request,
         Question $question
