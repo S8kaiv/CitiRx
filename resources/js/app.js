@@ -91,4 +91,10 @@ Alpine.data("readinessRing", (target, circumference) => {
     };
 });
 
+window.addEventListener("pageshow", (event) => {
+    if (event.persisted && document.body.dataset.authenticatedPage === "true") {
+        window.location.reload();
+    }
+});
+
 Alpine.start();
