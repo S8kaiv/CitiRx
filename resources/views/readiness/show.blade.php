@@ -137,7 +137,6 @@
                             <div
                                 class="rounded-xl border border-primary/20 bg-white/90 p-3 shadow-sm flex flex-col justify-between">
                                 <div class="flex items-center gap-1.5 mb-1">
-                                    <span class="text-base">🎯</span>
                                     <span
                                         class="block font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
                                         Board Target
@@ -151,7 +150,6 @@
                             <div
                                 class="rounded-xl border border-primary/20 bg-white/90 p-3 shadow-sm flex flex-col justify-between">
                                 <div class="flex items-center gap-1.5 mb-1">
-                                    <span class="text-base">🚀</span>
                                     <span
                                         class="block font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink"
                                         title="Points needed to reach the CitiRx Board Ready category">
@@ -167,7 +165,6 @@
                             <div
                                 class="col-span-2 sm:col-span-1 rounded-xl border border-primary/20 bg-white/90 p-3 shadow-sm flex flex-col justify-between">
                                 <div class="flex items-center gap-1.5 mb-1">
-                                    <span class="text-base">🧠</span>
                                     <span
                                         class="block font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
                                         Strong Modules

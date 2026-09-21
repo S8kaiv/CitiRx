@@ -24,21 +24,21 @@
             {{-- TOP HERO CARD: TROPHY SHOWCASE & PROGRESSION --}}
             <div class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-gradient-to-br from-primary-tint via-[#FAF8FF] to-white p-6 sm:p-8 shadow-sm">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
-                    
+
                     {{-- Trophy & Heading --}}
                     <div class="flex items-center gap-5 text-center sm:text-left">
                         <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-[#F5A623]/40 bg-gold-tint text-3xl shadow-sm">
                             🏆
                         </div>
                         <div>
-                            <span class="inline-flex items-center rounded-full bg-white px-3 py-0.5 font-display text-[11px] font-bold text-primary shadow-sm ring-1 ring-primary/20">
+                            <span class="inline-flex items-center rounded-full bg-white px-3 py-0.5 font-display text-[11px] font-bold text-primary shadow-sm ring-1 ring-primary/25">
                                 Review Milestone Honors
                             </span>
                             <h3 class="mt-1 font-display text-2xl font-extrabold text-slate-900 sm:text-3xl">
                                 {{ $unlockedCount }} of {{ $totalCount }} Unlocked
                             </h3>
                             <p class="text-xs font-medium text-slate-600 mt-0.5">
-                                Earn badges by hitting daily streaks, mastering TOS modules, and completing practice drills.
+                                Earn badges by hitting daily streaks, mastering modules, and completing practice drills.
                             </p>
                         </div>
                     </div>
@@ -46,12 +46,10 @@
                     {{-- Total Badge XP Pill --}}
                     <div class="flex flex-col items-center sm:items-end shrink-0">
                         <div class="flex items-center gap-2 rounded-2xl border-2 border-b-4 border-[#F5A623]/30 bg-white/90 px-4 py-2.5 shadow-sm">
-                            <svg class="h-5 w-5 text-gold shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M14.615 1.595a.75.75 0 0 1 .359.852L12.982 9.75h7.268a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262l10.5-11.25a.75.75 0 0 1 .913-.143Z"/>
-                            </svg>
+                            <span class="text-lg">⚡</span>
                             <div>
                                 <span class="block font-display text-base font-extrabold text-slate-900 leading-none">
-                                    +{{ number_format($badgeXpTotal) }} XP
+                                    +{{ number_format($badgeXpTotal ?? 0) }} XP
                                 </span>
                                 <span class="block text-[10px] font-bold uppercase tracking-wider text-muted-ink mt-0.5">
                                     Total Honor Bonus
@@ -81,28 +79,39 @@
                     @php
                         $userBadge = $userBadges->get($badge->badge_id);
                         $isUnlocked = $userBadge !== null;
+                        $badgeName = strtolower($badge->badge_name);
+
+                        $badgeIcon = match (true) {
+                            str_contains($badgeName, 'streak') => '🔥',
+
+                            str_contains($badgeName, 'xp')
+                                || str_contains($badgeName, 'master') => '⚡',
+
+                            str_contains($badgeName, 'diagnostic')
+                                || str_contains($badgeName, 'test') => '🎯',
+
+                            default => '🏆',
+                        };
                     @endphp
 
                     @if ($isUnlocked)
                         {{-- UNLOCKED BADGE: Tactile 3D Card --}}
-                        <div class="group flex flex-col justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300">
+                        <div class="group flex flex-col justify-between rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-xs transition hover:-translate-y-0.5 hover:border-slate-300">
                             <div>
                                 <div class="flex items-start justify-between gap-3">
                                     {{-- Badge Token --}}
-                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-[#F5A623]/30 bg-gold-tint text-2xl shadow-sm group-hover:scale-105 transition">
-                                        🏆
+                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-[#F5A623]/30 bg-gold-tint text-2xl shadow-2xs group-hover:scale-105 transition">
+                                        {{ $badgeIcon }}
                                     </div>
 
                                     {{-- Reward XP Pill --}}
-                                    <span class="inline-flex items-center gap-1 rounded-full border border-[#F5A623]/40 bg-gold-tint px-2.5 py-0.5 font-display text-xs font-bold text-gold-ink shadow-sm">
-                                        <svg class="h-3.5 w-3.5 text-gold shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M14.615 1.595a.75.75 0 0 1 .359.852L12.982 9.75h7.268a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262l10.5-11.25a.75.75 0 0 1 .913-.143Z"/>
-                                        </svg>
+                                    <span class="inline-flex items-center gap-1 rounded-full border-2 border-[#F5A623]/40 bg-gold-tint px-2.5 py-0.5 font-display text-xs font-black text-gold-ink shadow-2xs">
+                                        <span>⚡</span>
                                         +{{ $badge->xp_reward }} XP
                                     </span>
                                 </div>
 
-                                <h4 class="mt-4 font-display text-base font-bold text-slate-900">
+                                <h4 class="mt-4 font-display text-base font-black text-slate-900">
                                     {{ $badge->badge_name }}
                                 </h4>
                                 <p class="mt-1 text-xs leading-relaxed text-slate-600">
@@ -110,28 +119,28 @@
                                 </p>
                             </div>
 
-                            <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
-                                <span class="inline-flex items-center gap-1 font-display text-[11px] font-bold text-strong-ink">
-                                    <span class="h-1.5 w-1.5 rounded-full bg-strong"></span>
+                            <div class="mt-5 pt-3 border-t-2 border-slate-100 flex items-center justify-between">
+                                <span class="inline-flex items-center gap-1.5 font-display text-[11px] font-black uppercase tracking-wider text-emerald-600">
+                                    <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
                                     Unlocked
                                 </span>
-                                <span class="text-[10px] font-semibold text-muted-ink">
+                                <span class="text-[10px] font-bold text-muted-ink">
                                     {{ $userBadge->unlocked_at ? $userBadge->unlocked_at->diffForHumans() : 'Earned' }}
                                 </span>
                             </div>
                         </div>
                     @else
                         {{-- LOCKED BADGE: Muted & Dashed Container --}}
-                        <div class="flex flex-col justify-between rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/70 p-5 opacity-75">
+                        <div class="flex flex-col justify-between rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/70 p-5 opacity-75">
                             <div>
                                 <div class="flex items-start justify-between gap-3">
                                     {{-- Padlock Token --}}
-                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-slate-200 bg-slate-100 text-xl text-slate-400">
+                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-slate-200 bg-slate-100 text-xl text-slate-400 shadow-inner">
                                         🔒
                                     </div>
 
                                     {{-- Dimmed Reward Pill --}}
-                                    <span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 font-display text-xs font-semibold text-slate-400">
+                                    <span class="inline-flex items-center rounded-full border-2 border-slate-200 bg-white px-2.5 py-0.5 font-display text-xs font-bold text-slate-400">
                                         +{{ $badge->xp_reward }} XP
                                     </span>
                                 </div>
@@ -144,8 +153,8 @@
                                 </p>
                             </div>
 
-                            <div class="mt-5 pt-3 border-t border-slate-200/60 flex items-center justify-between">
-                                <span class="font-display text-[11px] font-bold text-muted-ink">
+                            <div class="mt-5 pt-3 border-t-2 border-slate-200/60 flex items-center justify-between">
+                                <span class="font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
                                     Locked
                                 </span>
                                 <span class="text-[10px] text-slate-400 font-medium">
@@ -158,16 +167,16 @@
             </div>
 
             {{-- CALL TO ACTION BUTTONS --}}
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
                 <a href="{{ route('practice.intro') }}"
                    style="--lip: #4A2FC4;"
-                   class="btn-press w-full sm:w-auto rounded-xl bg-primary px-8 py-3 text-center font-display text-sm font-bold text-white shadow-sm transition hover:bg-primary/95">
+                   class="btn-press w-full sm:w-auto rounded-2xl bg-primary px-8 py-3.5 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-sm transition hover:bg-primary/95">
                     Practice to Earn XP
                 </a>
 
                 <a href="{{ route('dashboard') }}"
                    style="--lip: #CBD5E1;"
-                   class="btn-press w-full sm:w-auto rounded-xl border-2 border-slate-200 bg-white px-8 py-3 text-center font-display text-sm font-bold text-slate-700 transition hover:bg-slate-50">
+                   class="btn-press w-full sm:w-auto rounded-2xl border-2 border-b-4 border-slate-300 bg-white px-8 py-3.5 text-center font-display text-xs font-black uppercase tracking-wider text-slate-700 transition hover:bg-slate-50">
                     Back to Dashboard
                 </a>
             </div>
