@@ -18,5 +18,8 @@ class DatabaseSeeder extends Seeder
             SurveyItemSeeder::class,
             UserSeeder::class,   // last — depends on cohort + level
         ]);
+        if (app()->environment('local', 'testing')) {
+            $this->call(ResearchQuestionSeeder::class);
+        }
     }
 }

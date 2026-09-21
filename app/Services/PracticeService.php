@@ -3,17 +3,17 @@
 namespace App\Services;
 
 use App\Models\AssessmentSession;
-use App\Models\QuestionBookmark;
-use App\Models\RxVault;
 use App\Models\Question;
+use App\Models\QuestionBookmark;
 use App\Models\ResponseTelemetryLog;
+use App\Models\RxVault;
 use App\Models\TosDomain;
 use App\Models\User;
 use App\Models\UserKnowledgeState;
 use App\Models\XpTransaction;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Builder;
 use InvalidArgumentException;
 use LogicException;
 use RuntimeException;
@@ -56,13 +56,13 @@ class PracticeService
     private const XP_COMPLETION_BONUS = 20;
 
     private const REASON_CORRECT =
-    'Correct practice answer';
+        'Correct practice answer';
 
     private const REASON_ACCURACY_BONUS =
-    'Practice accuracy bonus';
+        'Practice accuracy bonus';
 
     private const REASON_COMPLETION_BONUS =
-    'Practice completion bonus';
+        'Practice completion bonus';
 
     private const ACCURACY_BONUS_THRESHOLD = 0.80;
 
@@ -108,8 +108,8 @@ class PracticeService
         if (! in_array($length, self::ALLOWED_LENGTHS, true)) {
             throw new InvalidArgumentException(
                 'Practice length must be one of: '
-                    . implode(', ', self::ALLOWED_LENGTHS)
-                    . '.'
+                    .implode(', ', self::ALLOWED_LENGTHS)
+                    .'.'
             );
         }
 
@@ -185,14 +185,11 @@ class PracticeService
                 $domainFilterId,
             )->exists()) {
                 $message = match ($mode) {
-                    self::MODE_MISTAKES =>
-                    'Your Mistake Locker is currently empty.',
+                    self::MODE_MISTAKES => 'Your Mistake Locker is currently empty.',
 
-                    self::MODE_BOOKMARKS =>
-                    'You have not bookmarked any active questions yet.',
+                    self::MODE_BOOKMARKS => 'You have not bookmarked any active questions yet.',
 
-                    default =>
-                    'No active Practice questions are available for the selected scope.',
+                    default => 'No active Practice questions are available for the selected scope.',
                 };
 
                 throw new RuntimeException($message);
@@ -883,11 +880,11 @@ class PracticeService
 
         $eligibleCorrect =
             (clone $eligible)
-            ->where(
-                'is_correct',
-                true
-            )
-            ->count();
+                ->where(
+                    'is_correct',
+                    true
+                )
+                ->count();
 
         $accuracy =
             $eligibleCount > 0
@@ -1049,7 +1046,7 @@ class PracticeService
 
         if (
             $user->last_active_date
-            ?->toDateString()
+                ?->toDateString()
             === $today
         ) {
             /*
@@ -1060,12 +1057,12 @@ class PracticeService
 
         $yesterday =
             now()
-            ->subDay()
-            ->toDateString();
+                ->subDay()
+                ->toDateString();
 
         if (
             $user->last_active_date
-            ?->toDateString()
+                ?->toDateString()
             === $yesterday
         ) {
             $user->streak_count += 1;
@@ -1181,11 +1178,11 @@ class PracticeService
     ): float {
         $visibleText =
             $question->question_text
-            . ' '
-            . $question
-            ->choices
-            ->pluck('choice_text')
-            ->implode(' ');
+            .' '
+            .$question
+                ->choices
+                ->pluck('choice_text')
+                ->implode(' ');
 
         $wordCount =
             str_word_count(
@@ -1216,7 +1213,8 @@ class PracticeService
         ?int $domainFilterId,
     ): Builder {
         $query = Question::query()
-            ->where('is_active', true);
+            ->where('is_active', true)
+            ->whereNull('research_form');
 
         if ($mode === self::MODE_MISTAKES) {
             return $query->whereIn(
@@ -1246,8 +1244,7 @@ class PracticeService
         if ($domainFilterId !== null) {
             $query->whereHas(
                 'competency',
-                fn(Builder $competencyQuery) =>
-                $competencyQuery->where(
+                fn (Builder $competencyQuery) => $competencyQuery->where(
                     'domain_id',
                     $domainFilterId
                 )
@@ -1364,8 +1361,7 @@ class PracticeService
         Collection $candidates,
     ): ?Question {
         $byCompetency = $candidates->groupBy(
-            fn(Question $question) =>
-            (string) $question->competency_id
+            fn (Question $question) => (string) $question->competency_id
         );
 
         $masteries = UserKnowledgeState::query()
@@ -1417,6 +1413,7 @@ class PracticeService
             ->where('is_active', true)
             ->find($questionId);
     }
+
     /**
      * Non-cryptographic weighted-random selection.
      *

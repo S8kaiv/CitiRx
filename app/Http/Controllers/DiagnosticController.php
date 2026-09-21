@@ -194,8 +194,8 @@ class DiagnosticController extends Controller
                 );
         } catch (
             InvalidArgumentException
-            | LogicException
-            | RuntimeException $e
+            |LogicException
+            |RuntimeException $e
         ) {
             return redirect()
                 ->route(
@@ -286,23 +286,30 @@ class DiagnosticController extends Controller
          */
         $perDomain = $logs
             ->groupBy(
-                fn($log) => $log->question->competency->domain->domain_id
+                fn ($log) => $log->question->competency->domain->domain_id
             )
             ->map(function ($group) {
                 $domain =
                     $group->first()
-                    ->question
-                    ->competency
-                    ->domain;
+                        ->question
+                        ->competency
+                        ->domain;
 
                 return [
                     'domain_id' => $domain->domain_id,
+
                     'domain_name' => $domain->domain_name,
+
                     'domain_number' => $domain->domain_number,
+
+                    'weight' => (float)
+                    $domain->prc_weight_percentage,
+
                     'total' => $group->count(),
+
                     'correct' => $group
                         ->filter(
-                            fn($log) => (bool) $log->is_correct
+                            fn ($log) => (bool) $log->is_correct
                         )
                         ->count(),
                 ];
@@ -310,6 +317,29 @@ class DiagnosticController extends Controller
             ->sortBy('domain_number')
             ->values()
             ->all();
+
+        /*
+         * Calculate the overall score using the official
+         * PRC subject weights.
+         */
+
+        $tosWeightedScore = round(
+            collect($perDomain)->sum(
+                function (array $subject): float {
+                    if ($subject['total'] <= 0) {
+                        return 0.0;
+                    }
+
+                    $subjectAccuracy =
+                        $subject['correct']
+                        / $subject['total'];
+
+                    return $subjectAccuracy
+                        * $subject['weight'];
+                }
+            ),
+            2
+        );
 
         /*
          * Historical initial mastery results.
@@ -346,13 +376,13 @@ class DiagnosticController extends Controller
 
                     'correct' => $group
                         ->filter(
-                            fn($log) => (bool) $log->is_correct
+                            fn ($log) => (bool) $log->is_correct
                         )
                         ->count(),
                 ];
             })
             ->sortBy(
-                fn($row) => sprintf(
+                fn ($row) => sprintf(
                     '%02d-%02d',
                     $row['domain_number'],
                     $row['order_index']
@@ -364,6 +394,7 @@ class DiagnosticController extends Controller
             'session' => $session,
             'perDomain' => $perDomain,
             'masteryResults' => $masteryResults,
+            'tosWeightedScore' => $tosWeightedScore,
         ]);
     }
 
@@ -415,7 +446,7 @@ class DiagnosticController extends Controller
 
         $questions = Question::query()
             ->with([
-                'choices' => fn($query) => $query->orderBy('choice_letter'),
+                'choices' => fn ($query) => $query->orderBy('choice_letter'),
 
                 'competency.domain',
             ])
@@ -446,7 +477,7 @@ class DiagnosticController extends Controller
          */
         return collect($servedIds)
             ->map(
-                fn($id) => $questions->get($id)
+                fn ($id) => $questions->get($id)
             )
             ->values();
     }
@@ -484,8 +515,8 @@ class DiagnosticController extends Controller
                 'saved' => true,
             ]);
         } catch (
-            InvalidArgumentException |
-            LogicException |
+            InvalidArgumentException|
+            LogicException|
             RuntimeException $e
         ) {
             return response()->json([
