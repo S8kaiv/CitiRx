@@ -8,7 +8,6 @@
                     default => 'Practice Session',
                 };
             @endphp
-
             <h1 class="font-display text-xl font-black leading-tight text-slate-900">
                 {{ $practiceTitle }}
             </h1>
@@ -31,6 +30,8 @@
     {{-- Compact Outer Container (py-3 sm:py-5) --}}
     <div class="py-3 sm:py-5 font-sans antialiased text-slate-900">
         <div class="max-w-2xl px-4 mx-auto sm:px-6">
+            {{-- Level Up Notification Banner --}}
+            <x-level-up-alert />
 
             {{-- Status & Error Messages --}}
             @if (session('status'))
@@ -47,9 +48,6 @@
                     {{ session('error') }}
                 </div>
             @endif
-
-            {{-- Level Up Notification Banner --}}
-            <x-level-up-alert />
 
             {{-- Progress Header & Bar (Tightened vertical height) --}}
             <div class="mb-3.5 space-y-1.5">

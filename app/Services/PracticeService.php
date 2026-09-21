@@ -82,6 +82,11 @@ class PracticeService
 
     private const RECENT_EXCLUSION_LIMIT = 20;
 
+    /*
+     * Maximum value supported by DECIMAL(6, 2).
+     */
+    private const MAX_RESPONSE_SECONDS = 9999.99;
+
     public function __construct(
         protected BktService $bkt,
         protected ReadinessService $readiness,
@@ -1134,14 +1139,28 @@ class PracticeService
             return 0.0;
         }
 
-        $milliseconds =
-            abs(
-                now()->getTimestampMs()
-                    - $started->getTimestampMs()
-            );
+        /*
+     * Do not use abs(). A timestamp accidentally set in the
+     * future should produce zero instead of a large duration.
+     */
+        $milliseconds = max(
+            0,
+            now()->getTimestampMs()
+                - $started->getTimestampMs()
+        );
 
+        $seconds =
+            $milliseconds / 1000;
+
+        /*
+     * Prevent an abandoned browser tab from overflowing
+     * response_telemetry_logs.response_time_seconds.
+     */
         return round(
-            $milliseconds / 1000,
+            min(
+                $seconds,
+                self::MAX_RESPONSE_SECONDS
+            ),
             2
         );
     }

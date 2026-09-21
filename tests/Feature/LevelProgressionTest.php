@@ -107,3 +107,24 @@ it('handles the maximum level', function () {
         ->and($progress['progressPercent'])
         ->toBe(100.0);
 });
+
+it('does not notify when the cached level already matches the XP', function () {
+    $user = User::factory()->create([
+        'total_xp' => 100,
+        'current_level' => 2,
+    ]);
+
+    $notice = app(LevelService::class)
+        ->sync($user);
+
+    expect($user->fresh()->current_level)
+        ->toBe(2)
+        ->and($notice)
+        ->toBeNull();
+});
+
+it('protects the progress page from guests', function () {
+    $this
+        ->get(route('progress.index'))
+        ->assertRedirect(route('login'));
+});
