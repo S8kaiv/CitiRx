@@ -24,7 +24,7 @@
             {{-- TOP HERO CARD: TROPHY SHOWCASE & PROGRESSION --}}
             <div class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-gradient-to-br from-primary-tint via-[#FAF8FF] to-white p-6 sm:p-8 shadow-sm">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
-                    
+
                     {{-- Trophy & Heading --}}
                     <div class="flex items-center gap-5 text-center sm:text-left">
                         <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-[#F5A623]/40 bg-gold-tint text-3xl shadow-sm">
@@ -79,12 +79,17 @@
                     @php
                         $userBadge = $userBadges->get($badge->badge_id);
                         $isUnlocked = $userBadge !== null;
+                        $badgeName = strtolower($badge->badge_name);
 
-                        // Optional: Select dynamic icon based on badge attributes or slug/name
-                        $badgeIcon = match(true) {
-                            str_contains(strtolower($badge->badge_name), 'streak') => '🔥',
-                            str_contains(strtolower($badge->badge_name), 'xp') || str_contains(strtolower($badge->badge_name), 'master') => '⚡',
-                            str_contains(strtolower($badge->badge_name), 'diagnostic') || str_contains(strtolower($badge->badge_name), 'test') => '🎯',
+                        $badgeIcon = match (true) {
+                            str_contains($badgeName, 'streak') => '🔥',
+
+                            str_contains($badgeName, 'xp')
+                                || str_contains($badgeName, 'master') => '⚡',
+
+                            str_contains($badgeName, 'diagnostic')
+                                || str_contains($badgeName, 'test') => '🎯',
+
                             default => '🏆',
                         };
                     @endphp
