@@ -205,53 +205,28 @@ class PracticeController extends Controller
 
         try {
             /*
-             * Resume an already assigned unanswered
-             * question whenever one exists.
-             */
-            if (
-                $session->current_question_id
-                !== null
-            ) {
-                $question =
-                    Question::query()
-                    ->with([
-                        'choices' => fn($query) => $query->orderBy(
+            * PracticeService handles both:
+            *
+            * - resuming the current unanswered question
+            * - selecting a new question
+            *
+            * It also resets the response timer when a
+            * question is resumed.
+            */
+            $question = $this->practice
+                ->pickNextQuestion(
+                    $session
+                );
+
+            if ($question) {
+                $question->load([
+                    'choices' => fn ($query) =>
+                        $query->orderBy(
                             'choice_letter'
                         ),
 
-                        'competency.domain',
-                    ])
-                    ->find(
-                        $session
-                            ->current_question_id
-                    );
-
-                if (! $question) {
-                    throw new RuntimeException(
-                        'The current Practice question could not be loaded.'
-                    );
-                }
-            } else {
-                /*
-                 * No unanswered question exists,
-                 * so let PracticeService adaptively
-                 * select the next one.
-                 */
-                $question =
-                    $this->practice
-                    ->pickNextQuestion(
-                        $session
-                    );
-
-                if ($question) {
-                    $question->load([
-                        'choices' => fn($query) => $query->orderBy(
-                            'choice_letter'
-                        ),
-
-                        'competency.domain',
-                    ]);
-                }
+                    'competency.domain',
+                ]);
             }
 
             /*
