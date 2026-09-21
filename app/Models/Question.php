@@ -10,11 +10,39 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Question extends Model
 {
+    public const FORM_PRE_TEST_A = 'pre_test_a';
+
+    public const FORM_POST_TEST_B = 'post_test_b';
+
+    public const COGNITIVE_KNOWLEDGE = 'knowledge';
+
+    public const COGNITIVE_COMPREHENSION = 'comprehension';
+
+    public const COGNITIVE_APPLICATION = 'application';
+
+    public const COGNITIVE_ANALYSIS = 'analysis';
+
+    public const COGNITIVE_SYNTHESIS = 'synthesis';
+
+    public const COGNITIVE_EVALUATION = 'evaluation';
+
+    public const COGNITIVE_LEVELS = [
+        self::COGNITIVE_KNOWLEDGE,
+        self::COGNITIVE_COMPREHENSION,
+        self::COGNITIVE_APPLICATION,
+        self::COGNITIVE_ANALYSIS,
+        self::COGNITIVE_SYNTHESIS,
+        self::COGNITIVE_EVALUATION,
+    ];
+
     use HasUuids;
 
     protected $table = 'questions';
+
     protected $primaryKey = 'question_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     const UPDATED_AT = null;
@@ -27,14 +55,18 @@ class Question extends Model
         'difficulty_index_p',
         'speed_flag_count',
         'is_active',
+        'research_form',
+        'form_position',
+        'cognitive_level',
     ];
 
     protected $casts = [
         'is_diagnostic_pool' => 'boolean',
-        'is_active'          => 'boolean',
+        'is_active' => 'boolean',
         'difficulty_index_p' => 'decimal:3',
-        'speed_flag_count'   => 'integer',
-        'created_at'         => 'datetime',
+        'speed_flag_count' => 'integer',
+        'created_at' => 'datetime',
+        'form_position' => 'integer',
     ];
 
     public function competency(): BelongsTo

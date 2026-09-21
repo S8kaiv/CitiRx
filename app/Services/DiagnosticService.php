@@ -17,6 +17,12 @@ use RuntimeException;
 
 class DiagnosticService
 {
+    private const SUBJECT_COUNT = 6;
+
+    private const QUESTIONS_PER_SUBJECT = 10;
+
+    private const TOTAL_QUESTIONS = 60;
+
     public function __construct(
         protected BktService $bkt,
         protected ReadinessService $readiness,
@@ -30,33 +36,73 @@ class DiagnosticService
      * Questions are kept in a deterministic order:
      * domain -> created_at -> question_id.
      */
-    public function pickQuestions(int $perDomain = 10): Collection
+    public function pickQuestions(): Collection
     {
-        if ($perDomain <= 0) {
-            throw new InvalidArgumentException(
-                'Questions per domain must be greater than zero.'
-            );
-        }
-
         $domains = TosDomain::query()
             ->orderBy('domain_number')
             ->get();
 
+        if ($domains->count() !== self::SUBJECT_COUNT) {
+            throw new RuntimeException(
+                'The diagnostic requires exactly six official PhLE subjects.'
+            );
+        }
+
         $picked = collect();
 
         foreach ($domains as $domain) {
-            $domainQuestions = Question::query()
+            $questions = Question::query()
                 ->where('is_active', true)
-                ->where('is_diagnostic_pool', true)
-                ->whereHas('competency', function ($query) use ($domain) {
-                    $query->where('domain_id', $domain->domain_id);
-                })
-                ->orderBy('created_at')
-                ->orderBy('question_id')
-                ->limit($perDomain)
+                ->where(
+                    'research_form',
+                    Question::FORM_PRE_TEST_A
+                )
+                ->whereHas(
+                    'competency',
+                    fn ($query) => $query->where(
+                        'domain_id',
+                        $domain->domain_id
+                    )
+                )
+                ->orderBy('form_position')
                 ->get();
 
-            $picked = $picked->merge($domainQuestions);
+            if (
+                $questions->count()
+                !== self::QUESTIONS_PER_SUBJECT
+            ) {
+                throw new RuntimeException(
+                    "{$domain->domain_name} requires exactly "
+                        .self::QUESTIONS_PER_SUBJECT
+                        .' approved Form A questions; found '
+                        .$questions->count()
+                        .'.'
+                );
+            }
+
+            $picked = $picked->concat($questions);
+        }
+
+        $picked = $picked
+            ->sortBy('form_position')
+            ->values();
+
+        if ($picked->count() !== self::TOTAL_QUESTIONS) {
+            throw new RuntimeException(
+                'Form A must contain exactly 60 questions.'
+            );
+        }
+
+        $positions = $picked
+            ->pluck('form_position')
+            ->sort()
+            ->values()
+            ->all();
+
+        if ($positions !== range(1, self::TOTAL_QUESTIONS)) {
+            throw new RuntimeException(
+                'Form A positions must be unique and cover 1 through 60.'
+            );
         }
 
         return $picked;
@@ -69,8 +115,7 @@ class DiagnosticService
      * return that session instead of creating another one.
      */
     public function startSession(
-        User $user,
-        int $perDomain = 10
+        User $user
     ): AssessmentSession {
         if ($user->is_diagnostic_completed) {
             throw new LogicException(
@@ -89,7 +134,7 @@ class DiagnosticService
             return $existingSession;
         }
 
-        $questions = $this->pickQuestions($perDomain);
+        $questions = $this->pickQuestions();
 
         if ($questions->isEmpty()) {
             throw new RuntimeException(
@@ -201,11 +246,11 @@ class DiagnosticService
              * Extra questions are also rejected.
              */
             $servedIds = collect($servedQuestionIds)
-                ->map(fn($id) => (string) $id)
+                ->map(fn ($id) => (string) $id)
                 ->values();
 
             $submittedIds = $submittedQuestionIds
-                ->map(fn($id) => (string) $id)
+                ->map(fn ($id) => (string) $id)
                 ->values();
 
             if (

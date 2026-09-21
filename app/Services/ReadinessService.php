@@ -41,7 +41,9 @@ class ReadinessService
     public function breakdown(User $user): array
     {
         $domains = TosDomain::query()
-            ->with(['competencies' => fn ($query) => $query->orderBy('order_index')])
+            ->with([
+                'competencies' => fn ($query) => $query->orderBy('order_index'),
+            ])
             ->orderBy('domain_number')
             ->get();
 
@@ -51,10 +53,8 @@ class ReadinessService
             ->keyBy('competency_id');
 
         /*
-         * A user with no knowledge states has no readiness
-         * estimate yet.
-         */
-
+     * The student has not completed a diagnostic yet.
+     */
         if ($states->isEmpty()) {
             return [
                 'total' => 0.0,
@@ -75,63 +75,101 @@ class ReadinessService
                 continue;
             }
 
-            $masterySum = 0.0;
+            /*
+         * First weighting level:
+         *
+         * component mastery × component TOS weight
+         */
+            $componentWeightedSum = 0.0;
+            $componentWeightTotal = 0.0;
             $competencyRows = [];
 
             foreach ($competencies as $competency) {
-                $state = $states->get($competency->competency_id);
-
-                /*
-                 * For the current diagnostic design, every
-                 * competency should have a knowledge state.
-                 *
-                 * Missing state means something upstream failed.
-                 */
+                $state = $states->get(
+                    $competency->competency_id
+                );
 
                 if (! $state) {
                     throw new RuntimeException(
-                        "Missing knowledge state for competency {$competency->competency_id}."
+                        'Missing knowledge state for competency '
+                            .$competency->competency_id
+                            .'.'
                     );
                 }
 
-                $mastery = (float) $state->current_mastery_p_l;
-                $masterySum += $mastery;
+                $mastery = (float)
+                $state->current_mastery_p_l;
+
+                $componentWeight = (float)
+                $competency->tos_weight_percentage;
+
+                if ($componentWeight <= 0) {
+                    throw new RuntimeException(
+                        $competency->title
+                            .' has an invalid TOS weight.'
+                    );
+                }
+
+                $componentWeightedSum +=
+                    $mastery * $componentWeight;
+
+                $componentWeightTotal +=
+                    $componentWeight;
 
                 $competencyRows[] = [
                     'competency_id' => $competency->competency_id,
+
                     'title' => $competency->title,
+
                     'mastery' => $mastery,
+
+                    'weight' => $componentWeight,
                 ];
             }
 
-            /*
-             * Stage 1:
-             *
-             * competency mastery
-             *        ↓ mean
-             * domain mastery
-             */
-
-            $domainMastery = $masterySum / $competencies->count();
-            $weight = (float) $domain->prc_weight_percentage;
+            if ($componentWeightTotal <= 0) {
+                throw new RuntimeException(
+                    $domain->domain_name
+                        .' has no valid component weights.'
+                );
+            }
 
             /*
-             * Stage 2:
-             *
-             * domain mastery × PRC weight
-             */
+         * Weighted mastery for this subject.
+         *
+         * The result remains between 0 and 1.
+         */
+            $domainMastery =
+                $componentWeightedSum
+                / $componentWeightTotal;
 
-            $weighted = $domainMastery * $weight;
+            $domainWeight = (float)
+            $domain->prc_weight_percentage;
+
+            /*
+         * Second weighting level:
+         *
+         * subject mastery × official PRC subject weight
+         */
+            $weighted =
+                $domainMastery * $domainWeight;
+
             $weightedSum += $weighted;
-            $totalWeight += $weight;
+            $totalWeight += $domainWeight;
 
             $rows[] = [
                 'domain_id' => $domain->domain_id,
+
                 'domain_name' => $domain->domain_name,
+
                 'domain_number' => $domain->domain_number,
+
                 'mastery' => $domainMastery,
-                'weight' => $weight,
+
+                'weight' => $domainWeight,
+
                 'weighted' => $weighted,
+
                 'competencies' => $competencyRows,
             ];
         }
@@ -146,19 +184,25 @@ class ReadinessService
         }
 
         /*
-         * Normalize each domain contribution.
-         */
-
+     * Convert each subject contribution into percentage points.
+     */
         foreach ($rows as &$row) {
             $row['contribution'] = round(
                 ($row['weighted'] / $totalWeight) * 100,
                 2
             );
         }
+
         unset($row);
 
         $total = round(
-            max(0, min(100, ($weightedSum / $totalWeight) * 100)),
+            max(
+                0,
+                min(
+                    100,
+                    ($weightedSum / $totalWeight) * 100
+                )
+            ),
             2
         );
 

@@ -51,32 +51,49 @@
                             Diagnostic Assessment Complete
                         </h2>
                         <p class="mt-1 text-sm text-slate-600 max-w-lg leading-relaxed">
-                            Your performance has calibrated initial parameters across all six examination domains to
-                            personalize your adaptive practice loops.
+                            Your performance has calibrated initial parameters across all six examination subjects
                         </p>
                     </div>
 
                     <div
-                        class="flex sm:flex-col items-center sm:items-end justify-between border-t sm:border-t-0 sm:border-l border-slate-100 pt-4 sm:pt-0 sm:pl-8 shrink-0">
-                        <div class="text-left sm:text-right">
-                            <span class="block font-mono text-xs font-bold uppercase tracking-wider text-muted-ink">
-                                Overall Accuracy
+                        class="grid grid-cols-2 gap-4 border-t border-slate-100 pt-4 sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0">
+                        {{-- Raw score --}}
+                        <div class="text-center sm:text-right">
+                            <span class="block font-mono text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                                Raw Accuracy
                             </span>
-                            <div class="font-display text-4xl sm:text-5xl font-black text-primary tracking-tight">
+
+                            <div class="font-display text-3xl font-black tracking-tight text-primary sm:text-4xl">
                                 {{ $overallPercentage }}%
                             </div>
                         </div>
 
-                        <div
-                            class="mt-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 font-display text-xs font-extrabold text-slate-700">
-                            {{ $session->correct_items }} / {{ $session->total_items }} Correct
+                        {{-- Official TOS-weighted score --}}
+                        <div class="text-center sm:text-right">
+                            <span class="block font-mono text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                                TOS-Weighted Score
+                            </span>
+
+                            <div class="font-display text-3xl font-black tracking-tight text-clinical sm:text-4xl">
+                                {{ number_format($tosWeightedScore, 2) }}%
+                            </div>
+                        </div>
+
+                        <div class="col-span-2 text-center sm:text-right">
+                            <span
+                                class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 font-display text-xs font-extrabold text-slate-700">
+                                {{ $session->correct_items }}
+                                /
+                                {{ $session->total_items }}
+                                Correct
+                            </span>
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-6 pt-5 border-t border-slate-100">
                     <div class="h-3 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 ring-1 ring-inset ring-slate-200/60"
-                        role="progressbar" aria-label="Overall accuracy" aria-valuemin="0" aria-valuemax="100"
+                        role="progressbar" aria-label="Raw diagnostic accuracy" aria-valuemin="0" aria-valuemax="100"
                         aria-valuenow="{{ $overallPercentage }}">
                         <div class="h-full rounded-full bg-primary transition-all duration-700"
                             style="width: {{ $overallPercentage }}%"></div>
@@ -89,7 +106,7 @@
                 <div class="flex items-center justify-between gap-4 mb-4">
                     <div>
                         <h3 class="font-display text-lg font-bold text-slate-900">
-                            Performance by Domain
+                            Performance by Subject
                         </h3>
                         <p class="text-xs text-muted-ink">
                             Breakdown of accuracy according to the PhLE Table of Specifications.
@@ -97,7 +114,7 @@
                     </div>
                     <span
                         class="hidden sm:inline-flex items-center rounded-lg bg-clinical-tint px-2.5 py-1 font-display text-xs font-bold text-clinical-ink">
-                        6 Domains
+                        6 Subjects
                     </span>
                 </div>
 
@@ -106,7 +123,7 @@
                         <thead>
                             <tr
                                 class="border-b-2 border-slate-100 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
-                                <th class="pb-3 pr-4">Domain</th>
+                                <th class="pb-3 pr-4">Subject</th>
                                 <th class="pb-3 px-4 text-center">Score</th>
                                 <th class="pb-3 px-4 text-right">Accuracy</th>
                                 <th class="pb-3 pl-4 text-right w-36 hidden sm:table-cell">Distribution</th>
