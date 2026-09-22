@@ -1,22 +1,46 @@
 <x-guest-layout fullscreen>
     <style>
         @keyframes capsule-float {
-            0%, 100% { transform: translateY(0) rotate(var(--r)); }
-            50%      { transform: translateY(-14px) rotate(calc(var(--r) + 6deg)); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(var(--r));
+            }
+
+            50% {
+                transform: translateY(-14px) rotate(calc(var(--r) + 6deg));
+            }
         }
-        .capsule { animation: capsule-float 7s ease-in-out infinite; }
-        .capsule:nth-child(2) { animation-delay: -2s; animation-duration: 9s; }
-        .capsule:nth-child(3) { animation-delay: -4s; animation-duration: 8s; }
-        .capsule:nth-child(4) { animation-delay: -1s; animation-duration: 10s; }
+
+        .capsule {
+            animation: capsule-float 7s ease-in-out infinite;
+        }
+
+        .capsule:nth-child(2) {
+            animation-delay: -2s;
+            animation-duration: 9s;
+        }
+
+        .capsule:nth-child(3) {
+            animation-delay: -4s;
+            animation-duration: 8s;
+        }
+
+        .capsule:nth-child(4) {
+            animation-delay: -1s;
+            animation-duration: 10s;
+        }
 
         @media (prefers-reduced-motion: reduce) {
-            .capsule { animation: none; }
+            .capsule {
+                animation: none;
+            }
         }
     </style>
 
     {{-- Full-screen breakout container compatible across all devices --}}
     <div class="min-h-screen overflow-y-auto bg-slate-50 lg:bg-white text-slate-800">
-        <div class="min-h-full grid grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
+        <div class="min-h-full grid grid-cols-1 lg:grid-cols-[0.80fr_1fr]">
 
             {{-- ============ LEFT: brand + what happens next (Desktop / Large Screens) ============ --}}
             <aside class="relative hidden lg:flex flex-col justify-between overflow-hidden bg-[#4A2FC4] p-8 xl:p-12 text-white min-h-screen">
@@ -70,8 +94,8 @@
             </aside>
 
             {{-- ============ RIGHT: reset form ============ --}}
-            <main class="flex flex-col items-center justify-center px-6 py-12 lg:px-12 xl:px-16 bg-slate-50 lg:bg-white min-h-screen">
-
+            <main class="flex flex-col items-center justify-center px-10 py-12 lg:px-12 xl:px-16 bg-slate-50 lg:bg-white min-h-screen">
+                
                 {{-- Mobile / Tablet Brand Header --}}
                 <div class="mb-8 flex items-center gap-3 lg:hidden">
                     <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-fuchsia-600 text-white font-display text-xl font-extrabold shadow-lg rotate-[-6deg]">
@@ -118,7 +142,7 @@
                         <button type="submit"
                             :disabled="busy"
                             style="--lip: #4A2FC4;"
-                            class="btn-press flex w-full items-center justify-center rounded-2xl bg-primary px-7 py-3.5 font-display text-base font-bold text-white shadow-md disabled:opacity-70 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
+                            class="btn-press flex w-full items-center justify-center rounded-2xl bg-indigo-600 px-7 py-3.5 font-display text-base font-bold text-white shadow-md hover:bg-indigo-700 disabled:opacity-70 focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-200">
                             <span x-text="busy ? 'Sending Link…' : 'Send reset link'">Send reset link</span>
                         </button>
                     </form>

@@ -91,6 +91,53 @@ Alpine.data("readinessRing", (target, circumference) => {
     };
 });
 
+/**
+ * Interactive Sample Quiz for the Auth/Login Page with Question Navigation
+ */
+Alpine.data("sampleQuiz", (questions = []) => ({
+    questions: questions,
+    current: {},
+    picked: null,
+    history: [],
+
+    nextQuestion() {
+        if (!this.questions || this.questions.length === 0) return;
+
+        // Push current question state to history before generating a new one
+        if (this.current && Object.keys(this.current).length > 0) {
+            this.history.push({
+                question: this.current,
+                picked: this.picked
+            });
+        }
+
+        this.picked = null;
+
+        let nextIdx;
+        do {
+            nextIdx = Math.floor(Math.random() * this.questions.length);
+        } while (
+            this.questions.length > 1 &&
+            this.questions[nextIdx] === this.current
+        );
+
+        this.current = this.questions[nextIdx];
+    },
+
+    prevQuestion() {
+        if (this.history.length === 0) return;
+
+        // Restore last question and previous answer selection
+        const previousState = this.history.pop();
+        this.current = previousState.question;
+        this.picked = previousState.picked;
+    },
+
+    init() {
+        this.nextQuestion();
+    },
+}));
+
 window.addEventListener("pageshow", (event) => {
     if (event.persisted && document.body.dataset.authenticatedPage === "true") {
         window.location.reload();
