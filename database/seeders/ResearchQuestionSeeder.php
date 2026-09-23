@@ -132,6 +132,28 @@ class ResearchQuestionSeeder extends Seeder
                 'Development mock research questions must never be seeded in production.'
             );
         }
+        $protectedResearchItemsExist = Question::query()
+            ->whereIn('research_form', [
+                Question::FORM_PRE_TEST_A,
+                Question::FORM_POST_TEST_B,
+            ])
+            ->where(function ($query) {
+                $query
+                    ->whereNotNull('research_validated_at')
+                    ->orWhere(
+                        'question_text',
+                        'not like',
+                        '[DEVELOPMENT MOCK - NOT VALIDATED]%',
+                    );
+            })
+            ->exists();
+
+        if ($protectedResearchItemsExist) {
+            throw new RuntimeException(
+                'Research forms contain faculty-authored or validated questions. '
+                    .'The development mock seeder was stopped to prevent overwriting them.',
+            );
+        }
 
         $this->validateBlueprint();
 
@@ -292,7 +314,7 @@ class ResearchQuestionSeeder extends Seeder
                 if (
                     ! isset(self::COGNITIVE_LEVELS[$subjectNumber])
                     || count(self::COGNITIVE_LEVELS[$subjectNumber])
-                        !== self::QUESTIONS_PER_SUBJECT
+                    !== self::QUESTIONS_PER_SUBJECT
                 ) {
                     throw new RuntimeException(
                         "Subject {$subjectNumber} must contain exactly 10 cognitive labels."

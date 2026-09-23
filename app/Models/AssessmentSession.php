@@ -39,6 +39,11 @@ class AssessmentSession extends Model
         'current_question_id',
         'current_question_started_at',
         'draft_answers',
+        'expires_at',
+        'readiness_snapshot_pct',
+        'domain_mastery_snapshot',
+        'exam_form_version',
+        'submission_reason',
     ];
 
     protected $casts = [
@@ -53,6 +58,9 @@ class AssessmentSession extends Model
         'domain_filter_id' => 'integer',
         'current_question_started_at' => 'datetime',
         'draft_answers' => 'array',
+        'expires_at' => 'datetime',
+        'readiness_snapshot_pct' => 'decimal:2',
+        'domain_mastery_snapshot' => 'array',
     ];
 
     public function user(): BelongsTo
@@ -85,6 +93,15 @@ class AssessmentSession extends Model
             Question::class,
             'current_question_id',
             'question_id'
+        );
+    }
+
+    public function responses(): HasMany
+    {
+        return $this->hasMany(
+            AssessmentResponse::class,
+            'session_id',
+            'session_id',
         );
     }
 }

@@ -14,7 +14,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body data-authenticated-page="true" class="h-full font-sans text-slate-900 antialiased selection:bg-primary-tint selection:text-primary relative">
+<body data-authenticated-page="true"
+    class="h-full font-sans text-slate-900 antialiased selection:bg-primary-tint selection:text-primary relative">
 
     {{-- ============================================================ --}}
     {{-- ATMOSPHERIC CANVAS: VIOLET AMBIENT GLOW + CLINICAL DOTS      --}}
@@ -34,7 +35,14 @@
          * Hide navigation while the student is actively
          * answering Practice or Diagnostic questions.
          */
-        $isFocusMode = request()->routeIs('practice.show', 'practice.answer', 'diagnostic.take', 'diagnostic.answer');
+        $isFocusMode = request()->routeIs(
+            'practice.show',
+            'practice.answer',
+            'diagnostic.take',
+            'diagnostic.answer',
+            'mock-board.take',
+            'mock-board.answer',
+        );
 
         /*
          * Auth::user() is appropriate in this shared layout.
@@ -61,21 +69,21 @@
         /*
          * Build profile initials from the first and last
          * parts of the user's full name.
-         */
-        $nameParts = preg_split('/\s+/', $displayName, -1, PREG_SPLIT_NO_EMPTY);
-        $firstName = $nameParts[0] ?? 'U';
-        $lastName = count($nameParts) > 1 ? $nameParts[array_key_last($nameParts)] : '';
-        $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
+ */
+$nameParts = preg_split('/\s+/', $displayName, -1, PREG_SPLIT_NO_EMPTY);
+$firstName = $nameParts[0] ?? 'U';
+$lastName = count($nameParts) > 1 ? $nameParts[array_key_last($nameParts)] : '';
+$initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
 
-        /*
-         * Resolve Level and Tier using the CitiRx User relationship.
-         */
-        $userLevel = $authUser?->role === 'student' ? $authUser->level : null;
-        $levelNumber = (int) ($userLevel?->level_number ?? ($authUser?->current_level ?? 1));
-        $tierName = strtolower($userLevel?->tier?->tier_name ?? 'beginner');
+/*
+ * Resolve Level and Tier using the CitiRx User relationship.
+ */
+$userLevel = $authUser?->role === 'student' ? $authUser->level : null;
+$levelNumber = (int) ($userLevel?->level_number ?? ($authUser?->current_level ?? 1));
+$tierName = strtolower($userLevel?->tier?->tier_name ?? 'beginner');
 
-        /*
-         * Text shown below the user's name.
+/*
+ * Text shown below the user's name.
          */
         $profileLabel =
             $authUser?->role === 'student'
@@ -84,28 +92,28 @@
 
         /*
          * Avatar border styling based on the student's tier.
-         */
-        $tierRingClasses = match (true) {
-            str_contains($tierName, 'expert')
-                => 'ring-2 ring-primary border-primary/40 bg-primary-tint text-primary shadow-[0_0_10px_rgba(109,74,255,0.35)]',
+ */
+$tierRingClasses = match (true) {
+    str_contains($tierName, 'expert')
+        => 'ring-2 ring-primary border-primary/40 bg-primary-tint text-primary shadow-[0_0_10px_rgba(109,74,255,0.35)]',
 
-            str_contains($tierName, 'advanced')
-                => 'ring-2 ring-[#0EA5A4] border-[#0EA5A4]/40 bg-[#0EA5A4]/10 text-[#0E7A79] shadow-[0_0_10px_rgba(14,165,164,0.35)]',
+    str_contains($tierName, 'advanced')
+        => 'ring-2 ring-[#0EA5A4] border-[#0EA5A4]/40 bg-[#0EA5A4]/10 text-[#0E7A79] shadow-[0_0_10px_rgba(14,165,164,0.35)]',
 
-            str_contains($tierName, 'intermediate')
-                => 'ring-2 ring-[#F5A623] border-[#F5A623]/40 bg-[#F5A623]/10 text-[#B45309] shadow-[0_0_10px_rgba(245,166,35,0.3)]',
+    str_contains($tierName, 'intermediate')
+        => 'ring-2 ring-[#F5A623] border-[#F5A623]/40 bg-[#F5A623]/10 text-[#B45309] shadow-[0_0_10px_rgba(245,166,35,0.3)]',
 
-            default => 'ring-2 ring-slate-300 border-slate-200 bg-slate-100 text-slate-700',
-        };
+    default => 'ring-2 ring-slate-300 border-slate-200 bg-slate-100 text-slate-700',
+};
 
-        /*
-         * Small Level badge attached to the avatar.
-         */
-        $levelBadgeBg = match (true) {
-            str_contains($tierName, 'expert') => 'bg-primary text-white',
-            str_contains($tierName, 'advanced') => 'bg-[#0EA5A4] text-white',
-            str_contains($tierName, 'intermediate') => 'bg-[#F5A623] text-white',
-            default => 'bg-slate-700 text-white',
+/*
+ * Small Level badge attached to the avatar.
+ */
+$levelBadgeBg = match (true) {
+    str_contains($tierName, 'expert') => 'bg-primary text-white',
+    str_contains($tierName, 'advanced') => 'bg-[#0EA5A4] text-white',
+    str_contains($tierName, 'intermediate') => 'bg-[#F5A623] text-white',
+    default => 'bg-slate-700 text-white',
         };
     @endphp
 
@@ -158,6 +166,24 @@
                                         d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
                                 </svg>
                                 <span>Practice</span>
+                            </a>
+
+                            @php
+                                $active = request()->routeIs('mock-board.*');
+                            @endphp
+
+                            <a href="{{ route('mock-board.intro') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+        {{ $active
+            ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+            : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <svg class="h-5 w-5 {{ $active ? 'text-primary' : 'text-slate-400' }}" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9 12.75 11.25 15 15 9.75M9 3.75h6m-6 0A2.25 2.25 0 0 0 6.75 6v12A2.25 2.25 0 0 0 9 20.25h6A2.25 2.25 0 0 0 17.25 18V6A2.25 2.25 0 0 0 15 3.75m-6 0v1.5h6v-1.5" />
+                                </svg>
+
+                                <span>Mock Board</span>
                             </a>
 
                             @php $active = request()->routeIs('progress.*'); @endphp
@@ -252,7 +278,8 @@
             </aside>
 
             {{-- MOBILE BOTTOM NAVIGATION BAR --}}
-            <nav class="fixed bottom-0 inset-x-0 z-40 flex md:hidden items-center justify-around border-t-2 border-slate-200 bg-white/95 backdrop-blur-md py-2 px-2 shadow-lg font-display text-[10px] font-bold">
+            <nav
+                class="fixed bottom-0 inset-x-0 z-40 flex md:hidden items-center justify-around border-t-2 border-slate-200 bg-white/95 backdrop-blur-md py-2 px-2 shadow-lg font-display text-[10px] font-bold">
                 {{-- Home --}}
                 <a href="{{ route('dashboard') }}"
                     class="flex flex-col items-center gap-1 {{ request()->routeIs('dashboard') ? 'text-primary' : 'text-slate-500' }}">

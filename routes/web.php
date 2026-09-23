@@ -11,6 +11,7 @@ use App\Http\Controllers\ReadinessController;
 use App\Http\Controllers\RxVaultController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\MockBoardController;
 
 Route::get('/', function () {
     return redirect()->route(
@@ -268,5 +269,50 @@ Route::middleware([
         ]
     )
     ->name('progress.index');
+
+ /*
+ |--------------------------------------------------------------------------
+ | Mock Board Route
+ |--------------------------------------------------------------------------
+ */
+
+Route::middleware([
+    'auth',
+    'verified',
+    'student',
+])
+    ->prefix('mock-board')
+    ->name('mock-board.')
+    ->group(function () {
+        Route::get(
+            '/',
+            [MockBoardController::class, 'intro'],
+        )->name('intro');
+
+        Route::post(
+            '/start',
+            [MockBoardController::class, 'start'],
+        )->name('start');
+
+        Route::get(
+            '/{session}',
+            [MockBoardController::class, 'take'],
+        )->name('take');
+
+        Route::patch(
+            '/{session}/questions/{question}/answer',
+            [MockBoardController::class, 'answer'],
+        )->name('answer');
+
+        Route::post(
+            '/{session}/submit',
+            [MockBoardController::class, 'submit'],
+        )->name('submit');
+
+        Route::get(
+            '/{session}/results',
+            [MockBoardController::class, 'results'],
+        )->name('results');
+    });
 
 require __DIR__ . '/auth.php';

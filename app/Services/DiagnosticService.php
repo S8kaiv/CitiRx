@@ -6,106 +6,38 @@ use App\Models\AssessmentSession;
 use App\Models\Question;
 use App\Models\QuestionChoice;
 use App\Models\ResponseTelemetryLog;
-use App\Models\TosDomain;
 use App\Models\User;
 use App\Models\UserKnowledgeState;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use LogicException;
 use RuntimeException;
 
 class DiagnosticService
 {
-    private const SUBJECT_COUNT = 6;
-
-    private const QUESTIONS_PER_SUBJECT = 10;
-
-    private const TOTAL_QUESTIONS = 60;
-
     public function __construct(
         protected BktService $bkt,
         protected ReadinessService $readiness,
         protected BadgeService $badges,
         protected LevelService $levels,
+        protected ResearchFormService $researchForms,
     ) {}
 
     /**
-     * Pick up to $perDomain diagnostic questions from each PhLE domain.
+     * Load the fixed, research-valid 60-item pre-test Form A.
      *
-     * Questions are kept in a deterministic order:
-     * domain -> created_at -> question_id.
+     * ResearchFormService validates the subject distribution,
+     * form positions, active status, and answer choices.
+     *
+     * @return Collection<int, Question>
      */
     public function pickQuestions(): Collection
     {
-        $domains = TosDomain::query()
-            ->orderBy('domain_number')
-            ->get();
-
-        if ($domains->count() !== self::SUBJECT_COUNT) {
-            throw new RuntimeException(
-                'The diagnostic requires exactly six official PhLE subjects.'
-            );
-        }
-
-        $picked = collect();
-
-        foreach ($domains as $domain) {
-            $questions = Question::query()
-                ->where('is_active', true)
-                ->where(
-                    'research_form',
-                    Question::FORM_PRE_TEST_A
-                )
-                ->whereHas(
-                    'competency',
-                    fn ($query) => $query->where(
-                        'domain_id',
-                        $domain->domain_id
-                    )
-                )
-                ->orderBy('form_position')
-                ->get();
-
-            if (
-                $questions->count()
-                !== self::QUESTIONS_PER_SUBJECT
-            ) {
-                throw new RuntimeException(
-                    "{$domain->domain_name} requires exactly "
-                        .self::QUESTIONS_PER_SUBJECT
-                        .' approved Form A questions; found '
-                        .$questions->count()
-                        .'.'
-                );
-            }
-
-            $picked = $picked->concat($questions);
-        }
-
-        $picked = $picked
-            ->sortBy('form_position')
-            ->values();
-
-        if ($picked->count() !== self::TOTAL_QUESTIONS) {
-            throw new RuntimeException(
-                'Form A must contain exactly 60 questions.'
-            );
-        }
-
-        $positions = $picked
-            ->pluck('form_position')
-            ->sort()
-            ->values()
-            ->all();
-
-        if ($positions !== range(1, self::TOTAL_QUESTIONS)) {
-            throw new RuntimeException(
-                'Form A positions must be unique and cover 1 through 60.'
-            );
-        }
-
-        return $picked;
+        return $this->researchForms->load(
+            Question::FORM_PRE_TEST_A,
+        );
     }
 
     /**
@@ -115,46 +47,52 @@ class DiagnosticService
      * return that session instead of creating another one.
      */
     public function startSession(
-        User $user
+        User $user,
     ): AssessmentSession {
-        if ($user->is_diagnostic_completed) {
-            throw new LogicException(
-                'This user has already completed the diagnostic test.'
-            );
-        }
+        return DB::transaction(function () use ($user): AssessmentSession {
+            /*
+         * Locking the user prevents two rapid Start requests from
+         * creating duplicate diagnostic sessions.
+         */
+            $user = User::query()
+                ->whereKey($user->user_id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $existingSession = AssessmentSession::query()
-            ->where('user_id', $user->user_id)
-            ->where('session_type', 'diagnostic')
-            ->whereNull('completed_at')
-            ->orderByDesc('started_at')
-            ->first();
+            if ($user->is_diagnostic_completed) {
+                throw new LogicException(
+                    'This user has already completed the diagnostic test.',
+                );
+            }
 
-        if ($existingSession) {
-            return $existingSession;
-        }
+            $existingSession = AssessmentSession::query()
+                ->where('user_id', $user->user_id)
+                ->where('session_type', 'diagnostic')
+                ->whereNull('completed_at')
+                ->latest('started_at')
+                ->first();
 
-        $questions = $this->pickQuestions();
+            if ($existingSession) {
+                return $existingSession;
+            }
 
-        if ($questions->isEmpty()) {
-            throw new RuntimeException(
-                'No diagnostic questions are currently available.'
-            );
-        }
+            $questions = $this->pickQuestions();
 
-        return AssessmentSession::create([
-            'user_id' => $user->user_id,
-            'session_type' => 'diagnostic',
-            'research_phase' => 'pre_test',
-            'served_question_ids' => $questions
-                ->pluck('question_id')
-                ->values()
-                ->all(),
-            'draft_answers' => [],
-            'total_items' => $questions->count(),
-            'correct_items' => 0,
-            'started_at' => now(),
-        ]);
+            return AssessmentSession::query()->create([
+                'user_id' => $user->user_id,
+                'session_type' => 'diagnostic',
+                'research_phase' => 'pre_test',
+                'served_question_ids' => $questions
+                    ->pluck('question_id')
+                    ->values()
+                    ->all(),
+                'draft_answers' => [],
+                'target_length' => $questions->count(),
+                'total_items' => $questions->count(),
+                'correct_items' => 0,
+                'started_at' => now(),
+            ]);
+        });
     }
 
     /**
@@ -278,7 +216,10 @@ class DiagnosticService
              * Load only questions belonging to this diagnostic session.
              */
             $questions = Question::query()
-                ->with('competency.domain')
+                ->with([
+                    'choices',
+                    'competency.domain',
+                ])
                 ->whereIn('question_id', $servedQuestionIds)
                 ->get()
                 ->keyBy('question_id');
@@ -304,6 +245,8 @@ class DiagnosticService
              * performance, not on P(T) learning transitions.
              */
             $runningCompetencyStats = [];
+            $telemetryRows = [];
+            $scoredAt = now();
 
             /*
              * First pass:
@@ -334,16 +277,10 @@ class DiagnosticService
                  * IMPORTANT:
                  * The selected choice must belong to THIS question.
                  */
-                $selectedChoice = QuestionChoice::query()
-                    ->where(
-                        'choice_id',
-                        $answer['selected_choice_id']
-                    )
-                    ->where(
-                        'question_id',
-                        $question->question_id
-                    )
-                    ->first();
+                $selectedChoice = $question->choices->firstWhere(
+                    'choice_id',
+                    $answer['selected_choice_id'],
+                );
 
                 if (! $selectedChoice) {
                     throw new InvalidArgumentException(
@@ -396,7 +333,8 @@ class DiagnosticService
 
                 $runningCompetencyStats[$competencyId] = $running;
 
-                ResponseTelemetryLog::create([
+                $telemetryRows[] = [
+                    'log_id' => (string) Str::uuid(),
                     'session_id' => $session->session_id,
                     'user_id' => $user->user_id,
                     'question_id' => $question->question_id,
@@ -408,7 +346,8 @@ class DiagnosticService
                     'is_speed_flagged' => false,
                     'prior_p_l' => $prior,
                     'posterior_p_l' => $posterior,
-                ]);
+                    'created_at' => $scoredAt,
+                ];
 
                 /*
                  * Final competency counters.
@@ -444,6 +383,9 @@ class DiagnosticService
                     $correctItems += 1;
                 }
             }
+            ResponseTelemetryLog::query()->insert(
+                $telemetryRows,
+            );
 
             /*
              * Second pass:
@@ -469,7 +411,7 @@ class DiagnosticService
                         'current_mastery_p_l' => $initialMastery,
                         'total_attempts' => $stats['total'],
                         'total_correct' => $stats['correct'],
-                        'last_evaluated_at' => now(),
+                        'last_evaluated_at' => $scoredAt,
                     ],
                 );
             }
@@ -480,7 +422,7 @@ class DiagnosticService
             $session->total_items = $totalItems;
             $session->correct_items = $correctItems;
             $session->draft_answers = null;
-            $session->completed_at = now();
+            $session->completed_at = $scoredAt;
             $session->save();
 
             /*
