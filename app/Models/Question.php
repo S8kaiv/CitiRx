@@ -58,6 +58,8 @@ class Question extends Model
         'research_form',
         'form_position',
         'cognitive_level',
+        'research_validated_at',
+        'research_validated_by',
     ];
 
     protected $casts = [
@@ -67,6 +69,7 @@ class Question extends Model
         'speed_flag_count' => 'integer',
         'created_at' => 'datetime',
         'form_position' => 'integer',
+        'research_validated_at' => 'datetime',
     ];
 
     public function competency(): BelongsTo
@@ -90,5 +93,14 @@ class Question extends Model
             'question_id',
             'question_id'
         )->where('is_correct', true);
+    }
+
+    public function researchValidator(): BelongsTo
+    {
+        return $this->belongsTo(
+            User::class,
+            'research_validated_by',
+            'user_id',
+        );
     }
 }

@@ -11,20 +11,28 @@ class Cohort extends Model
     use HasUuids;
 
     protected $table = 'cohorts';
+
     protected $primaryKey = 'cohort_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
         'cohort_name',
         'academic_year',
         'target_phle_date',
+        'post_test_opens_at',
+        'post_test_closes_at',
     ];
 
     protected $casts = [
         'target_phle_date' => 'date',
-        'created_at'       => 'datetime',
+        'created_at' => 'datetime',
+        'post_test_opens_at' => 'datetime',
+        'post_test_closes_at' => 'datetime',
     ];
 
     public function users(): HasMany
