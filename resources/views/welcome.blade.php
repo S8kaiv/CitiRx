@@ -120,13 +120,11 @@
         }
 
         .btn-press {
-            box-shadow: 0 4px 0 var(--primary-lip);
             transition: transform .08s ease, box-shadow .08s ease;
         }
 
         .btn-press:active {
-            transform: translateY(4px);
-            box-shadow: 0 0 0 var(--primary-lip);
+            transform: translateY(2px);
         }
 
         .mascot-figure {
@@ -182,7 +180,7 @@
                     <a href="{{ route('login') }}" class="text-sm font-semibold text-[var(--primary)] hover:underline">Log in</a>
                     @endif
                     <a href="{{ Route::has('register') ? route('register') : '#' }}"
-                        class="btn-press rounded-xl bg-[#4A2FC4] px-4 py-2 font-display text-sm font-bold text-white">Get started</a>
+                        class="btn-press rounded-xl bg-[#4A2FC4] px-4 py-2 font-display text-sm font-bold text-white shadow-md">Get started</a>
                 </div>
             </nav>
         </header>
@@ -235,7 +233,7 @@
                         </p>
                         <div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
                             <a href="{{ Route::has('register') ? route('register') : '#' }}"
-                                class="btn-press flex items-center justify-center rounded-2xl bg-indigo-700 px-7 py-3 font-display text-base font-bold text-white shadow-md hover:bg-indigo-700 disabled:opacity-70 focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-200">
+                                class="btn-press flex items-center justify-center rounded-2xl bg-[#4A2FC4] px-7 py-3 font-display text-base font-bold text-white shadow-md hover:bg-indigo-700 disabled:opacity-70 focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-200">
                                 Get Started
                             </a>
                         </div>
@@ -331,7 +329,7 @@
                     <h2 class="font-display text-3xl font-bold text-white sm:text-4xl">Your PhLE preparation starts here</h2>
                     <p class="mx-auto mt-2 max-w-md text-white/90">Take the diagnostic, see where you stand, and start closing the gaps today.</p>
                     <a href="{{ Route::has('register') ? route('register') : '#' }}"
-                        class="btn-press mt-7 inline-block rounded-2xl bg-white px-7 py-3.5 font-display text-lg font-bold text-primary">
+                        class="btn-press mt-7 inline-block rounded-2xl bg-white px-7 py-3.5 font-display text-lg font-bold text-primary shadow-md">
                         Start free diagnostic
                     </a>
                 </div>
