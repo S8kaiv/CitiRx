@@ -11,7 +11,7 @@ use RuntimeException;
 use SplFileObject;
 use Throwable;
 
-class ImportResearchForm extends Command
+class ImportResearchValidation extends Command
 {
     private const REQUIRED_HEADERS = [
         'research_form',
