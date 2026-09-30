@@ -82,6 +82,11 @@ class DiagnosticService
                 'user_id' => $user->user_id,
                 'session_type' => 'diagnostic',
                 'research_phase' => 'pre_test',
+
+                'exam_form_version' => config(
+                    'citirx.research.pre_test_form_version',
+                ),
+
                 'served_question_ids' => $questions
                     ->pluck('question_id')
                     ->values()
