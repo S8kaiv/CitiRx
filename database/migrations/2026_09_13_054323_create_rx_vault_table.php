@@ -21,16 +21,16 @@ return new class extends Migration
             $table->index(['user_id', 'is_cleared'], 'idx_user_cleared');
 
             $table->foreign('user_id')
-                  ->references('user_id')
-                  ->on('users')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('user_id')
+                ->on('users')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
 
             $table->foreign('question_id')
-                  ->references('question_id')
-                  ->on('questions')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('question_id')
+                ->on('questions')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
         });
     }
 

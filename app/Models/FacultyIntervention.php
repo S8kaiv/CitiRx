@@ -11,8 +11,11 @@ class FacultyIntervention extends Model
     use HasUuids;
 
     protected $table = 'faculty_interventions';
+
     protected $primaryKey = 'intervention_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     // No created_at/updated_at — assigned_at is a data field
@@ -32,7 +35,7 @@ class FacultyIntervention extends Model
 
     protected $casts = [
         'is_completed' => 'boolean',
-        'assigned_at'  => 'datetime',
+        'assigned_at' => 'datetime',
         'completed_at' => 'datetime',
     ];
 

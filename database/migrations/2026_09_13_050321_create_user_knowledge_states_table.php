@@ -21,21 +21,21 @@ return new class extends Migration
             $table->unique(['user_id', 'competency_id'], 'uq_user_competency');
 
             $table->foreign('user_id')
-                  ->references('user_id')
-                  ->on('users')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('user_id')
+                ->on('users')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
 
             $table->foreign('competency_id')
-                  ->references('competency_id')
-                  ->on('tos_competencies')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('competency_id')
+                ->on('tos_competencies')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
         });
 
         DB::statement(
             'ALTER TABLE user_knowledge_states ADD CONSTRAINT chk_mastery_range '
-            . 'CHECK (current_mastery_p_l BETWEEN 0 AND 1)'
+            .'CHECK (current_mastery_p_l BETWEEN 0 AND 1)'
         );
     }
 

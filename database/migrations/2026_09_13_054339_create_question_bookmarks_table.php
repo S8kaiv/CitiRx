@@ -18,16 +18,16 @@ return new class extends Migration
             $table->unique(['user_id', 'question_id'], 'uq_user_question_bookmark');
 
             $table->foreign('user_id')
-                  ->references('user_id')
-                  ->on('users')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('user_id')
+                ->on('users')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
 
             $table->foreign('question_id')
-                  ->references('question_id')
-                  ->on('questions')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('question_id')
+                ->on('questions')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
         });
     }
 

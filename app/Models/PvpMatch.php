@@ -11,8 +11,11 @@ class PvpMatch extends Model
     use HasUuids;
 
     protected $table = 'pvp_matches';
+
     protected $primaryKey = 'match_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     // Only created_at exists
@@ -30,9 +33,9 @@ class PvpMatch extends Model
 
     protected $casts = [
         'user_final_score' => 'integer',
-        'bot_final_score'  => 'integer',
-        'xp_earned'        => 'integer',
-        'created_at'       => 'datetime',
+        'bot_final_score' => 'integer',
+        'xp_earned' => 'integer',
+        'created_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

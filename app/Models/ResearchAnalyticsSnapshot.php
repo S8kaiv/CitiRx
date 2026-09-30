@@ -11,8 +11,11 @@ class ResearchAnalyticsSnapshot extends Model
     use HasUuids;
 
     protected $table = 'research_analytics_snapshots';
+
     protected $primaryKey = 'snapshot_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     // Only created_at exists
@@ -32,16 +35,16 @@ class ResearchAnalyticsSnapshot extends Model
     ];
 
     protected $casts = [
-        'snapshot_date'                       => 'date',
-        'cohort_size'                         => 'integer',
+        'snapshot_date' => 'date',
+        'cohort_size' => 'integer',
         'cohort_mean_predicted_readiness_pct' => 'decimal:2',
-        'projected_pass_rate_pct'             => 'decimal:2',
-        'speed_floor_compliance_pct'          => 'decimal:2',
-        'bkt_mae'                             => 'decimal:4',
-        'bkt_rmse'                            => 'decimal:4',
-        'wilcoxon_w_statistic'                => 'decimal:2',
-        'wilcoxon_p_value'                    => 'decimal:4',
-        'created_at'                          => 'datetime',
+        'projected_pass_rate_pct' => 'decimal:2',
+        'speed_floor_compliance_pct' => 'decimal:2',
+        'bkt_mae' => 'decimal:4',
+        'bkt_rmse' => 'decimal:4',
+        'wilcoxon_w_statistic' => 'decimal:2',
+        'wilcoxon_p_value' => 'decimal:4',
+        'created_at' => 'datetime',
     ];
 
     public function cohort(): BelongsTo

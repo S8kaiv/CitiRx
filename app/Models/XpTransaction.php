@@ -11,8 +11,11 @@ class XpTransaction extends Model
     use HasUuids;
 
     protected $table = 'xp_transactions';
+
     protected $primaryKey = 'transaction_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     // Only created_at exists
@@ -27,7 +30,7 @@ class XpTransaction extends Model
     ];
 
     protected $casts = [
-        'xp_delta'   => 'integer',
+        'xp_delta' => 'integer',
         'created_at' => 'datetime',
     ];
 

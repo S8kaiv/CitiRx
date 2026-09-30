@@ -124,8 +124,8 @@ class RxVaultController extends Controller
                 $mode,
             );
         } catch (
-            InvalidArgumentException |
-            LogicException |
+            InvalidArgumentException|
+            LogicException|
             RuntimeException $exception
         ) {
             return redirect()
@@ -147,13 +147,11 @@ class RxVaultController extends Controller
     ): Collection {
         return $records
             ->filter(
-                fn($record) =>
-                $record->question?->competency?->domain
+                fn ($record) => $record->question?->competency?->domain
                     !== null
             )
             ->groupBy(
-                fn($record) =>
-                $record
+                fn ($record) => $record
                     ->question
                     ->competency
                     ->domain

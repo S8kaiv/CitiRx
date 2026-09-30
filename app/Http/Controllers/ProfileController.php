@@ -7,17 +7,17 @@ use App\Services\ReadinessService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-
     public function __construct(
         protected ReadinessService $readiness,
     ) {}
+
     /**
      * Display the user's profile form.
      */
@@ -54,6 +54,7 @@ class ProfileController extends Controller
             'readinessBand' => $readinessBand,
         ]);
     }
+
     /**
      * Update the user's profile information.
      */

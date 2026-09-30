@@ -50,7 +50,7 @@ class TierAndLevelSeeder extends Seeder
             Level::updateOrCreate(
                 ['level_number' => $l['level_number']],
                 [
-                    'min_xp'  => $l['min_xp'],
+                    'min_xp' => $l['min_xp'],
                     'tier_id' => $tierMap[$l['tier']],
                 ]
             );

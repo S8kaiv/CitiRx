@@ -11,8 +11,11 @@ class UserBadge extends Model
     use HasUuids;
 
     protected $table = 'user_badges';
+
     protected $primaryKey = 'user_badge_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     // No created_at/updated_at — unlocked_at is a data field

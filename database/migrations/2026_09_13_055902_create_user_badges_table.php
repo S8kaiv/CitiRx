@@ -17,16 +17,16 @@ return new class extends Migration
             $table->unique(['user_id', 'badge_id'], 'uq_user_badge');
 
             $table->foreign('user_id')
-                  ->references('user_id')
-                  ->on('users')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('user_id')
+                ->on('users')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
 
             $table->foreign('badge_id')
-                  ->references('badge_id')
-                  ->on('badges')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('badge_id')
+                ->on('badges')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
         });
     }
 

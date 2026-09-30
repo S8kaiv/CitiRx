@@ -11,9 +11,13 @@ class QuestionChoice extends Model
     use HasUuids;
 
     protected $table = 'question_choices';
+
     protected $primaryKey = 'choice_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [

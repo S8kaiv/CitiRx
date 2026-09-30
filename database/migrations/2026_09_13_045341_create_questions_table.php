@@ -21,15 +21,15 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
 
             $table->foreign('competency_id')
-                  ->references('competency_id')
-                  ->on('tos_competencies')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('competency_id')
+                ->on('tos_competencies')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
         });
 
         DB::statement(
             'ALTER TABLE questions ADD CONSTRAINT chk_difficulty_index '
-            . 'CHECK (difficulty_index_p IS NULL OR difficulty_index_p BETWEEN 0 AND 1)'
+            .'CHECK (difficulty_index_p IS NULL OR difficulty_index_p BETWEEN 0 AND 1)'
         );
     }
 

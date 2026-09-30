@@ -8,9 +8,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class TosDomain extends Model
 {
     protected $table = 'tos_domains';
+
     protected $primaryKey = 'domain_id';
+
     public $incrementing = true;
+
     protected $keyType = 'int';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -20,7 +24,7 @@ class TosDomain extends Model
     ];
 
     protected $casts = [
-        'domain_number'         => 'integer',
+        'domain_number' => 'integer',
         'prc_weight_percentage' => 'decimal:2',
     ];
 

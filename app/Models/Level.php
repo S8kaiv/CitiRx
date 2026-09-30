@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Level extends Model
 {
     protected $table = 'levels';
+
     protected $primaryKey = 'level_number';
+
     public $incrementing = false;   // Natural key — 1, 2, 3...
+
     protected $keyType = 'int';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -22,8 +26,8 @@ class Level extends Model
 
     protected $casts = [
         'level_number' => 'integer',
-        'min_xp'       => 'integer',
-        'tier_id'      => 'integer',
+        'min_xp' => 'integer',
+        'tier_id' => 'integer',
     ];
 
     public function tier(): BelongsTo

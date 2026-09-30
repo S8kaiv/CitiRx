@@ -19,21 +19,21 @@ return new class extends Migration
             $table->unique(['evaluation_id', 'item_id'], 'uq_eval_item');
 
             $table->foreign('evaluation_id')
-                  ->references('evaluation_id')
-                  ->on('iso_survey_evaluations')
-                  ->cascadeOnDelete()      // responses belong to the evaluation
-                  ->cascadeOnUpdate();
+                ->references('evaluation_id')
+                ->on('iso_survey_evaluations')
+                ->cascadeOnDelete()      // responses belong to the evaluation
+                ->cascadeOnUpdate();
 
             $table->foreign('item_id')
-                  ->references('item_id')
-                  ->on('survey_items')
-                  ->restrictOnDelete()      // items are master data
-                  ->cascadeOnUpdate();
+                ->references('item_id')
+                ->on('survey_items')
+                ->restrictOnDelete()      // items are master data
+                ->cascadeOnUpdate();
         });
 
         DB::statement(
             'ALTER TABLE survey_responses ADD CONSTRAINT chk_likert '
-            . 'CHECK (likert_score BETWEEN 1 AND 5)'
+            .'CHECK (likert_score BETWEEN 1 AND 5)'
         );
     }
 

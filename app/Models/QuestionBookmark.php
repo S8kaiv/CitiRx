@@ -11,8 +11,11 @@ class QuestionBookmark extends Model
     use HasUuids;
 
     protected $table = 'question_bookmarks';
+
     protected $primaryKey = 'bookmark_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     // Only created_at exists

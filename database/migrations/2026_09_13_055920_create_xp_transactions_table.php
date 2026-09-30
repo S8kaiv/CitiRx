@@ -16,7 +16,7 @@ return new class extends Migration
                 'pvp_match',
                 'badge',
                 'streak_bonus',
-                'admin_adjustment'
+                'admin_adjustment',
             ]);
             $table->uuid('source_id')->nullable();
             $table->integer('xp_delta');
@@ -26,10 +26,10 @@ return new class extends Migration
             $table->index(['user_id', 'created_at'], 'idx_user_created');
 
             $table->foreign('user_id')
-                  ->references('user_id')
-                  ->on('users')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('user_id')
+                ->on('users')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
         });
     }
 

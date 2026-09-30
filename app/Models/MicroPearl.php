@@ -11,8 +11,11 @@ class MicroPearl extends Model
     use HasUuids;
 
     protected $table = 'micro_pearls';
+
     protected $primaryKey = 'pearl_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     // Only created_at exists — no updated_at
@@ -28,8 +31,8 @@ class MicroPearl extends Model
 
     protected $casts = [
         'estimated_read_seconds' => 'integer',
-        'order_index'            => 'integer',
-        'created_at'             => 'datetime',
+        'order_index' => 'integer',
+        'created_at' => 'datetime',
     ];
 
     public function competency(): BelongsTo
