@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ResearchAnalyticsController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\DashboardController;
@@ -313,6 +314,29 @@ Route::middleware([
             '/{session}/results',
             [MockBoardController::class, 'results'],
         )->name('results');
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Admin Research Analytics
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'verified',
+    'admin',
+])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get(
+            '/research-analytics',
+            [
+                ResearchAnalyticsController::class,
+                'index',
+            ],
+        )->name('research-analytics.index');
     });
 
 require __DIR__.'/auth.php';
