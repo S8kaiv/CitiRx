@@ -48,22 +48,22 @@ return new class extends Migration
 
             // Foreign keys
             $table->foreign('cohort_id')
-                  ->references('cohort_id')
-                  ->on('cohorts')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('cohort_id')
+                ->on('cohorts')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
 
             $table->foreign('current_level')
-                  ->references('level_number')
-                  ->on('levels')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('level_number')
+                ->on('levels')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
         });
 
         // Check constraint (Laravel has no native method — use raw SQL)
         DB::statement(
             'ALTER TABLE users ADD CONSTRAINT chk_predicted_readiness '
-            . 'CHECK (predicted_readiness_pct IS NULL OR predicted_readiness_pct BETWEEN 0 AND 100)'
+            .'CHECK (predicted_readiness_pct IS NULL OR predicted_readiness_pct BETWEEN 0 AND 100)'
         );
     }
 

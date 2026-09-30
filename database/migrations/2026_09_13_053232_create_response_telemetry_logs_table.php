@@ -30,50 +30,50 @@ return new class extends Migration
 
             // Five foreign keys — all RESTRICT/CASCADE
             $table->foreign('session_id')
-                  ->references('session_id')
-                  ->on('assessment_sessions')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('session_id')
+                ->on('assessment_sessions')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
 
             $table->foreign('user_id')
-                  ->references('user_id')
-                  ->on('users')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('user_id')
+                ->on('users')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
 
             $table->foreign('question_id')
-                  ->references('question_id')
-                  ->on('questions')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('question_id')
+                ->on('questions')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
 
             $table->foreign('competency_id')
-                  ->references('competency_id')
-                  ->on('tos_competencies')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('competency_id')
+                ->on('tos_competencies')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
 
             $table->foreign('selected_choice_id')
-                  ->references('choice_id')
-                  ->on('question_choices')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('choice_id')
+                ->on('question_choices')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
         });
 
         // CHECK constraints — raw SQL because Blueprint has no ->check()
         DB::statement(
             'ALTER TABLE response_telemetry_logs ADD CONSTRAINT chk_response_time '
-            . 'CHECK (response_time_seconds >= 0)'
+            .'CHECK (response_time_seconds >= 0)'
         );
 
         DB::statement(
             'ALTER TABLE response_telemetry_logs ADD CONSTRAINT chk_prior_range '
-            . 'CHECK (prior_p_l BETWEEN 0 AND 1)'
+            .'CHECK (prior_p_l BETWEEN 0 AND 1)'
         );
 
         DB::statement(
             'ALTER TABLE response_telemetry_logs ADD CONSTRAINT chk_posterior_range '
-            . 'CHECK (posterior_p_l BETWEEN 0 AND 1)'
+            .'CHECK (posterior_p_l BETWEEN 0 AND 1)'
         );
     }
 

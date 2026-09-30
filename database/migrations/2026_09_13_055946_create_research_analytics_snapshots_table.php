@@ -26,25 +26,25 @@ return new class extends Migration
             $table->unique(['cohort_id', 'snapshot_date'], 'uq_cohort_snapshot_date');
 
             $table->foreign('cohort_id')
-                  ->references('cohort_id')
-                  ->on('cohorts')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('cohort_id')
+                ->on('cohorts')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
         });
 
         DB::statement(
             'ALTER TABLE research_analytics_snapshots ADD CONSTRAINT chk_pass_rate '
-            . 'CHECK (projected_pass_rate_pct IS NULL OR projected_pass_rate_pct BETWEEN 0 AND 100)'
+            .'CHECK (projected_pass_rate_pct IS NULL OR projected_pass_rate_pct BETWEEN 0 AND 100)'
         );
 
         DB::statement(
             'ALTER TABLE research_analytics_snapshots ADD CONSTRAINT chk_speed_floor '
-            . 'CHECK (speed_floor_compliance_pct IS NULL OR speed_floor_compliance_pct BETWEEN 0 AND 100)'
+            .'CHECK (speed_floor_compliance_pct IS NULL OR speed_floor_compliance_pct BETWEEN 0 AND 100)'
         );
 
         DB::statement(
             'ALTER TABLE research_analytics_snapshots ADD CONSTRAINT chk_wilcoxon_p '
-            . 'CHECK (wilcoxon_p_value IS NULL OR wilcoxon_p_value BETWEEN 0 AND 1)'
+            .'CHECK (wilcoxon_p_value IS NULL OR wilcoxon_p_value BETWEEN 0 AND 1)'
         );
     }
 

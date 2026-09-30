@@ -11,8 +11,11 @@ class SurveyResponse extends Model
     use HasUuids;
 
     protected $table = 'survey_responses';
+
     protected $primaryKey = 'response_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     // Only created_at exists
@@ -26,7 +29,7 @@ class SurveyResponse extends Model
 
     protected $casts = [
         'likert_score' => 'integer',
-        'created_at'   => 'datetime',
+        'created_at' => 'datetime',
     ];
 
     public function evaluation(): BelongsTo

@@ -20,15 +20,15 @@ return new class extends Migration
             $table->unique(['question_id', 'choice_letter'], 'uq_question_choice_letter');
 
             $table->foreign('question_id')
-                  ->references('question_id')
-                  ->on('questions')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('question_id')
+                ->on('questions')
+                ->cascadeOnDelete()
+                ->cascadeOnUpdate();
         });
 
         DB::statement(
-            "ALTER TABLE question_choices ADD CONSTRAINT chk_choice_letter "
-            . "CHECK (choice_letter IN ('A','B','C','D'))"
+            'ALTER TABLE question_choices ADD CONSTRAINT chk_choice_letter '
+            ."CHECK (choice_letter IN ('A','B','C','D'))"
         );
     }
 

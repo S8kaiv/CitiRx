@@ -11,8 +11,11 @@ class SurveyItem extends Model
     use HasUuids;
 
     protected $table = 'survey_items';
+
     protected $primaryKey = 'item_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     // Only created_at exists
@@ -27,7 +30,7 @@ class SurveyItem extends Model
 
     protected $casts = [
         'order_index' => 'integer',
-        'created_at'  => 'datetime',
+        'created_at' => 'datetime',
     ];
 
     public function responses(): HasMany

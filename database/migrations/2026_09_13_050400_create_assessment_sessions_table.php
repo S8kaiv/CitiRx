@@ -24,10 +24,10 @@ return new class extends Migration
             $table->index(['user_id', 'research_phase'], 'idx_research_phase');
 
             $table->foreign('user_id')
-                  ->references('user_id')
-                  ->on('users')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('user_id')
+                ->on('users')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
         });
     }
 

@@ -20,10 +20,10 @@ return new class extends Migration
             $table->unique(['competency_id', 'order_index'], 'uq_competency_pearl_order');
 
             $table->foreign('competency_id')
-                  ->references('competency_id')
-                  ->on('tos_competencies')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('competency_id')
+                ->on('tos_competencies')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
         });
     }
 

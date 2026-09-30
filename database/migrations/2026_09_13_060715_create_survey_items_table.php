@@ -21,7 +21,7 @@ return new class extends Migration
                 'portability',
                 'interaction_capability',
                 'flexibility',
-                'safety'
+                'safety',
             ]);
             $table->string('item_code', 50)->unique();
             $table->text('item_text');

@@ -20,16 +20,16 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
 
             $table->foreign('user_id')
-                  ->references('user_id')
-                  ->on('users')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('user_id')
+                ->on('users')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
 
             $table->foreign('session_id')
-                  ->references('session_id')
-                  ->on('assessment_sessions')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('session_id')
+                ->on('assessment_sessions')
+                ->cascadeOnDelete()
+                ->cascadeOnUpdate();
         });
     }
 

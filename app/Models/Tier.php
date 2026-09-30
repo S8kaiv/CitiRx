@@ -8,9 +8,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Tier extends Model
 {
     protected $table = 'tiers';
+
     protected $primaryKey = 'tier_id';
+
     public $incrementing = true;    // TINYINT AUTO_INCREMENT
+
     protected $keyType = 'int';
+
     public $timestamps = false;
 
     protected $fillable = [

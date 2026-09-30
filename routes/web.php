@@ -4,14 +4,14 @@ use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiagnosticController;
+use App\Http\Controllers\MockBoardController;
 use App\Http\Controllers\PracticeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\ReadinessController;
 use App\Http\Controllers\RxVaultController;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\MockBoardController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route(
@@ -270,11 +270,11 @@ Route::middleware([
     )
     ->name('progress.index');
 
- /*
- |--------------------------------------------------------------------------
- | Mock Board Route
- |--------------------------------------------------------------------------
- */
+/*
+|--------------------------------------------------------------------------
+| Mock Board Route
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware([
     'auth',
@@ -315,4 +315,4 @@ Route::middleware([
         )->name('results');
     });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

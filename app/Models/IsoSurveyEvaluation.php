@@ -12,8 +12,11 @@ class IsoSurveyEvaluation extends Model
     use HasUuids;
 
     protected $table = 'iso_survey_evaluations';
+
     protected $primaryKey = 'evaluation_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     // No created_at/updated_at — submitted_at is a data field
@@ -29,8 +32,8 @@ class IsoSurveyEvaluation extends Model
 
     protected $casts = [
         'has_submitted_external_form' => 'boolean',
-        'overall_mean_score'          => 'decimal:2',
-        'submitted_at'                => 'datetime',
+        'overall_mean_score' => 'decimal:2',
+        'submitted_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

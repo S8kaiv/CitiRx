@@ -71,19 +71,16 @@ it('shows progress toward the next level', function () {
         ->assertOk()
         ->assertViewHas(
             'currentLevel',
-            fn (Level $level) =>
-                $level->level_number === 2
+            fn (Level $level) => $level->level_number === 2
         )
         ->assertViewHas(
             'nextLevel',
-            fn (Level $level) =>
-                $level->level_number === 3
+            fn (Level $level) => $level->level_number === 3
         )
         ->assertViewHas('xpToNext', 50)
         ->assertViewHas(
             'progressPercent',
-            fn ($value) =>
-                $value === 66.7
+            fn ($value) => $value === 66.7
         );
 });
 
