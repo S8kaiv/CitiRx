@@ -11,6 +11,11 @@ return [
             72,
         ),
 
+        'pre_test_form_version' => env(
+            'CITIRX_PRE_TEST_FORM_VERSION',
+            'pre_test_a_v1',
+        ),
+
         'post_test_form_version' => env(
             'CITIRX_POST_TEST_FORM_VERSION',
             'post_test_b_v1',
@@ -24,5 +29,6 @@ return [
             'CITIRX_ALLOW_UNVALIDATED_RESEARCH_FORMS',
             false,
         ),
+
     ],
 ];

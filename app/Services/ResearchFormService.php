@@ -116,9 +116,13 @@ class ResearchFormService
             ->when(
                 $this->requiresValidatedItems(),
 
-                fn (Builder $query) => $query->whereNotNull(
-                    'research_validated_at'
-                )
+                fn (Builder $query) => $query
+                    ->whereNotNull(
+                        'research_validated_at'
+                    )
+                    ->whereNotNull(
+                        'research_validated_by'
+                    )
             );
     }
 
