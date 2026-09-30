@@ -13,10 +13,12 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
-    return redirect()->route(
-        Auth::check() ? 'dashboard' : 'login'
-    );
-});
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+
+    return view('welcome');
+})->name('welcome');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
