@@ -174,9 +174,9 @@ $levelBadgeBg = match (true) {
 
                             <a href="{{ route('mock-board.intro') }}"
                                 class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
-        {{ $active
-            ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
-            : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                    {{ $active
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
                                 <svg class="h-5 w-5 {{ $active ? 'text-primary' : 'text-slate-400' }}" fill="none"
                                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -228,6 +228,26 @@ $levelBadgeBg = match (true) {
                                         d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.003 0H9.497m5.003 0a7.476 7.476 0 0 0 1.996-3.874l.443-2.124a1.875 1.875 0 0 0-1.834-2.252h-1.07a4.875 4.875 0 0 0-4.068 2.193l-.467.7m0 0a4.875 4.875 0 0 0-4.068-2.193H4.427a1.875 1.875 0 0 0-1.834 2.252l.443 2.124c.338 1.62 1.096 3.09 2.196 4.174" />
                                 </svg>
                                 <span>Badges</span>
+                            </a>
+                        @endif
+
+                        @if ($authUser?->role === 'admin')
+                            @php
+                                $active = request()->routeIs('admin.research-analytics.*');
+                            @endphp
+
+                            <a href="{{ route('admin.research-analytics.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ $active
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <svg class="h-5 w-5 {{ $active ? 'text-primary' : 'text-slate-400' }}" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                                </svg>
+
+                                <span>Research Analytics</span>
                             </a>
                         @endif
                     </nav>
@@ -322,6 +342,33 @@ $levelBadgeBg = match (true) {
                                 d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
                         </svg>
                         <span>Vault</span>
+                    </a>
+                @endif
+
+                @if ($authUser?->role === 'admin')
+                    <a
+                        href="{{ route('admin.research-analytics.index') }}"
+                        class="flex flex-col items-center gap-1
+                            {{ request()->routeIs('admin.research-analytics.*')
+                                ? 'text-primary'
+                                : 'text-slate-500' }}"
+                    >
+                        <svg
+                            class="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="2"
+                            stroke="currentColor"
+                            aria-hidden="true"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"
+                            />
+                        </svg>
+
+                        <span>Analytics</span>
                     </a>
                 @endif
 
