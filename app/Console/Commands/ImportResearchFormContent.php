@@ -112,7 +112,7 @@ class ImportResearchFormContent extends Command
         $csv->setCsvControl(',', '"', '');
         $csv->setFlags(
             SplFileObject::READ_CSV
-            | SplFileObject::DROP_NEW_LINE,
+                | SplFileObject::DROP_NEW_LINE,
         );
 
         $headers = null;
@@ -185,7 +185,7 @@ class ImportResearchFormContent extends Command
             if (count($values) !== count($headers)) {
                 throw new RuntimeException(
                     "CSV line {$lineNumber} has ".count($values)
-                    .' columns; expected '.count($headers).'.',
+                        .' columns; expected '.count($headers).'.',
                 );
             }
 
@@ -218,7 +218,7 @@ class ImportResearchFormContent extends Command
         if (count($rows) !== 60) {
             throw new RuntimeException(
                 'The CSV must contain exactly 60 data rows; found '
-                .count($rows).'.',
+                    .count($rows).'.',
             );
         }
 
@@ -280,7 +280,7 @@ class ImportResearchFormContent extends Command
             if (isset($positions[$position])) {
                 throw new RuntimeException(
                     "Duplicate form_position {$position} appears on CSV lines "
-                    ."{$positions[$position]} and {$line}.",
+                        ."{$positions[$position]} and {$line}.",
                 );
             }
 
@@ -334,7 +334,7 @@ class ImportResearchFormContent extends Command
                 if ($choiceText === '') {
                     throw new RuntimeException(
                         "CSV line {$line} has an empty choice_"
-                        .mb_strtolower($letter).'.',
+                            .mb_strtolower($letter).'.',
                     );
                 }
             }
@@ -439,11 +439,20 @@ class ImportResearchFormContent extends Command
     /**
      * @param  array<int, array<string, mixed>>  $rows
      */
-    private function persistRows(array $rows, string $form): void
-    {
+    private function persistRows(
+        array $rows,
+        string $form,
+    ): void {
+        $this->assertRowsHaveNoResearchSessionHistory(
+            $rows,
+            $form,
+        );
+
         foreach ($rows as $row) {
             $question = $row['question_id'] !== ''
-                ? Question::query()->findOrFail($row['question_id'])
+                ? Question::query()->findOrFail(
+                    $row['question_id'],
+                )
                 : Question::query()->firstOrNew([
                     'research_form' => $form,
                     'form_position' => $row['form_position'],
@@ -451,32 +460,48 @@ class ImportResearchFormContent extends Command
 
             $question->fill([
                 'competency_id' => $row['competency_id'],
+
                 'question_text' => $row['question_text'],
+
                 'hypercorrection_rationale' => $row['rationale'],
-                'is_diagnostic_pool' => $form === Question::FORM_PRE_TEST_A,
+
+                'is_diagnostic_pool' => $form
+                    === Question::FORM_PRE_TEST_A,
+
                 'difficulty_index_p' => null,
                 'speed_flag_count' => 0,
                 'is_active' => true,
                 'research_form' => $form,
+
                 'form_position' => $row['form_position'],
+
                 'cognitive_level' => $row['cognitive_level'],
+
                 'research_validated_at' => null,
                 'research_validated_by' => null,
             ]);
+
             $question->save();
 
-            foreach ($row['choices'] as $letter => $choiceText) {
-                QuestionChoice::query()->updateOrCreate(
-                    [
-                        'question_id' => $question->question_id,
-                        'choice_letter' => $letter,
-                    ],
-                    [
-                        'choice_text' => $choiceText,
-                        'is_correct' => $letter === $row['correct_choice'],
-                        'distractor_fallacy_note' => null,
-                    ],
-                );
+            foreach (
+                $row['choices'] as $letter => $choiceText
+            ) {
+                QuestionChoice::query()
+                    ->updateOrCreate(
+                        [
+                            'question_id' => $question->question_id,
+
+                            'choice_letter' => $letter,
+                        ],
+                        [
+                            'choice_text' => $choiceText,
+
+                            'is_correct' => $letter
+                                === $row['correct_choice'],
+
+                            'distractor_fallacy_note' => null,
+                        ],
+                    );
             }
         }
     }
@@ -500,5 +525,93 @@ class ImportResearchFormContent extends Command
             ?? $normalized;
 
         return trim(preg_replace('/\s+/u', ' ', $normalized) ?? $normalized);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $rows
+     */
+    private function assertRowsHaveNoResearchSessionHistory(
+        array $rows,
+        string $form,
+    ): void {
+        $rowsCollection = collect($rows);
+
+        $positions = $rowsCollection
+            ->pluck('form_position')
+            ->map(
+                fn (mixed $position): int => (int) $position,
+            )
+            ->unique()
+            ->values();
+
+        /*
+     * Include explicit IDs from the CSV and existing questions
+     * found by form position. This also protects imports whose CSV
+     * leaves question_id blank.
+     */
+        $questionIds = $rowsCollection
+            ->pluck('question_id')
+            ->map(
+                fn (mixed $id): string => trim((string) $id),
+            )
+            ->filter()
+            ->merge(
+                Question::query()
+                    ->where('research_form', $form)
+                    ->whereIn(
+                        'form_position',
+                        $positions->all(),
+                    )
+                    ->pluck('question_id'),
+            )
+            ->unique()
+            ->values();
+
+        if ($questionIds->isEmpty()) {
+            return;
+        }
+
+        /*
+     * One assessment-session history query for the entire form,
+     * instead of one query for each question.
+     */
+        $hasBeenServed = DB::table(
+            'assessment_sessions',
+        )
+            ->whereIn('research_phase', [
+                'pre_test',
+                'post_test',
+            ])
+            ->where(function ($query) use (
+                $questionIds,
+            ): void {
+                foreach (
+                    $questionIds as $index => $questionId
+                ) {
+                    if ($index === 0) {
+                        $query->whereJsonContains(
+                            'served_question_ids',
+                            $questionId,
+                        );
+
+                        continue;
+                    }
+
+                    $query->orWhereJsonContains(
+                        'served_question_ids',
+                        $questionId,
+                    );
+                }
+            })
+            ->exists();
+
+        if ($hasBeenServed) {
+            throw new RuntimeException(
+                'One or more questions have already been served '
+                    .'in a research assessment. Create a new '
+                    .'question/form version instead of changing '
+                    .'historical research content.',
+            );
+        }
     }
 }
