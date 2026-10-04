@@ -5,13 +5,13 @@
 
     <div class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         @foreach ([
-            'Paired students' => $analysis['n_pairs'],
-            'Nonzero pairs' => $wilcoxon['n'],
-            'Zero differences' => $wilcoxon['zero_differences'],
-            'W' => number_format($wilcoxon['w_statistic'], 2),
-            'z' => $wilcoxon['z'] === null ? '—' : number_format($wilcoxon['z'], 4),
-            'Two-sided p' => number_format($wilcoxon['p_value'], 6),
-        ] as $label => $value)
+        'Paired students' => $analysis['n_pairs'],
+        'Nonzero pairs' => $wilcoxon['n'],
+        'Zero differences' => $wilcoxon['zero_differences'],
+        'W' => number_format($wilcoxon['w_statistic'], 2),
+        'z' => $wilcoxon['z'] === null ? '—' : number_format($wilcoxon['z'], 4),
+        'Two-sided p' => $wilcoxon['p_value'] < 0.000001 ? '<0.000001' : number_format($wilcoxon['p_value'], 6),
+    ] as $label => $value)
             <div class="rounded-xl bg-slate-50 p-3 text-center">
                 <div class="text-[10px] font-bold uppercase tracking-wide text-slate-500">{{ $label }}</div>
                 <div class="mt-1 font-mono text-xl font-bold text-slate-900">{{ $value }}</div>
