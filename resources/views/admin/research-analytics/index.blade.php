@@ -27,9 +27,17 @@
                     Form {{ $report['form_versions']['post_test'] }}.
                 </p>
                 <p class="mt-2">
-                    <strong>Primary:</strong> paired students who answered every post-test item.
-                    <strong>Sensitivity:</strong> every finalized paired attempt, including expired and incomplete attempts.
-                    Unanswered post-test items remain incorrect because the denominator is the fixed form length.
+                    <strong>Primary:</strong>
+                    eligible paired students who answered all 60 post-test items.
+
+                    <strong>Sensitivity:</strong>
+                    every eligible finalized pair, including attempts with existing
+                    unanswered response rows.
+
+                    Unanswered post-test rows count as incorrect using the fixed
+                    60-item denominator. Sessions with missing response rows,
+                    mismatched questions, invalid form versions, or other integrity
+                    failures are excluded.
                 </p>
             </section>
 
@@ -39,16 +47,45 @@
                     <table class="w-full min-w-[34rem] text-sm">
                         <tbody class="divide-y divide-slate-100">
                             @foreach ([
-                                'pre_completed' => 'Completed valid-version pre-test',
-                                'post_finalized' => 'Finalized valid-version post-test',
-                                'paired_finalized' => 'Paired finalized attempts',
-                                'paired_complete' => 'Paired complete cases',
-                                'pre_only' => 'Pre-test only',
-                                'post_only' => 'Post-test only',
-                                'excluded_missing_pair' => 'Excluded because one half is missing',
+                                'pre_candidates' => 'All completed pre-test candidates',
+
+                                'post_candidates' => 'All finalized post-test candidates',
+
+                                'pre_completed' => 'Eligible pre-test participants',
+
+                                'post_finalized' => 'Eligible post-test participants',
+
+                                'paired_finalized' => 'Eligible chronological pairs',
+
+                                'paired_complete' => 'Primary complete-case pairs',
+
+                                'pre_only' => 'Eligible pre-test only',
+
+                                'post_only' => 'Eligible post-test only',
+
+                                'excluded_pre_missing_version' => 'Excluded pre-tests: missing version',
+
+                                'excluded_pre_wrong_version' => 'Excluded pre-tests: wrong version',
+
+                                'excluded_post_missing_version' => 'Excluded post-tests: missing version',
+
+                                'excluded_post_wrong_version' => 'Excluded post-tests: wrong version',
+
+                                'excluded_pre_integrity' => 'Excluded pre-tests: integrity failure',
+
+                                'excluded_post_integrity' => 'Excluded post-tests: integrity failure',
+
+                                'excluded_duplicate_pre' => 'Excluded duplicate pre-tests',
+
+                                'excluded_duplicate_post' => 'Excluded duplicate post-tests',
+
+                                'excluded_invalid_chronology' => 'Excluded: pre-test not completed before post-test',
                             ] as $key => $label)
                                 <tr>
-                                    <td class="py-2.5 text-slate-600">{{ $label }}</td>
+                                    <td class="py-2.5 text-slate-600">
+                                        {{ $label }}
+                                    </td>
+
                                     <td class="py-2.5 text-right font-mono font-bold text-slate-900">
                                         {{ $report['funnel'][$key] }}
                                     </td>
@@ -76,7 +113,8 @@
                 <div class="mt-4 overflow-x-auto">
                     <table class="w-full min-w-[64rem] text-sm">
                         <thead>
-                            <tr class="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
+                            <tr
+                                class="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
                                 <th class="py-2 pr-3">Domain</th>
                                 <th class="py-2 text-right">N</th>
                                 <th class="py-2 text-right">Pre mean</th>
@@ -104,9 +142,14 @@
                                     <td class="py-3 text-right">
                                         {{ $row['diff']['mean'] === null ? '—' : number_format($row['diff']['mean'], 2) }}
                                     </td>
-                                    <td class="py-3 text-right">{{ number_format($row['wilcoxon']['w_statistic'], 2) }}</td>
-                                    <td class="py-3 text-right">{{ number_format($row['wilcoxon']['p_value'], 6) }}</td>
-                                    <td class="py-3 text-right">{{ number_format($row['bonferroni_p_value'], 6) }}</td>
+                                    <td class="py-3 text-right">{{ number_format($row['wilcoxon']['w_statistic'], 2) }}
+                                    </td>
+                                    <td class="py-3 text-right">
+                                        {{ $row['wilcoxon']['p_value'] < 0.000001 ? '<0.000001' : number_format($row['wilcoxon']['p_value'], 6) }}
+                                    </td>
+                                    <td class="py-3 text-right">
+                                        {{ $row['bonferroni_p_value'] < 0.000001 ? '<0.000001' : number_format($row['bonferroni_p_value'], 6) }}
+                                    </td>
                                     <td class="py-3 text-right">
                                         @if ($row['significant_at_05'])
                                             <span class="font-bold text-emerald-700">Yes</span>
@@ -131,7 +174,8 @@
                 <div class="mt-4 overflow-x-auto">
                     <table class="w-full min-w-[36rem] text-sm">
                         <thead>
-                            <tr class="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
+                            <tr
+                                class="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
                                 <th class="py-2">Population</th>
                                 <th class="py-2 text-right">N</th>
                                 <th class="py-2 text-right">MAE</th>
@@ -141,16 +185,20 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             @foreach ([
-                                'primary' => 'Complete cases',
-                                'sensitivity' => 'All finalized pairs',
-                            ] as $key => $label)
+        'primary' => 'Complete cases',
+        'sensitivity' => 'All finalized pairs',
+    ] as $key => $label)
                                 @php($row = $report['readiness'][$key])
                                 <tr>
                                     <td class="py-3 font-semibold text-slate-800">{{ $label }}</td>
                                     <td class="py-3 text-right">{{ $row['n'] }}</td>
-                                    <td class="py-3 text-right">{{ $row['mae'] === null ? '—' : number_format($row['mae'], 4) }}</td>
-                                    <td class="py-3 text-right">{{ $row['rmse'] === null ? '—' : number_format($row['rmse'], 4) }}</td>
-                                    <td class="py-3 text-right">{{ $row['mean_error'] === null ? '—' : number_format($row['mean_error'], 4) }}</td>
+                                    <td class="py-3 text-right">
+                                        {{ $row['mae'] === null ? '—' : number_format($row['mae'], 4) }}</td>
+                                    <td class="py-3 text-right">
+                                        {{ $row['rmse'] === null ? '—' : number_format($row['rmse'], 4) }}</td>
+                                    <td class="py-3 text-right">
+                                        {{ $row['mean_error'] === null ? '—' : number_format($row['mean_error'], 4) }}
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -180,15 +228,16 @@
                     <table class="mt-4 w-full text-sm">
                         <tbody class="divide-y divide-slate-100">
                             @foreach ([
-                                'manual_complete' => 'Manual — complete',
-                                'manual_incomplete' => 'Manual — incomplete',
-                                'expired_complete' => 'Expired — complete',
-                                'expired_incomplete' => 'Expired — incomplete',
-                                'unknown' => 'Missing/legacy reason',
-                            ] as $key => $label)
+        'manual_complete' => 'Manual — complete',
+        'manual_incomplete' => 'Manual — incomplete',
+        'expired_complete' => 'Expired — complete',
+        'expired_incomplete' => 'Expired — incomplete',
+        'unknown' => 'Missing/legacy reason',
+    ] as $key => $label)
                                 <tr>
                                     <td class="py-2.5 text-slate-600">{{ $label }}</td>
-                                    <td class="py-2.5 text-right font-mono font-bold">{{ $report['breakdown'][$key] }}</td>
+                                    <td class="py-2.5 text-right font-mono font-bold">{{ $report['breakdown'][$key] }}
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -216,7 +265,8 @@
                 <div class="mt-4 overflow-x-auto">
                     <table class="w-full min-w-[58rem] text-sm">
                         <thead>
-                            <tr class="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
+                            <tr
+                                class="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
                                 <th class="py-2 pr-3">Cohort</th>
                                 <th class="py-2 text-right">Enrolled</th>
                                 <th class="py-2 text-right">Pre</th>
@@ -231,7 +281,8 @@
                                 <tr>
                                     <td class="py-3 pr-3 font-semibold text-slate-800">
                                         {{ $cohort['cohort_name'] }}
-                                        <span class="block text-xs font-normal text-slate-500">{{ $cohort['academic_year'] }}</span>
+                                        <span
+                                            class="block text-xs font-normal text-slate-500">{{ $cohort['academic_year'] }}</span>
                                     </td>
                                     <td class="py-3 text-right">{{ $cohort['enrolled_students'] }}</td>
                                     <td class="py-3 text-right">{{ $cohort['pre_completed'] }}</td>
@@ -244,7 +295,8 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="py-6 text-center text-slate-500">No cohorts available.</td>
+                                    <td colspan="7" class="py-6 text-center text-slate-500">No cohorts available.
+                                    </td>
                                 </tr>
                             @endforelse
                         </tbody>

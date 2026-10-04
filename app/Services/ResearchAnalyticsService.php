@@ -12,37 +12,64 @@ class ResearchAnalyticsService
 
     private const EXACT_MAX_N = 25;
 
+    public function __construct(
+        protected ResearchAttemptEligibilityService $attemptEligibility,
+    ) {}
+
     public function fullReport(): array
     {
         $dataset = $this->loadDataset();
+
         $allPairs = $dataset['pairs'];
+
         $completePairs = $allPairs
             ->where('is_complete', true)
             ->values();
-        $domainScores = $this->loadDomainScores($allPairs);
+
+        $domainScores = $this->loadDomainScores(
+            $allPairs,
+        );
 
         return [
             'generated_at' => now(),
+
             'form_versions' => [
                 'pre_test' => $this->preTestVersion(),
                 'post_test' => $this->postTestVersion(),
             ],
-            'funnel' => $this->sampleFunnelFromDataset($dataset),
+
+            'eligibility' => $dataset['eligibility'],
+
+            'funnel' => $this->sampleFunnelFromDataset(
+                $dataset,
+            ),
+
             'primary' => $this->analysePairs(
                 $completePairs,
                 $domainScores,
                 'complete-case',
             ),
+
             'sensitivity' => $this->analysePairs(
                 $allPairs,
                 $domainScores,
                 'all-finalized-attempts',
             ),
+
             'readiness' => [
-                'primary' => $this->readinessAccuracyFor($completePairs),
-                'sensitivity' => $this->readinessAccuracyFor($allPairs),
+                'primary' => $this->readinessAccuracyFor(
+                    $completePairs,
+                ),
+
+                'sensitivity' => $this->readinessAccuracyFor(
+                    $allPairs,
+                ),
             ],
-            'breakdown' => $this->submissionBreakdownFromDataset($dataset),
+
+            'breakdown' => $this->submissionBreakdownFromDataset(
+                $dataset,
+            ),
+
             'cohorts' => $this->cohortSummaries($dataset),
         ];
     }
@@ -143,9 +170,9 @@ class ResearchAnalyticsService
                 'w_minus' => round($wMinus, 2),
                 'w_statistic' => round($wStatistic, 2),
                 'z' => null,
-                'p_value' => round(
-                    $this->exactTwoSidedPValue($n, (int) round($wPlus)),
-                    6,
+                'p_value' => $this->exactTwoSidedPValue(
+                    $n,
+                    (int) round($wPlus),
                 ),
                 'method' => 'exact two-sided signed-rank distribution',
             ];
@@ -191,7 +218,7 @@ class ResearchAnalyticsService
             'w_minus' => round($wMinus, 2),
             'w_statistic' => round($wStatistic, 2),
             'z' => round($z, 6),
-            'p_value' => round(max(0.0, min(1.0, $pValue)), 6),
+            'p_value' => max(0.0, min(1.0, $pValue)),
             'method' => 'normal approximation with continuity and tie correction',
         ];
     }
@@ -230,125 +257,26 @@ class ResearchAnalyticsService
             'n' => $n,
             'mean' => round($mean, 2),
             'median' => round($median, 2),
-            'sd' => round(
-                $n > 1
-                    ? sqrt($sumSquaredDeviations / ($n - 1))
-                    : 0.0,
-                2,
-            ),
+            'sd' => $n > 1
+                ? round(
+                    sqrt($sumSquaredDeviations / ($n - 1)),
+                    2,
+                )
+                : null,
             'min' => round($values[0], 2),
             'max' => round($values[$n - 1], 2),
         ];
     }
 
     /**
-     * @return array{pre_sessions: Collection, post_sessions: Collection, pairs: Collection}
+     * @return array<string, mixed>
      */
     private function loadDataset(): array
     {
-        $preSessions = DB::table('assessment_sessions as s')
-            ->join('users as u', 'u.user_id', '=', 's.user_id')
-            ->leftJoin('cohorts as c', 'c.cohort_id', '=', 'u.cohort_id')
-            ->where('s.session_type', 'diagnostic')
-            ->where('s.research_phase', 'pre_test')
-            ->where('s.exam_form_version', $this->preTestVersion())
-            ->whereNotNull('s.completed_at')
-            ->where('s.total_items', '>', 0)
-            ->orderBy('s.completed_at')
-            ->orderBy('s.session_id')
-            ->get([
-                's.session_id',
-                's.user_id',
-                's.total_items',
-                's.correct_items',
-                's.completed_at',
-                'u.cohort_id',
-                'c.cohort_name',
-                'c.academic_year',
-            ])
-            ->unique('user_id')
-            ->keyBy('user_id');
-
-        $postSessions = DB::table('assessment_sessions as s')
-            ->join('users as u', 'u.user_id', '=', 's.user_id')
-            ->leftJoin('cohorts as c', 'c.cohort_id', '=', 'u.cohort_id')
-            ->leftJoin('assessment_responses as r', 'r.session_id', '=', 's.session_id')
-            ->where('s.session_type', 'mock_board')
-            ->where('s.research_phase', 'post_test')
-            ->where('s.exam_form_version', $this->postTestVersion())
-            ->whereNotNull('s.completed_at')
-            ->where('s.total_items', '>', 0)
-            ->groupBy([
-                's.session_id',
-                's.user_id',
-                's.total_items',
-                's.correct_items',
-                's.target_length',
-                's.readiness_snapshot_pct',
-                's.submission_reason',
-                's.completed_at',
-                'u.cohort_id',
-                'c.cohort_name',
-                'c.academic_year',
-            ])
-            ->orderBy('s.completed_at')
-            ->orderBy('s.session_id')
-            ->get([
-                's.session_id',
-                's.user_id',
-                's.total_items',
-                's.correct_items',
-                's.target_length',
-                's.readiness_snapshot_pct',
-                's.submission_reason',
-                's.completed_at',
-                'u.cohort_id',
-                'c.cohort_name',
-                'c.academic_year',
-                DB::raw('COUNT(r.response_id) AS response_rows'),
-                DB::raw('SUM(CASE WHEN r.selected_choice_id IS NOT NULL THEN 1 ELSE 0 END) AS answered_items'),
-            ])
-            ->unique('user_id')
-            ->keyBy('user_id');
-
-        $pairs = $preSessions
-            ->keys()
-            ->intersect($postSessions->keys())
-            ->map(function (string $userId) use ($preSessions, $postSessions): array {
-                $pre = $preSessions->get($userId);
-                $post = $postSessions->get($userId);
-                $expectedItems = (int) ($post->target_length ?: $post->total_items);
-                $isComplete = $expectedItems > 0
-                    && (int) $post->response_rows === $expectedItems
-                    && (int) $post->answered_items === $expectedItems;
-
-                return [
-                    'user_id' => $userId,
-                    'cohort_id' => $post->cohort_id,
-                    'cohort_name' => $post->cohort_name ?? 'Unassigned',
-                    'academic_year' => $post->academic_year,
-                    'pre_session_id' => $pre->session_id,
-                    'post_session_id' => $post->session_id,
-                    'pre_score' => $this->percentage(
-                        (int) $pre->correct_items,
-                        (int) $pre->total_items,
-                    ),
-                    'post_score' => $this->percentage(
-                        (int) $post->correct_items,
-                        (int) $post->total_items,
-                    ),
-                    'readiness_snapshot_pct' => $post->readiness_snapshot_pct === null
-                        ? null
-                        : (float) $post->readiness_snapshot_pct,
-                    'submission_reason' => $post->submission_reason,
-                    'answered_items' => (int) $post->answered_items,
-                    'expected_items' => $expectedItems,
-                    'is_complete' => $isComplete,
-                ];
-            })
-            ->values();
-
-        return compact('preSessions', 'postSessions', 'pairs');
+        return $this->attemptEligibility->dataset(
+            preTestVersion: $this->preTestVersion(),
+            postTestVersion: $this->postTestVersion(),
+        );
     }
 
     private function analysePairs(
@@ -377,38 +305,37 @@ class ResearchAnalyticsService
         ];
     }
 
-    private function loadDomainScores(Collection $pairs): array
-    {
-        if ($pairs->isEmpty()) {
-            return ['pre' => collect(), 'post' => collect()];
+    private function loadDomainScores(
+        Collection $pairs,
+    ): array {
+        $pre = collect();
+        $post = collect();
+
+        foreach ($pairs as $pair) {
+            foreach (
+                $pair['pre_domain_scores'] as $domainId => $score
+            ) {
+                $pre->put(
+                    $this->domainScoreKey(
+                        $pair['pre_session_id'],
+                        $domainId,
+                    ),
+                    (float) $score,
+                );
+            }
+
+            foreach (
+                $pair['post_domain_scores'] as $domainId => $score
+            ) {
+                $post->put(
+                    $this->domainScoreKey(
+                        $pair['post_session_id'],
+                        $domainId,
+                    ),
+                    (float) $score,
+                );
+            }
         }
-
-        $pre = DB::table('response_telemetry_logs as r')
-            ->join('tos_competencies as c', 'c.competency_id', '=', 'r.competency_id')
-            ->whereIn('r.session_id', $pairs->pluck('pre_session_id'))
-            ->groupBy('r.session_id', 'c.domain_id')
-            ->get([
-                'r.session_id',
-                'c.domain_id',
-                DB::raw('SUM(CASE WHEN r.is_correct = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*) AS score'),
-            ])
-            ->mapWithKeys(fn (object $row): array => [
-                $this->domainScoreKey($row->session_id, $row->domain_id) => (float) $row->score,
-            ]);
-
-        $post = DB::table('assessment_responses as r')
-            ->join('questions as q', 'q.question_id', '=', 'r.question_id')
-            ->join('tos_competencies as c', 'c.competency_id', '=', 'q.competency_id')
-            ->whereIn('r.session_id', $pairs->pluck('post_session_id'))
-            ->groupBy('r.session_id', 'c.domain_id')
-            ->get([
-                'r.session_id',
-                'c.domain_id',
-                DB::raw('SUM(CASE WHEN r.is_correct = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*) AS score'),
-            ])
-            ->mapWithKeys(fn (object $row): array => [
-                $this->domainScoreKey($row->session_id, $row->domain_id) => (float) $row->score,
-            ]);
 
         return compact('pre', 'post');
     }
@@ -458,7 +385,7 @@ class ResearchAnalyticsService
                 'post' => $this->descriptives($post),
                 'diff' => $this->descriptives($differences),
                 'wilcoxon' => $wilcoxon,
-                'bonferroni_p_value' => round($adjustedP, 6),
+                'bonferroni_p_value' => $adjustedP,
                 'significant_at_05' => $wilcoxon['n'] > 0
                     && $adjustedP < 0.05,
             ];
@@ -489,28 +416,76 @@ class ResearchAnalyticsService
         ];
     }
 
-    private function sampleFunnelFromDataset(array $dataset): array
-    {
-        $preUserIds = $dataset['preSessions']->keys();
-        $postUserIds = $dataset['postSessions']->keys();
-        $pairedUserIds = $preUserIds->intersect($postUserIds);
+    private function sampleFunnelFromDataset(
+        array $dataset,
+    ): array {
+        $preUserIds =
+            $dataset['preSessions']->keys();
+
+        $postUserIds =
+            $dataset['postSessions']->keys();
+
+        $eligibility = $dataset['eligibility'];
 
         return [
+            'pre_candidates' => $eligibility['pre_candidates'],
+
+            'post_candidates' => $eligibility['post_candidates'],
+
             'pre_completed' => $preUserIds->count(),
+
             'post_finalized' => $postUserIds->count(),
-            'paired_finalized' => $pairedUserIds->count(),
-            'paired_complete' => $dataset['pairs']->where('is_complete', true)->count(),
-            'pre_only' => $preUserIds->diff($postUserIds)->count(),
-            'post_only' => $postUserIds->diff($preUserIds)->count(),
-            'excluded_missing_pair' => $preUserIds->diff($postUserIds)->count()
-                + $postUserIds->diff($preUserIds)->count(),
+
+            /*
+         * This now counts only valid, correctly ordered pairs.
+         */
+            'paired_finalized' => $dataset['pairs']->count(),
+
+            'paired_complete' => $dataset['pairs']
+                ->where('is_complete', true)
+                ->count(),
+
+            'pre_only' => $preUserIds
+                ->diff($postUserIds)
+                ->count(),
+
+            'post_only' => $postUserIds
+                ->diff($preUserIds)
+                ->count(),
+
+            'excluded_missing_pair' => $preUserIds
+                ->diff($postUserIds)
+                ->count()
+                + $postUserIds
+                    ->diff($preUserIds)
+                    ->count(),
+
+            'excluded_pre_missing_version' => $eligibility['pre_missing_version'],
+
+            'excluded_pre_wrong_version' => $eligibility['pre_wrong_version'],
+
+            'excluded_post_missing_version' => $eligibility['post_missing_version'],
+
+            'excluded_post_wrong_version' => $eligibility['post_wrong_version'],
+
+            'excluded_pre_integrity' => $eligibility['pre_integrity_failures'],
+
+            'excluded_post_integrity' => $eligibility['post_integrity_failures'],
+
+            'excluded_duplicate_pre' => $eligibility['duplicate_pre_attempts'],
+
+            'excluded_duplicate_post' => $eligibility['duplicate_post_attempts'],
+
+            'excluded_invalid_chronology' => $eligibility['invalid_chronology'],
         ];
     }
 
-    private function submissionBreakdownFromDataset(array $dataset): array
-    {
+    private function submissionBreakdownFromDataset(
+        array $dataset,
+    ): array {
         $result = [
             'total' => $dataset['postSessions']->count(),
+
             'manual_complete' => 0,
             'manual_incomplete' => 0,
             'expired_complete' => 0,
@@ -518,19 +493,36 @@ class ResearchAnalyticsService
             'unknown' => 0,
         ];
 
-        foreach ($dataset['postSessions'] as $session) {
-            $expected = (int) ($session->target_length ?: $session->total_items);
-            $complete = $expected > 0
-                && (int) $session->response_rows === $expected
-                && (int) $session->answered_items === $expected;
+        foreach (
+            $dataset['postSessions'] as $session
+        ) {
+            /*
+         * Session integrity has already guaranteed that 60
+         * response rows exist. Completeness here means that all
+         * 60 rows have selected answers.
+         */
+            $complete =
+                (int) $session->answered_items
+                === ResearchFormService::TOTAL_ITEMS;
 
-            if (! in_array($session->submission_reason, ['manual', 'expired'], true)) {
+            if (
+                ! in_array(
+                    $session->submission_reason,
+                    ['manual', 'expired'],
+                    true,
+                )
+            ) {
                 $result['unknown']++;
 
                 continue;
             }
 
-            $key = $session->submission_reason.'_'.($complete ? 'complete' : 'incomplete');
+            $key = $session->submission_reason
+                .'_'
+                .($complete
+                    ? 'complete'
+                    : 'incomplete');
+
             $result[$key]++;
         }
 
@@ -670,11 +662,6 @@ class ResearchAnalyticsService
             + 0.254829592) * $t * exp(-$x * $x);
 
         return 0.5 * (1.0 + $sign * $erf);
-    }
-
-    private function percentage(int $correct, int $total): float
-    {
-        return $total > 0 ? ($correct * 100.0) / $total : 0.0;
     }
 
     private function domainScoreKey(string $sessionId, int|string $domainId): string
