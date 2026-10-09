@@ -534,35 +534,44 @@ class ImportResearchFormContent extends Command
         array $rows,
         string $form,
     ): void {
-        $rowsCollection = collect($rows);
+        $rowsCollection = collect(
+            $rows,
+        );
 
         $positions = $rowsCollection
             ->pluck('form_position')
             ->map(
-                fn (mixed $position): int => (int) $position,
+                fn (mixed $position): int => (int)
+                $position,
             )
             ->unique()
             ->values();
 
         /*
-     * Include explicit IDs from the CSV and existing questions
-     * found by form position. This also protects imports whose CSV
-     * leaves question_id blank.
+     * Include explicit CSV IDs and existing questions
+     * found through form positions.
      */
         $questionIds = $rowsCollection
             ->pluck('question_id')
             ->map(
-                fn (mixed $id): string => trim((string) $id),
+                fn (mixed $id): string => trim(
+                    (string) $id,
+                ),
             )
             ->filter()
             ->merge(
                 Question::query()
-                    ->where('research_form', $form)
+                    ->where(
+                        'research_form',
+                        $form,
+                    )
                     ->whereIn(
                         'form_position',
                         $positions->all(),
                     )
-                    ->pluck('question_id'),
+                    ->pluck(
+                        'question_id',
+                    ),
             )
             ->unique()
             ->values();
@@ -572,45 +581,40 @@ class ImportResearchFormContent extends Command
         }
 
         /*
-     * One assessment-session history query for the entire form,
-     * instead of one query for each question.
+     * first_served_at is indexed, so this replaces the
+     * previous collection of JSON containment conditions.
+     *
+     * Validation metadata is also checked because validated
+     * but unserved forms must remain frozen.
      */
-        $hasBeenServed = DB::table(
-            'assessment_sessions',
-        )
-            ->whereIn('research_phase', [
-                'pre_test',
-                'post_test',
-            ])
-            ->where(function ($query) use (
-                $questionIds,
-            ): void {
-                foreach (
-                    $questionIds as $index => $questionId
-                ) {
-                    if ($index === 0) {
-                        $query->whereJsonContains(
-                            'served_question_ids',
-                            $questionId,
-                        );
+        $protectedQuestionExists =
+            Question::query()
+                ->whereIn(
+                    'question_id',
+                    $questionIds->all(),
+                )
+                ->where(
+                    function ($query): void {
+                        $query
+                            ->whereNotNull(
+                                'first_served_at',
+                            )
+                            ->orWhereNotNull(
+                                'research_validated_at',
+                            )
+                            ->orWhereNotNull(
+                                'research_validated_by',
+                            );
+                    },
+                )
+                ->exists();
 
-                        continue;
-                    }
-
-                    $query->orWhereJsonContains(
-                        'served_question_ids',
-                        $questionId,
-                    );
-                }
-            })
-            ->exists();
-
-        if ($hasBeenServed) {
+        if ($protectedQuestionExists) {
             throw new RuntimeException(
-                'One or more questions have already been served '
-                    .'in a research assessment. Create a new '
-                    .'question/form version instead of changing '
-                    .'historical research content.',
+                'One or more questions have already '
+                    .'been served or validated. Create '
+                    .'a new question/form version instead '
+                    .'of changing historical research content.',
             );
         }
     }

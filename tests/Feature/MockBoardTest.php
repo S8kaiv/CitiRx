@@ -445,6 +445,36 @@ it('resumes one incomplete session after repeated Start requests', function () {
         ->toBe(60);
 });
 
+it('marks every Form B question as served when the session starts', function () {
+    $session = $this->mockBoard->startPostTest(
+        $this->student,
+    );
+
+    $servedIds = collect(
+        $session->served_question_ids,
+    )
+        ->map(
+            fn (mixed $id): string => (string) $id,
+        )
+        ->unique()
+        ->values();
+
+    $markedAsServed = Question::query()
+        ->whereIn(
+            'question_id',
+            $servedIds->all(),
+        )
+        ->whereNotNull(
+            'first_served_at',
+        )
+        ->count();
+
+    expect($servedIds)
+        ->toHaveCount(60)
+        ->and($markedAsServed)
+        ->toBe(60);
+});
+
 it('prevents another attempt after completion', function () {
     $session = $this->mockBoard->startPostTest(
         $this->student,
@@ -810,27 +840,53 @@ it('does not change learning or gamification state when submitted', function () 
 });
 
 it('does not expose answer keys rationales or distractor feedback in results', function () {
-    $session = $this->mockBoard->startPostTest(
-        $this->student,
-    );
-
-    $response = AssessmentResponse::query()
-        ->where('session_id', $session->session_id)
+    /*
+     * Add the secret markers before starting the session.
+     *
+     * Once startPostTest() serves Form B, question content
+     * is intentionally frozen.
+     */
+    $question = Question::query()
+        ->with([
+            'choices' => fn ($query) => $query
+                ->orderBy(
+                    'choice_letter',
+                ),
+        ])
+        ->where(
+            'research_form',
+            Question::FORM_POST_TEST_B,
+        )
+        ->orderBy(
+            'form_position',
+        )
         ->firstOrFail();
 
-    $question = Question::query()
-        ->with('choices')
-        ->findOrFail($response->question_id);
-
     $correctChoice = $question->choices
-        ->firstWhere('is_correct', true);
+        ->firstWhere(
+            'is_correct',
+            true,
+        );
 
     $wrongChoice = $question->choices
-        ->firstWhere('is_correct', false);
+        ->firstWhere(
+            'is_correct',
+            false,
+        );
 
-    $correctMarker = 'SECRET-CORRECT-ANSWER-KEY';
-    $rationaleMarker = 'SECRET-HYPERCORRECTION-RATIONALE';
-    $distractorMarker = 'SECRET-DISTRACTOR-FEEDBACK';
+    expect($correctChoice)
+        ->not->toBeNull()
+        ->and($wrongChoice)
+        ->not->toBeNull();
+
+    $correctMarker =
+        'SECRET-CORRECT-ANSWER-KEY';
+
+    $rationaleMarker =
+        'SECRET-HYPERCORRECTION-RATIONALE';
+
+    $distractorMarker =
+        'SECRET-DISTRACTOR-FEEDBACK';
 
     $question->forceFill([
         'hypercorrection_rationale' => $rationaleMarker,
@@ -844,6 +900,20 @@ it('does not expose answer keys rationales or distractor feedback in results', f
         'distractor_fallacy_note' => $distractorMarker,
     ])->save();
 
+    /*
+     * Starting the post-test now freezes all Form B
+     * question content.
+     */
+    $session = $this->mockBoard->startPostTest(
+        $this->student,
+    );
+
+    expect(
+        $question
+            ->fresh()
+            ->first_served_at,
+    )->not->toBeNull();
+
     $this->mockBoard->saveAnswer(
         $this->student,
         $session,
@@ -851,19 +921,38 @@ it('does not expose answer keys rationales or distractor feedback in results', f
         $correctChoice->choice_id,
     );
 
-    $this->mockBoard->submit($session, 'manual');
+    $this->mockBoard->submit(
+        $session,
+        'manual',
+    );
 
-    $this->actingAs($this->student)
-        ->get(route('mock-board.results', $session))
+    $this->actingAs(
+        $this->student,
+    )
+        ->get(
+            route(
+                'mock-board.results',
+                $session,
+            ),
+        )
         ->assertOk()
         ->assertViewHas(
             'result',
             fn (array $result): bool => $result['total'] === 60
                 && $result['correct'] === 1,
         )
-        ->assertDontSee($correctMarker, false)
-        ->assertDontSee($rationaleMarker, false)
-        ->assertDontSee($distractorMarker, false);
+        ->assertDontSee(
+            $correctMarker,
+            false,
+        )
+        ->assertDontSee(
+            $rationaleMarker,
+            false,
+        )
+        ->assertDontSee(
+            $distractorMarker,
+            false,
+        );
 });
 
 it('keeps every research-form question out of Practice Mode', function () {

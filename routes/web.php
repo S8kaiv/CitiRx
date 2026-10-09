@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\ResearchAnalyticsController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\BookmarkController;
@@ -318,7 +319,7 @@ Route::middleware([
 
 /*
 |--------------------------------------------------------------------------
-| Admin Research Analytics
+| Administrator Routes
 |--------------------------------------------------------------------------
 */
 
@@ -336,7 +337,67 @@ Route::middleware([
                 ResearchAnalyticsController::class,
                 'index',
             ],
-        )->name('research-analytics.index');
+        )->name(
+            'research-analytics.index',
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Administrator Question Bank
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/questions',
+            [
+                QuestionController::class,
+                'index',
+            ],
+        )->name(
+            'questions.index',
+        );
+
+        Route::get(
+            '/questions/{question}',
+            [
+                QuestionController::class,
+                'show',
+            ],
+        )->name(
+            'questions.show',
+        );
+
+        Route::get(
+            '/questions/{question}/edit',
+            [
+                QuestionController::class,
+                'edit',
+            ],
+        )->name(
+            'questions.edit',
+        );
+
+        Route::put(
+            '/questions/{question}',
+            [
+                QuestionController::class,
+                'update',
+            ],
+        )->name(
+            'questions.update',
+        );
+
+        Route::patch(
+            '/questions/{question}/status',
+            [
+                QuestionController::class,
+                'updateStatus',
+            ],
+        )->name(
+            'questions.status',
+        );
     });
+
+require __DIR__.'/auth.php';
 
 require __DIR__.'/auth.php';

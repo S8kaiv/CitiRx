@@ -23,6 +23,7 @@ class DiagnosticService
         protected BadgeService $badges,
         protected LevelService $levels,
         protected ResearchFormService $researchForms,
+        protected QuestionUsageService $questionUsage,
     ) {}
 
     /**
@@ -73,12 +74,21 @@ class DiagnosticService
                 ->first();
 
             if ($existingSession) {
+                $this->questionUsage->markServed(
+                    $existingSession
+                        ->served_question_ids
+                        ?? [],
+                    $existingSession->started_at,
+                );
+
                 return $existingSession;
             }
 
             $questions = $this->pickQuestions();
 
-            return AssessmentSession::query()->create([
+            $startedAt = now();
+
+            $session = AssessmentSession::query()->create([
                 'user_id' => $user->user_id,
                 'session_type' => 'diagnostic',
                 'research_phase' => 'pre_test',
@@ -91,12 +101,26 @@ class DiagnosticService
                     ->pluck('question_id')
                     ->values()
                     ->all(),
+
                 'draft_answers' => [],
+
                 'target_length' => $questions->count(),
+
                 'total_items' => $questions->count(),
+
                 'correct_items' => 0,
-                'started_at' => now(),
+
+                'started_at' => $startedAt,
             ]);
+
+            $this->questionUsage->markServed(
+                $questions->pluck(
+                    'question_id',
+                ),
+                $startedAt,
+            );
+
+            return $session;
         });
     }
 
