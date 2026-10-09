@@ -19,6 +19,7 @@ class MockBoardService
     public function __construct(
         protected ResearchFormService $researchForms,
         protected ReadinessService $readiness,
+        protected QuestionUsageService $questionUsage,
     ) {}
 
     /**
@@ -131,6 +132,12 @@ class MockBoardService
                 ->first();
 
             if ($existing) {
+                $this->questionUsage->markServed(
+                    $existing->served_question_ids
+                        ?? [],
+                    $existing->started_at,
+                );
+
                 return $existing;
             }
 
@@ -220,6 +227,11 @@ class MockBoardService
                         ],
                     )
                     ->all(),
+            );
+
+            $this->questionUsage->markServed(
+                $orderedQuestions->pluck('question_id'),
+                $startedAt,
             );
 
             return $session;
@@ -422,7 +434,7 @@ class MockBoardService
                         if (
                             $response->selectedChoice !== null
                             && $response->selectedChoice->question_id
-                                !== $response->question_id
+                            !== $response->question_id
                         ) {
                             throw new RuntimeException(
                                 'A saved choice does not belong to its question.',
@@ -431,10 +443,10 @@ class MockBoardService
 
                         $isCorrect =
                             $response->selected_choice_id === null
-                                ? null
-                                : (bool) $response
-                                    ->selectedChoice
-                                    ->is_correct;
+                            ? null
+                            : (bool) $response
+                                ->selectedChoice
+                                ->is_correct;
 
                         /*
                          * Update the in-memory collection too so the
