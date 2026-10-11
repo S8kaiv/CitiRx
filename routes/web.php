@@ -6,6 +6,8 @@ use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiagnosticController;
+use App\Http\Controllers\FacultyDashboardController;
+use App\Http\Controllers\FacultyInterventionController;
 use App\Http\Controllers\MockBoardController;
 use App\Http\Controllers\PracticeController;
 use App\Http\Controllers\ProfileController;
@@ -319,6 +321,63 @@ Route::middleware([
 
 /*
 |--------------------------------------------------------------------------
+| Faculty Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'verified',
+    'faculty',
+])
+    ->prefix('faculty')
+    ->name('faculty.')
+    ->group(function (): void {
+        Route::get(
+            '/',
+            [
+                FacultyDashboardController::class,
+                'index',
+            ],
+        )->name(
+            'dashboard',
+        );
+
+        Route::get(
+            '/interventions',
+            [
+                FacultyInterventionController::class,
+                'index',
+            ],
+        )->name(
+            'interventions.index',
+        );
+
+        Route::post(
+            '/interventions',
+            [
+                FacultyInterventionController::class,
+                'store',
+            ],
+        )->name(
+            'interventions.store',
+        );
+
+        Route::patch(
+            '/interventions/{intervention}/complete',
+            [
+                FacultyInterventionController::class,
+                'complete',
+            ],
+        )->whereUuid(
+            'intervention',
+        )->name(
+            'interventions.complete',
+        );
+    });
+
+/*
+|--------------------------------------------------------------------------
 | Administrator Routes
 |--------------------------------------------------------------------------
 */
@@ -397,7 +456,5 @@ Route::middleware([
             'questions.status',
         );
     });
-
-require __DIR__.'/auth.php';
 
 require __DIR__.'/auth.php';

@@ -9,6 +9,12 @@ use RuntimeException;
 
 class ReadinessService
 {
+    public const BAND_THRESHOLDS = [
+        'board_ready' => 75.0,
+        'approaching' => 50.0,
+        'developing' => 25.0,
+    ];
+
     /**
      * Compute the user's current Board Readiness Estimate.
      *
@@ -223,15 +229,24 @@ class ReadinessService
      */
     public function band(float $readiness): string
     {
-        if ($readiness >= 75.0) {
+        if (
+            $readiness
+            >= self::BAND_THRESHOLDS['board_ready']
+        ) {
             return 'board_ready';
         }
 
-        if ($readiness >= 50.0) {
+        if (
+            $readiness
+            >= self::BAND_THRESHOLDS['approaching']
+        ) {
             return 'approaching';
         }
 
-        if ($readiness >= 25.0) {
+        if (
+            $readiness
+            >= self::BAND_THRESHOLDS['developing']
+        ) {
             return 'developing';
         }
 

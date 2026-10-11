@@ -231,6 +231,32 @@ $levelBadgeBg = match (true) {
                             </a>
                         @endif
 
+                        @if ($authUser?->role === 'faculty')
+                            @php
+                                $facultyDashboardActive = request()->routeIs('faculty.dashboard');
+                            @endphp
+
+                            <a href="{{ route('faculty.dashboard') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ $facultyDashboardActive
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <span>Faculty Dashboard</span>
+                            </a>
+
+                            @php
+                                $interventionsActive = request()->routeIs('faculty.interventions.*');
+                            @endphp
+
+                            <a href="{{ route('faculty.interventions.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ $interventionsActive
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <span>Interventions</span>
+                            </a>
+                        @endif
+
                         @if ($authUser?->role === 'admin')
                             @php
                                 $active = request()->routeIs('admin.research-analytics.*');
@@ -362,6 +388,20 @@ $levelBadgeBg = match (true) {
                                 d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
                         </svg>
                         <span>Vault</span>
+                    </a>
+                @endif
+
+                @if ($authUser?->role === 'faculty')
+                    <a href="{{ route('faculty.dashboard') }}"
+                        class="flex flex-col items-center gap-1
+                            {{ request()->routeIs('faculty.dashboard') ? 'text-primary' : 'text-slate-500' }}">
+                        <span>Dashboard</span>
+                    </a>
+
+                    <a href="{{ route('faculty.interventions.index') }}"
+                        class="flex flex-col items-center gap-1
+                            {{ request()->routeIs('faculty.interventions.*') ? 'text-primary' : 'text-slate-500' }}">
+                        <span>Interventions</span>
                     </a>
                 @endif
 

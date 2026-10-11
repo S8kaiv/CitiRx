@@ -44,4 +44,28 @@ class Cohort extends Model
     {
         return $this->hasMany(ResearchAnalyticsSnapshot::class, 'cohort_id', 'cohort_id');
     }
+
+    public function faculty(): HasMany
+    {
+        return $this->hasMany(
+            User::class,
+            'cohort_id',
+            'cohort_id',
+        )->where(
+            'role',
+            'faculty',
+        );
+    }
+
+    public function students(): HasMany
+    {
+        return $this->hasMany(
+            User::class,
+            'cohort_id',
+            'cohort_id',
+        )->where(
+            'role',
+            'student',
+        );
+    }
 }
