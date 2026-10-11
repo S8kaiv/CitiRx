@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiagnosticController;
 use App\Http\Controllers\FacultyDashboardController;
 use App\Http\Controllers\FacultyInterventionController;
+use App\Http\Controllers\MicroPearlController;
 use App\Http\Controllers\MockBoardController;
 use App\Http\Controllers\PracticeController;
 use App\Http\Controllers\ProfileController;
@@ -317,6 +318,41 @@ Route::middleware([
             '/{session}/results',
             [MockBoardController::class, 'results'],
         )->name('results');
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Micro Pearls Library
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'verified',
+])
+    ->prefix('pearls')
+    ->name('pearls.')
+    ->group(function (): void {
+        Route::get(
+            '/',
+            [
+                MicroPearlController::class,
+                'index',
+            ]
+        )->name('index');
+
+        Route::get(
+            '/{pearl}',
+            [
+                MicroPearlController::class,
+                'show',
+            ]
+        )
+            ->where(
+                'pearl',
+                '[A-Za-z0-9-]+'
+            )
+            ->name('show');
     });
 
 /*
