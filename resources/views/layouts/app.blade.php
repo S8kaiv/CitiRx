@@ -169,6 +169,25 @@ $levelBadgeBg = match (true) {
                             </a>
 
                             @php
+                                $pearlsActive = request()->routeIs('pearls.*');
+                            @endphp
+
+                            <a href="{{ route('pearls.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ $pearlsActive
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <svg class="h-5 w-5 {{ $pearlsActive ? 'text-primary' : 'text-slate-400' }}"
+                                    fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                    aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 18.75a6 6 0 0 0 6-6c0-3.314-2.686-6-6-6s-6 2.686-6 6a6 6 0 0 0 6 6Zm0 0v2.25m-3 0h6M9.75 3h4.5" />
+                                </svg>
+
+                                <span>Micro Pearls</span>
+                            </a>
+
+                            @php
                                 $active = request()->routeIs('mock-board.*');
                             @endphp
 
