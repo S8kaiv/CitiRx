@@ -20,15 +20,15 @@ return new class extends Migration
             $table->unique(['domain_id', 'order_index'], 'uq_domain_competency_order');
 
             $table->foreign('domain_id')
-                  ->references('domain_id')
-                  ->on('tos_domains')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('domain_id')
+                ->on('tos_domains')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
         });
 
         DB::statement(
             'ALTER TABLE tos_competencies ADD CONSTRAINT chk_p_t '
-            . 'CHECK (bkt_transition_p_t BETWEEN 0 AND 1)'
+            .'CHECK (bkt_transition_p_t BETWEEN 0 AND 1)'
         );
     }
 

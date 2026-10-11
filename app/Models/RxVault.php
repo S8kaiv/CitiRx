@@ -11,8 +11,11 @@ class RxVault extends Model
     use HasUuids;
 
     protected $table = 'rx_vault';
+
     protected $primaryKey = 'vault_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     // No created_at/updated_at — added_at is a data field
@@ -29,9 +32,9 @@ class RxVault extends Model
 
     protected $casts = [
         'consecutive_correct_count' => 'integer',
-        'is_cleared'                => 'boolean',
-        'added_at'                  => 'datetime',
-        'cleared_at'                => 'datetime',
+        'is_cleared' => 'boolean',
+        'added_at' => 'datetime',
+        'cleared_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

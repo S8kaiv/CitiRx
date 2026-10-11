@@ -14,10 +14,10 @@ return new class extends Migration
             $table->unsignedTinyInteger('tier_id');
 
             $table->foreign('tier_id')
-                  ->references('tier_id')
-                  ->on('tiers')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('tier_id')
+                ->on('tiers')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
         });
     }
 

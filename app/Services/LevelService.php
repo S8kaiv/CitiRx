@@ -56,8 +56,7 @@ class LevelService
         $currentXp = (int) $user->total_xp;
 
         $currentLevel = $levels->last(
-            fn (Level $level) =>
-                (int) $level->min_xp <= $currentXp
+            fn (Level $level) => (int) $level->min_xp <= $currentXp
         );
 
         if (! $currentLevel) {
@@ -73,8 +72,7 @@ class LevelService
         $this->apply($user, $currentLevel);
 
         $nextLevel = $levels->first(
-            fn (Level $level) =>
-                (int) $level->min_xp > $currentXp
+            fn (Level $level) => (int) $level->min_xp > $currentXp
         );
 
         $xpToNext = $nextLevel

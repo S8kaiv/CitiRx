@@ -14,7 +14,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body data-authenticated-page="true" class="h-full font-sans text-slate-900 antialiased selection:bg-primary-tint selection:text-primary relative">
+<body data-authenticated-page="true"
+    class="h-full font-sans text-slate-900 antialiased selection:bg-primary-tint selection:text-primary relative">
 
     {{-- ============================================================ --}}
     {{-- ATMOSPHERIC CANVAS: VIOLET AMBIENT GLOW + CLINICAL DOTS      --}}
@@ -34,7 +35,14 @@
          * Hide navigation while the student is actively
          * answering Practice or Diagnostic questions.
          */
-        $isFocusMode = request()->routeIs('practice.show', 'practice.answer', 'diagnostic.take', 'diagnostic.answer');
+        $isFocusMode = request()->routeIs(
+            'practice.show',
+            'practice.answer',
+            'diagnostic.take',
+            'diagnostic.answer',
+            'mock-board.take',
+            'mock-board.answer',
+        );
 
         /*
          * Auth::user() is appropriate in this shared layout.
@@ -61,21 +69,21 @@
         /*
          * Build profile initials from the first and last
          * parts of the user's full name.
-         */
-        $nameParts = preg_split('/\s+/', $displayName, -1, PREG_SPLIT_NO_EMPTY);
-        $firstName = $nameParts[0] ?? 'U';
-        $lastName = count($nameParts) > 1 ? $nameParts[array_key_last($nameParts)] : '';
-        $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
+ */
+$nameParts = preg_split('/\s+/', $displayName, -1, PREG_SPLIT_NO_EMPTY);
+$firstName = $nameParts[0] ?? 'U';
+$lastName = count($nameParts) > 1 ? $nameParts[array_key_last($nameParts)] : '';
+$initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
 
-        /*
-         * Resolve Level and Tier using the CitiRx User relationship.
-         */
-        $userLevel = $authUser?->role === 'student' ? $authUser->level : null;
-        $levelNumber = (int) ($userLevel?->level_number ?? ($authUser?->current_level ?? 1));
-        $tierName = strtolower($userLevel?->tier?->tier_name ?? 'beginner');
+/*
+ * Resolve Level and Tier using the CitiRx User relationship.
+ */
+$userLevel = $authUser?->role === 'student' ? $authUser->level : null;
+$levelNumber = (int) ($userLevel?->level_number ?? ($authUser?->current_level ?? 1));
+$tierName = strtolower($userLevel?->tier?->tier_name ?? 'beginner');
 
-        /*
-         * Text shown below the user's name.
+/*
+ * Text shown below the user's name.
          */
         $profileLabel =
             $authUser?->role === 'student'
@@ -84,28 +92,28 @@
 
         /*
          * Avatar border styling based on the student's tier.
-         */
-        $tierRingClasses = match (true) {
-            str_contains($tierName, 'expert')
-                => 'ring-2 ring-primary border-primary/40 bg-primary-tint text-primary shadow-[0_0_10px_rgba(109,74,255,0.35)]',
+ */
+$tierRingClasses = match (true) {
+    str_contains($tierName, 'expert')
+        => 'ring-2 ring-primary border-primary/40 bg-primary-tint text-primary shadow-[0_0_10px_rgba(109,74,255,0.35)]',
 
-            str_contains($tierName, 'advanced')
-                => 'ring-2 ring-[#0EA5A4] border-[#0EA5A4]/40 bg-[#0EA5A4]/10 text-[#0E7A79] shadow-[0_0_10px_rgba(14,165,164,0.35)]',
+    str_contains($tierName, 'advanced')
+        => 'ring-2 ring-[#0EA5A4] border-[#0EA5A4]/40 bg-[#0EA5A4]/10 text-[#0E7A79] shadow-[0_0_10px_rgba(14,165,164,0.35)]',
 
-            str_contains($tierName, 'intermediate')
-                => 'ring-2 ring-[#F5A623] border-[#F5A623]/40 bg-[#F5A623]/10 text-[#B45309] shadow-[0_0_10px_rgba(245,166,35,0.3)]',
+    str_contains($tierName, 'intermediate')
+        => 'ring-2 ring-[#F5A623] border-[#F5A623]/40 bg-[#F5A623]/10 text-[#B45309] shadow-[0_0_10px_rgba(245,166,35,0.3)]',
 
-            default => 'ring-2 ring-slate-300 border-slate-200 bg-slate-100 text-slate-700',
-        };
+    default => 'ring-2 ring-slate-300 border-slate-200 bg-slate-100 text-slate-700',
+};
 
-        /*
-         * Small Level badge attached to the avatar.
-         */
-        $levelBadgeBg = match (true) {
-            str_contains($tierName, 'expert') => 'bg-primary text-white',
-            str_contains($tierName, 'advanced') => 'bg-[#0EA5A4] text-white',
-            str_contains($tierName, 'intermediate') => 'bg-[#F5A623] text-white',
-            default => 'bg-slate-700 text-white',
+/*
+ * Small Level badge attached to the avatar.
+ */
+$levelBadgeBg = match (true) {
+    str_contains($tierName, 'expert') => 'bg-primary text-white',
+    str_contains($tierName, 'advanced') => 'bg-[#0EA5A4] text-white',
+    str_contains($tierName, 'intermediate') => 'bg-[#F5A623] text-white',
+    default => 'bg-slate-700 text-white',
         };
     @endphp
 
@@ -160,6 +168,43 @@
                                 <span>Practice</span>
                             </a>
 
+                            @php
+                                $pearlsActive = request()->routeIs('pearls.*');
+                            @endphp
+
+                            <a href="{{ route('pearls.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ $pearlsActive
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <svg class="h-5 w-5 {{ $pearlsActive ? 'text-primary' : 'text-slate-400' }}"
+                                    fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                    aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 18.75a6 6 0 0 0 6-6c0-3.314-2.686-6-6-6s-6 2.686-6 6a6 6 0 0 0 6 6Zm0 0v2.25m-3 0h6M9.75 3h4.5" />
+                                </svg>
+
+                                <span>Micro Pearls</span>
+                            </a>
+
+                            @php
+                                $active = request()->routeIs('mock-board.*');
+                            @endphp
+
+                            <a href="{{ route('mock-board.intro') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ $active
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <svg class="h-5 w-5 {{ $active ? 'text-primary' : 'text-slate-400' }}" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9 12.75 11.25 15 15 9.75M9 3.75h6m-6 0A2.25 2.25 0 0 0 6.75 6v12A2.25 2.25 0 0 0 9 20.25h6A2.25 2.25 0 0 0 17.25 18V6A2.25 2.25 0 0 0 15 3.75m-6 0v1.5h6v-1.5" />
+                                </svg>
+
+                                <span>Mock Board</span>
+                            </a>
+
                             @php $active = request()->routeIs('progress.*'); @endphp
                             <a href="{{ route('progress.index') }}"
                                 class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all {{ $active ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary' : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
@@ -202,6 +247,72 @@
                                         d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.003 0H9.497m5.003 0a7.476 7.476 0 0 0 1.996-3.874l.443-2.124a1.875 1.875 0 0 0-1.834-2.252h-1.07a4.875 4.875 0 0 0-4.068 2.193l-.467.7m0 0a4.875 4.875 0 0 0-4.068-2.193H4.427a1.875 1.875 0 0 0-1.834 2.252l.443 2.124c.338 1.62 1.096 3.09 2.196 4.174" />
                                 </svg>
                                 <span>Badges</span>
+                            </a>
+                        @endif
+
+                        @if ($authUser?->role === 'faculty')
+                            @php
+                                $facultyDashboardActive = request()->routeIs('faculty.dashboard');
+                            @endphp
+
+                            <a href="{{ route('faculty.dashboard') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ $facultyDashboardActive
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <span>Faculty Dashboard</span>
+                            </a>
+
+                            @php
+                                $interventionsActive = request()->routeIs('faculty.interventions.*');
+                            @endphp
+
+                            <a href="{{ route('faculty.interventions.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ $interventionsActive
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <span>Interventions</span>
+                            </a>
+                        @endif
+
+                        @if ($authUser?->role === 'admin')
+                            @php
+                                $active = request()->routeIs('admin.research-analytics.*');
+                            @endphp
+
+                            <a href="{{ route('admin.research-analytics.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ $active
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <svg class="h-5 w-5 {{ $active ? 'text-primary' : 'text-slate-400' }}" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                                </svg>
+
+
+                                <span>Research Analytics</span>
+                            </a>
+
+                            @php
+                                $questionBankActive = request()->routeIs('admin.questions.*');
+                            @endphp
+
+                            <a href="{{ route('admin.questions.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ $questionBankActive
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <svg class="h-5 w-5 {{ $questionBankActive ? 'text-primary' : 'text-slate-400' }}"
+                                    fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                    aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5m4.75-11.396c.251-.023.501-.04.75-.054m-.75.054a24.55 24.55 0 0 0-5.623.769c-.653.163-1.127.74-1.127 1.413v5.714c0 .621.504 1.125 1.125 1.125h4.875m.75-9.021V3.75A2.25 2.25 0 0 0 12 6h4.5m-6.75-2.896c.251-.023.501-.04.75-.054M19.5 6.75v9.75A2.25 2.25 0 0 1 17.25 18.75h-9A2.25 2.25 0 0 1 6 16.5v-2.25" />
+                                </svg>
+
+                                <span>Question Bank</span>
                             </a>
                         @endif
                     </nav>
@@ -252,7 +363,8 @@
             </aside>
 
             {{-- MOBILE BOTTOM NAVIGATION BAR --}}
-            <nav class="fixed bottom-0 inset-x-0 z-40 flex md:hidden items-center justify-around border-t-2 border-slate-200 bg-white/95 backdrop-blur-md py-2 px-2 shadow-lg font-display text-[10px] font-bold">
+            <nav
+                class="fixed bottom-0 inset-x-0 z-40 flex md:hidden items-center justify-around border-t-2 border-slate-200 bg-white/95 backdrop-blur-md py-2 px-2 shadow-lg font-display text-[10px] font-bold">
                 {{-- Home --}}
                 <a href="{{ route('dashboard') }}"
                     class="flex flex-col items-center gap-1 {{ request()->routeIs('dashboard') ? 'text-primary' : 'text-slate-500' }}">
@@ -295,6 +407,42 @@
                                 d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
                         </svg>
                         <span>Vault</span>
+                    </a>
+                @endif
+
+                @if ($authUser?->role === 'faculty')
+                    <a href="{{ route('faculty.dashboard') }}"
+                        class="flex flex-col items-center gap-1
+                            {{ request()->routeIs('faculty.dashboard') ? 'text-primary' : 'text-slate-500' }}">
+                        <span>Dashboard</span>
+                    </a>
+
+                    <a href="{{ route('faculty.interventions.index') }}"
+                        class="flex flex-col items-center gap-1
+                            {{ request()->routeIs('faculty.interventions.*') ? 'text-primary' : 'text-slate-500' }}">
+                        <span>Interventions</span>
+                    </a>
+                @endif
+
+                @if ($authUser?->role === 'admin')
+                    <a href="{{ route('admin.research-analytics.index') }}"
+                        class="flex flex-col items-center gap-1
+                            {{ request()->routeIs('admin.research-analytics.*') ? 'text-primary' : 'text-slate-500' }}">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                        </svg>
+
+                        <span>Analytics</span>
+                    </a>
+
+                    <a href="{{ route('admin.questions.index') }}"
+                        class="rounded-xl px-3 py-2 text-sm font-bold
+                            {{ request()->routeIs('admin.questions.*')
+                                ? 'bg-primary-tint text-primary'
+                                : 'text-slate-600 hover:bg-slate-100' }}">
+                        Question Bank
                     </a>
                 @endif
 

@@ -19,10 +19,10 @@ return new class extends Migration
             $table->unique(['user_id', 'evaluator_role'], 'uq_user_evaluator_role');
 
             $table->foreign('user_id')
-                  ->references('user_id')
-                  ->on('users')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('user_id')
+                ->on('users')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
         });
     }
 

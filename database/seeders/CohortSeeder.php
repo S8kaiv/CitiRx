@@ -11,7 +11,7 @@ class CohortSeeder extends Seeder
     {
         Cohort::updateOrCreate(
             [
-                'cohort_name'   => 'BS Pharmacy Batch 2026',
+                'cohort_name' => 'BS Pharmacy Batch 2026',
                 'academic_year' => '2025-2026',
             ],
             [

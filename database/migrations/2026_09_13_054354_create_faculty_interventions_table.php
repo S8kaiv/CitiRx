@@ -24,28 +24,28 @@ return new class extends Migration
             $table->index('competency_id', 'idx_competency');
 
             $table->foreign('faculty_id')
-                  ->references('user_id')
-                  ->on('users')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('user_id')
+                ->on('users')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
 
             $table->foreign('target_user_id')
-                  ->references('user_id')
-                  ->on('users')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('user_id')
+                ->on('users')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
 
             $table->foreign('domain_id')
-                  ->references('domain_id')
-                  ->on('tos_domains')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('domain_id')
+                ->on('tos_domains')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
 
             $table->foreign('competency_id')
-                  ->references('competency_id')
-                  ->on('tos_competencies')
-                  ->restrictOnDelete()
-                  ->cascadeOnUpdate();
+                ->references('competency_id')
+                ->on('tos_competencies')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
         });
     }
 

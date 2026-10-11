@@ -11,8 +11,11 @@ class ResponseTelemetryLog extends Model
     use HasUuids;
 
     protected $table = 'response_telemetry_logs';
+
     protected $primaryKey = 'log_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     // Only created_at exists — no updated_at
@@ -33,13 +36,13 @@ class ResponseTelemetryLog extends Model
     ];
 
     protected $casts = [
-        'is_correct'             => 'boolean',
-        'is_speed_flagged'       => 'boolean',
-        'response_time_seconds'  => 'decimal:2',
-        'item_position'          => 'integer',
-        'prior_p_l'              => 'decimal:4',
-        'posterior_p_l'          => 'decimal:4',
-        'created_at'             => 'datetime',
+        'is_correct' => 'boolean',
+        'is_speed_flagged' => 'boolean',
+        'response_time_seconds' => 'decimal:2',
+        'item_position' => 'integer',
+        'prior_p_l' => 'decimal:4',
+        'posterior_p_l' => 'decimal:4',
+        'created_at' => 'datetime',
     ];
 
     public function session(): BelongsTo

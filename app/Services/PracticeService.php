@@ -93,6 +93,7 @@ class PracticeService
         protected BadgeService $badges,
         protected RxVaultService $rxVault,
         protected LevelService $levels,
+        protected QuestionUsageService $questionUsage,
     ) {}
 
     // =============================================================
@@ -271,6 +272,9 @@ class PracticeService
                     ->first();
 
                 if ($question) {
+                    $this->questionUsage->markServed([
+                        $question->question_id,
+                    ]);
                     /*
                      * Reset the timer when the question is resumed.
                      *
@@ -322,6 +326,10 @@ class PracticeService
             if (! $question) {
                 return null;
             }
+
+            $this->questionUsage->markServed([
+                $question->question_id,
+            ]);
 
             /*
              * served_question_ids records the exact chronological

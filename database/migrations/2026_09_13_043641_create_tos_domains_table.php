@@ -18,7 +18,7 @@ return new class extends Migration
 
         DB::statement(
             'ALTER TABLE tos_domains ADD CONSTRAINT chk_domain_weight '
-            . 'CHECK (prc_weight_percentage BETWEEN 0 AND 100)'
+            .'CHECK (prc_weight_percentage BETWEEN 0 AND 100)'
         );
     }
 

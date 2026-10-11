@@ -8,6 +8,7 @@ use App\Models\QuestionBookmark;
 use App\Models\RxVault;
 use App\Models\UserBadge;
 use App\Services\ReadinessService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -17,14 +18,16 @@ class DashboardController extends Controller
         protected ReadinessService $readiness,
     ) {}
 
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
         $user = $request->user();
 
         return match ($user->role) {
             'admin' => view('dashboard.admin'),
 
-            'faculty' => view('dashboard.faculty'),
+            'faculty' => redirect()->route(
+                'faculty.dashboard',
+            ),
 
             'student' => view('dashboard.student', [
                 'user' => $user->loadMissing([
