@@ -14,9 +14,9 @@ export default {
         extend: {
             colors: {
                 primary: {
-                    DEFAULT: "#6D4AFF",
-                    lip: "#4A2FC4",
-                    tint: "#F1EDFF",
+                    DEFAULT: "rgb(var(--color-primary-default) / <alpha-value>)",
+                    lip: "rgb(var(--color-primary-lip) / <alpha-value>)",
+                    tint: "rgb(var(--color-primary-tint) / <alpha-value>)",
                 },
                 gold: { DEFAULT: "#F5A623", tint: "#FDF1DC", ink: "#7A4B06" },
                 clinical: {

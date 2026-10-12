@@ -26,8 +26,9 @@
 
             {{-- Overall Score Card --}}
             @php
-                $overallPercentage =
-                    $session->total_items > 0 ? round((100 * $session->correct_items) / $session->total_items) : 0;
+                $overallPercentage = $session->total_items > 0 
+                    ? round((100 * $session->correct_items) / $session->total_items) 
+                    : 0;
             @endphp
 
             <div class="rounded-3xl border-2 border-b-4 border-slate-200/90 bg-white p-6 sm:p-8 shadow-xs">
@@ -75,7 +76,7 @@
                             </span>
 
                             <div class="font-display text-3xl font-black tracking-tight text-clinical sm:text-4xl">
-                                {{ number_format($tosWeightedScore, 2) }}%
+                                {{ number_format($tosWeightedScore ?? 0, 2) }}%
                             </div>
                         </div>
 
@@ -133,8 +134,9 @@
                         <tbody class="divide-y divide-slate-100">
                             @foreach ($perDomain as $domain)
                                 @php
-                                    $domainPercentage =
-                                        $domain['total'] > 0 ? round((100 * $domain['correct']) / $domain['total']) : 0;
+                                    $domainPercentage = $domain['total'] > 0 
+                                        ? round((100 * $domain['correct']) / $domain['total']) 
+                                        : 0;
                                 @endphp
                                 <tr class="transition-colors hover:bg-slate-50/70">
                                     <td class="py-3.5 pr-4 font-semibold text-slate-900">
@@ -166,7 +168,7 @@
                 </div>
             </div>
 
-            {{-- Initial BKT Mastery Estimates --}}
+            {{-- Initial BKT Mastery Estimates (NEW COMPACT ACCORDION DESIGN) --}}
             <div class="rounded-3xl border-2 border-b-4 border-slate-200/90 bg-white p-6 sm:p-8 shadow-xs">
                 <div class="mb-5">
                     <h3 class="font-display text-lg font-bold text-slate-900">
@@ -178,39 +180,70 @@
                     </p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                    @foreach ($masteryResults as $result)
-                        @php
-                            $masteryPercentage = round(100 * $result['mastery']);
-                        @endphp
-                        <div
-                            class="flex flex-col justify-between rounded-2xl border-2 border-slate-200/80 bg-slate-50/60 p-4 transition-all hover:bg-slate-50">
-                            <div>
-                                <div class="flex items-center justify-between gap-2">
-                                    <span
-                                        class="text-[10px] font-bold uppercase tracking-wider text-clinical-ink line-clamp-1">
-                                        {{ $result['domain_name'] }}
-                                    </span>
-                                    <span class="font-mono text-[11px] text-muted-ink shrink-0">
-                                        {{ $result['correct'] }}/{{ $result['total'] }} items
+                {{-- Accordion Container --}}
+                <div class="space-y-3">
+                    @foreach ($masteryResults->groupBy('domain_name') as $domainName => $domainResults)
+                        {{-- Make the first accordion open by default using $loop->first --}}
+                        <section x-data="{ expanded: {{ $loop->first ? 'true' : 'false' }} }" 
+                                 class="rounded-2xl border-2 border-slate-100 bg-white overflow-hidden transition-all duration-200"
+                                 :class="expanded ? 'border-primary/20 shadow-sm' : 'hover:border-slate-200'">
+                            
+                            {{-- Accordion Header / Button --}}
+                            <button @click="expanded = !expanded" 
+                                    class="w-full flex items-center justify-between p-4 text-left transition-colors hover:bg-slate-50"
+                                    :class="expanded ? 'bg-primary-tint/30' : ''">
+                                <div class="flex items-center gap-3">
+                                    <h4 class="font-display text-sm font-bold uppercase tracking-wider text-slate-800">
+                                        {{ $domainName }}
+                                    </h4>
+                                    <span class="rounded-full bg-slate-200 px-2 py-0.5 font-mono text-[10px] font-bold text-slate-600">
+                                        {{ $domainResults->count() }} Competencies
                                     </span>
                                 </div>
+                                <svg :class="expanded ? 'rotate-180 text-primary' : 'text-slate-400'" 
+                                     class="h-5 w-5 transform transition-transform duration-200" 
+                                     fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </button>
 
-                                <h4 class="mt-1 font-display text-sm font-bold text-slate-900 line-clamp-2">
-                                    {{ $result['competency_title'] }}
-                                </h4>
-                            </div>
-
-                            <div class="mt-3 pt-2 border-t border-slate-200/60 flex items-center justify-between gap-3">
-                                <div class="h-2 flex-1 overflow-hidden rounded-full bg-slate-200/70">
-                                    <div class="h-full rounded-full bg-primary"
-                                        style="width: {{ $masteryPercentage }}%"></div>
+                            {{-- Accordion Body (Sleek Grid) --}}
+                            <div x-show="expanded" 
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 -translate-y-2"
+                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                 class="border-t-2 border-slate-100 p-4 bg-slate-50/50">
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    @foreach ($domainResults as $result)
+                                        @php
+                                            $masteryPercentage = round(100 * $result['mastery']);
+                                        @endphp
+                                        <div class="flex items-center justify-between gap-4 rounded-xl border-2 border-slate-200/60 bg-white p-3 shadow-2xs">
+                                            <div class="min-w-0 flex-1">
+                                                <h5 class="font-display text-xs font-bold text-slate-900 truncate" title="{{ $result['competency_title'] }}">
+                                                    {{ $result['competency_title'] }}
+                                                </h5>
+                                                <div class="mt-1.5 flex items-center gap-2.5">
+                                                    <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100 ring-1 ring-inset ring-slate-200/50">
+                                                        <div class="h-full rounded-full bg-primary" style="width: {{ $masteryPercentage }}%"></div>
+                                                    </div>
+                                                    <span class="w-8 text-right font-mono text-[10px] font-bold text-slate-600">
+                                                        {{ $masteryPercentage }}%
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="shrink-0 flex items-center justify-center rounded-lg bg-slate-50 px-2 py-1 border border-slate-100">
+                                                <span class="font-mono text-[9px] font-bold text-muted-ink uppercase">
+                                                    {{ $result['correct'] }}/{{ $result['total'] }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
-                                <span class="font-display text-xs font-black text-slate-900">
-                                    {{ $masteryPercentage }}%
-                                </span>
                             </div>
-                        </div>
+                        </section>
                     @endforeach
                 </div>
             </div>

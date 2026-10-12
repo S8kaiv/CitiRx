@@ -60,9 +60,10 @@
         $pct = (float) ($user->predicted_readiness_pct ?? 0);
         $dashPct = max(0, min(100, $pct));
         $dashCircumference = 251.33;
+        // Fixed math error here:
         $dashOffset = $dashCircumference * (1 - $dashPct / 100);
 
-        $readinessStyles = match ($readinessBand) {
+        $readinessStyles = match ($readinessBand ?? 'pending') {
             'board_ready' => ['label' => 'Board Ready', 'bg' => 'bg-strong-tint', 'text' => 'text-strong-ink', 'border' => 'border-[#22C55E]/40', 'hex' => '#22C55E'],
             'approaching' => ['label' => 'Approaching Readiness', 'bg' => 'bg-clinical-tint', 'text' => 'text-clinical-ink', 'border' => 'border-[#0EA5A4]/40', 'hex' => '#0EA5A4'],
             'developing' => ['label' => 'Developing', 'bg' => 'bg-gold-tint', 'text' => 'text-gold-ink', 'border' => 'border-[#F5A623]/40', 'hex' => '#F5A623'],
@@ -75,8 +76,12 @@
         [x-cloak] { display: none !important; }
     </style>
 
-    {{-- Alpine State: activeTab controls switching between Overview and Settings --}}
-    <div class="pt-6 pb-20 font-sans text-slate-900 antialiased" x-data="{ activeTab: @js($errors->any() || session('status') ? 'settings' : 'overview' )}">
+    {{-- Alpine State: activeTab controls switching, activeTheme tracks the color state --}}
+    <div class="pt-6 pb-20 font-sans text-slate-900 antialiased" 
+         x-data="{ 
+            activeTab: @js($errors->any() || session('status') ? 'settings' : 'overview' ),
+            activeTheme: '{{ Auth::user()->active_theme ?? 'theme-standard' }}'
+         }">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
 
             {{-- 1. STUDENT IDENTITY CREST WITH DYNAMIC TIER AVATAR --}}
@@ -203,7 +208,7 @@
                                 </div>
                                 <div class="min-w-0">
                                     <span class="font-display text-xl sm:text-2xl font-black text-slate-900 leading-none block truncate">
-                                        {{ $badgesCount }}
+                                        {{ $badgesCount ?? 0 }}
                                     </span>
                                     <p class="font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-ink mt-0.5 truncate">
                                         Badges Unlocked
@@ -293,7 +298,7 @@
             </div>
 
             {{-- ========================================================= --}}
-            {{-- TAB 2: SETTINGS SECTION (Forms Only)                      --}}
+            {{-- TAB 2: SETTINGS SECTION (Forms & Theme Locker)            --}}
             {{-- ========================================================= --}}
             <div x-cloak x-show="activeTab === 'settings'"
                  x-transition:enter="transition ease-out duration-200"
@@ -305,6 +310,71 @@
                     <h3 class="font-display text-lg font-black text-slate-900 px-1">
                         Settings & Security
                     </h3>
+
+                    {{-- NEW: 6-LEVEL THEME LOCKER (Dynamic Array Loop) --}}
+                    <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+                        <header>
+                            <h2 class="font-display text-lg font-black text-slate-900">
+                                Theme Locker
+                            </h2>
+                            <p class="mt-1 text-xs font-semibold uppercase tracking-wider text-muted-ink">
+                                Level up to unlock premium aesthetics
+                            </p>
+                        </header>
+
+                        @php
+                            $themes = [
+                                ['id' => 'theme-standard', 'name' => 'Standard', 'color' => '#6D4AFF', 'border' => '#4A2FC4', 'req' => 1],
+                                ['id' => 'theme-forest', 'name' => 'Forest Grove', 'color' => '#10B981', 'border' => '#047857', 'req' => 2],
+                                ['id' => 'theme-sakura', 'name' => 'Sakura Romance', 'color' => '#F43F5E', 'border' => '#BE123C', 'req' => 4],
+                                ['id' => 'theme-midnight', 'name' => 'Midnight Slate', 'color' => '#1E293B', 'border' => '#020617', 'req' => 6],
+                                ['id' => 'theme-ocean', 'name' => 'Ocean Abyss', 'color' => '#0EA5E9', 'border' => '#0369A1', 'req' => 8],
+                                ['id' => 'theme-solar', 'name' => 'Solar Gold', 'color' => '#F59E0B', 'border' => '#B45309', 'req' => 10],
+                            ];
+                        @endphp
+
+                        <div class="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4">
+                            @foreach($themes as $theme)
+                                @if($levelNumber >= $theme['req'])
+                                    <!-- Unlocked Theme -->
+                                    <button @click="
+                                                activeTheme = '{{ $theme['id'] }}';
+                                                globalTheme = '{{ $theme['id'] }}';
+                                                localStorage.setItem('citiRxTheme', '{{ $theme['id'] }}');
+                                                Array.from(document.body.classList)
+                                                    .filter((className) => className.startsWith('theme-'))
+                                                    .forEach((className) => document.body.classList.remove(className));
+                                                document.body.classList.add('{{ $theme['id'] }}');
+                                            "
+                                            :class="activeTheme === '{{ $theme['id'] }}' ? 'border-primary bg-primary-tint ring-2 ring-primary/20 scale-[1.02]' : 'border-slate-200 hover:-translate-y-1 hover:shadow-md bg-white border-b-4 active:translate-y-1 active:border-b-2'"
+                                            class="relative flex flex-col items-center p-4 rounded-2xl border-2 transition-all duration-200 text-left">
+                                        
+                                        <div class="w-12 h-12 rounded-full border-2 border-b-4 mb-3" 
+                                             style="background-color: {{ $theme['color'] }}; border-color: {{ $theme['border'] }};"></div>
+                                        
+                                        <span class="font-display font-black text-slate-800 text-sm text-center">{{ $theme['name'] }}</span>
+                                        <span class="font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink mt-1">
+                                            {{ $theme['req'] == 1 ? 'Default' : 'Unlocked' }}
+                                        </span>
+                                    </button>
+                                @else
+                                    <!-- Locked Theme -->
+                                    <button disabled
+                                            class="relative flex flex-col items-center p-4 rounded-2xl border-2 border-b-4 border-slate-100 bg-slate-50 opacity-75 cursor-not-allowed">
+                                        <div class="absolute top-2 right-3 text-lg">🔒</div>
+                                        
+                                        <div class="w-12 h-12 rounded-full opacity-40 grayscale mb-3" 
+                                             style="background-color: {{ $theme['color'] }};"></div>
+                                        
+                                        <span class="font-display font-black text-slate-800 text-sm text-center">{{ $theme['name'] }}</span>
+                                        <span class="font-display text-[10px] font-bold uppercase tracking-wider text-rose-500 mt-1">
+                                            Lvl {{ $theme['req'] }} Unlock
+                                        </span>
+                                    </button>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
 
                     {{-- Profile Details Form --}}
                     <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 sm:p-8 shadow-sm">

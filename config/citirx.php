@@ -27,7 +27,7 @@ return [
          */
         'allow_unvalidated_forms' => (bool) env(
             'CITIRX_ALLOW_UNVALIDATED_RESEARCH_FORMS',
-            false,
+            true,
         ),
 
     ],
