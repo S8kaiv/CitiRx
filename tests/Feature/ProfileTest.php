@@ -140,7 +140,7 @@ test('correct password must be provided to delete account', function () {
 });
 
 test('email can be reused after account deletion', function () {
-    $email = 'reusable@example.com';
+    $email = 'reusable.account@gmail.com';
 
     $user = User::factory()->create([
         'email' => $email,
@@ -167,12 +167,13 @@ test('email can be reused after account deletion', function () {
 
     $response
         ->assertSessionHasNoErrors()
-        ->assertRedirect(route('dashboard', absolute: false));
+        ->assertRedirect(route('verification.notice', absolute: false));
 
     $this->assertAuthenticated();
 
     $this->assertDatabaseHas('users', [
         'email' => $email,
+        'email_verified_at' => null,
         'deleted_at' => null,
     ]);
 });

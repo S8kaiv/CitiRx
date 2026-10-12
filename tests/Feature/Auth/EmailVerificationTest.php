@@ -73,4 +73,22 @@ test('email is not verified with invalid hash', function () {
     expect(
         $user->fresh()->hasVerifiedEmail()
     )->toBeFalse();
+
+});
+
+test('unverified users cannot access verified routes', function () {
+    $user = User::factory()
+        ->unverified()
+        ->create([
+            'role' => 'student',
+        ]);
+
+    $this
+        ->actingAs($user)
+        ->get(
+            route('dashboard'),
+        )
+        ->assertRedirect(
+            route('verification.notice'),
+        );
 });

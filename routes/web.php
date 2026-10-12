@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiagnosticController;
 use App\Http\Controllers\FacultyDashboardController;
 use App\Http\Controllers\FacultyInterventionController;
+use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\MicroPearlController;
 use App\Http\Controllers\MockBoardController;
 use App\Http\Controllers\PracticeController;
@@ -276,6 +277,26 @@ Route::middleware([
         ]
     )
     ->name('progress.index');
+
+/*
+|--------------------------------------------------------------------------
+| Leaderboard Route
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'verified',
+    'student',
+])
+    ->get(
+        '/leaderboard',
+        [
+            LeaderboardController::class,
+            'index',
+        ],
+    )
+    ->name('leaderboard.index');
 
 /*
 |--------------------------------------------------------------------------

@@ -235,9 +235,20 @@
                                     </svg>
                                 </span>
                                 <input id="email" type="email" name="email" value="{{ old('email') }}"
-                                    required autocomplete="username"
+                                    required autocomplete="email"
                                     class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
                                     placeholder="student@citirx.edu">
+
+                                <p class="mt-1.5 text-xs text-slate-500">
+                                    Use an email address you can access.
+                                    Temporary and disposable email services are not accepted.
+                                </p>
+
+                                @error('email')
+                                    <p class="mt-1.5 text-xs font-medium text-weak">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
                             </div>
                         </div>
 
@@ -254,8 +265,8 @@
                                             d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
                                     </svg>
                                 </span>
-                                <input id="password" type="password" :type="showPass ? 'text' : 'password'" name="password" required
-                                    autocomplete="new-password"
+                                <input id="password" type="password" :type="showPass ? 'text' : 'password'"
+                                    name="password" required autocomplete="new-password"
                                     class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-16 text-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
                                     placeholder="Create a password">
                                 <button type="button" @click="showPass = !showPass"
@@ -277,8 +288,9 @@
                                             d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751A11.959 11.959 0 0 1 12 2.714Z" />
                                     </svg>
                                 </span>
-                                <input id="password_confirmation" type="password" :type="showConfirm ? 'text' : 'password'"
-                                    name="password_confirmation" required autocomplete="new-password"
+                                <input id="password_confirmation" type="password"
+                                    :type="showConfirm ? 'text' : 'password'" name="password_confirmation" required
+                                    autocomplete="new-password"
                                     class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-16 text-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
                                     placeholder="Confirm password">
                                 <button type="button" @click="showConfirm = !showConfirm"

@@ -3,52 +3,61 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rules;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
     public function create(): View
     {
-        return view('auth.register');
+        return view(
+            'auth.register',
+        );
     }
 
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws ValidationException
-     */
-    public function store(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'first_name' => ['required', 'string', 'max:255'],
-            'middle_name' => ['nullable', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+    public function store(
+        RegisterUserRequest $request,
+    ): RedirectResponse {
+        $validated = $request->validated();
+
+        $user = User::query()->create([
+            'first_name' => $validated[
+                'first_name'
+            ],
+
+            'middle_name' => $validated[
+                'middle_name'
+            ] ?? null,
+
+            'last_name' => $validated[
+                'last_name'
+            ],
+
+            'email' => $validated[
+                'email'
+            ],
+
+            'password' => $validated[
+                'password'
+            ],
         ]);
 
-        $user = User::create([
-            'first_name' => $request->first_name,
-            'middle_name' => $request->middle_name,
-            'last_name' => $request->last_name,
-            'email' => $request->email,
-            'password' => $request->password,
-        ]);
-
-        event(new Registered($user));
+        /*
+         * Because User now implements MustVerifyEmail, this event
+         * sends Laravel's verification notification.
+         */
+        event(
+            new Registered($user),
+        );
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->route(
+            'verification.notice',
+        );
     }
 }
