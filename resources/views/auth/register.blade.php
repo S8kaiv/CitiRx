@@ -125,7 +125,7 @@
 
             {{-- ============ RIGHT: register form ============ --}}
             <main
-                class="flex flex-col items-center justify-center px-10 py-12 lg:px-12 xl:px-16 bg-slate-50 lg:bg-white min-h-screen">
+                class="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-10 sm:px-6 lg:bg-white lg:px-12 xl:px-16">
 
                 {{-- Mobile / Tablet Brand Header --}}
                 <div class="mb-8 flex items-center gap-3 lg:hidden">
@@ -288,7 +288,7 @@
                         </div>
 
                         <button type="submit" :disabled="busy" style="--lip: #4A2FC4;"
-                            class="btn-press flex w-full items-center justify-center rounded-2xl bg-indigo-600 px-7 py-3.5 font-display text-base font-bold text-white shadow-md hover:bg-indigo-700 disabled:opacity-70 focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-200">
+                            class="btn-press flex w-full items-center justify-center rounded-2xl bg-primary px-7 py-3.5 font-display text-base font-bold text-white shadow-md hover:bg-primary-lip disabled:opacity-70 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
                             <span x-text="busy ? 'Creating Account…' : 'Create Account'">Create Account</span>
                         </button>
                     </form>
