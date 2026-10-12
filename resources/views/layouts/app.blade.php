@@ -188,6 +188,25 @@ $levelBadgeBg = match (true) {
                             </a>
 
                             @php
+                                $leaderboardActive = request()->routeIs('leaderboard.*');
+                            @endphp
+
+                            <a href="{{ route('leaderboard.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ $leaderboardActive
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <svg class="h-5 w-5 {{ $leaderboardActive ? 'text-primary' : 'text-slate-400' }}"
+                                    fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                    aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M7.5 14.25v2.25m4.5-6v6m4.5-9v9M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z" />
+                                </svg>
+
+                                <span>Leaderboard</span>
+                            </a>
+
+                            @php
                                 $active = request()->routeIs('mock-board.*');
                             @endphp
 
@@ -396,6 +415,19 @@ $levelBadgeBg = match (true) {
                                 d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
                         </svg>
                         <span>Progress</span>
+                    </a>
+
+                    {{-- Leaderboard --}}
+                    <a href="{{ route('leaderboard.index') }}"
+                        class="flex flex-col items-center gap-1
+                            {{ request()->routeIs('leaderboard.*') ? 'text-primary' : 'text-slate-500' }}">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M7.5 14.25v2.25m4.5-6v6m4.5-9v9M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z" />
+                        </svg>
+
+                        <span>Ranks</span>
                     </a>
 
                     {{-- Vault (Includes Bookmarks tab inside) --}}
