@@ -10,7 +10,9 @@
     .btn-press {
         border-bottom-width: 4px;
         border-bottom-color: var(--lip, rgba(0, 0, 0, 0.15));
-        transition: transform 100ms ease, border-bottom-width 100ms ease;
+        transition:
+            transform 100ms ease,
+            border-bottom-width 100ms ease;
     }
     .btn-press:active {
         transform: translateY(2px);
@@ -20,45 +22,46 @@
 
 @layer base {
     /* Level 1: Standard (Violet) */
-    :root, .theme-standard {
+    :root,
+    .theme-standard {
         --color-primary-default: 109 74 255; /* #6D4AFF */
-        --color-primary-lip: 74 47 196;      /* #4A2FC4 */
-        --color-primary-tint: 241 237 255;   /* #F1EDFF */
+        --color-primary-lip: 74 47 196; /* #4A2FC4 */
+        --color-primary-tint: 241 237 255; /* #F1EDFF */
     }
 
     /* Level 2: Forest Grove (Emerald) */
     .theme-forest {
         --color-primary-default: 16 185 129; /* #10B981 */
-        --color-primary-lip: 4 120 87;       /* #047857 */
-        --color-primary-tint: 209 250 229;   /* #D1FAE5 */
+        --color-primary-lip: 4 120 87; /* #047857 */
+        --color-primary-tint: 209 250 229; /* #D1FAE5 */
     }
 
     /* Level 4: Sakura Romance (Rose) */
     .theme-sakura {
-        --color-primary-default: 244 63 94;  /* #F43F5E */
-        --color-primary-lip: 190 18 60;      /* #BE123C */
-        --color-primary-tint: 255 228 230;   /* #FFE4E6 */
+        --color-primary-default: 244 63 94; /* #F43F5E */
+        --color-primary-lip: 190 18 60; /* #BE123C */
+        --color-primary-tint: 255 228 230; /* #FFE4E6 */
     }
 
     /* Level 6: Midnight Slate (Dark Navy) */
     .theme-midnight {
-        --color-primary-default: 30 41 59;   /* #1E293B */
-        --color-primary-lip: 2 6 23;         /* #020617 */
-        --color-primary-tint: 241 245 249;   /* #F1F5F9 */
+        --color-primary-default: 30 41 59; /* #1E293B */
+        --color-primary-lip: 2 6 23; /* #020617 */
+        --color-primary-tint: 241 245 249; /* #F1F5F9 */
     }
 
     /* Level 8: Ocean Abyss (Sky Blue) */
     .theme-ocean {
         --color-primary-default: 14 165 233; /* #0EA5E9 */
-        --color-primary-lip: 3 105 161;      /* #0369A1 */
-        --color-primary-tint: 224 242 254;   /* #E0F2FE */
+        --color-primary-lip: 3 105 161; /* #0369A1 */
+        --color-primary-tint: 224 242 254; /* #E0F2FE */
     }
 
     /* Level 10: Solar Gold (Amber) */
     .theme-solar {
         --color-primary-default: 245 158 11; /* #F59E0B */
-        --color-primary-lip: 180 83 9;       /* #B45309 */
-        --color-primary-tint: 254 243 199;   /* #FEF3C7 */
+        --color-primary-lip: 180 83 9; /* #B45309 */
+        --color-primary-tint: 254 243 199; /* #FEF3C7 */
     }
 }
 
@@ -85,27 +88,41 @@ body.theme-solar {
 body[class*="theme-"] .text-slate-900 {
     color: var(--theme-ink-strong);
 }
-body.theme-midnight :is(.text-slate-900, .text-slate-800, .text-slate-700, .text-slate-600, .text-muted-ink) {
+body.theme-midnight
+    :is(
+        .text-slate-900,
+        .text-slate-800,
+        .text-slate-700,
+        .text-slate-600,
+        .text-muted-ink
+    ) {
     color: #e2e8f0;
 }
-body.theme-midnight :is(
-    .bg-white,
-    .bg-white\/70,
-    .bg-white\/85,
-    .bg-white\/90,
-    .bg-white\/95,
-    .bg-slate-50,
-    .bg-slate-100,
-    .bg-slate-200,
-    .bg-primary-tint,
-    .bg-primary-tint\/50,
-    .bg-clinical-tint,
-    .bg-strong-tint,
-    .bg-weak-tint,
-    .bg-gold-tint,
-    .bg-amber-50,
-    .bg-gradient-to-br
-) :is(.text-slate-900, .text-slate-800, .text-slate-700, .text-slate-600, .text-muted-ink) {
+body.theme-midnight
+    :is(
+        .bg-white,
+        .bg-white\/70,
+        .bg-white\/85,
+        .bg-white\/90,
+        .bg-white\/95,
+        .bg-slate-50,
+        .bg-slate-100,
+        .bg-slate-200,
+        .bg-primary-tint,
+        .bg-primary-tint\/50,
+        .bg-clinical-tint,
+        .bg-strong-tint,
+        .bg-weak-tint,
+        .bg-gold-tint,
+        .bg-amber-50
+    )
+    :is(
+        .text-slate-900,
+        .text-slate-800,
+        .text-slate-700,
+        .text-slate-600,
+        .text-muted-ink
+    ) {
     color: #334155;
 }
 body.theme-midnight :is(input, textarea, select).text-slate-900 {
@@ -129,9 +146,15 @@ body.theme-midnight :is(input, textarea, select).text-slate-900 {
 }
 
 @keyframes popSpring {
-    0% { transform: scale(0.96); }
-    50% { transform: scale(1.02); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(0.96);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 .animate-float-up {
@@ -147,7 +170,8 @@ body.theme-midnight :is(input, textarea, select).text-slate-900 {
 /* ========================================================= */
 
 .theme-environment {
-    background-color: #F8FAFC;
+    contain: paint;
+    background-color: #f8fafc;
     transition: background 0.5s ease;
 }
 
@@ -166,6 +190,11 @@ body.theme-midnight :is(input, textarea, select).text-slate-900 {
     overflow: hidden;
 }
 
+.theme-animations-paused .theme-scene,
+.theme-animations-paused .theme-scene * {
+    animation-play-state: paused !important;
+}
+
 /* 1. Standard (Quiet cool gradient) */
 body.theme-standard .theme-environment {
     background: linear-gradient(145deg, #ffffff 0%, #f8fafc 55%, #f2f0ff 100%);
@@ -177,7 +206,14 @@ body.theme-forest .theme-environment {
 }
 body.theme-forest .forest-scene {
     display: block;
-    background: linear-gradient(to top, rgba(20, 83, 45, 0.09), transparent 24%), linear-gradient(110deg, rgba(20, 83, 45, 0.07), transparent 42%, rgba(21, 128, 61, 0.05));
+    background:
+        linear-gradient(to top, rgba(20, 83, 45, 0.09), transparent 24%),
+        linear-gradient(
+            110deg,
+            rgba(20, 83, 45, 0.07),
+            transparent 42%,
+            rgba(21, 128, 61, 0.05)
+        );
 }
 .forest-tree {
     position: absolute;
@@ -186,8 +222,28 @@ body.theme-forest .forest-scene {
     width: var(--tree-width);
     height: var(--tree-height);
     background: linear-gradient(100deg, #14532d 0%, #166534 52%, #064e3b 100%);
-    clip-path: polygon(50% 0%, 64% 14%, 55% 13%, 77% 32%, 65% 31%, 91% 51%, 71% 49%, 100% 68%, 59% 64%, 59% 100%, 41% 100%, 41% 64%, 0% 68%, 29% 49%, 9% 51%, 35% 31%, 23% 32%, 45% 13%, 36% 14%);
-    opacity: var(--tree-opacity, .16);
+    clip-path: polygon(
+        50% 0%,
+        64% 14%,
+        55% 13%,
+        77% 32%,
+        65% 31%,
+        91% 51%,
+        71% 49%,
+        100% 68%,
+        59% 64%,
+        59% 100%,
+        41% 100%,
+        41% 64%,
+        0% 68%,
+        29% 49%,
+        9% 51%,
+        35% 31%,
+        23% 32%,
+        45% 13%,
+        36% 14%
+    );
+    opacity: var(--tree-opacity, 0.16);
 }
 .forest-leaf {
     position: absolute;
@@ -197,10 +253,13 @@ body.theme-forest .forest-scene {
     height: 36px;
     border-radius: 90% 0 90% 0;
     background: linear-gradient(145deg, #86efac 0%, #22c55e 48%, #166534 100%);
-    box-shadow: inset 2px 1px 3px rgba(240, 253, 244, 0.55), 0 2px 5px rgba(20, 83, 45, 0.13);
+    box-shadow:
+        inset 2px 1px 3px rgba(240, 253, 244, 0.55),
+        0 2px 5px rgba(20, 83, 45, 0.13);
     opacity: 0;
     transform-origin: 50% 50%;
-    animation: leafFall var(--scene-duration, 24s) ease-in-out var(--scene-delay, 0s) infinite;
+    animation: leafFall var(--scene-duration, 24s) ease-in-out
+        var(--scene-delay, 0s) infinite;
 }
 .forest-leaf::after {
     position: absolute;
@@ -232,16 +291,46 @@ body.theme-sakura .sakura-petal {
     left: var(--petal-left);
     width: 18px;
     height: 24px;
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(244, 63, 94, 0.78));
-    clip-path: polygon(50% 0%, 68% 9%, 89% 27%, 100% 49%, 94% 71%, 78% 89%, 59% 100%, 41% 100%, 22% 89%, 6% 71%, 0% 49%, 11% 27%, 32% 9%);
+    background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.96),
+        rgba(244, 63, 94, 0.78)
+    );
+    clip-path: polygon(
+        50% 0%,
+        68% 9%,
+        89% 27%,
+        100% 49%,
+        94% 71%,
+        78% 89%,
+        59% 100%,
+        41% 100%,
+        22% 89%,
+        6% 71%,
+        0% 49%,
+        11% 27%,
+        32% 9%
+    );
     filter: drop-shadow(0 1px 2px rgba(190, 18, 60, 0.2));
-    animation: sakuraDrift var(--petal-duration, 20s) linear var(--petal-delay, 0s) infinite;
+    animation: sakuraDrift var(--petal-duration, 20s) linear
+        var(--petal-delay, 0s) infinite;
 }
 @keyframes sakuraDrift {
-    0% { transform: translate3d(0, -8vh, 0) rotate(0deg) scale(0.8); opacity: 0; }
-    12% { opacity: 0.82; }
-    78% { opacity: 0.7; }
-    100% { transform: translate3d(var(--petal-drift, 7vw), 110vh, 0) rotate(620deg) scale(0.65); opacity: 0; }
+    0% {
+        transform: translate3d(0, -8vh, 0) rotate(0deg) scale(0.8);
+        opacity: 0;
+    }
+    12% {
+        opacity: 0.82;
+    }
+    78% {
+        opacity: 0.7;
+    }
+    100% {
+        transform: translate3d(var(--petal-drift, 7vw), 110vh, 0) rotate(620deg)
+            scale(0.65);
+        opacity: 0;
+    }
 }
 @media (prefers-reduced-motion: reduce) {
     body.theme-sakura .sakura-petal {
@@ -254,18 +343,46 @@ body.theme-sakura .sakura-petal {
 /* 4. Midnight Slate (Dark Navy & Stars) */
 body.theme-midnight .theme-environment {
     background:
-        radial-gradient(ellipse at 72% 22%, rgba(91, 33, 182, 0.3), transparent 38%),
-        radial-gradient(ellipse at 15% 82%, rgba(14, 116, 144, 0.22), transparent 40%),
+        radial-gradient(
+            ellipse at 72% 22%,
+            rgba(91, 33, 182, 0.3),
+            transparent 38%
+        ),
+        radial-gradient(
+            ellipse at 15% 82%,
+            rgba(14, 116, 144, 0.22),
+            transparent 40%
+        ),
         linear-gradient(145deg, #080d1c 0%, #17243d 56%, #10182c 100%);
 }
 body.theme-midnight .galaxy-scene {
     display: block;
     background-image:
-        radial-gradient(1px 1px at 13% 18%, rgba(255, 255, 255, 0.75) 98%, transparent),
-        radial-gradient(1px 1px at 79% 30%, rgba(196, 181, 253, 0.75) 98%, transparent),
-        radial-gradient(1.5px 1.5px at 52% 73%, rgba(255, 255, 255, 0.65) 98%, transparent),
-        radial-gradient(1px 1px at 91% 82%, rgba(125, 211, 252, 0.7) 98%, transparent);
-    background-size: 390px 330px, 470px 410px, 520px 440px, 340px 380px;
+        radial-gradient(
+            1px 1px at 13% 18%,
+            rgba(255, 255, 255, 0.75) 98%,
+            transparent
+        ),
+        radial-gradient(
+            1px 1px at 79% 30%,
+            rgba(196, 181, 253, 0.75) 98%,
+            transparent
+        ),
+        radial-gradient(
+            1.5px 1.5px at 52% 73%,
+            rgba(255, 255, 255, 0.65) 98%,
+            transparent
+        ),
+        radial-gradient(
+            1px 1px at 91% 82%,
+            rgba(125, 211, 252, 0.7) 98%,
+            transparent
+        );
+    background-size:
+        390px 330px,
+        470px 410px,
+        520px 440px,
+        340px 380px;
     animation: starDrift 80s linear infinite;
 }
 .galaxy-rock {
@@ -276,17 +393,37 @@ body.theme-midnight .galaxy-scene {
     aspect-ratio: 1;
     border: 1px solid rgba(226, 232, 240, 0.32);
     background: linear-gradient(145deg, #64748b 0%, #334155 48%, #1e293b 100%);
-    clip-path: polygon(48% 0%, 72% 8%, 91% 27%, 100% 53%, 87% 77%, 68% 96%, 39% 100%, 14% 85%, 0% 59%, 8% 31%, 27% 10%);
+    clip-path: polygon(
+        48% 0%,
+        72% 8%,
+        91% 27%,
+        100% 53%,
+        87% 77%,
+        68% 96%,
+        39% 100%,
+        14% 85%,
+        0% 59%,
+        8% 31%,
+        27% 10%
+    );
     filter: drop-shadow(0 8px 18px rgba(2, 6, 23, 0.35));
     opacity: 0.72;
-    animation: rockFloat 19s ease-in-out var(--scene-delay, 0s) infinite alternate;
+    animation: rockFloat 19s ease-in-out var(--scene-delay, 0s) infinite
+        alternate;
 }
 .galaxy-rock::before,
 .galaxy-rock::after {
     position: absolute;
     border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #0f172a, #475569 72%, rgba(148, 163, 184, 0.2));
-    box-shadow: inset 2px 2px 4px rgba(2, 6, 23, 0.45), 1px 1px 2px rgba(203, 213, 225, 0.2);
+    background: radial-gradient(
+        circle at 35% 30%,
+        #0f172a,
+        #475569 72%,
+        rgba(148, 163, 184, 0.2)
+    );
+    box-shadow:
+        inset 2px 2px 4px rgba(2, 6, 23, 0.45),
+        1px 1px 2px rgba(203, 213, 225, 0.2);
     content: "";
 }
 .galaxy-rock::before {
@@ -309,9 +446,21 @@ body.theme-ocean .theme-environment {
 body.theme-ocean .ocean-scene {
     display: block;
     background-image:
-        linear-gradient(168deg, transparent 32%, rgba(255, 255, 255, 0.16) 33%, transparent 34%),
-        linear-gradient(12deg, transparent 64%, rgba(14, 116, 144, 0.08) 65%, transparent 66%);
-    background-size: 100% 310px, 100% 420px;
+        linear-gradient(
+            168deg,
+            transparent 32%,
+            rgba(255, 255, 255, 0.16) 33%,
+            transparent 34%
+        ),
+        linear-gradient(
+            12deg,
+            transparent 64%,
+            rgba(14, 116, 144, 0.08) 65%,
+            transparent 66%
+        );
+    background-size:
+        100% 310px,
+        100% 420px;
     animation: currentDrift 24s ease-in-out infinite alternate;
 }
 .ocean-fish {
@@ -322,10 +471,13 @@ body.theme-ocean .ocean-scene {
     height: 29px;
     border-radius: 54% 48% 48% 54%;
     background: linear-gradient(145deg, #fef3c7 0%, #38bdf8 48%, #0369a1 100%);
-    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.65), 0 4px 10px rgba(3, 105, 161, 0.12);
+    box-shadow:
+        inset 0 2px 4px rgba(255, 255, 255, 0.65),
+        0 4px 10px rgba(3, 105, 161, 0.12);
     opacity: 0;
     transform: scale(var(--fish-scale, 1));
-    animation: fishSwim var(--fish-duration, 36s) linear var(--fish-delay, 0s) infinite;
+    animation: fishSwim var(--fish-duration, 36s) linear var(--fish-delay, 0s)
+        infinite;
 }
 .ocean-fish::before {
     position: absolute;
@@ -366,7 +518,12 @@ body.theme-solar .solar-scene {
     left: var(--ray-left);
     width: clamp(28px, 5vw, 72px);
     height: 185%;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.36), rgba(245, 158, 11, 0.02) 72%, transparent);
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.36),
+        rgba(245, 158, 11, 0.02) 72%,
+        transparent
+    );
     opacity: 0.6;
     transform: rotate(24deg);
     animation: raySweep 18s ease-in-out var(--ray-delay, 0s) infinite alternate;
@@ -381,48 +538,123 @@ body.theme-solar .solar-scene {
     background: linear-gradient(145deg, #fff7cc, #f59e0b 70%, #b45309);
     box-shadow: 0 0 12px rgba(245, 158, 11, 0.48);
     opacity: 0;
-    animation: emberFloat var(--scene-duration, 20s) ease-in var(--scene-delay, 0s) infinite;
+    animation: emberFloat var(--scene-duration, 20s) ease-in
+        var(--scene-delay, 0s) infinite;
 }
 
 /* Environment Keyframes */
 @keyframes leafFall {
-    0% { transform: translate3d(0, -12vh, 0) rotate(-35deg) scale(var(--leaf-scale, .8)); opacity: 0; }
-    12% { opacity: 0.72; }
-    52% { transform: translate3d(var(--scene-drift), 48vh, 0) rotate(150deg) scale(var(--leaf-scale, .8)); }
-    100% { transform: translate3d(calc(var(--scene-drift) * -0.35), 112vh, 0) rotate(330deg) scale(.55); opacity: 0; }
+    0% {
+        transform: translate3d(0, -12vh, 0) rotate(-35deg)
+            scale(var(--leaf-scale, 0.8));
+        opacity: 0;
+    }
+    12% {
+        opacity: 0.72;
+    }
+    52% {
+        transform: translate3d(var(--scene-drift), 48vh, 0) rotate(150deg)
+            scale(var(--leaf-scale, 0.8));
+    }
+    100% {
+        transform: translate3d(calc(0px - var(--scene-drift)), 112vh, 0)
+            rotate(330deg) scale(0.55);
+        opacity: 0;
+    }
 }
 @keyframes rockFloat {
-    from { transform: translate3d(-5px, -9px, 0) rotate(-5deg); }
-    to { transform: translate3d(8px, 12px, 0) rotate(7deg); }
+    from {
+        transform: translate3d(-5px, -9px, 0) rotate(-5deg);
+    }
+    to {
+        transform: translate3d(8px, 12px, 0) rotate(7deg);
+    }
 }
 @keyframes starDrift {
-    from { background-position: 0 0, 0 0, 0 0, 0 0; }
-    to { background-position: -90px 70px, 120px -60px, -65px -80px, 75px 95px; }
+    from {
+        background-position:
+            0 0,
+            0 0,
+            0 0,
+            0 0;
+    }
+    to {
+        background-position:
+            -90px 70px,
+            120px -60px,
+            -65px -80px,
+            75px 95px;
+    }
 }
 @keyframes fishSwim {
-    0% { transform: translate3d(-90px, 0, 0) scale(var(--fish-scale, 1)); opacity: 0; }
-    12% { opacity: 0.72; }
-    88% { opacity: 0.72; }
-    100% { transform: translate3d(calc(100vw + 100px), var(--fish-rise, 0), 0) scale(var(--fish-scale, 1)); opacity: 0; }
+    0% {
+        transform: translate3d(-90px, 0, 0) scale(var(--fish-scale, 1));
+        opacity: 0;
+    }
+    12% {
+        opacity: 0.72;
+    }
+    88% {
+        opacity: 0.72;
+    }
+    100% {
+        transform: translate3d(calc(100vw + 100px), var(--fish-rise, 0), 0)
+            scale(var(--fish-scale, 1));
+        opacity: 0;
+    }
 }
 @keyframes fishSwimReverse {
-    0% { transform: translate3d(calc(100vw + 100px), 0, 0) scaleX(-1) scale(var(--fish-scale, 1)); opacity: 0; }
-    12% { opacity: 0.62; }
-    88% { opacity: 0.62; }
-    100% { transform: translate3d(-90px, var(--fish-rise, 0), 0) scaleX(-1) scale(var(--fish-scale, 1)); opacity: 0; }
+    0% {
+        transform: translate3d(calc(100vw + 100px), 0, 0) scaleX(-1)
+            scale(var(--fish-scale, 1));
+        opacity: 0;
+    }
+    12% {
+        opacity: 0.62;
+    }
+    88% {
+        opacity: 0.62;
+    }
+    100% {
+        transform: translate3d(-90px, var(--fish-rise, 0), 0) scaleX(-1)
+            scale(var(--fish-scale, 1));
+        opacity: 0;
+    }
 }
 @keyframes currentDrift {
-    from { background-position: 0 0, 0 0; }
-    to { background-position: 70px 30px, -55px -25px; }
+    from {
+        background-position:
+            0 0,
+            0 0;
+    }
+    to {
+        background-position:
+            70px 30px,
+            -55px -25px;
+    }
 }
 @keyframes raySweep {
-    from { opacity: 0.22; transform: translateX(-10px) rotate(24deg); }
-    to { opacity: 0.58; transform: translateX(18px) rotate(24deg); }
+    from {
+        opacity: 0.22;
+        transform: translateX(-10px) rotate(24deg);
+    }
+    to {
+        opacity: 0.58;
+        transform: translateX(18px) rotate(24deg);
+    }
 }
 @keyframes emberFloat {
-    0% { transform: translate3d(0, 0, 0) rotate(-35deg); opacity: 0; }
-    12% { opacity: 0.8; }
-    100% { transform: translate3d(var(--scene-drift), -125vh, 0) rotate(320deg); opacity: 0; }
+    0% {
+        transform: translate3d(0, 0, 0) rotate(-35deg);
+        opacity: 0;
+    }
+    12% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translate3d(var(--scene-drift), -125vh, 0) rotate(320deg);
+        opacity: 0;
+    }
 }
 @media (prefers-reduced-motion: reduce) {
     .forest-leaf,
@@ -446,7 +678,7 @@ body.theme-solar .solar-scene {
 
     .forest-leaf {
         top: var(--scene-top);
-        transform: rotate(-35deg) scale(var(--leaf-scale, .8));
+        transform: rotate(-35deg) scale(var(--leaf-scale, 0.8));
     }
 
     .ocean-fish {

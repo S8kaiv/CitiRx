@@ -14,71 +14,134 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body data-authenticated-page="true"
-    x-data="{ globalTheme: localStorage.getItem('citiRxTheme') || 'theme-standard' }" 
-    :class="globalTheme"
-    class="isolate h-full font-sans text-slate-900 antialiased selection:bg-primary-tint selection:text-primary relative min-h-screen">
+@php
+    $themeLevel = Auth::user()?->role === 'student' ? max(1, (int) (Auth::user()->current_level ?? 1)) : 1;
+@endphp
+
+<body data-authenticated-page="true" x-data="themeManager(@js($themeLevel))"
+    :class="[
+        globalTheme,
+        {
+            'theme-animations-paused': animationsPaused,
+        },
+    ]"
+    class="isolate relative min-h-screen h-full font-sans text-slate-900 antialiased selection:bg-primary-tint selection:text-primary">
 
     {{-- ============================================================ --}}
     {{-- ATMOSPHERIC THEME ENVIRONMENT & PARTICLE ANIMATIONS         --}}
     {{-- ============================================================ --}}
-    <div class="theme-environment pointer-events-none fixed inset-0 z-0 overflow-hidden transition-colors duration-500" aria-hidden="true">
-        <div class="theme-particles w-full h-full absolute inset-0">
-            <div class="theme-scene sakura-scene">
-                <span class="sakura-petal" style="--petal-left: 7%; --petal-delay: -13s; --petal-duration: 22s; --petal-drift: 8vw; --petal-top: 14%;"></span>
-                <span class="sakura-petal" style="--petal-left: 18%; --petal-delay: -4s; --petal-duration: 19s; --petal-drift: -6vw; --petal-top: 42%;"></span>
-                <span class="sakura-petal" style="--petal-left: 29%; --petal-delay: -17s; --petal-duration: 24s; --petal-drift: 10vw; --petal-top: 71%;"></span>
-                <span class="sakura-petal" style="--petal-left: 40%; --petal-delay: -8s; --petal-duration: 20s; --petal-drift: -8vw; --petal-top: 27%;"></span>
-                <span class="sakura-petal" style="--petal-left: 52%; --petal-delay: -20s; --petal-duration: 25s; --petal-drift: 7vw; --petal-top: 58%;"></span>
-                <span class="sakura-petal" style="--petal-left: 63%; --petal-delay: -2s; --petal-duration: 18s; --petal-drift: -10vw; --petal-top: 83%;"></span>
-                <span class="sakura-petal" style="--petal-left: 74%; --petal-delay: -11s; --petal-duration: 23s; --petal-drift: 6vw; --petal-top: 35%;"></span>
-                <span class="sakura-petal" style="--petal-left: 85%; --petal-delay: -6s; --petal-duration: 21s; --petal-drift: -7vw; --petal-top: 66%;"></span>
-                <span class="sakura-petal" style="--petal-left: 95%; --petal-delay: -15s; --petal-duration: 24s; --petal-drift: 9vw; --petal-top: 21%;"></span>
-                <span class="sakura-petal" style="--petal-left: 13%; --petal-delay: -19s; --petal-duration: 27s; --petal-drift: 5vw; --petal-top: 55%;"></span>
-                <span class="sakura-petal" style="--petal-left: 58%; --petal-delay: -10s; --petal-duration: 26s; --petal-drift: -5vw; --petal-top: 11%;"></span>
-                <span class="sakura-petal" style="--petal-left: 91%; --petal-delay: -23s; --petal-duration: 28s; --petal-drift: -8vw; --petal-top: 47%;"></span>
-            </div>
+    <div class="theme-environment pointer-events-none fixed inset-0 z-0 overflow-hidden transition-colors duration-500"
+        aria-hidden="true">
+        <div class="theme-particles absolute inset-0 h-full w-full">
+            {{-- Sakura --}}
+            <template x-if="globalTheme === 'theme-sakura'">
+                <div class="theme-scene sakura-scene">
+                    <span class="sakura-petal"
+                        style="--petal-left: 7%; --petal-delay: -13s; --petal-duration: 22s; --petal-drift: 8vw; --petal-top: 14%;"></span>
+                    <span class="sakura-petal"
+                        style="--petal-left: 18%; --petal-delay: -4s; --petal-duration: 19s; --petal-drift: -6vw; --petal-top: 42%;"></span>
+                    <span class="sakura-petal"
+                        style="--petal-left: 29%; --petal-delay: -17s; --petal-duration: 24s; --petal-drift: 10vw; --petal-top: 71%;"></span>
+                    <span class="sakura-petal"
+                        style="--petal-left: 40%; --petal-delay: -8s; --petal-duration: 20s; --petal-drift: -8vw; --petal-top: 27%;"></span>
+                    <span class="sakura-petal"
+                        style="--petal-left: 52%; --petal-delay: -20s; --petal-duration: 25s; --petal-drift: 7vw; --petal-top: 58%;"></span>
+                    <span class="sakura-petal"
+                        style="--petal-left: 63%; --petal-delay: -2s; --petal-duration: 18s; --petal-drift: -10vw; --petal-top: 83%;"></span>
+                    <span class="sakura-petal"
+                        style="--petal-left: 74%; --petal-delay: -11s; --petal-duration: 23s; --petal-drift: 6vw; --petal-top: 35%;"></span>
+                    <span class="sakura-petal"
+                        style="--petal-left: 85%; --petal-delay: -6s; --petal-duration: 21s; --petal-drift: -7vw; --petal-top: 66%;"></span>
+                    <span class="sakura-petal"
+                        style="--petal-left: 95%; --petal-delay: -15s; --petal-duration: 24s; --petal-drift: 9vw; --petal-top: 21%;"></span>
+                    <span class="sakura-petal"
+                        style="--petal-left: 13%; --petal-delay: -19s; --petal-duration: 27s; --petal-drift: 5vw; --petal-top: 55%;"></span>
+                    <span class="sakura-petal"
+                        style="--petal-left: 58%; --petal-delay: -10s; --petal-duration: 26s; --petal-drift: -5vw; --petal-top: 11%;"></span>
+                    <span class="sakura-petal"
+                        style="--petal-left: 91%; --petal-delay: -23s; --petal-duration: 28s; --petal-drift: -8vw; --petal-top: 47%;"></span>
+                </div>
+            </template>
 
-            <div class="theme-scene forest-scene">
-                <span class="forest-tree" style="--tree-left: -2%; --tree-height: 68vh; --tree-width: clamp(120px, 17vw, 250px); --tree-opacity: .22;"></span>
-                <span class="forest-tree" style="--tree-left: 10%; --tree-height: 48vh; --tree-width: clamp(100px, 13vw, 190px); --tree-opacity: .12;"></span>
-                <span class="forest-tree" style="--tree-left: 78%; --tree-height: 52vh; --tree-width: clamp(105px, 14vw, 205px); --tree-opacity: .13;"></span>
-                <span class="forest-tree" style="--tree-left: 88%; --tree-height: 72vh; --tree-width: clamp(125px, 18vw, 265px); --tree-opacity: .2;"></span>
-                <span class="forest-leaf" style="--scene-left: 7%; --scene-top: 18%; --scene-delay: -12s; --scene-duration: 25s; --scene-drift: 8vw; --leaf-scale: .75;"></span>
-                <span class="forest-leaf" style="--scene-left: 18%; --scene-top: 59%; --scene-delay: -3s; --scene-duration: 22s; --scene-drift: -7vw; --leaf-scale: .6;"></span>
-                <span class="forest-leaf" style="--scene-left: 30%; --scene-top: 35%; --scene-delay: -19s; --scene-duration: 28s; --scene-drift: 10vw; --leaf-scale: .9;"></span>
-                <span class="forest-leaf" style="--scene-left: 42%; --scene-top: 76%; --scene-delay: -8s; --scene-duration: 24s; --scene-drift: -9vw; --leaf-scale: .7;"></span>
-                <span class="forest-leaf" style="--scene-left: 54%; --scene-top: 12%; --scene-delay: -22s; --scene-duration: 29s; --scene-drift: 6vw; --leaf-scale: .85;"></span>
-                <span class="forest-leaf" style="--scene-left: 66%; --scene-top: 53%; --scene-delay: -5s; --scene-duration: 23s; --scene-drift: -8vw; --leaf-scale: .65;"></span>
-                <span class="forest-leaf" style="--scene-left: 78%; --scene-top: 29%; --scene-delay: -15s; --scene-duration: 27s; --scene-drift: 9vw; --leaf-scale: .8;"></span>
-                <span class="forest-leaf" style="--scene-left: 90%; --scene-top: 72%; --scene-delay: -1s; --scene-duration: 26s; --scene-drift: -6vw; --leaf-scale: .7;"></span>
-            </div>
+            {{-- Forest --}}
+            <template x-if="globalTheme === 'theme-forest'">
+                <div class="theme-scene forest-scene">
+                    <span class="forest-tree"
+                        style="--tree-left: -2%; --tree-height: 68vh; --tree-width: clamp(120px, 17vw, 250px); --tree-opacity: .22;"></span>
+                    <span class="forest-tree"
+                        style="--tree-left: 10%; --tree-height: 48vh; --tree-width: clamp(100px, 13vw, 190px); --tree-opacity: .12;"></span>
+                    <span class="forest-tree"
+                        style="--tree-left: 78%; --tree-height: 52vh; --tree-width: clamp(105px, 14vw, 205px); --tree-opacity: .13;"></span>
+                    <span class="forest-tree"
+                        style="--tree-left: 88%; --tree-height: 72vh; --tree-width: clamp(125px, 18vw, 265px); --tree-opacity: .20;"></span>
 
-            <div class="theme-scene galaxy-scene">
-                <span class="galaxy-rock" style="--scene-left: 12%; --scene-top: 24%; --rock-size: 82px; --scene-delay: -8s;"></span>
-                <span class="galaxy-rock" style="--scene-left: 36%; --scene-top: 72%; --rock-size: 54px; --scene-delay: -15s;"></span>
-                <span class="galaxy-rock" style="--scene-left: 69%; --scene-top: 19%; --rock-size: 68px; --scene-delay: -4s;"></span>
-                <span class="galaxy-rock" style="--scene-left: 87%; --scene-top: 67%; --rock-size: 94px; --scene-delay: -12s;"></span>
-            </div>
+                    <span class="forest-leaf"
+                        style="--scene-left: 7%; --scene-top: 18%; --scene-delay: -12s; --scene-duration: 25s; --scene-drift: 8vw; --leaf-scale: .75;"></span>
+                    <span class="forest-leaf"
+                        style="--scene-left: 18%; --scene-top: 59%; --scene-delay: -3s; --scene-duration: 22s; --scene-drift: -7vw; --leaf-scale: .60;"></span>
+                    <span class="forest-leaf"
+                        style="--scene-left: 30%; --scene-top: 35%; --scene-delay: -19s; --scene-duration: 28s; --scene-drift: 10vw; --leaf-scale: .90;"></span>
+                    <span class="forest-leaf"
+                        style="--scene-left: 42%; --scene-top: 76%; --scene-delay: -8s; --scene-duration: 24s; --scene-drift: -9vw; --leaf-scale: .70;"></span>
+                    <span class="forest-leaf"
+                        style="--scene-left: 54%; --scene-top: 12%; --scene-delay: -22s; --scene-duration: 29s; --scene-drift: 6vw; --leaf-scale: .85;"></span>
+                    <span class="forest-leaf"
+                        style="--scene-left: 66%; --scene-top: 53%; --scene-delay: -5s; --scene-duration: 23s; --scene-drift: -8vw; --leaf-scale: .65;"></span>
+                    <span class="forest-leaf"
+                        style="--scene-left: 78%; --scene-top: 29%; --scene-delay: -15s; --scene-duration: 27s; --scene-drift: 9vw; --leaf-scale: .80;"></span>
+                    <span class="forest-leaf"
+                        style="--scene-left: 90%; --scene-top: 72%; --scene-delay: -1s; --scene-duration: 26s; --scene-drift: -6vw; --leaf-scale: .70;"></span>
+                </div>
+            </template>
 
-            <div class="theme-scene ocean-scene">
-                <span class="ocean-fish" style="--fish-left: 14%; --fish-top: 24%; --fish-delay: -7s; --fish-duration: 34s; --fish-rise: 4vh;"></span>
-                <span class="ocean-fish ocean-fish-reverse" style="--fish-left: 70%; --fish-top: 43%; --fish-delay: -19s; --fish-duration: 39s; --fish-rise: -5vh; --fish-scale: .72;"></span>
-                <span class="ocean-fish" style="--fish-left: 38%; --fish-top: 64%; --fish-delay: -27s; --fish-duration: 42s; --fish-rise: -3vh; --fish-scale: .88;"></span>
-                <span class="ocean-fish ocean-fish-reverse" style="--fish-left: 82%; --fish-top: 79%; --fish-delay: -11s; --fish-duration: 36s; --fish-rise: 3vh; --fish-scale: .62;"></span>
-            </div>
+            {{-- Midnight --}}
+            <template x-if="globalTheme === 'theme-midnight'">
+                <div class="theme-scene galaxy-scene">
+                    <span class="galaxy-rock"
+                        style="--scene-left: 12%; --scene-top: 24%; --rock-size: 82px; --scene-delay: -8s;"></span>
+                    <span class="galaxy-rock"
+                        style="--scene-left: 36%; --scene-top: 72%; --rock-size: 54px; --scene-delay: -15s;"></span>
+                    <span class="galaxy-rock"
+                        style="--scene-left: 69%; --scene-top: 19%; --rock-size: 68px; --scene-delay: -4s;"></span>
+                    <span class="galaxy-rock"
+                        style="--scene-left: 87%; --scene-top: 67%; --rock-size: 94px; --scene-delay: -12s;"></span>
+                </div>
+            </template>
 
-            <div class="theme-scene solar-scene">
-                <span class="solar-ray" style="--ray-left: 12%; --ray-delay: -8s;"></span>
-                <span class="solar-ray" style="--ray-left: 37%; --ray-delay: -14s;"></span>
-                <span class="solar-ray" style="--ray-left: 63%; --ray-delay: -4s;"></span>
-                <span class="solar-ray" style="--ray-left: 88%; --ray-delay: -19s;"></span>
-                <span class="golden-ember" style="--scene-left: 14%; --scene-top: 24%; --scene-delay: -8s; --scene-duration: 18s; --scene-drift: 5vw;"></span>
-                <span class="golden-ember" style="--scene-left: 31%; --scene-top: 68%; --scene-delay: -15s; --scene-duration: 22s; --scene-drift: -6vw;"></span>
-                <span class="golden-ember" style="--scene-left: 49%; --scene-top: 39%; --scene-delay: -3s; --scene-duration: 19s; --scene-drift: 7vw;"></span>
-                <span class="golden-ember" style="--scene-left: 68%; --scene-top: 79%; --scene-delay: -18s; --scene-duration: 23s; --scene-drift: -5vw;"></span>
-                <span class="golden-ember" style="--scene-left: 85%; --scene-top: 51%; --scene-delay: -11s; --scene-duration: 20s; --scene-drift: 6vw;"></span>
-            </div>
+            {{-- Ocean --}}
+            <template x-if="globalTheme === 'theme-ocean'">
+                <div class="theme-scene ocean-scene">
+                    <span class="ocean-fish"
+                        style="--fish-left: 14%; --fish-top: 24%; --fish-delay: -7s; --fish-duration: 34s; --fish-rise: 4vh;"></span>
+                    <span class="ocean-fish ocean-fish-reverse"
+                        style="--fish-left: 70%; --fish-top: 43%; --fish-delay: -19s; --fish-duration: 39s; --fish-rise: -5vh; --fish-scale: .72;"></span>
+                    <span class="ocean-fish"
+                        style="--fish-left: 38%; --fish-top: 64%; --fish-delay: -27s; --fish-duration: 42s; --fish-rise: -3vh; --fish-scale: .88;"></span>
+                    <span class="ocean-fish ocean-fish-reverse"
+                        style="--fish-left: 82%; --fish-top: 79%; --fish-delay: -11s; --fish-duration: 36s; --fish-rise: 3vh; --fish-scale: .62;"></span>
+                </div>
+            </template>
+
+            {{-- Solar --}}
+            <template x-if="globalTheme === 'theme-solar'">
+                <div class="theme-scene solar-scene">
+                    <span class="solar-ray" style="--ray-left: 12%; --ray-delay: -8s;"></span>
+                    <span class="solar-ray" style="--ray-left: 37%; --ray-delay: -14s;"></span>
+                    <span class="solar-ray" style="--ray-left: 63%; --ray-delay: -4s;"></span>
+                    <span class="solar-ray" style="--ray-left: 88%; --ray-delay: -19s;"></span>
+
+                    <span class="golden-ember"
+                        style="--scene-left: 14%; --scene-top: 24%; --scene-delay: -8s; --scene-duration: 18s; --scene-drift: 5vw;"></span>
+                    <span class="golden-ember"
+                        style="--scene-left: 31%; --scene-top: 68%; --scene-delay: -15s; --scene-duration: 22s; --scene-drift: -6vw;"></span>
+                    <span class="golden-ember"
+                        style="--scene-left: 49%; --scene-top: 39%; --scene-delay: -3s; --scene-duration: 19s; --scene-drift: 7vw;"></span>
+                    <span class="golden-ember"
+                        style="--scene-left: 68%; --scene-top: 79%; --scene-delay: -18s; --scene-duration: 23s; --scene-drift: -5vw;"></span>
+                    <span class="golden-ember"
+                        style="--scene-left: 85%; --scene-top: 51%; --scene-delay: -11s; --scene-duration: 20s; --scene-drift: 6vw;"></span>
+                </div>
+            </template>
         </div>
     </div>
 
@@ -121,21 +184,21 @@
         /*
          * Build profile initials from the first and last
          * parts of the user's full name.
-         */
-        $nameParts = preg_split('/\s+/', $displayName, -1, PREG_SPLIT_NO_EMPTY);
-        $firstName = $nameParts[0] ?? 'U';
-        $lastName = count($nameParts) > 1 ? $nameParts[array_key_last($nameParts)] : '';
-        $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
+ */
+$nameParts = preg_split('/\s+/', $displayName, -1, PREG_SPLIT_NO_EMPTY);
+$firstName = $nameParts[0] ?? 'U';
+$lastName = count($nameParts) > 1 ? $nameParts[array_key_last($nameParts)] : '';
+$initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
 
-        /*
-         * Resolve Level and Tier using the CitiRx User relationship.
-         */
-        $userLevel = $authUser?->role === 'student' ? $authUser->level : null;
-        $levelNumber = (int) ($userLevel?->level_number ?? ($authUser?->current_level ?? 1));
-        $tierName = strtolower($userLevel?->tier?->tier_name ?? 'beginner');
+/*
+ * Resolve Level and Tier using the CitiRx User relationship.
+ */
+$userLevel = $authUser?->role === 'student' ? $authUser->level : null;
+$levelNumber = (int) ($userLevel?->level_number ?? ($authUser?->current_level ?? 1));
+$tierName = strtolower($userLevel?->tier?->tier_name ?? 'beginner');
 
-        /*
-         * Text shown below the user's name.
+/*
+ * Text shown below the user's name.
          */
         $profileLabel =
             $authUser?->role === 'student'
@@ -144,28 +207,28 @@
 
         /*
          * Avatar border styling based on the student's tier.
-         */
-        $tierRingClasses = match (true) {
-            str_contains($tierName, 'expert')
-                => 'ring-2 ring-primary border-primary/40 bg-primary-tint text-primary shadow-[0_0_10px_rgba(109,74,255,0.35)]',
+ */
+$tierRingClasses = match (true) {
+    str_contains($tierName, 'expert')
+        => 'ring-2 ring-primary border-primary/40 bg-primary-tint text-primary shadow-[0_0_10px_rgba(109,74,255,0.35)]',
 
-            str_contains($tierName, 'advanced')
-                => 'ring-2 ring-[#0EA5A4] border-[#0EA5A4]/40 bg-[#0EA5A4]/10 text-[#0E7A79] shadow-[0_0_10px_rgba(14,165,164,0.35)]',
+    str_contains($tierName, 'advanced')
+        => 'ring-2 ring-[#0EA5A4] border-[#0EA5A4]/40 bg-[#0EA5A4]/10 text-[#0E7A79] shadow-[0_0_10px_rgba(14,165,164,0.35)]',
 
-            str_contains($tierName, 'intermediate')
-                => 'ring-2 ring-[#F5A623] border-[#F5A623]/40 bg-[#F5A623]/10 text-[#B45309] shadow-[0_0_10px_rgba(245,166,35,0.3)]',
+    str_contains($tierName, 'intermediate')
+        => 'ring-2 ring-[#F5A623] border-[#F5A623]/40 bg-[#F5A623]/10 text-[#B45309] shadow-[0_0_10px_rgba(245,166,35,0.3)]',
 
-            default => 'ring-2 ring-slate-300 border-slate-200 bg-slate-100 text-slate-700',
-        };
+    default => 'ring-2 ring-slate-300 border-slate-200 bg-slate-100 text-slate-700',
+};
 
-        /*
-         * Small Level badge attached to the avatar.
-         */
-        $levelBadgeBg = match (true) {
-            str_contains($tierName, 'expert') => 'bg-primary text-white',
-            str_contains($tierName, 'advanced') => 'bg-[#0EA5A4] text-white',
-            str_contains($tierName, 'intermediate') => 'bg-[#F5A623] text-white',
-            default => 'bg-slate-700 text-white',
+/*
+ * Small Level badge attached to the avatar.
+ */
+$levelBadgeBg = match (true) {
+    str_contains($tierName, 'expert') => 'bg-primary text-white',
+    str_contains($tierName, 'advanced') => 'bg-[#0EA5A4] text-white',
+    str_contains($tierName, 'intermediate') => 'bg-[#F5A623] text-white',
+    default => 'bg-slate-700 text-white',
         };
     @endphp
 
@@ -187,17 +250,8 @@
                             <div>
                                 <span class="block font-display text-xl font-extrabold tracking-tight text-slate-900">
                                     CitiRx
-                                <div class="sakura-branch sakura-branch-left">
-                                    <span class="sakura-blossom" style="top: 30%; left: 29%; --blossom-size: 38px;"></span>
-                                    <span class="sakura-blossom" style="top: 48%; left: 53%; --blossom-size: 30px;"></span>
-                                    <span class="sakura-blossom" style="top: 14%; left: 68%; --blossom-size: 34px;"></span>
-                                </div>
-                                <div class="sakura-branch sakura-branch-right">
-                                    <span class="sakura-blossom" style="top: 27%; left: 22%; --blossom-size: 34px;"></span>
-                                    <span class="sakura-blossom" style="top: 51%; left: 47%; --blossom-size: 30px;"></span>
-                                    <span class="sakura-blossom" style="top: 12%; left: 67%; --blossom-size: 40px;"></span>
-                                </div>
                                 </span>
+
                                 <span class="block text-[10px] font-bold uppercase tracking-wider text-muted-ink">
                                     PhLE Adaptive Prep
                                 </span>
