@@ -253,6 +253,8 @@
                 </div>
             </div>
 
+            <x-study-plan :recommendation="$studyRecommendation" />
+
             {{-- ACTION BUTTONS --}}
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
                 <a href="{{ route('practice.intro') }}" style="--lip: #4A2FC4;"

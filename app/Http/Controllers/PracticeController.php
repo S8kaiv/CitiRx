@@ -7,6 +7,7 @@ use App\Models\Question;
 use App\Models\TosDomain;
 use App\Services\BookmarkService;
 use App\Services\PracticeService;
+use App\Services\StudyRecommendationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -20,27 +21,23 @@ class PracticeController extends Controller
     public function __construct(
         protected PracticeService $practice,
         protected BookmarkService $bookmarks,
+        protected StudyRecommendationService $studyRecommendations,
     ) {}
 
     /**
      * Show the Practice Mode setup page.
      */
     public function intro(
-        Request $request
+        Request $request,
     ): View|RedirectResponse {
         $user = $request->user();
 
-        /*
-         * Practice Mode requires a completed diagnostic
-         * because the adaptive engine depends on the
-         * student's initial mastery states.
-         */
         if (! $user->is_diagnostic_completed) {
             return redirect()
                 ->route('diagnostic.intro')
                 ->with(
                     'status',
-                    'Complete the diagnostic test before starting practice.'
+                    'Complete the diagnostic test before starting practice.',
                 );
         }
 
@@ -48,10 +45,37 @@ class PracticeController extends Controller
             ->orderBy('domain_number')
             ->get();
 
+        $requestedLength =
+            $request->integer('length');
+
+        $selectedLength = in_array(
+            $requestedLength,
+            PracticeService::ALLOWED_LENGTHS,
+            true,
+        )
+            ? $requestedLength
+            : PracticeService::ALLOWED_LENGTHS[0];
+
+        $requestedDomainId =
+            $request->integer(
+                'domain_filter_id',
+            );
+
+        $selectedDomainId = $domains->contains(
+            fn (TosDomain $domain): bool => $domain->domain_id
+                === $requestedDomainId,
+        )
+            ? $requestedDomainId
+            : null;
+
         return view('practice.intro', [
             'domains' => $domains,
 
             'allowedLengths' => PracticeService::ALLOWED_LENGTHS,
+
+            'selectedLength' => $selectedLength,
+
+            'selectedDomainId' => $selectedDomainId,
         ]);
     }
 
@@ -688,11 +712,13 @@ class PracticeController extends Controller
          * rather than depending on an AssessmentSession
          * ->user relationship in the Blade view.
          */
+        $student =
+            $request->user();
+
+        $student->refresh();
+
         $readinessValue =
-            $request
-                ->user()
-                ->fresh()
-                ->predicted_readiness_pct;
+            $student->predicted_readiness_pct;
 
         $currentReadiness =
             $readinessValue !== null
@@ -721,6 +747,8 @@ class PracticeController extends Controller
                 'lastQuestion' => $lastQuestion,
 
                 'lastQuestionIsBookmarked' => $lastQuestionIsBookmarked,
+
+                'studyRecommendation' => $this->studyRecommendations->forUser($student),
             ]
         );
     }
