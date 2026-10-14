@@ -166,7 +166,7 @@
                 </div>
             </div>
 
-            {{-- Initial BKT Mastery Estimates --}}
+            {{-- Initial BKT Mastery Estimates (NEW COMPACT ACCORDION DESIGN) --}}
             <div class="rounded-3xl border-2 border-b-4 border-slate-200/90 bg-white p-6 sm:p-8 shadow-xs">
                 <div class="mb-5">
                     <h3 class="font-display text-lg font-bold text-slate-900">
@@ -178,39 +178,94 @@
                     </p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                    @foreach ($masteryResults as $result)
-                        @php
-                            $masteryPercentage = round(100 * $result['mastery']);
-                        @endphp
-                        <div
-                            class="flex flex-col justify-between rounded-2xl border-2 border-slate-200/80 bg-slate-50/60 p-4 transition-all hover:bg-slate-50">
-                            <div>
-                                <div class="flex items-center justify-between gap-2">
+                {{-- Accordion Container --}}
+                <div class="space-y-3">
+                    @foreach ($masteryResults->groupBy('domain_name') as $domainName => $domainResults)
+                        <section x-data="{
+                            expanded: @js($loop->first)
+                        }" x-id="['mastery-panel']"
+                            class="overflow-hidden rounded-2xl border-2 border-slate-100 bg-white transition duration-200"
+                            :class="expanded
+                                ?
+                                'border-primary/20 shadow-sm' :
+                                'hover:border-slate-200'">
+                            <button type="button" @click="expanded = !expanded" :aria-expanded="expanded.toString()"
+                                :aria-controls="$id('mastery-panel')"
+                                class="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-slate-50"
+                                :class="expanded
+                                    ?
+                                    'bg-primary-tint/30' :
+                                    ''">
+                                <span class="flex items-center gap-3">
                                     <span
-                                        class="text-[10px] font-bold uppercase tracking-wider text-clinical-ink line-clamp-1">
-                                        {{ $result['domain_name'] }}
+                                        class="font-display text-sm font-bold uppercase tracking-wider text-slate-800">
+                                        {{ $domainName }}
                                     </span>
-                                    <span class="font-mono text-[11px] text-muted-ink shrink-0">
-                                        {{ $result['correct'] }}/{{ $result['total'] }} items
+
+                                    <span
+                                        class="rounded-full bg-slate-200 px-2 py-0.5 font-mono text-[10px] font-bold text-slate-600">
+                                        {{ $domainResults->count() }}
+                                        Competencies
                                     </span>
-                                </div>
-
-                                <h4 class="mt-1 font-display text-sm font-bold text-slate-900 line-clamp-2">
-                                    {{ $result['competency_title'] }}
-                                </h4>
-                            </div>
-
-                            <div class="mt-3 pt-2 border-t border-slate-200/60 flex items-center justify-between gap-3">
-                                <div class="h-2 flex-1 overflow-hidden rounded-full bg-slate-200/70">
-                                    <div class="h-full rounded-full bg-primary"
-                                        style="width: {{ $masteryPercentage }}%"></div>
-                                </div>
-                                <span class="font-display text-xs font-black text-slate-900">
-                                    {{ $masteryPercentage }}%
                                 </span>
+
+                                <svg :class="expanded
+                                    ?
+                                    'rotate-180 text-primary' :
+                                    'text-slate-400'"
+                                    class="h-5 w-5 transform transition-transform duration-200" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </button>
+
+                            <div x-cloak x-show="expanded" :id="$id('mastery-panel')"
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 -translate-y-2"
+                                x-transition:enter-end="opacity-100 translate-y-0"
+                                class="border-t-2 border-slate-100 bg-slate-50/50 p-4">
+                                <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                    @foreach ($domainResults as $result)
+                                        @php
+                                            $masteryPercentage = round(100 * $result['mastery']);
+                                        @endphp
+
+                                        <div
+                                            class="flex items-center justify-between gap-4 rounded-xl border-2 border-slate-200/60 bg-white p-3 shadow-2xs">
+                                            <div class="min-w-0 flex-1">
+                                                <h5 class="truncate font-display text-xs font-bold text-slate-900"
+                                                    title="{{ $result['competency_title'] }}">
+                                                    {{ $result['competency_title'] }}
+                                                </h5>
+
+                                                <div class="mt-1.5 flex items-center gap-2.5">
+                                                    <div
+                                                        class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100 ring-1 ring-inset ring-slate-200/50">
+                                                        <div class="h-full rounded-full bg-primary"
+                                                            style="width: {{ $masteryPercentage }}%"></div>
+                                                    </div>
+
+                                                    <span
+                                                        class="w-8 text-right font-mono text-[10px] font-bold text-slate-600">
+                                                        {{ $masteryPercentage }}%
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                class="flex shrink-0 items-center justify-center rounded-lg border border-slate-100 bg-slate-50 px-2 py-1">
+                                                <span class="font-mono text-[9px] font-bold uppercase text-muted-ink">
+                                                    {{ $result['correct'] }}
+                                                    /
+                                                    {{ $result['total'] }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
                             </div>
-                        </div>
+                        </section>
                     @endforeach
                 </div>
             </div>
@@ -220,7 +275,8 @@
                 <a href="{{ route('dashboard') }}" style="--lip: #4A2FC4;"
                     class="btn-press w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-8 py-3.5 font-display text-sm font-bold text-white shadow-md transition hover:bg-primary/95">
                     <span>Return to Dashboard</span>
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+                        stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                     </svg>
                 </a>
