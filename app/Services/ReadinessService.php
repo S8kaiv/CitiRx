@@ -125,7 +125,11 @@ class ReadinessService
                 $competencyRows[] = [
                     'competency_id' => $competency->competency_id,
 
+                    'code' => $competency->competency_code,
+
                     'title' => $competency->title,
+
+                    'order_index' => $competency->order_index,
 
                     'mastery' => $mastery,
 

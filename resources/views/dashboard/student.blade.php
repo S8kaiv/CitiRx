@@ -134,7 +134,7 @@
                             <div class="flex items-center gap-2">
                                 <span
                                     class="inline-flex items-center rounded-full bg-white px-3 py-1 font-display text-xs font-bold text-primary shadow-sm ring-1 ring-primary/20">
-                                    Recommended Focus
+                                    Adaptive Practice
                                 </span>
                                 @if ($inProgressPractice)
                                     <span
@@ -166,6 +166,7 @@
                                 </a>
                             </div>
                         </section>
+                        <x-study-plan :recommendation="$studyRecommendation" />
                     @endif
 
                     {{-- MOBILE-ONLY LEVEL WIDGET (Appears first on mobile screens before Hub cards) --}}

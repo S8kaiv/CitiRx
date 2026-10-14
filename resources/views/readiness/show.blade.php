@@ -288,6 +288,7 @@
                     @endforeach
                 </div>
             </div>
+            <x-study-plan :recommendation="$studyRecommendation" />
 
             {{-- METHODOLOGY NOTE --}}
             <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4 text-xs text-muted-ink leading-relaxed">
