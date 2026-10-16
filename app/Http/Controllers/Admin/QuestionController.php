@@ -38,6 +38,18 @@ class QuestionController extends Controller
         );
 
         $query = Question::query()
+            ->select([
+                'question_id',
+                'competency_id',
+                'question_text',
+                'research_form',
+                'form_position',
+                'research_validated_at',
+                'research_validated_by',
+                'first_served_at',
+                'is_active',
+                'created_at',
+            ])
             ->with([
                 'competency' => fn ($query) => $query
                     ->select([
@@ -54,7 +66,6 @@ class QuestionController extends Controller
                         'domain_name',
                     ]),
             ]);
-
         if ($filters['form'] !== null) {
             $query->where(
                 'research_form',
@@ -78,17 +89,20 @@ class QuestionController extends Controller
             $filters['status'],
         );
 
-        if ($filters['q'] !== null && $filters['q'] !== '') {
+        if (filled($filters['q'])) {
             /*
-             * Bound value prevents SQL injection.
-             *
-             * This table currently contains a small question bank,
-             * so a LIKE search is appropriate for the first version.
-             */
+            * Treat %, _, and backslashes as literal search characters
+            * instead of allowing them to act as LIKE wildcards.
+            */
+            $search = addcslashes(
+                $filters['q'],
+                '\\%_',
+            );
+
             $query->where(
                 'question_text',
                 'like',
-                '%'.$filters['q'].'%',
+                "%{$search}%",
             );
         }
 
@@ -227,12 +241,8 @@ class QuestionController extends Controller
                 question: $question,
                 payload: $validated,
                 expectedVersion: (int)
-                    $validated[
-                        'edit_version'
-                    ],
-                reason: $validated[
-                    'change_reason'
-                ],
+                $validated['edit_version'],
+                reason: $validated['change_reason'],
             );
         } catch (
             LogicException
@@ -276,12 +286,8 @@ class QuestionController extends Controller
                         'active',
                     ),
                     expectedVersion: (int)
-                        $validated[
-                            'edit_version'
-                        ],
-                    reason: $validated[
-                        'change_reason'
-                    ],
+                    $validated['edit_version'],
+                    reason: $validated['change_reason'],
                 );
         } catch (
             LogicException

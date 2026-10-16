@@ -7,6 +7,7 @@ use App\Models\Badge;
 use App\Models\QuestionBookmark;
 use App\Models\RxVault;
 use App\Models\UserBadge;
+use App\Services\AdminDashboardService;
 use App\Services\ReadinessService;
 use App\Services\StudyRecommendationService;
 use Illuminate\Http\RedirectResponse;
@@ -18,6 +19,7 @@ class DashboardController extends Controller
     public function __construct(
         protected ReadinessService $readiness,
         protected StudyRecommendationService $studyRecommendations,
+        protected AdminDashboardService $adminDashboard,
     ) {}
 
     public function index(
@@ -26,7 +28,15 @@ class DashboardController extends Controller
         $user = $request->user();
 
         return match ($user->role) {
-            'admin' => view('dashboard.admin'),
+            'admin' => view(
+                'dashboard.admin',
+                array_merge(
+                    [
+                        'user' => $user,
+                    ],
+                    $this->adminDashboard->data(),
+                ),
+            ),
 
             'faculty' => redirect()->route(
                 'faculty.dashboard',

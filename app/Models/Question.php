@@ -138,7 +138,7 @@ class Question extends Model
             User::class,
             'research_validated_by',
             'user_id',
-        );
+        )->withTrashed();
     }
 
     public function edits(): HasMany
@@ -186,9 +186,9 @@ class Question extends Model
                 $becomingFrozen =
                     $question->first_served_at !== null
                     || $question->research_validated_at
-                        !== null
+                    !== null
                     || $question->research_validated_by
-                        !== null;
+                    !== null;
 
                 if (
                     ($wasFrozen || $becomingFrozen)
