@@ -552,14 +552,16 @@ class MockBoardService
         }
     }
 
-    private function cohortWindowIsOpen(User $user): bool
-    {
+    private function cohortWindowIsOpen(
+        User $user,
+    ): bool {
         $cohort = $user->cohort;
 
         if (
-            ! $cohort
-            || ! $cohort->post_test_opens_at
-            || ! $cohort->post_test_closes_at
+            $cohort === null
+            || $cohort->archived_at !== null
+            || $cohort->post_test_opens_at === null
+            || $cohort->post_test_closes_at === null
         ) {
             return false;
         }

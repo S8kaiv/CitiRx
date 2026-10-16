@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\CohortController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\ResearchAnalyticsController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\DashboardController;
@@ -514,6 +517,87 @@ Route::middleware([
         )->name(
             'questions.status',
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Administrator User Management
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/users',
+            [UserController::class, 'index'],
+        )->name('users.index');
+
+        Route::get(
+            '/users/{userId}/edit',
+            [UserController::class, 'edit'],
+        )
+            ->whereUuid('userId')
+            ->name('users.edit');
+
+        Route::put(
+            '/users/{userId}',
+            [UserController::class, 'update'],
+        )
+            ->whereUuid('userId')
+            ->name('users.update');
+
+        Route::delete(
+            '/users/{userId}',
+            [UserController::class, 'destroy'],
+        )
+            ->whereUuid('userId')
+            ->name('users.destroy');
+
+        Route::patch(
+            '/users/{userId}/restore',
+            [UserController::class, 'restore'],
+        )
+            ->whereUuid('userId')
+            ->name('users.restore');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Administrator Cohort Management
+        |--------------------------------------------------------------------------
+        */
+
+        Route::resource(
+            'cohorts',
+            CohortController::class,
+        )->except([
+            'destroy',
+        ]);
+
+        Route::patch(
+            '/cohorts/{cohort}/post-test-window',
+            [
+                CohortController::class,
+                'updatePostTestWindow',
+            ],
+        )->name('cohorts.post-test-window');
+
+        Route::patch(
+            '/cohorts/{cohort}/archive',
+            [CohortController::class, 'archive'],
+        )->name('cohorts.archive');
+
+        Route::patch(
+            '/cohorts/{cohort}/unarchive',
+            [CohortController::class, 'unarchive'],
+        )->name('cohorts.unarchive');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Administrator Audit History
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/audit-logs',
+            [AuditLogController::class, 'index'],
+        )->name('audit-logs.index');
     });
 
 require __DIR__.'/auth.php';
