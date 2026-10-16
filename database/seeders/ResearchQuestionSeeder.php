@@ -23,12 +23,12 @@ class ResearchQuestionSeeder extends Seeder
      */
     private const COMPONENT_QUOTAS = [
         Question::FORM_PRE_TEST_A => [
-            1 => ['PC-01' => 5, 'PC-02' => 4, 'PC-03' => 1],
+            1 => ['PC-01' => 4, 'PC-02' => 5, 'PC-03' => 1],
             2 => ['PB-01' => 5, 'PB-02' => 5],
             3 => ['PP-01' => 2, 'PP-02' => 4, 'PP-03' => 2, 'PP-04' => 2],
             4 => ['PK-01' => 6, 'PK-02' => 2, 'PK-03' => 2],
             5 => ['PH-01' => 3, 'PH-02' => 3, 'PH-03' => 2, 'PH-04' => 2],
-            6 => ['QC-01' => 3, 'QC-02' => 3, 'QC-03' => 2, 'QC-04' => 2],
+            6 => ['QC-01' => 3, 'QC-02' => 2, 'QC-03' => 3, 'QC-04' => 2],
         ],
 
         Question::FORM_POST_TEST_B => [
