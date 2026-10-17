@@ -105,6 +105,11 @@ body.theme-midnight
         .bg-white\/85,
         .bg-white\/90,
         .bg-white\/95,
+        .bg-gradient-to-br.from-primary-tint,
+        .bg-gradient-to-br.from-amber-50,
+        .bg-gradient-to-br.from-rose-50\/80,
+        .bg-gradient-to-br.from-amber-50\/80,
+        .bg-gradient-to-br.from-indigo-50\/80,
         .bg-slate-50,
         .bg-slate-100,
         .bg-slate-200,
@@ -121,6 +126,7 @@ body.theme-midnight
         .text-slate-800,
         .text-slate-700,
         .text-slate-600,
+        .text-slate-500,
         .text-muted-ink
     ) {
     color: #334155;
