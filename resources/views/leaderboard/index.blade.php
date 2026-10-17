@@ -1,11 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <h1 class="font-display text-xl font-black leading-tight text-slate-900">
+            <h2 class="font-display text-xl font-bold text-slate-900">
                 Leaderboard
-            </h1>
+            </h2>
 
-            <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
+            <p class="mt-1 text-xs text-slate-500">
                 Informational XP rankings within your cohort.
             </p>
         </div>

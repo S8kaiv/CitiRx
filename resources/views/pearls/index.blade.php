@@ -1,11 +1,15 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <h1 class="font-display text-xl font-black leading-tight text-slate-900">
+            <p class="font-display text-xs font-bold uppercase tracking-widest text-primary">
+                Quick Review Library
+            </p>
+
+            <h1 class="mt-1 font-display text-2xl font-extrabold text-slate-900">
                 Micro Pearls
             </h1>
 
-            <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
+            <p class="mt-1 text-sm text-muted-ink">
                 Short, reviewed lessons for focused PhLE recall.
             </p>
         </div>

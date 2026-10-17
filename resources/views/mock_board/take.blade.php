@@ -1,11 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <h1 class="font-display text-xl font-black leading-tight text-slate-900">
+            <h1 class="font-display text-lg font-black text-slate-900 sm:text-xl">
                 Research Post-Test
             </h1>
 
-            <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
+            <p class="font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
                 Form B · Timed Assessment
             </p>
         </div>

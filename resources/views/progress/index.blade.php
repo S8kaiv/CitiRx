@@ -2,10 +2,10 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="font-display text-xl font-black leading-tight text-slate-900">
+                <h1 class="font-display text-xl font-black text-slate-900 leading-tight">
                     {{ __('Level Progression') }}
                 </h1>
-                <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
+                <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
                     Experience & Tier Milestones
                 </p>
             </div>

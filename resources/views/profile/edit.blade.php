@@ -2,10 +2,10 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="font-display text-xl font-black leading-tight text-slate-900">
+                <h2 class="font-display text-xl font-black text-slate-900 leading-tight">
                     {{ __('Account Profile') }}
                 </h2>
-                <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
+                <p class="text-xs font-semibold uppercase tracking-wider text-muted-ink">
                     Manage Identity & Statistics
                 </p>
             </div>
