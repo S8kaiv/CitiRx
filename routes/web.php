@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\CohortController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\ResearchAnalyticsController;
+use App\Http\Controllers\Admin\ResearchFormController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\BookmarkController;
@@ -452,6 +453,16 @@ Route::middleware([
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        Route::get(
+            '/research-forms',
+            [
+                ResearchFormController::class,
+                'index',
+            ],
+        )->name(
+            'research-forms.index',
+        );
+
         Route::get(
             '/research-analytics',
             [

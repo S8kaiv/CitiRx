@@ -449,6 +449,21 @@ $levelBadgeBg = match (true) {
                                 <span>Question Bank</span>
                             </a>
 
+                            <a href="{{ route('admin.research-forms.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ request()->routeIs('admin.research-forms.*')
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <svg class="h-5 w-5 {{ request()->routeIs('admin.research-forms.*') ? 'text-primary' : 'text-slate-400' }}"
+                                    fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                    aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9 12h6m-6 4h6m2.25 5H6.75A2.25 2.25 0 0 1 4.5 18.75V5.25A2.25 2.25 0 0 1 6.75 3h6.879c.597 0 1.17.237 1.591.659l2.121 2.121c.422.422.659.994.659 1.591V18.75A2.25 2.25 0 0 1 17.25 21Z" />
+                                </svg>
+
+                                <span>Research Forms</span>
+                            </a>
+
                             <a href="{{ route('admin.users.index') }}"
                                 class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
                                     {{ request()->routeIs('admin.users.*')
@@ -622,6 +637,28 @@ $levelBadgeBg = match (true) {
                         </svg>
 
                         <span>Questions</span>
+                    </a>
+
+                    {{-- Research Form Readiness --}}
+                    <a href="{{ route('admin.research-forms.index') }}"
+                        class="flex min-w-[3.5rem] shrink-0 flex-col items-center gap-1
+                            {{ request()->routeIs('admin.research-forms.*') ? 'text-primary' : 'text-slate-500' }}">
+                        <svg
+                            class="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="2"
+                            stroke="currentColor"
+                            aria-hidden="true"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M9 12h6m-6 4h6m2.25 5H6.75A2.25 2.25 0 0 1 4.5 18.75V5.25A2.25 2.25 0 0 1 6.75 3h6.879c.597 0 1.17.237 1.591.659l2.121 2.121c.422.422.659.994.659 1.591V18.75A2.25 2.25 0 0 1 17.25 21Z"
+                            />
+                        </svg>
+
+                        <span>Forms</span>
                     </a>
 
                     {{-- User Management --}}
