@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Question;
 use App\Models\QuestionChoice;
+use App\Models\ResearchFormVersion;
 use App\Models\TosCompetency;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -178,6 +179,16 @@ class ResearchQuestionSeeder extends Seeder
 
         DB::transaction(function () use ($competencies): void {
             foreach (self::COMPONENT_QUOTAS as $form => $subjects) {
+                /*
+                * The version rows are created by the 4A migration.
+                * Questions must belong to the active version.
+                */
+                $formVersion = ResearchFormVersion::query()
+                    ->where('research_form', $form)
+                    ->where('is_active', true)
+                    ->where('active_slot', $form)
+                    ->firstOrFail();
+
                 $formPosition = 1;
 
                 foreach ($subjects as $subjectNumber => $componentQuotas) {
@@ -200,7 +211,7 @@ class ResearchQuestionSeeder extends Seeder
 
                             $this->seedMockQuestion(
                                 competency: $competency,
-                                form: $form,
+                                formVersion: $formVersion,
                                 formPosition: $formPosition,
                                 subjectNumber: $subjectNumber,
                                 componentItem: $componentItem,
@@ -213,7 +224,9 @@ class ResearchQuestionSeeder extends Seeder
                     }
                 }
 
-                $this->assertSeededForm($form);
+                $this->assertSeededForm(
+                    $formVersion,
+                );
             }
         });
 
@@ -224,12 +237,13 @@ class ResearchQuestionSeeder extends Seeder
 
     private function seedMockQuestion(
         TosCompetency $competency,
-        string $form,
+        ResearchFormVersion $formVersion,
         int $formPosition,
         int $subjectNumber,
         int $componentItem,
         string $cognitiveLevel,
     ): void {
+        $form = $formVersion->research_form;
         $formLabel = $form === Question::FORM_PRE_TEST_A
             ? 'Form A'
             : 'Form B';
@@ -254,19 +268,34 @@ class ResearchQuestionSeeder extends Seeder
 
         $question = Question::updateOrCreate(
             [
-                'research_form' => $form,
+                /*
+                * Position 1 may exist in v1 and v2, so the
+                * version ID must be part of the identity.
+                */
+                'form_version_id' => $formVersion->form_version_id,
+
                 'form_position' => $formPosition,
             ],
             [
+                'research_form' => $form,
+
                 'competency_id' => $competency->competency_id,
+
                 'question_text' => $questionText,
-                'hypercorrection_rationale' => 'Development-only placeholder rationale. Replace this entire item after Pharmacy faculty review and content validation.',
-                'is_diagnostic_pool' => $form === Question::FORM_PRE_TEST_A,
+
+                'hypercorrection_rationale' => 'Development-only placeholder rationale. '
+                    .'Replace this entire item after Pharmacy '
+                    .'faculty review and content validation.',
+
+                'is_diagnostic_pool' => $form
+                    === Question::FORM_PRE_TEST_A,
+
                 'cognitive_level' => $cognitiveLevel,
+
                 'difficulty_index_p' => null,
                 'speed_flag_count' => 0,
                 'is_active' => true,
-            ]
+            ],
         );
 
         $letters = ['A', 'B', 'C', 'D'];
@@ -350,10 +379,20 @@ class ResearchQuestionSeeder extends Seeder
         return $codes;
     }
 
-    private function assertSeededForm(string $form): void
-    {
+    private function assertSeededForm(
+        ResearchFormVersion $formVersion,
+    ): void {
+        $form = $formVersion->research_form;
+
         $questions = Question::query()
-            ->where('research_form', $form)
+            ->where(
+                'form_version_id',
+                $formVersion->form_version_id,
+            )
+            ->where(
+                'research_form',
+                $form,
+            )
             ->withCount([
                 'choices',
                 'choices as correct_choices_count' => fn ($query) => $query->where('is_correct', true),

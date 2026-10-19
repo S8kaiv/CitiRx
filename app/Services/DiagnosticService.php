@@ -84,7 +84,16 @@ class DiagnosticService
                 return $existingSession;
             }
 
-            $questions = $this->pickQuestions();
+            $formVersion = $this
+                ->researchForms
+                ->activeVersion(
+                    Question::FORM_PRE_TEST_A,
+                    lockForUpdate: true,
+                );
+
+            $questions = $this
+                ->researchForms
+                ->loadVersion($formVersion);
 
             $startedAt = now();
 
@@ -93,9 +102,9 @@ class DiagnosticService
                 'session_type' => 'diagnostic',
                 'research_phase' => 'pre_test',
 
-                'exam_form_version' => config(
-                    'citirx.research.pre_test_form_version',
-                ),
+                'form_version_id' => $formVersion->form_version_id,
+
+                'exam_form_version' => $formVersion->version_code,
 
                 'served_question_ids' => $questions
                     ->pluck('question_id')
@@ -117,6 +126,15 @@ class DiagnosticService
                 $questions->pluck(
                     'question_id',
                 ),
+                $startedAt,
+            );
+
+            /*
+            * Record when this complete research-form version
+            * was first used by a student.
+            */
+            $this->researchForms->markServed(
+                $formVersion,
                 $startedAt,
             );
 
