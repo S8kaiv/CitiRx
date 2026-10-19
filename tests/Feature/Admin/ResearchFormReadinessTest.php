@@ -1,9 +1,11 @@
 <?php
 
 use App\Models\Question;
+use App\Models\ResearchFormVersion;
 use App\Models\TosCompetency;
 use App\Models\User;
 use App\Services\ResearchFormAuditService;
+use App\Services\ResearchFormService;
 use Database\Seeders\ResearchQuestionSeeder;
 use Database\Seeders\TosSeeder;
 use Illuminate\Support\Facades\DB;
@@ -261,6 +263,22 @@ it('distinguishes a ready content gate from a served locked form', function (): 
             'research_validated_by' => $validator->user_id,
         ]);
 
+    $formVersion = ResearchFormVersion::query()
+        ->where(
+            'research_form',
+            Question::FORM_PRE_TEST_A,
+        )
+        ->where('is_active', true)
+        ->where(
+            'active_slot',
+            Question::FORM_PRE_TEST_A,
+        )
+        ->firstOrFail();
+
+    $formVersion->update([
+        'status' => ResearchFormVersion::STATUS_VALIDATED,
+    ]);
+
     $service = app(
         ResearchFormAuditService::class,
     );
@@ -274,7 +292,16 @@ it('distinguishes a ready content gate from a served locked form', function (): 
         ->toBe(
             ResearchFormAuditService::STATUS_READY,
         )
-        ->and($ready['content_gate_ready'])->toBeTrue();
+        ->and($ready['version_status'])
+        ->toBe(
+            ResearchFormVersion::STATUS_VALIDATED,
+        )
+        ->and($ready['version_is_bound'])
+        ->toBeTrue()
+        ->and($ready['content_gate_ready'])
+        ->toBeTrue();
+
+    $servedAt = now();
 
     DB::table('questions')
         ->where(
@@ -282,19 +309,48 @@ it('distinguishes a ready content gate from a served locked form', function (): 
             $questions->firstOrFail()->question_id,
         )
         ->update([
-            'first_served_at' => now(),
+            'first_served_at' => $servedAt,
         ]);
+
+    DB::transaction(
+        function () use (
+            $formVersion,
+            $servedAt,
+        ): void {
+            app(
+                ResearchFormService::class,
+            )->markServed(
+                $formVersion,
+                $servedAt,
+            );
+        },
+    );
 
     $locked = $service->audit(
         Question::FORM_PRE_TEST_A,
         requireValidation: true,
     );
 
-    expect($locked['served_questions'])->toBe(1)
+    expect($locked['served_questions'])
+        ->toBe(1)
         ->and($locked['status']['key'])
         ->toBe(
             ResearchFormAuditService::STATUS_LOCKED,
-        );
+        )
+        ->and(
+            $formVersion
+                ->fresh()
+                ->status,
+        )
+        ->toBe(
+            ResearchFormVersion::STATUS_PUBLISHED,
+        )
+        ->and(
+            $formVersion
+                ->fresh()
+                ->first_served_at,
+        )
+        ->not->toBeNull();
 });
 
 it('uses the shared report for the CLI and administrator page', function (): void {
@@ -319,9 +375,7 @@ it('uses the shared report for the CLI and administrator page', function (): voi
         ->assertOk()
         ->assertViewHas(
             'reports',
-            fn (array $reports): bool => $reports[
-                    Question::FORM_PRE_TEST_A
-                ]['errors'] === $expected['errors'],
+            fn (array $reports): bool => $reports[Question::FORM_PRE_TEST_A]['errors'] === $expected['errors'],
         );
 
     $this->artisan(

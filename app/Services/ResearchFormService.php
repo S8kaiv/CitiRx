@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\Question;
+use App\Models\ResearchFormVersion;
 use App\Models\TosDomain;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
@@ -17,19 +19,57 @@ class ResearchFormService
 
     public const TOTAL_ITEMS = 60;
 
+    public function activeVersion(
+        string $form,
+        bool $lockForUpdate = false,
+    ): ResearchFormVersion {
+        $this->assertKnownForm($form);
+
+        $query = ResearchFormVersion::query()
+            ->where('research_form', $form)
+            ->where('is_active', true)
+            ->where('active_slot', $form);
+
+        if ($lockForUpdate) {
+            $query->lockForUpdate();
+        }
+
+        $version = $query->first();
+
+        if (! $version) {
+            throw new RuntimeException(
+                "No active version exists for {$form}.",
+            );
+        }
+
+        return $version;
+    }
+
     /**
      * @return Collection<int, Question>
      */
     public function load(
-        string $form
+        string $form,
     ): Collection {
-        $this->assertKnownForm($form);
+        return $this->loadVersion(
+            $this->activeVersion($form),
+        );
+    }
 
-        $questions = $this->query($form)
+    /**
+     * @return Collection<int, Question>
+     */
+    public function loadVersion(
+        ResearchFormVersion $version,
+    ): Collection {
+        $this->assertKnownForm(
+            $version->research_form,
+        );
+
+        $questions = $this->query($version)
             ->with([
-                'choices' => fn ($query) => $query->orderBy(
-                    'choice_letter'
-                ),
+                'choices' => fn ($query) => $query
+                    ->orderBy('choice_letter'),
 
                 'competency.domain',
             ])
@@ -37,25 +77,25 @@ class ResearchFormService
             ->get();
 
         $this->assertBlueprint(
-            $form,
+            $version->research_form,
             $questions,
         );
 
         return $questions;
     }
 
-    /**
-     * Uses two queries:
-     *
-     * 1. One grouped question count.
-     * 2. One query for all subjects.
-     */
     public function availability(
-        string $form
+        string $form,
     ): Collection {
-        $this->assertKnownForm($form);
+        return $this->availabilityForVersion(
+            $this->activeVersion($form),
+        );
+    }
 
-        $counts = $this->query($form)
+    public function availabilityForVersion(
+        ResearchFormVersion $version,
+    ): Collection {
+        $counts = $this->query($version)
             ->join(
                 'tos_competencies',
                 'tos_competencies.competency_id',
@@ -64,10 +104,10 @@ class ResearchFormService
             )
             ->selectRaw(
                 'tos_competencies.domain_id, '
-                    .'COUNT(*) AS available'
+                    .'COUNT(*) AS available',
             )
             ->groupBy(
-                'tos_competencies.domain_id'
+                'tos_competencies.domain_id',
             )
             ->pluck(
                 'available',
@@ -83,67 +123,88 @@ class ResearchFormService
             ->orderBy('domain_number')
             ->get()
             ->map(
-                fn (TosDomain $domain) => [
+                fn (TosDomain $domain): array => [
                     'domain_id' => $domain->domain_id,
-
                     'domain_number' => $domain->domain_number,
-
                     'domain_name' => $domain->domain_name,
-
                     'available' => (int) (
-                        $counts[
-                            $domain->domain_id
-                        ] ?? 0
+                        $counts[$domain->domain_id] ?? 0
                     ),
-
                     'required' => self::ITEMS_PER_SUBJECT,
-                ]
+                ],
             );
     }
 
+    public function markServed(
+        ResearchFormVersion $version,
+        CarbonInterface $servedAt,
+    ): void {
+        $lockedVersion = ResearchFormVersion::query()
+            ->whereKey($version->form_version_id)
+            ->lockForUpdate()
+            ->firstOrFail();
+
+        if (
+            $lockedVersion->first_served_at === null
+            || $servedAt->lt(
+                $lockedVersion->first_served_at,
+            )
+        ) {
+            $lockedVersion->first_served_at =
+                $servedAt;
+        }
+
+        if (
+            $lockedVersion->status
+            === ResearchFormVersion::STATUS_VALIDATED
+        ) {
+            $lockedVersion->status =
+                ResearchFormVersion::STATUS_PUBLISHED;
+        }
+
+        $lockedVersion->save();
+    }
+
     private function query(
-        string $form
+        ResearchFormVersion $version,
     ): Builder {
         return Question::query()
             ->where(
-                'research_form',
-                $form
+                'form_version_id',
+                $version->form_version_id,
             )
             ->where(
-                'is_active',
-                true
+                'research_form',
+                $version->research_form,
             )
+            ->where('is_active', true)
             ->when(
                 $this->requiresValidatedItems(),
-
-                fn (Builder $query) => $query
+                fn (Builder $query): Builder => $query
                     ->whereNotNull(
-                        'research_validated_at'
+                        'research_validated_at',
                     )
                     ->whereNotNull(
-                        'research_validated_by'
-                    )
+                        'research_validated_by',
+                    ),
             );
     }
 
     private function requiresValidatedItems(): bool
     {
-        $localOverride =
-            app()->environment(
-                'local',
-                'testing',
-            )
-            && config(
-                'citirx.research.'
-                    .'allow_unvalidated_forms',
-                false,
-            );
+        $localOverride = app()->environment(
+            'local',
+            'testing',
+        ) && config(
+            'citirx.research.allow_unvalidated_forms',
+            false,
+        );
 
         return ! $localOverride;
     }
 
     private function assertKnownForm(
-        string $form
+        string $form,
     ): void {
         if (
             ! in_array(
@@ -156,7 +217,7 @@ class ResearchFormService
             )
         ) {
             throw new InvalidArgumentException(
-                "Unknown research form: {$form}"
+                "Unknown research form: {$form}",
             );
         }
     }
@@ -172,14 +233,14 @@ class ResearchFormService
             throw new RuntimeException(
                 "{$form} requires exactly 60 "
                     .'active and approved questions; '
-                    ."found {$questions->count()}."
+                    ."found {$questions->count()}.",
             );
         }
 
         $positions = $questions
             ->pluck('form_position')
             ->map(
-                fn ($position) => (int) $position
+                fn (mixed $position): int => (int) $position,
             )
             ->sort()
             ->values()
@@ -187,21 +248,18 @@ class ResearchFormService
 
         if (
             $positions
-            !== range(
-                1,
-                self::TOTAL_ITEMS
-            )
+            !== range(1, self::TOTAL_ITEMS)
         ) {
             throw new RuntimeException(
                 "{$form} positions must uniquely "
-                    .'cover 1 through 60.'
+                    .'cover 1 through 60.',
             );
         }
 
         $perSubject = $questions->groupBy(
-            fn (Question $question) => $question
+            fn (Question $question): string => (string) $question
                 ->competency
-                ->domain_id
+                ->domain_id,
         );
 
         if (
@@ -209,44 +267,35 @@ class ResearchFormService
             !== self::SUBJECT_COUNT
         ) {
             throw new RuntimeException(
-                "{$form} must cover all "
-                    .'six subjects.'
+                "{$form} must cover all six subjects.",
             );
         }
 
-        foreach (
-            $perSubject as $subjectQuestions
-        ) {
+        foreach ($perSubject as $subjectQuestions) {
             if (
                 $subjectQuestions->count()
                 !== self::ITEMS_PER_SUBJECT
             ) {
                 throw new RuntimeException(
                     "{$form} requires exactly "
-                        .'10 items per subject.'
+                        .'10 items per subject.',
                 );
             }
         }
 
         foreach ($questions as $question) {
-            $correctChoices = $question
-                ->choices
-                ->where(
-                    'is_correct',
-                    true
-                )
-                ->count();
-
             if (
                 $question->choices->count() !== 4
-                || $correctChoices !== 1
+                || $question
+                    ->choices
+                    ->where('is_correct', true)
+                    ->count() !== 1
             ) {
                 throw new RuntimeException(
                     'Question '
                         ."{$question->question_id} "
-                        .'must have four choices '
-                        .'and exactly one correct '
-                        .'answer.'
+                        .'must have four choices and '
+                        .'exactly one correct answer.',
                 );
             }
         }

@@ -11,10 +11,8 @@
                 </h2>
             </div>
 
-            <a
-                href="{{ route('dashboard') }}"
-                class="rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
-            >
+            <a href="{{ route('dashboard') }}"
+                class="rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
                 Back to Dashboard
             </a>
         </div>
@@ -32,19 +30,16 @@
                     <code class="rounded bg-white px-1.5 py-0.5 text-xs">
                         research:audit-forms
                     </code>
-                    command use the same audit service.
-                    “Ready for pilot” currently confirms the legacy content
-                    gate only. Proper question-version binding and official
-                    pilot controls must still be completed before data
-                    collection.
+                    command use the same audit service. Each research
+                    question is now bound to a registered form version.
+                    “Ready for pilot” confirms the content and version
+                    gate; official pilot controls must still be completed
+                    before formal data collection.
                 </p>
             </section>
 
             @if ($developmentOverrideConfigured)
-                <div
-                    role="alert"
-                    class="rounded-3xl border-2 border-amber-300 bg-amber-50 p-5 text-amber-900"
-                >
+                <div role="alert" class="rounded-3xl border-2 border-amber-300 bg-amber-50 p-5 text-amber-900">
                     <p class="font-display font-extrabold">
                         Development override is enabled
                     </p>
@@ -126,7 +121,8 @@
                                         Placeholders
                                     </dt>
 
-                                    <dd class="mt-1 text-xl font-extrabold {{ $report['placeholders'] > 0 ? 'text-amber-700' : 'text-emerald-700' }}">
+                                    <dd
+                                        class="mt-1 text-xl font-extrabold {{ $report['placeholders'] > 0 ? 'text-amber-700' : 'text-emerald-700' }}">
                                         {{ $report['placeholders'] }}
                                     </dd>
                                 </div>
@@ -154,7 +150,8 @@
                                         $checks = [
                                             'Positions 1–60' => $report['positions_complete'],
                                             'Six domains × 10' => $report['domains_matching'] === 6,
-                                            'Competency blueprint' => $report['competencies_matching'] === count($report['competency_rows']),
+                                            'Competency blueprint' =>
+                                                $report['competencies_matching'] === count($report['competency_rows']),
                                             'Choice structures' => $report['invalid_choice_structures'] === 0,
                                             'Stems and choices' => $report['missing_stems_or_choices'] === 0,
                                             'Rationales' => $report['missing_rationales'] === 0,
@@ -165,7 +162,8 @@
                                     @endphp
 
                                     @foreach ($checks as $label => $passes)
-                                        <div class="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-3 py-2">
+                                        <div
+                                            class="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-3 py-2">
                                             <dt class="text-slate-600">
                                                 {{ $label }}
                                             </dt>
@@ -187,9 +185,7 @@
                                     @if ($report['first_served_at'])
                                         First served:
                                         <strong class="text-slate-900">
-                                            {{ \Illuminate\Support\Carbon::parse(
-                                                $report['first_served_at'],
-                                            )->timezone(config('app.timezone'))->format('M j, Y g:i A') }}
+                                            {{ \Illuminate\Support\Carbon::parse($report['first_served_at'])->timezone(config('app.timezone'))->format('M j, Y g:i A') }}
                                         </strong>
                                     @else
                                         This form has not been served.
@@ -234,7 +230,8 @@
                                                         {{ $domain['actual'] }}
                                                     </td>
 
-                                                    <td class="px-3 py-2 text-right font-bold {{ $domain['matches'] ? 'text-emerald-700' : 'text-red-700' }}">
+                                                    <td
+                                                        class="px-3 py-2 text-right font-bold {{ $domain['matches'] ? 'text-emerald-700' : 'text-red-700' }}">
                                                         {{ $domain['matches'] ? 'Match' : 'Mismatch' }}
                                                     </td>
                                                 </tr>
@@ -280,7 +277,8 @@
                                                         {{ $competency['actual'] }}
                                                     </td>
 
-                                                    <td class="px-3 py-2 text-right font-bold {{ $competency['matches'] ? 'text-emerald-700' : 'text-red-700' }}">
+                                                    <td
+                                                        class="px-3 py-2 text-right font-bold {{ $competency['matches'] ? 'text-emerald-700' : 'text-red-700' }}">
                                                         {{ $competency['matches'] ? 'Match' : 'Mismatch' }}
                                                     </td>
                                                 </tr>
@@ -296,13 +294,15 @@
                                 </h4>
 
                                 @if ($report['errors'] === [])
-                                    <div class="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
+                                    <div
+                                        class="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
                                         No content or validation errors were found.
                                     </div>
                                 @else
                                     <ul class="mt-3 space-y-2">
                                         @foreach ($report['errors'] as $error)
-                                            <li class="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-800">
+                                            <li
+                                                class="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-800">
                                                 {{ $error }}
                                             </li>
                                         @endforeach

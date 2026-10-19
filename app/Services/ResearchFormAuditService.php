@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Question;
+use App\Models\ResearchFormVersion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
@@ -73,36 +74,66 @@ class ResearchFormAuditService
     }
 
     /**
-     * Load both forms together to avoid running the same relationship
-     * queries separately for Form A and Form B.
+     * Load both active versions together and audit only the
+     * questions belonging to those versions.
      *
      * @return array<string, array<string, mixed>>
      */
     public function auditAll(
         bool $requireValidation = true,
     ): array {
-        $questionsByForm = $this->baseQuery()
+        $versions = ResearchFormVersion::query()
             ->whereIn(
                 'research_form',
-                array_keys(self::FORM_DEFINITIONS),
+                array_keys(
+                    self::FORM_DEFINITIONS,
+                ),
             )
-            ->orderBy('research_form')
-            ->orderBy('form_position')
+            ->where('is_active', true)
+            ->whereNotNull('active_slot')
             ->get()
-            ->groupBy('research_form');
+            ->keyBy('research_form');
+
+        $versionIds = $versions
+            ->pluck('form_version_id')
+            ->values();
+
+        /*
+     * Load the questions for both versions together. This preserves
+     * the existing efficient eager-loading behavior and avoids one
+     * complete query set per form.
+     */
+        $questionsByVersion = $versionIds->isEmpty()
+            ? collect()
+            : $this->baseQuery()
+                ->whereIn(
+                    'form_version_id',
+                    $versionIds->all(),
+                )
+                ->orderBy('research_form')
+                ->orderBy('form_position')
+                ->get()
+                ->groupBy('form_version_id');
 
         $reports = [];
 
         foreach (
             self::FORM_DEFINITIONS as $form => $definition
         ) {
-            $reports[$form] = $this->buildReport(
-                $form,
-                $questionsByForm->get(
-                    $form,
+            $version = $versions->get($form);
+
+            $questions = $version
+                ? $questionsByVersion->get(
+                    $version->form_version_id,
                     collect(),
-                ),
-                $requireValidation,
+                )
+                : collect();
+
+            $reports[$form] = $this->buildReport(
+                form: $form,
+                questions: $questions,
+                requireValidation: $requireValidation,
+                version: $version,
             );
         }
 
@@ -110,6 +141,8 @@ class ResearchFormAuditService
     }
 
     /**
+     * Audit the currently active version of one form.
+     *
      * @return array<string, mixed>
      */
     public function audit(
@@ -118,15 +151,60 @@ class ResearchFormAuditService
     ): array {
         $this->assertKnownForm($form);
 
-        $questions = $this->baseQuery()
+        $version = ResearchFormVersion::query()
             ->where('research_form', $form)
+            ->where('is_active', true)
+            ->where('active_slot', $form)
+            ->first();
+
+        if (! $version) {
+            return $this->buildReport(
+                form: $form,
+                questions: collect(),
+                requireValidation: $requireValidation,
+                version: null,
+            );
+        }
+
+        return $this->auditVersion(
+            $version,
+            $requireValidation,
+        );
+    }
+
+    /**
+     * Audit a specific active or draft version.
+     *
+     * This method will also be used by the 4B workflow before a version
+     * can move into review, validation, or publication.
+     *
+     * @return array<string, mixed>
+     */
+    public function auditVersion(
+        ResearchFormVersion $version,
+        bool $requireValidation = true,
+    ): array {
+        $this->assertKnownForm(
+            $version->research_form,
+        );
+
+        $questions = $this->baseQuery()
+            ->where(
+                'form_version_id',
+                $version->form_version_id,
+            )
+            ->where(
+                'research_form',
+                $version->research_form,
+            )
             ->orderBy('form_position')
             ->get();
 
         return $this->buildReport(
-            $form,
-            $questions,
-            $requireValidation,
+            form: $version->research_form,
+            questions: $questions,
+            requireValidation: $requireValidation,
+            version: $version,
         );
     }
 
@@ -139,6 +217,7 @@ class ResearchFormAuditService
                 'question_text',
                 'hypercorrection_rationale',
                 'research_form',
+                'form_version_id',
                 'form_position',
                 'cognitive_level',
                 'research_validated_at',
@@ -162,6 +241,7 @@ class ResearchFormAuditService
         string $form,
         Collection $questions,
         bool $requireValidation,
+        ?ResearchFormVersion $version = null,
     ): array {
         $definition = self::FORM_DEFINITIONS[$form];
         $blueprint = self::BLUEPRINTS[$form];
@@ -170,6 +250,25 @@ class ResearchFormAuditService
         $validationErrors = [];
 
         $activeCount = $questions->count();
+
+        /*
+        * An empty collection must not pass Collection::every()
+        * accidentally, so isNotEmpty() is checked explicitly.
+        */
+        $versionIsBound = $version !== null
+            && $questions->isNotEmpty()
+            && $questions->every(
+                fn (Question $question): bool => $question->form_version_id
+                    === $version->form_version_id
+                    && $question->research_form
+                    === $version->research_form,
+            );
+
+        if (! $versionIsBound) {
+            $structuralErrors[] =
+                'Questions are not bound to one '
+                .'registered form version.';
+        }
 
         if ($activeCount !== ResearchFormService::TOTAL_ITEMS) {
             $structuralErrors[] =
@@ -511,11 +610,25 @@ class ResearchFormAuditService
             ]),
         );
 
-        $expectedVersion = (string) config(
-            $definition['version_config'],
-        );
+        $expectedVersion =
+            $version?->version_code
+            ?? 'Missing active version';
+
+        $versionStatusReady = $version !== null
+            && in_array(
+                $version->status,
+                [
+                    ResearchFormVersion::STATUS_VALIDATED,
+                    ResearchFormVersion::STATUS_PUBLISHED,
+                ],
+                true,
+            );
 
         $metrics = [
+            'Form version' => $expectedVersion,
+            'Version binding' => $versionIsBound
+                ? 'Pass'
+                : 'Fail',
             'Active questions' => "{$activeCount}/60",
             'Fully validated' => "{$fullyValidated}/60",
             'Placeholders' => $placeholders->count(),
@@ -540,12 +653,17 @@ class ResearchFormAuditService
             'label' => $definition['label'],
             'expected_version' => $expectedVersion,
 
-            /*
-             * Current question rows are not version-bound.
-             * Phase 4 will replace this legacy indicator.
-             */
-            'version_binding' => 'Legacy configuration label',
-            'version_is_bound' => false,
+            'form_version_id' => $version?->form_version_id,
+
+            'version_number' => $version?->version_number,
+
+            'version_status' => $version?->status ?? 'missing',
+
+            'version_binding' => $versionIsBound
+                ? $expectedVersion
+                : 'Missing or inconsistent version binding',
+
+            'version_is_bound' => $versionIsBound,
 
             'active_questions' => $activeCount,
             'required_questions' => ResearchFormService::TOTAL_ITEMS,
@@ -573,10 +691,14 @@ class ResearchFormAuditService
             'validation_complete' => $validationComplete,
 
             /*
-             * This is only the current content gate.
-             * Official opening also requires Phase 4 and Phase 5.
-             */
-            'content_gate_ready' => $structurallyValid
+            * This confirms the content and version gate.
+            * Official pilot opening still requires the later
+            * pilot-control workflow.
+            */
+            'content_gate_ready' => $versionIsBound
+                && $versionStatusReady
+                && $version?->is_active === true
+                && $structurallyValid
                 && $validationComplete
                 && ! $overrideConfigured,
 
