@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Question;
+use App\Models\ResearchFormVersion;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -24,8 +25,8 @@ class ResearchAttemptEligibilityService
      * @return array<string, mixed>
      */
     public function dataset(
-        string $preTestVersion,
-        string $postTestVersion,
+        ResearchFormVersion $preTestVersion,
+        ResearchFormVersion $postTestVersion,
     ): array {
         $preCandidates = $this->candidateSessions(
             sessionType: 'diagnostic',
@@ -41,14 +42,12 @@ class ResearchAttemptEligibilityService
             candidates: $preCandidates,
             phase: 'pre_test',
             expectedVersion: $preTestVersion,
-            expectedForm: Question::FORM_PRE_TEST_A,
         );
 
         [$eligiblePost, $postStats] = $this->eligibleSessions(
             candidates: $postCandidates,
             phase: 'post_test',
             expectedVersion: $postTestVersion,
-            expectedForm: Question::FORM_POST_TEST_B,
         );
 
         /*
@@ -124,8 +123,8 @@ class ResearchAttemptEligibilityService
                 ),
 
                 'readiness_snapshot_pct' => $post->readiness_snapshot_pct === null
-                        ? null
-                        : (float) $post->readiness_snapshot_pct,
+                    ? null
+                    : (float) $post->readiness_snapshot_pct,
 
                 'submission_reason' => $post->submission_reason,
 
@@ -220,6 +219,7 @@ class ResearchAttemptEligibilityService
             ->get([
                 's.session_id',
                 's.user_id',
+                's.form_version_id',
                 's.exam_form_version',
                 's.served_question_ids',
                 's.target_length',
@@ -241,8 +241,7 @@ class ResearchAttemptEligibilityService
     private function eligibleSessions(
         Collection $candidates,
         string $phase,
-        string $expectedVersion,
-        string $expectedForm,
+        ResearchFormVersion $expectedVersion,
     ): array {
         $stats = [
             'missing_version' => 0,
@@ -254,17 +253,39 @@ class ResearchAttemptEligibilityService
         $versionMatches = collect();
 
         foreach ($candidates as $session) {
-            $actualVersion = trim(
-                (string) ($session->exam_form_version ?? ''),
+            $actualVersionId = trim(
+                (string) (
+                    $session->form_version_id
+                    ?? ''
+                ),
             );
 
-            if ($actualVersion === '') {
+            $actualVersionCode = trim(
+                (string) (
+                    $session->exam_form_version
+                    ?? ''
+                ),
+            );
+
+            /*
+         * Both values are required. The ID is authoritative, while
+         * the code is retained as readable historical metadata.
+         */
+            if (
+                $actualVersionId === ''
+                || $actualVersionCode === ''
+            ) {
                 $stats['missing_version']++;
 
                 continue;
             }
 
-            if ($actualVersion !== $expectedVersion) {
+            if (
+                $actualVersionId
+                !== $expectedVersion->form_version_id
+                || $actualVersionCode
+                !== $expectedVersion->version_code
+            ) {
                 $stats['wrong_version']++;
 
                 continue;
@@ -292,7 +313,7 @@ class ResearchAttemptEligibilityService
                 session: $session,
                 rows: $rows,
                 phase: $phase,
-                expectedForm: $expectedForm,
+                expectedVersion: $expectedVersion,
             );
 
             if ($reasons !== []) {
@@ -300,18 +321,22 @@ class ResearchAttemptEligibilityService
 
                 foreach ($reasons as $reason) {
                     $stats['integrity_reasons'][$reason] =
-                        ($stats['integrity_reasons'][$reason] ?? 0)
-                        + 1;
+                        (
+                            $stats['integrity_reasons'][$reason]
+                            ?? 0
+                        ) + 1;
                 }
 
                 continue;
             }
 
-            $session->response_rows = $rows->count();
+            $session->response_rows =
+                $rows->count();
 
             $session->answered_items = $rows
                 ->filter(
-                    fn (object $row): bool => $row->selected_choice_id !== null,
+                    fn (object $row): bool => $row->selected_choice_id
+                        !== null,
                 )
                 ->count();
 
@@ -387,7 +412,10 @@ class ResearchAttemptEligibilityService
                     'r.is_correct as response_is_correct',
 
                     'q.competency_id as question_competency_id',
+
                     'q.research_form as question_research_form',
+
+                    'q.form_version_id as question_form_version_id',
 
                     'd.domain_id',
                     'd.domain_number',
@@ -438,6 +466,7 @@ class ResearchAttemptEligibilityService
 
                 'q.competency_id as question_competency_id',
                 'q.research_form as question_research_form',
+                'q.form_version_id as question_form_version_id',
 
                 'd.domain_id',
                 'd.domain_number',
@@ -454,7 +483,7 @@ class ResearchAttemptEligibilityService
         object $session,
         Collection $rows,
         string $phase,
-        string $expectedForm,
+        ResearchFormVersion $expectedVersion,
     ): array {
         $reasons = [];
 
@@ -561,10 +590,25 @@ class ResearchAttemptEligibilityService
         if (
             $rows->contains(
                 fn (object $row): bool => (string) $row->question_research_form
-                    !== $expectedForm,
+                    !== $expectedVersion->research_form,
             )
         ) {
             $reasons[] = 'wrong_question_form';
+        }
+
+        /*
+        * A question may belong to the correct general form while still
+        * belonging to the wrong immutable version. This prevents mixing
+        * Form A v1 questions with Form A v2 questions.
+        */
+        if (
+            $rows->contains(
+                fn (object $row): bool => (string) $row->question_form_version_id
+                    !== $expectedVersion->form_version_id,
+            )
+        ) {
+            $reasons[] =
+                'wrong_question_form_version';
         }
 
         $domainCounts = $rows->countBy(
@@ -594,7 +638,7 @@ class ResearchAttemptEligibilityService
             if (
                 $phase === 'pre_test'
                 && (string) $row->response_user_id
-                    !== (string) $session->user_id
+                !== (string) $session->user_id
             ) {
                 $reasons[] = 'response_user_mismatch';
             }
@@ -602,7 +646,7 @@ class ResearchAttemptEligibilityService
             if (
                 $phase === 'pre_test'
                 && (string) $row->response_competency_id
-                    !== (string) $row->question_competency_id
+                !== (string) $row->question_competency_id
             ) {
                 $reasons[] = 'response_competency_mismatch';
             }
@@ -636,7 +680,7 @@ class ResearchAttemptEligibilityService
             if (
                 $row->selected_choice_question_id === null
                 || (string) $row->selected_choice_question_id
-                    !== (string) $row->question_id
+                !== (string) $row->question_id
             ) {
                 $reasons[] =
                     'selected_choice_question_mismatch';
@@ -648,7 +692,7 @@ class ResearchAttemptEligibilityService
                 $row->response_is_correct === null
                 || $row->selected_choice_is_correct === null
                 || (int) $row->response_is_correct
-                    !== (int) $row->selected_choice_is_correct
+                !== (int) $row->selected_choice_is_correct
             ) {
                 $reasons[] =
                     'incorrect_answer_key_result';
@@ -664,7 +708,7 @@ class ResearchAttemptEligibilityService
         if (
             $session->correct_items === null
             || (int) $session->correct_items
-                !== $rowCorrectTotal
+            !== $rowCorrectTotal
         ) {
             $reasons[] =
                 'session_correct_total_mismatch';

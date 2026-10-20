@@ -4,7 +4,9 @@ namespace App\Console\Commands;
 
 use App\Models\Question;
 use App\Models\QuestionChoice;
+use App\Models\ResearchFormVersion;
 use App\Models\TosCompetency;
+use App\Services\ResearchFormVersionTargetService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -31,38 +33,94 @@ class ImportResearchFormContent extends Command
     protected $signature = 'research:import-form-content
         {file : Absolute path to the reviewed CSV file}
         {--form= : pre_test_a or post_test_b}
+        {--form-version= : Exact registered version code}
         {--dry-run : Validate and roll back all database changes}';
 
     protected $description = 'Import reviewed CSV content for research pre/post test forms';
 
-    public function handle(): int
-    {
+    public function handle(
+        ResearchFormVersionTargetService $targets,
+    ): int {
         $transactionStarted = false;
 
         try {
-            $form = trim((string) ($this->option('form') ?? ''));
+            $form = trim(
+                (string) (
+                    $this->option('form')
+                    ?? ''
+                ),
+            );
+
             $this->assertKnownForm($form);
 
-            $requestedPath = trim((string) $this->argument('file'));
+            $version = $targets->resolve(
+                form: $form,
+                versionCode: $this->option(
+                    'form-version',
+                ),
+                operation: 'Research content import',
+            );
+
+            $targets->assertContentImportAllowed(
+                $version,
+            );
+
+            $requestedPath = trim(
+                (string) $this->argument('file'),
+            );
+
             $path = realpath($requestedPath);
 
-            if ($path === false || ! is_file($path) || ! is_readable($path)) {
+            if (
+                $path === false
+                || ! is_file($path)
+                || ! is_readable($path)
+            ) {
                 throw new RuntimeException(
-                    "CSV file is missing or unreadable: {$requestedPath}",
+                    'CSV file is missing or unreadable: '
+                        .$requestedPath,
                 );
             }
 
             $rows = $this->readCsv($path);
-            $rows = $this->validateRows($rows, $form);
 
             DB::beginTransaction();
             $transactionStarted = true;
 
-            $this->persistRows($rows, $form);
+            /*
+         * Lock the selected version so it cannot be published while
+         * its questions are being replaced.
+         */
+            $version = ResearchFormVersion::query()
+                ->whereKey(
+                    $version->form_version_id,
+                )
+                ->lockForUpdate()
+                ->firstOrFail();
 
-            $auditExitCode = $this->call('research:audit-forms', [
-                '--form' => $form,
-            ]);
+            $targets->assertContentImportAllowed(
+                $version,
+            );
+
+            $rows = $this->validateRows(
+                rows: $rows,
+                form: $form,
+                version: $version,
+            );
+
+            $this->persistRows(
+                rows: $rows,
+                version: $version,
+            );
+
+            $auditExitCode = $this->call(
+                'research:audit-forms',
+                [
+                    '--form' => $form,
+
+                    '--form-version' => $version->version_code,
+                ],
+            );
 
             if ($auditExitCode !== self::SUCCESS) {
                 throw new RuntimeException(
@@ -85,7 +143,8 @@ class ImportResearchFormContent extends Command
             $transactionStarted = false;
 
             $this->info(
-                "Imported 60 unvalidated questions into {$form}.",
+                'Imported 60 unvalidated questions into '
+                    ."{$version->version_code}.",
             );
             $this->warn(
                 'The form remains unavailable for formal research until it is approved and fully validated.',
@@ -127,9 +186,22 @@ class ImportResearchFormContent extends Command
             }
 
             $candidateHeaders = array_map(
-                fn (mixed $value): string => mb_strtolower(
-                    trim((string) $value),
-                ),
+                static function (mixed $value): string {
+                    $header = (string) $value;
+
+                    $header = preg_replace(
+                        '/^\xEF\xBB\xBF/',
+                        '',
+                        $header,
+                    ) ?? $header;
+
+                    return mb_strtolower(
+                        trim(
+                            $header,
+                            " \t\n\r\0\x0B\"",
+                        ),
+                    );
+                },
                 $candidate,
             );
 
@@ -213,8 +285,11 @@ class ImportResearchFormContent extends Command
      * @param  array<int, array<string, string|int>>  $rows
      * @return array<int, array<string, string|int>>
      */
-    private function validateRows(array $rows, string $form): array
-    {
+    private function validateRows(
+        array $rows,
+        string $form,
+        ResearchFormVersion $version,
+    ): array {
         if (count($rows) !== 60) {
             throw new RuntimeException(
                 'The CSV must contain exactly 60 data rows; found '
@@ -243,7 +318,14 @@ class ImportResearchFormContent extends Command
         ))));
 
         $knownQuestions = Question::query()
-            ->whereIn('question_id', $questionIds)
+            ->where(
+                'form_version_id',
+                $version->form_version_id,
+            )
+            ->whereIn(
+                'question_id',
+                $questionIds,
+            )
             ->get()
             ->keyBy('question_id');
 
@@ -400,7 +482,10 @@ class ImportResearchFormContent extends Command
 
                 if (
                     $knownQuestion->research_form !== $form
-                    || (int) $knownQuestion->form_position !== $position
+                    || $knownQuestion->form_version_id
+                    !== $version->form_version_id
+                    || (int) $knownQuestion->form_position
+                    !== $position
                 ) {
                     throw new RuntimeException(
                         "CSV line {$line}: question_id {$questionId} does not match {$form} position {$position}.",
@@ -441,20 +526,28 @@ class ImportResearchFormContent extends Command
      */
     private function persistRows(
         array $rows,
-        string $form,
+        ResearchFormVersion $version,
     ): void {
+        $form = $version->research_form;
+
         $this->assertRowsHaveNoResearchSessionHistory(
-            $rows,
-            $form,
+            rows: $rows,
+            version: $version,
         );
 
         foreach ($rows as $row) {
             $question = $row['question_id'] !== ''
-                ? Question::query()->findOrFail(
-                    $row['question_id'],
-                )
+                ? Question::query()
+                    ->where(
+                        'form_version_id',
+                        $version->form_version_id,
+                    )
+                    ->findOrFail(
+                        $row['question_id'],
+                    )
                 : Question::query()->firstOrNew([
-                    'research_form' => $form,
+                    'form_version_id' => $version->form_version_id,
+
                     'form_position' => $row['form_position'],
                 ]);
 
@@ -471,7 +564,10 @@ class ImportResearchFormContent extends Command
                 'difficulty_index_p' => null,
                 'speed_flag_count' => 0,
                 'is_active' => true,
+
                 'research_form' => $form,
+
+                'form_version_id' => $version->form_version_id,
 
                 'form_position' => $row['form_position'],
 
@@ -498,8 +594,6 @@ class ImportResearchFormContent extends Command
 
                             'is_correct' => $letter
                                 === $row['correct_choice'],
-
-                            'distractor_fallacy_note' => null,
                         ],
                     );
             }
@@ -532,8 +626,9 @@ class ImportResearchFormContent extends Command
      */
     private function assertRowsHaveNoResearchSessionHistory(
         array $rows,
-        string $form,
+        ResearchFormVersion $version,
     ): void {
+        $form = $version->research_form;
         $rowsCollection = collect(
             $rows,
         );
@@ -564,6 +659,10 @@ class ImportResearchFormContent extends Command
                     ->where(
                         'research_form',
                         $form,
+                    )
+                    ->where(
+                        'form_version_id',
+                        $version->form_version_id,
                     )
                     ->whereIn(
                         'form_position',

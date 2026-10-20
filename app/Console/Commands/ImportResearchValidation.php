@@ -3,7 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\Question;
+use App\Models\ResearchFormVersion;
 use App\Models\User;
+use App\Services\ResearchFormVersionTargetService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
@@ -39,21 +41,46 @@ class ImportResearchValidation extends Command
     protected $signature = 'research:import-validation
         {file : Absolute path to the approved CSV file}
         {--form= : pre_test_a or post_test_b}
+        {--form-version= : Exact registered version code}
         {--validator-email= : Email of the approving faculty or administrator}
         {--dry-run : Validate and roll back all database changes}';
 
     protected $description = 'Import approved faculty validation for a research form';
 
-    public function handle(): int
-    {
+    public function handle(
+        ResearchFormVersionTargetService $targets,
+    ): int {
         $transactionStarted = false;
 
         try {
-            $form = trim((string) ($this->option('form') ?? ''));
+            $form = trim(
+                (string) (
+                    $this->option('form')
+                    ?? ''
+                ),
+            );
+
             $this->assertKnownForm($form);
 
+            $version = $targets->resolve(
+                form: $form,
+                versionCode: $this->option(
+                    'form-version',
+                ),
+                operation: 'Research validation import',
+            );
+
+            $targets->assertValidationImportAllowed(
+                $version,
+            );
+
             $validatorEmail = trim(
-                (string) ($this->option('validator-email') ?? ''),
+                (string) (
+                    $this->option(
+                        'validator-email',
+                    )
+                    ?? ''
+                ),
             );
 
             if ($validatorEmail === '') {
@@ -64,21 +91,36 @@ class ImportResearchValidation extends Command
 
             $validator = User::query()
                 ->where('email', $validatorEmail)
-                ->whereIn('role', ['faculty', 'admin'])
+                ->whereIn(
+                    'role',
+                    [
+                        'faculty',
+                        'admin',
+                    ],
+                )
                 ->first();
 
-            if ($validator === null) {
+            if (! $validator) {
                 throw new RuntimeException(
-                    'The validator must be an existing faculty or admin user.',
+                    'The validator must be an existing '
+                        .'faculty or admin user.',
                 );
             }
 
-            $requestedPath = trim((string) $this->argument('file'));
+            $requestedPath = trim(
+                (string) $this->argument('file'),
+            );
+
             $path = realpath($requestedPath);
 
-            if ($path === false || ! is_file($path) || ! is_readable($path)) {
+            if (
+                $path === false
+                || ! is_file($path)
+                || ! is_readable($path)
+            ) {
                 throw new RuntimeException(
-                    "CSV file is missing or unreadable: {$requestedPath}",
+                    'CSV file is missing or unreadable: '
+                        .$requestedPath,
                 );
             }
 
@@ -87,31 +129,54 @@ class ImportResearchValidation extends Command
             DB::beginTransaction();
             $transactionStarted = true;
 
+            $version = ResearchFormVersion::query()
+                ->whereKey(
+                    $version->form_version_id,
+                )
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $targets->assertValidationImportAllowed(
+                $version,
+            );
+
             $questions = $this->verifyReviewedContent(
                 rows: $rows,
-                form: $form,
+                version: $version,
             );
 
             $validatedAt = now();
 
             Question::query()
+                ->where(
+                    'form_version_id',
+                    $version->form_version_id,
+                )
                 ->whereIn(
                     'question_id',
                     $questions->modelKeys(),
                 )
                 ->update([
                     'research_validated_at' => $validatedAt,
+
                     'research_validated_by' => $validator->user_id,
                 ]);
 
-            $auditExitCode = $this->call('research:audit-forms', [
-                '--form' => $form,
-                '--require-validation' => true,
-            ]);
+            $auditExitCode = $this->call(
+                'research:audit-forms',
+                [
+                    '--form' => $version->research_form,
+
+                    '--form-version' => $version->version_code,
+
+                    '--require-validation' => true,
+                ],
+            );
 
             if ($auditExitCode !== self::SUCCESS) {
                 throw new RuntimeException(
-                    'The form failed the final validation audit.',
+                    'The selected version failed the '
+                        .'final validation audit.',
                 );
             }
 
@@ -120,7 +185,9 @@ class ImportResearchValidation extends Command
                 $transactionStarted = false;
 
                 $this->info(
-                    "Dry-run approval passed for {$form}; all database changes were rolled back.",
+                    'Dry-run approval passed for '
+                        ."{$version->version_code}; all "
+                        .'database changes were rolled back.',
                 );
 
                 return self::SUCCESS;
@@ -130,22 +197,28 @@ class ImportResearchValidation extends Command
             $transactionStarted = false;
 
             $this->info(
-                "Approved {$form} with 60 validated questions.",
+                'Imported faculty validation for '
+                    ."{$version->version_code}.",
             );
-            $this->line(
-                "Validator: {$validator->fullName()} <{$validator->email}>",
-            );
-            $this->line(
-                'Validated at: '.$validatedAt->toDateTimeString(),
+
+            $this->warn(
+                'Return to the administrator research-form '
+                    .'page and confirm the version-level '
+                    .'validation transition.',
             );
 
             return self::SUCCESS;
         } catch (Throwable $exception) {
-            if ($transactionStarted && DB::transactionLevel() > 0) {
+            if (
+                $transactionStarted
+                && DB::transactionLevel() > 0
+            ) {
                 DB::rollBack();
             }
 
-            $this->error($exception->getMessage());
+            $this->error(
+                $exception->getMessage(),
+            );
 
             return self::FAILURE;
         }
@@ -160,7 +233,7 @@ class ImportResearchValidation extends Command
         $csv->setCsvControl(',', '"', '');
         $csv->setFlags(
             SplFileObject::READ_CSV
-            | SplFileObject::DROP_NEW_LINE,
+                | SplFileObject::DROP_NEW_LINE,
         );
 
         $headers = null;
@@ -175,9 +248,22 @@ class ImportResearchValidation extends Command
             }
 
             $candidateHeaders = array_map(
-                fn (mixed $value): string => mb_strtolower(
-                    trim((string) $value),
-                ),
+                static function (mixed $value): string {
+                    $header = (string) $value;
+
+                    $header = preg_replace(
+                        '/^\xEF\xBB\xBF/',
+                        '',
+                        $header,
+                    ) ?? $header;
+
+                    return mb_strtolower(
+                        trim(
+                            $header,
+                            " \t\n\r\0\x0B\"",
+                        ),
+                    );
+                },
                 $candidate,
             );
 
@@ -222,7 +308,7 @@ class ImportResearchValidation extends Command
             if (count($values) !== count($headers)) {
                 throw new RuntimeException(
                     "CSV line {$lineNumber} has ".count($values)
-                    .' columns; expected '.count($headers).'.',
+                        .' columns; expected '.count($headers).'.',
                 );
             }
 
@@ -246,7 +332,7 @@ class ImportResearchValidation extends Command
         if (count($rows) !== 60) {
             throw new RuntimeException(
                 'The approved CSV must contain exactly 60 data rows; found '
-                .count($rows).'.',
+                    .count($rows).'.',
             );
         }
 
@@ -259,10 +345,18 @@ class ImportResearchValidation extends Command
      */
     private function verifyReviewedContent(
         array $rows,
-        string $form,
+        ResearchFormVersion $version,
     ): EloquentCollection {
+        $form = $version->research_form;
         $questions = Question::query()
-            ->where('research_form', $form)
+            ->where(
+                'research_form',
+                $form,
+            )
+            ->where(
+                'form_version_id',
+                $version->form_version_id,
+            )
             ->where('is_active', true)
             ->with([
                 'choices',
@@ -425,9 +519,7 @@ class ImportResearchValidation extends Command
                     errors: $errors,
                     position: $position,
                     field: 'choice_'.mb_strtolower($letter),
-                    csvValue: (string) $row[
-                        'choice_'.mb_strtolower($letter)
-                    ],
+                    csvValue: (string) $row['choice_'.mb_strtolower($letter)],
                     databaseValue: trim($choice->choice_text),
                 );
             }

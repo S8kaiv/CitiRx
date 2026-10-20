@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\Question;
+use App\Models\ResearchFormVersion;
+use App\Services\ResearchFormVersionTargetService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\File;
@@ -38,28 +40,41 @@ class ExportResearchFormsForReview extends Command
 
     protected $signature = 'research:export-forms
         {--form= : pre_test_a or post_test_b}
+        {--form-version= : Exact registered version code}
         {--out= : Absolute output CSV path}
         {--force : Replace the output file if it already exists}';
 
     protected $description =
         'Export a research form as a CSV for faculty review';
 
-    public function handle(): int
-    {
+    public function handle(
+        ResearchFormVersionTargetService $targets,
+    ): int {
         try {
             $form = trim(
-                (string) $this->option('form')
+                (string) $this->option('form'),
             );
 
             $outputPath = trim(
-                (string) $this->option('out')
+                (string) $this->option('out'),
             );
 
             $this->assertKnownForm($form);
-            $this->assertOutputPath($outputPath);
+
+            $version = $targets->resolve(
+                form: $form,
+                versionCode: $this->option(
+                    'form-version',
+                ),
+                operation: 'Research-form review export',
+            );
+
+            $this->assertOutputPath(
+                $outputPath,
+            );
 
             $questions = $this->loadQuestions(
-                $form
+                $version,
             );
 
             $this->assertExportable(
@@ -71,30 +86,30 @@ class ExportResearchFormsForReview extends Command
                 questions: $questions,
                 outputPath: $outputPath,
                 force: (bool) $this->option(
-                    'force'
+                    'force',
                 ),
             );
 
             $this->info(
                 "Exported {$questions->count()} "
-                    ."questions from {$form}."
+                    .'questions from '
+                    ."{$version->version_code}.",
             );
 
             $this->line(
-                "Output: {$outputPath}"
+                "Output: {$outputPath}",
             );
 
             $this->warn(
-                'The exported questions are not '
-                    .'formally validated until the '
-                    .'faculty-review CSV is approved '
-                    .'and imported.'
+                'The exported version is not formally '
+                    .'validated until its approved faculty '
+                    .'review is imported.',
             );
 
             return self::SUCCESS;
         } catch (Throwable $exception) {
             $this->error(
-                $exception->getMessage()
+                $exception->getMessage(),
             );
 
             return self::FAILURE;
@@ -105,27 +120,26 @@ class ExportResearchFormsForReview extends Command
      * @return Collection<int, Question>
      */
     private function loadQuestions(
-        string $form
+        ResearchFormVersion $version,
     ): Collection {
         return Question::query()
             ->where(
                 'research_form',
-                $form,
+                $version->research_form,
             )
             ->where(
-                'is_active',
-                true,
+                'form_version_id',
+                $version->form_version_id,
             )
+            ->where('is_active', true)
             ->with([
                 'choices' => fn ($query) => $query->orderBy(
-                    'choice_letter'
+                    'choice_letter',
                 ),
 
                 'competency.domain',
             ])
-            ->orderBy(
-                'form_position'
-            )
+            ->orderBy('form_position')
             ->get();
     }
 
@@ -168,7 +182,7 @@ class ExportResearchFormsForReview extends Command
             if (
                 $question->competency === null
                 || $question->competency->domain
-                    === null
+                === null
             ) {
                 throw new RuntimeException(
                     "Position {$position} has no "
@@ -191,7 +205,7 @@ class ExportResearchFormsForReview extends Command
             if (
                 $question->choices->count() !== 4
                 || $letters
-                    !== ['A', 'B', 'C', 'D']
+                !== ['A', 'B', 'C', 'D']
             ) {
                 throw new RuntimeException(
                     "Position {$position} must "
