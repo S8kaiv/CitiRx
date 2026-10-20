@@ -52,6 +52,186 @@
                 </div>
             @endif
 
+            <section class="rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-sm">
+                <div>
+                    <p class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                        Immutable version history
+                    </p>
+
+                    <h3 class="mt-1 font-display text-lg font-extrabold text-slate-900">
+                        Research Form Versions
+                    </h3>
+
+                    <p class="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">
+                        Copy an existing version before changing question content.
+                        Published and previously served versions remain immutable.
+                        Publishing requires a complete structural audit, 60 validated
+                        questions, a reason, and your current password.
+                    </p>
+                </div>
+
+                @if (session('status'))
+                    <div role="status"
+                        class="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
+                        {{ session('status') }}
+                    </div>
+                @endif
+
+                <div class="mt-6 space-y-6">
+                    @foreach ($versions as $form => $formVersions)
+                        <div class="overflow-hidden rounded-2xl border border-slate-200">
+                            <div class="bg-slate-50 px-4 py-3">
+                                <h4 class="font-display font-extrabold text-slate-900">
+                                    {{ $form }}
+                                </h4>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-left text-sm">
+                                    <thead class="border-b border-slate-200 text-xs uppercase text-slate-500">
+                                        <tr>
+                                            <th class="px-4 py-3">Version</th>
+                                            <th class="px-4 py-3">Status</th>
+                                            <th class="px-4 py-3">Questions</th>
+                                            <th class="px-4 py-3">Active</th>
+                                            <th class="px-4 py-3">Lock</th>
+                                            <th class="px-4 py-3">Actions</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody class="divide-y divide-slate-100">
+                                        @foreach ($formVersions as $version)
+                                            <tr>
+                                                <td class="px-4 py-3 font-mono font-bold text-slate-900">
+                                                    {{ $version->version_code }}
+                                                </td>
+
+                                                <td class="px-4 py-3">
+                                                    {{ str($version->status)->replace('_', ' ')->title() }}
+                                                </td>
+
+                                                <td class="px-4 py-3">
+                                                    {{ $version->questions_count }}/60
+                                                </td>
+
+                                                <td
+                                                    class="px-4 py-3 font-bold {{ $version->is_active ? 'text-emerald-700' : 'text-slate-500' }}">
+                                                    {{ $version->is_active ? 'Yes' : 'No' }}
+                                                </td>
+
+                                                <td class="px-4 py-3">
+                                                    {{ $version->lock_version }}
+                                                </td>
+
+                                                <td class="px-4 py-3">
+                                                    <details>
+                                                        <summary class="cursor-pointer font-bold text-primary">
+                                                            Manage
+                                                        </summary>
+
+                                                        <div class="mt-3 w-80 space-y-4">
+                                                            <form method="POST"
+                                                                action="{{ route('admin.research-forms.versions.copy', $version) }}"
+                                                                class="space-y-2 rounded-xl bg-slate-50 p-3">
+                                                                @csrf
+
+                                                                <input type="hidden" name="expected_lock_version"
+                                                                    value="{{ $version->lock_version }}">
+
+                                                                <input name="version_code" required
+                                                                    placeholder="{{ $form }}_v{{ $version->version_number + 1 }}"
+                                                                    class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary">
+
+                                                                <textarea name="reason" required minlength="10" maxlength="500" rows="2"
+                                                                    placeholder="Reason for creating a new version"
+                                                                    class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary"></textarea>
+
+                                                                <button type="submit"
+                                                                    class="rounded-xl bg-primary px-3 py-2 text-xs font-bold text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
+                                                                    Copy to Draft
+                                                                </button>
+                                                            </form>
+
+                                                            @if ($version->status === 'draft')
+                                                                <form method="POST"
+                                                                    action="{{ route('admin.research-forms.versions.submit-review', $version) }}"
+                                                                    class="space-y-2 rounded-xl bg-blue-50 p-3">
+                                                                    @csrf
+                                                                    @method('PATCH')
+
+                                                                    <input type="hidden" name="expected_lock_version"
+                                                                        value="{{ $version->lock_version }}">
+
+                                                                    <textarea name="reason" required minlength="10" maxlength="500" rows="2"
+                                                                        placeholder="Why this version is ready for review"
+                                                                        class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary"></textarea>
+
+                                                                    <button type="submit"
+                                                                        class="rounded-xl bg-blue-700 px-3 py-2 text-xs font-bold text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300">
+                                                                        Submit for Review
+                                                                    </button>
+                                                                </form>
+                                                            @endif
+
+                                                            @if ($version->status === 'in_review')
+                                                                <form method="POST"
+                                                                    action="{{ route('admin.research-forms.versions.validate', $version) }}"
+                                                                    class="space-y-2 rounded-xl bg-violet-50 p-3">
+                                                                    @csrf
+                                                                    @method('PATCH')
+
+                                                                    <input type="hidden" name="expected_lock_version"
+                                                                        value="{{ $version->lock_version }}">
+
+                                                                    <textarea name="reason" required minlength="10" maxlength="500" rows="2"
+                                                                        placeholder="Validation completion evidence"
+                                                                        class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary"></textarea>
+
+                                                                    <button type="submit"
+                                                                        class="rounded-xl bg-violet-700 px-3 py-2 text-xs font-bold text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300">
+                                                                        Confirm Validation
+                                                                    </button>
+                                                                </form>
+                                                            @endif
+
+                                                            @if ($version->status === 'validated' && !$version->is_active)
+                                                                <form method="POST"
+                                                                    action="{{ route('admin.research-forms.versions.publish', $version) }}"
+                                                                    class="space-y-2 rounded-xl bg-amber-50 p-3">
+                                                                    @csrf
+                                                                    @method('PATCH')
+
+                                                                    <input type="hidden" name="expected_lock_version"
+                                                                        value="{{ $version->lock_version }}">
+
+                                                                    <textarea name="reason" required minlength="10" maxlength="500" rows="2"
+                                                                        placeholder="Reason for publishing this official version"
+                                                                        class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary"></textarea>
+
+                                                                    <input type="password" name="password" required
+                                                                        autocomplete="current-password"
+                                                                        placeholder="Current admin password"
+                                                                        class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary">
+
+                                                                    <button type="submit"
+                                                                        class="rounded-xl bg-amber-600 px-3 py-2 text-xs font-bold text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300">
+                                                                        Publish Version
+                                                                    </button>
+                                                                </form>
+                                                            @endif
+                                                        </div>
+                                                    </details>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+
             <div class="grid gap-6 xl:grid-cols-2">
                 @foreach ($reports as $report)
                     @php
@@ -90,7 +270,8 @@
                                     </p>
                                 </div>
 
-                                <span class="rounded-full border px-3 py-1 text-xs font-extrabold {{ $statusClasses }}">
+                                <span
+                                    class="rounded-full border px-3 py-1 text-xs font-extrabold {{ $statusClasses }}">
                                     {{ $report['status']['label'] }}
                                 </span>
                             </div>

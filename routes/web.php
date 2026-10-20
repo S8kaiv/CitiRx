@@ -463,6 +463,52 @@ Route::middleware([
             'research-forms.index',
         );
 
+        Route::post(
+            '/research-forms/versions/{researchFormVersion}/copy',
+            [
+                ResearchFormController::class,
+                'copy',
+            ],
+        )
+            ->whereUuid('researchFormVersion')
+            ->name('research-forms.versions.copy');
+
+        Route::patch(
+            '/research-forms/versions/{researchFormVersion}/submit-review',
+            [
+                ResearchFormController::class,
+                'submitReview',
+            ],
+        )
+            ->whereUuid('researchFormVersion')
+            ->name(
+                'research-forms.versions.submit-review',
+            );
+
+        Route::patch(
+            '/research-forms/versions/{researchFormVersion}/validate',
+            [
+                ResearchFormController::class,
+                'markValidated',
+            ],
+        )
+            ->whereUuid('researchFormVersion')
+            ->name(
+                'research-forms.versions.validate',
+            );
+
+        Route::patch(
+            '/research-forms/versions/{researchFormVersion}/publish',
+            [
+                ResearchFormController::class,
+                'publish',
+            ],
+        )
+            ->whereUuid('researchFormVersion')
+            ->name(
+                'research-forms.versions.publish',
+            );
+
         Route::get(
             '/research-analytics',
             [

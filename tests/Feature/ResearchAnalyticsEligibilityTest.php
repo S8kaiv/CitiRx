@@ -5,6 +5,7 @@ use App\Models\AssessmentSession;
 use App\Models\Cohort;
 use App\Models\Question;
 use App\Models\QuestionChoice;
+use App\Models\ResearchFormVersion;
 use App\Models\ResponseTelemetryLog;
 use App\Models\User;
 use App\Services\ResearchAnalyticsService;
@@ -34,13 +35,45 @@ beforeEach(function () {
 function analyticsFormQuestions(
     string $form,
 ): Collection {
+    $versionCode = match ($form) {
+        Question::FORM_PRE_TEST_A => (string) config(
+            'citirx.research.pre_test_form_version',
+            'pre_test_a_v1',
+        ),
+
+        Question::FORM_POST_TEST_B => (string) config(
+            'citirx.research.post_test_form_version',
+            'post_test_b_v1',
+        ),
+
+        default => throw new RuntimeException(
+            "Unknown analytics form: {$form}",
+        ),
+    };
+
+    $version = ResearchFormVersion::query()
+        ->where('research_form', $form)
+        ->where(
+            'version_code',
+            $versionCode,
+        )
+        ->sole();
+
     return Question::query()
+        ->where(
+            'research_form',
+            $form,
+        )
+        ->where(
+            'form_version_id',
+            $version->form_version_id,
+        )
+        ->where('is_active', true)
         ->with([
             'choices',
+
             'competency.domain',
         ])
-        ->where('research_form', $form)
-        ->where('is_active', true)
         ->orderBy('form_position')
         ->get();
 }
@@ -96,6 +129,28 @@ function createFullAnalyticsPair(
         Question::FORM_POST_TEST_B,
     );
 
+    $preVersion = ResearchFormVersion::query()
+        ->where(
+            'version_code',
+            'pre_test_a_v1',
+        )
+        ->where(
+            'research_form',
+            Question::FORM_PRE_TEST_A,
+        )
+        ->sole();
+
+    $postVersion = ResearchFormVersion::query()
+        ->where(
+            'version_code',
+            'post_test_b_v1',
+        )
+        ->where(
+            'research_form',
+            Question::FORM_POST_TEST_B,
+        )
+        ->sole();
+
     if (
         $preQuestions->count() !== 60
         || $postQuestions->count() !== 60
@@ -113,6 +168,7 @@ function createFullAnalyticsPair(
         'user_id' => $user->user_id,
         'session_type' => 'diagnostic',
         'research_phase' => 'pre_test',
+        'form_version_id' => $preVersion->form_version_id,
         'exam_form_version' => 'pre_test_a_v1',
 
         'served_question_ids' => $preQuestions
@@ -167,6 +223,7 @@ function createFullAnalyticsPair(
         'user_id' => $user->user_id,
         'session_type' => 'mock_board',
         'research_phase' => 'post_test',
+        'form_version_id' => $postVersion->form_version_id,
         'exam_form_version' => 'post_test_b_v1',
 
         'served_question_ids' => $postQuestions
@@ -215,12 +272,12 @@ function createFullAnalyticsPair(
             'item_position' => $index + 1,
 
             'is_correct' => $answered
-                    ? $isCorrect
-                    : null,
+                ? $isCorrect
+                : null,
 
             'answered_at' => $answered
-                    ? $base
-                    : null,
+                ? $base
+                : null,
 
             'created_at' => $base,
             'updated_at' => $base,
@@ -449,8 +506,19 @@ it('enforces full 60-item research eligibility', function () {
     $dataset = app(
         ResearchAttemptEligibilityService::class,
     )->dataset(
-        preTestVersion: 'pre_test_a_v1',
-        postTestVersion: 'post_test_b_v1',
+        preTestVersion: ResearchFormVersion::query()
+            ->where(
+                'version_code',
+                'pre_test_a_v1',
+            )
+            ->sole(),
+
+        postTestVersion: ResearchFormVersion::query()
+            ->where(
+                'version_code',
+                'post_test_b_v1',
+            )
+            ->sole(),
     );
 
     $report = app(
@@ -536,6 +604,60 @@ it('enforces full 60-item research eligibility', function () {
     )->toBeFalse();
 });
 
+it('rejects a session bound to the wrong immutable form version', function (): void {
+    $this->seed([
+        TosSeeder::class,
+        ResearchQuestionSeeder::class,
+    ]);
+
+    $cohort = Cohort::query()->create([
+        'cohort_name' => 'Version Binding Test Cohort',
+
+        'academic_year' => '2026-2027',
+    ]);
+
+    $student = User::factory()->create([
+        'role' => 'student',
+
+        'cohort_id' => $cohort->cohort_id,
+    ]);
+
+    $pair = createFullAnalyticsPair(
+        user: $student,
+        preCorrectItems: 30,
+        postCorrectItems: 40,
+        postAnsweredItems: 60,
+        submissionReason: 'manual',
+    );
+
+    $postVersion = ResearchFormVersion::query()
+        ->where(
+            'version_code',
+            'post_test_b_v1',
+        )
+        ->sole();
+
+    /*
+     * Keep the readable pre-test code but deliberately bind the
+     * session to the post-test version ID.
+     */
+    $pair['pre']->forceFill([
+        'form_version_id' => $postVersion->form_version_id,
+    ])->save();
+
+    $report = app(
+        ResearchAnalyticsService::class,
+    )->fullReport();
+
+    expect(
+        $report['funnel']['excluded_pre_wrong_version'],
+    )->toBe(1)
+        ->and(
+            $report['funnel']['paired_finalized'],
+        )
+        ->toBe(0);
+});
+
 it('does not expose participant identifiers', function () {
     $this->seed([
         TosSeeder::class,
@@ -589,13 +711,15 @@ it('does not expose participant identifiers', function () {
         )
         ->assertOk();
 
-    foreach ([
-        $student->first_name,
-        $student->last_name,
-        $student->email,
-        $student->student_id,
-        $student->user_id,
-    ] as $identifier) {
+    foreach (
+        [
+            $student->first_name,
+            $student->last_name,
+            $student->email,
+            $student->student_id,
+            $student->user_id,
+        ] as $identifier
+    ) {
         $response->assertDontSee(
             $identifier,
             false,
