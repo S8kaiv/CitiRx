@@ -487,6 +487,25 @@ $levelBadgeBg = match (true) {
                                         : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80' }}">
                                 <span>Audit History</span>
                             </a>
+
+                            @php
+                                $pilotControlsActive = request()->routeIs('admin.pilot.*');
+                            @endphp
+
+                            <a href="{{ route('admin.pilot.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ $pilotControlsActive
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <svg class="h-5 w-5 {{ $pilotControlsActive ? 'text-primary' : 'text-slate-400' }}"
+                                    fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                    aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M6.75 3v2.25M17.25 3v2.25M3.75 8.25h16.5M5.25 4.5h13.5A1.5 1.5 0 0 1 20.25 6v13.5A1.5 1.5 0 0 1 18.75 21H5.25a1.5 1.5 0 0 1-1.5-1.5V6a1.5 1.5 0 0 1 1.5-1.5ZM9.75 12.75l1.5 1.5 3-3" />
+                                </svg>
+
+                                <span>Pilot Controls</span>
+                            </a>
                         @endif
                     </nav>
                 </div>
@@ -643,19 +662,10 @@ $levelBadgeBg = match (true) {
                     <a href="{{ route('admin.research-forms.index') }}"
                         class="flex min-w-[3.5rem] shrink-0 flex-col items-center gap-1
                             {{ request()->routeIs('admin.research-forms.*') ? 'text-primary' : 'text-slate-500' }}">
-                        <svg
-                            class="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="2"
-                            stroke="currentColor"
-                            aria-hidden="true"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M9 12h6m-6 4h6m2.25 5H6.75A2.25 2.25 0 0 1 4.5 18.75V5.25A2.25 2.25 0 0 1 6.75 3h6.879c.597 0 1.17.237 1.591.659l2.121 2.121c.422.422.659.994.659 1.591V18.75A2.25 2.25 0 0 1 17.25 21Z"
-                            />
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12h6m-6 4h6m2.25 5H6.75A2.25 2.25 0 0 1 4.5 18.75V5.25A2.25 2.25 0 0 1 6.75 3h6.879c.597 0 1.17.237 1.591.659l2.121 2.121c.422.422.659.994.659 1.591V18.75A2.25 2.25 0 0 1 17.25 21Z" />
                         </svg>
 
                         <span>Forms</span>
@@ -698,6 +708,19 @@ $levelBadgeBg = match (true) {
                         </svg>
 
                         <span>Audits</span>
+                    </a>
+
+                    {{-- Official Pilot Controls --}}
+                    <a href="{{ route('admin.pilot.index') }}"
+                        class="flex min-w-[3.5rem] shrink-0 flex-col items-center gap-1
+                            {{ request()->routeIs('admin.pilot.*') ? 'text-primary' : 'text-slate-500' }}">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M6.75 3v2.25M17.25 3v2.25M3.75 8.25h16.5M5.25 4.5h13.5A1.5 1.5 0 0 1 20.25 6v13.5A1.5 1.5 0 0 1 18.75 21H5.25a1.5 1.5 0 0 1-1.5-1.5V6a1.5 1.5 0 0 1 1.5-1.5ZM9.75 12.75l1.5 1.5 3-3" />
+                        </svg>
+
+                        <span>Pilot</span>
                     </a>
                 @endif
 

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\CohortController;
+use App\Http\Controllers\Admin\PilotControlController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\ResearchAnalyticsController;
 use App\Http\Controllers\Admin\ResearchFormController;
@@ -518,6 +519,22 @@ Route::middleware([
         )->name(
             'research-analytics.index',
         );
+
+        Route::get(
+            '/pilot',
+            [
+                PilotControlController::class,
+                'index',
+            ],
+        )->name('pilot.index');
+
+        Route::patch(
+            '/pilot/settings',
+            [
+                PilotControlController::class,
+                'update',
+            ],
+        )->name('pilot.update');
 
         /*
         |--------------------------------------------------------------------------
