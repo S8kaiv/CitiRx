@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AssessmentResponse;
 use App\Models\AssessmentSession;
+use App\Models\PilotControl;
 use App\Models\Question;
 use App\Models\QuestionChoice;
 use App\Models\User;
@@ -20,6 +21,7 @@ class MockBoardService
         protected ResearchFormService $researchForms,
         protected ReadinessService $readiness,
         protected QuestionUsageService $questionUsage,
+        protected PilotControlService $pilotControls,
     ) {}
 
     /**
@@ -67,6 +69,13 @@ class MockBoardService
             $reason = 'You have already completed the research post-test.';
         } elseif ($inProgress) {
             $reason = 'Resume your existing research post-test.';
+        } elseif (
+            ! PilotControl::query()
+                ->sole()
+                ->postTestIsOpen()
+        ) {
+            $reason = 'The official mock-board '
+                .'examination is not currently open.';
         } elseif (! $user->is_diagnostic_completed) {
             $reason = 'Complete the diagnostic before starting the research post-test.';
         } elseif (! $this->cohortWindowIsOpen($user)) {
@@ -148,6 +157,9 @@ class MockBoardService
 
                 return $existing;
             }
+
+            $this->pilotControls
+                ->assertPostTestStartAllowed();
 
             $this->assertStartEligibility($user);
 
