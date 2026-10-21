@@ -238,18 +238,18 @@
                                     required autocomplete="email"
                                     class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
                                     placeholder="student@citirx.edu">
-
-                                <p class="mt-1.5 text-xs text-slate-500">
-                                    Use an email address you can access.
-                                    Temporary and disposable email services are not accepted.
-                                </p>
-
-                                @error('email')
-                                    <p class="mt-1.5 text-xs font-medium text-weak">
-                                        {{ $message }}
-                                    </p>
-                                @enderror
                             </div>
+
+                            <p class="mt-1.5 text-xs text-slate-500">
+                                Use an email address you can access.
+                                Temporary and disposable email services are not accepted.
+                            </p>
+
+                            @error('email')
+                                <p class="mt-1.5 text-xs font-medium text-weak">
+                                    {{ $message }}
+                                </p>
+                            @enderror
                         </div>
 
                         {{-- Password --}}
