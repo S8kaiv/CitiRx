@@ -39,6 +39,9 @@
     </x-slot>
 
     @php
+        $xpJourneyTarget = 10000;
+        $xpJourneyPercent = min(100, max(0, round(((int) $user->total_xp / $xpJourneyTarget) * 100, 1)));
+
         // Readiness badge styles with CitiRx design tokens
         $readinessStyles = match ($readinessBand ?? null) {
             'board_ready' => [
@@ -199,6 +202,29 @@
                             </div>
 
                             <div class="mt-5 border-t border-slate-100 pt-4">
+                                <div class="mb-2 flex items-center justify-between gap-3">
+                                    <span class="font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                                        Overall Level Journey
+                                    </span>
+                                    <span class="font-display text-[10px] font-black text-slate-700">
+                                        {{ number_format((int) $user->total_xp) }} / {{ number_format($xpJourneyTarget) }} XP
+                                    </span>
+                                </div>
+                                <div
+                                    class="h-3 overflow-hidden rounded-full bg-slate-200"
+                                    role="progressbar"
+                                    aria-label="Overall XP progress toward Level 10"
+                                    aria-valuemin="0"
+                                    aria-valuemax="{{ $xpJourneyTarget }}"
+                                    aria-valuenow="{{ min($xpJourneyTarget, (int) $user->total_xp) }}"
+                                >
+                                    <div
+                                        class="h-full rounded-full bg-primary transition-[width] duration-500"
+                                        style="width: {{ $xpJourneyPercent }}%"
+                                    ></div>
+                                </div>
+                            </div>
+                            <div class="mt-4 border-t border-slate-100 pt-4">
                                 <a href="{{ route('progress.index') }}"
                                     class="font-display text-xs font-bold text-primary hover:underline">
                                     View Full Progress Breakdown →
@@ -321,6 +347,29 @@
                             </div>
 
                             <div class="mt-5 border-t border-slate-100 pt-4">
+                                <div class="mb-2 flex items-center justify-between gap-3">
+                                    <span class="font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                                        Overall Level Journey
+                                    </span>
+                                    <span class="font-display text-[10px] font-black text-slate-700">
+                                        {{ number_format((int) $user->total_xp) }} / {{ number_format($xpJourneyTarget) }} XP
+                                    </span>
+                                </div>
+                                <div
+                                    class="h-3 overflow-hidden rounded-full bg-slate-200"
+                                    role="progressbar"
+                                    aria-label="Overall XP progress toward Level 10"
+                                    aria-valuemin="0"
+                                    aria-valuemax="{{ $xpJourneyTarget }}"
+                                    aria-valuenow="{{ min($xpJourneyTarget, (int) $user->total_xp) }}"
+                                >
+                                    <div
+                                        class="h-full rounded-full bg-primary transition-[width] duration-500"
+                                        style="width: {{ $xpJourneyPercent }}%"
+                                    ></div>
+                                </div>
+                            </div>
+                            <div class="mt-4 border-t border-slate-100 pt-4">
                                 <a href="{{ route('progress.index') }}"
                                     class="font-display text-xs font-bold text-primary hover:underline">
                                     View Full Progress Breakdown →
