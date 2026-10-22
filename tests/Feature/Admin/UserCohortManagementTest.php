@@ -3,6 +3,7 @@
 use App\Models\AdminAuditLog;
 use App\Models\AssessmentSession;
 use App\Models\Cohort;
+use App\Models\PilotControl;
 use App\Models\User;
 use App\Services\MockBoardService;
 
@@ -258,6 +259,10 @@ it('archives a cohort without removing its users', function (): void {
 });
 
 it('blocks mock board availability for archived cohorts', function (): void {
+    PilotControl::query()->update([
+        'phase' => PilotControl::PHASE_POST_TEST_OPEN,
+    ]);
+
     $cohort = managementCohort();
 
     $cohort->forceFill([

@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\AdminCohortService;
 use App\Services\DiagnosticService;
 use App\Services\MockBoardService;
+use App\Services\PilotControlService;
 use App\Services\ResearchFormVersionManagementService;
 use Database\Seeders\ResearchQuestionSeeder;
 use Database\Seeders\TosSeeder;
@@ -553,4 +554,48 @@ test('audit changes never contain the current password', function (): void {
     expect($encoded)
         ->not->toContain('current_password')
         ->not->toContain('password');
+});
+
+test('direct pilot service use by a non administrator is rejected', function (): void {
+    $student = User::factory()->create([
+        'role' => 'student',
+    ]);
+
+    $control = PilotControl::query()->sole();
+
+    expect(
+        fn () => app(PilotControlService::class)
+            ->transition($student, [
+                'phase' => PilotControl::PHASE_DIAGNOSTIC_OPEN,
+                'lock_version' => $control->lock_version,
+                'reason' => 'Unauthorized direct service invocation.',
+                'emergency_override' => false,
+            ]),
+    )->toThrow(
+        LogicException::class,
+        'Only administrators',
+    );
+});
+
+test('emergency override cannot reopen an assessment', function (): void {
+    $administrator = pilotAdministrator();
+
+    $control = pilotSetState(
+        PilotControl::PHASE_CLOSED,
+        $administrator,
+    );
+
+    $this->actingAs($administrator)
+        ->patch(
+            route('admin.pilot.update'),
+            pilotTransitionData(
+                $control,
+                PilotControl::PHASE_DIAGNOSTIC_OPEN,
+                ['emergency_override' => true],
+            ),
+        )
+        ->assertSessionHas('error');
+
+    expect($control->fresh()->phase)
+        ->toBe(PilotControl::PHASE_CLOSED);
 });
