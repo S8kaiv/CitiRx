@@ -167,6 +167,8 @@ class PilotControlService
         User $administrator,
         array $data,
     ): PilotControl {
+        $this->assertAdministrator($administrator);
+
         return DB::transaction(function () use (
             $administrator,
             $data,
@@ -204,6 +206,16 @@ class PilotControlService
                 throw new LogicException(
                     'Emergency override is available only after '
                         .'official collection has started.',
+                );
+            }
+
+            if (
+                $emergency
+                && $nextPhase !== PilotControl::PHASE_CLOSED
+            ) {
+                throw new LogicException(
+                    'Emergency override may only close '
+                        .'official data collection.',
                 );
             }
 
@@ -403,6 +415,16 @@ class PilotControlService
             throw new RuntimeException(
                 'No active cohort has a valid upcoming '
                     .'or open post-test window.',
+            );
+        }
+    }
+
+    private function assertAdministrator(
+        User $administrator,
+    ): void {
+        if ($administrator->role !== 'admin') {
+            throw new LogicException(
+                'Only administrators may change pilot controls.',
             );
         }
     }
