@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\PilotControlController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\ResearchAnalyticsController;
 use App\Http\Controllers\Admin\ResearchFormController;
+use App\Http\Controllers\Admin\ResearchParticipantController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\BookmarkController;
@@ -672,6 +673,40 @@ Route::middleware([
             '/audit-logs',
             [AuditLogController::class, 'index'],
         )->name('audit-logs.index');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Administrator Research Participants
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/research-participants',
+            [
+                ResearchParticipantController::class,
+                'index',
+            ],
+        )->name('research-participants.index');
+
+        Route::get(
+            '/research-participants/{userId}/edit',
+            [
+                ResearchParticipantController::class,
+                'edit',
+            ],
+        )
+            ->whereUuid('userId')
+            ->name('research-participants.edit');
+
+        Route::patch(
+            '/research-participants/{userId}',
+            [
+                ResearchParticipantController::class,
+                'update',
+            ],
+        )
+            ->whereUuid('userId')
+            ->name('research-participants.update');
     });
 
 require __DIR__.'/auth.php';
