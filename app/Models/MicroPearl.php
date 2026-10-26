@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MicroPearl extends Model
 {
@@ -55,6 +56,10 @@ class MicroPearl extends Model
         'estimated_read_seconds',
         'order_index',
         'ai_enrichment_allowed',
+        'created_by',
+        'submitted_at',
+        'retired_at',
+        'edit_version',
     ];
 
     protected $casts = [
@@ -73,6 +78,9 @@ class MicroPearl extends Model
         'published_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'submitted_at' => 'datetime',
+        'retired_at' => 'datetime',
+        'edit_version' => 'integer',
     ];
 
     public function getRouteKeyName(): string
@@ -190,5 +198,23 @@ class MicroPearl extends Model
             && $this->reviewed_at !== null
             && $this->published_at !== null
             && ! $this->published_at->isFuture();
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(
+            User::class,
+            'created_by',
+            'user_id',
+        )->withTrashed();
+    }
+
+    public function edits(): HasMany
+    {
+        return $this->hasMany(
+            MicroPearlEdit::class,
+            'pearl_id',
+            'pearl_id',
+        )->latest('edited_at');
     }
 }
