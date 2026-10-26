@@ -42,6 +42,31 @@
             </section>
 
             <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 class="font-display text-lg font-extrabold text-slate-900">
+                    Official participant scope
+                </h3>
+
+                <p class="mt-1 text-sm text-slate-600">
+                    Aggregate counts only. Participant identities are never
+                    displayed in the research report.
+                </p>
+
+                <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    @foreach ($report['eligibility']['participant_status_counts'] as $status => $total)
+                        <div class="rounded-2xl bg-slate-50 p-4">
+                            <p class="text-xs font-black uppercase tracking-wider text-slate-500">
+                                {{ \App\Models\ResearchParticipant::label($status) }}
+                            </p>
+
+                            <p class="mt-1 text-2xl font-black text-slate-900">
+                                {{ $total }}
+                            </p>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+
+            <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h3 class="font-display text-lg font-extrabold text-slate-900">1. Sample funnel</h3>
                 <div class="mt-4 overflow-x-auto">
                     <table class="w-full min-w-[34rem] text-sm">
@@ -80,6 +105,10 @@
                                 'excluded_duplicate_post' => 'Excluded duplicate post-tests',
 
                                 'excluded_invalid_chronology' => 'Excluded: pre-test not completed before post-test',
+
+                                'excluded_pre_participant_scope' => 'Excluded pre-tests: participant scope',
+
+                                'excluded_post_participant_scope' => 'Excluded post-tests: participant scope',
                             ] as $key => $label)
                                 <tr>
                                     <td class="py-2.5 text-slate-600">

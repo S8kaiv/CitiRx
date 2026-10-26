@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Question;
 use App\Models\ResearchFormVersion;
+use App\Models\ResearchParticipant;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -177,6 +178,12 @@ class ResearchAttemptEligibilityService
 
                 'invalid_chronology' => $invalidChronology,
 
+                'pre_participant_scope_exclusions' => $preStats['participant_scope_exclusions'],
+
+                'post_participant_scope_exclusions' => $postStats['participant_scope_exclusions'],
+
+                'participant_status_counts' => $this->participantStatusCounts(),
+
                 /*
                  * These are useful for debugging but contain only
                  * reason names and counts—never participant details.
@@ -210,6 +217,12 @@ class ResearchAttemptEligibilityService
                 '=',
                 'u.cohort_id',
             )
+            ->leftJoin(
+                'research_participants as rp',
+                'rp.user_id',
+                '=',
+                'u.user_id',
+            )
             ->where('u.role', 'student')
             ->where('s.session_type', $sessionType)
             ->where('s.research_phase', $researchPhase)
@@ -232,6 +245,7 @@ class ResearchAttemptEligibilityService
                 'u.cohort_id',
                 'c.cohort_name',
                 'c.academic_year',
+                'rp.status as participant_status',
             ]);
     }
 
@@ -248,11 +262,30 @@ class ResearchAttemptEligibilityService
             'wrong_version' => 0,
             'integrity_failures' => 0,
             'integrity_reasons' => [],
+            'participant_scope_exclusions' => [],
         ];
 
         $versionMatches = collect();
 
         foreach ($candidates as $session) {
+            $participantStatus = trim(
+                (string) (
+                    $session->participant_status
+                    ?? ResearchParticipant::STATUS_UNREGISTERED
+                ),
+            );
+
+            if (
+                $participantStatus
+                !== ResearchParticipant::STATUS_INCLUDED
+            ) {
+                $stats['participant_scope_exclusions'][$participantStatus] = (
+                    $stats['participant_scope_exclusions'][$participantStatus] ?? 0
+                ) + 1;
+
+                continue;
+            }
+
             $actualVersionId = trim(
                 (string) (
                     $session->form_version_id
@@ -347,6 +380,13 @@ class ResearchAttemptEligibilityService
         }
 
         ksort($stats['integrity_reasons']);
+        ksort($stats['integrity_reasons']);
+        ksort($stats['participant_scope_exclusions']);
+
+        return [
+            $eligible,
+            $stats,
+        ];
 
         return [
             $eligible,
@@ -821,5 +861,42 @@ class ResearchAttemptEligibilityService
     ): float {
         return $correctItems * 100.0
             / ResearchFormService::TOTAL_ITEMS;
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function participantStatusCounts(): array
+    {
+        $counts = array_fill_keys(
+            [
+                ...ResearchParticipant::STATUSES,
+                ResearchParticipant::STATUS_UNREGISTERED,
+            ],
+            0,
+        );
+
+        DB::table('users as u')
+            ->leftJoin(
+                'research_participants as rp',
+                'rp.user_id',
+                '=',
+                'u.user_id',
+            )
+            ->where('u.role', 'student')
+            ->selectRaw(
+                "COALESCE(rp.status, 'unregistered') "
+                    .'AS participant_status, '
+                    .'COUNT(DISTINCT u.user_id) AS total',
+            )
+            ->groupByRaw(
+                "COALESCE(rp.status, 'unregistered')",
+            )
+            ->get()
+            ->each(function (object $row) use (&$counts): void {
+                $counts[(string) $row->participant_status] = (int) $row->total;
+            });
+
+        return $counts;
     }
 }

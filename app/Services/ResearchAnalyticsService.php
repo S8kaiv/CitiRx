@@ -505,6 +505,14 @@ class ResearchAnalyticsService
             'excluded_duplicate_post' => $eligibility['duplicate_post_attempts'],
 
             'excluded_invalid_chronology' => $eligibility['invalid_chronology'],
+
+            'excluded_pre_participant_scope' => array_sum(
+                $eligibility['pre_participant_scope_exclusions'],
+            ),
+
+            'excluded_post_participant_scope' => array_sum(
+                $eligibility['post_participant_scope_exclusions'],
+            ),
         ];
     }
 

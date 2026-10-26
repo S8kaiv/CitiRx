@@ -506,6 +506,21 @@ $levelBadgeBg = match (true) {
 
                                 <span>Pilot Controls</span>
                             </a>
+
+                            <a href="{{ route('admin.research-participants.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ request()->routeIs('admin.research-participants.*')
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                    stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479
+                                        3 3 0 0 0-4.682-2.72M15 6.75a3 3 0 1 1-6 0
+                                        3 3 0 0 1 6 0ZM6 18.719a6 6 0 0 1 12 0" />
+                                </svg>
+
+                                <span>Participants</span>
+                            </a>
                         @endif
                     </nav>
                 </div>
@@ -721,6 +736,18 @@ $levelBadgeBg = match (true) {
                         </svg>
 
                         <span>Pilot</span>
+                    </a>
+
+                    <a href="{{ route('admin.research-participants.index') }}"
+                        class="flex min-w-[3.5rem] shrink-0 flex-col items-center gap-1
+        {{ request()->routeIs('admin.research-participants.*') ? 'text-primary' : 'text-slate-500' }}">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 6.75a3 3 0 1 1-6 0
+                3 3 0 0 1 6 0ZM6 20.25a6 6 0 0 1 12 0" />
+                        </svg>
+
+                        <span>Scope</span>
                     </a>
                 @endif
 
