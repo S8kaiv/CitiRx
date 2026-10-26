@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ResearchParticipantController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\BookmarkController;
+use App\Http\Controllers\Content\MicroPearlManagementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiagnosticController;
 use App\Http\Controllers\FacultyDashboardController;
@@ -354,6 +355,99 @@ Route::middleware([
 | Micro Pearls Library
 |--------------------------------------------------------------------------
 */
+
+Route::middleware([
+    'auth',
+    'verified',
+    'pearl-editor',
+])
+    ->prefix('content/pearls')
+    ->name('content.pearls.')
+    ->group(function (): void {
+        Route::get(
+            '/',
+            [
+                MicroPearlManagementController::class,
+                'index',
+            ],
+        )->name('index');
+
+        Route::get(
+            '/create',
+            [
+                MicroPearlManagementController::class,
+                'create',
+            ],
+        )->name('create');
+
+        Route::post(
+            '/',
+            [
+                MicroPearlManagementController::class,
+                'store',
+            ],
+        )->name('store');
+
+        Route::get(
+            '/{pearl:pearl_id}/edit',
+            [
+                MicroPearlManagementController::class,
+                'edit',
+            ],
+        )
+            ->whereUuid('pearl')
+            ->name('edit');
+
+        Route::put(
+            '/{pearl:pearl_id}',
+            [
+                MicroPearlManagementController::class,
+                'update',
+            ],
+        )
+            ->whereUuid('pearl')
+            ->name('update');
+
+        Route::patch(
+            '/{pearl:pearl_id}/submit-review',
+            [
+                MicroPearlManagementController::class,
+                'submitReview',
+            ],
+        )
+            ->whereUuid('pearl')
+            ->name('submit-review');
+
+        Route::patch(
+            '/{pearl:pearl_id}/return-draft',
+            [
+                MicroPearlManagementController::class,
+                'returnToDraft',
+            ],
+        )
+            ->whereUuid('pearl')
+            ->name('return-draft');
+
+        Route::patch(
+            '/{pearl:pearl_id}/publish',
+            [
+                MicroPearlManagementController::class,
+                'publish',
+            ],
+        )
+            ->whereUuid('pearl')
+            ->name('publish');
+
+        Route::patch(
+            '/{pearl:pearl_id}/retire',
+            [
+                MicroPearlManagementController::class,
+                'retire',
+            ],
+        )
+            ->whereUuid('pearl')
+            ->name('retire');
+    });
 
 Route::middleware([
     'auth',
