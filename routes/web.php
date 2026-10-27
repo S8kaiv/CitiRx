@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\PilotControlController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\ResearchAnalyticsController;
 use App\Http\Controllers\Admin\ResearchFormController;
+use App\Http\Controllers\Admin\ResearchFormImportController;
 use App\Http\Controllers\Admin\ResearchParticipantController;
 use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\UserController;
@@ -605,6 +606,50 @@ Route::middleware([
             ->whereUuid('researchFormVersion')
             ->name(
                 'research-forms.versions.publish',
+            );
+
+        Route::get(
+            '/research-forms/imports',
+            [
+                ResearchFormImportController::class,
+                'index',
+            ],
+        )->name(
+            'research-form-imports.index',
+        );
+
+        Route::post(
+            '/research-forms/imports/preview',
+            [
+                ResearchFormImportController::class,
+                'preview',
+            ],
+        )->name(
+            'research-form-imports.preview',
+        );
+
+        Route::post(
+            '/research-forms/imports/{researchFormImport}/commit',
+            [
+                ResearchFormImportController::class,
+                'commit',
+            ],
+        )
+            ->whereUuid('researchFormImport')
+            ->name(
+                'research-form-imports.commit',
+            );
+
+        Route::delete(
+            '/research-forms/imports/{researchFormImport}',
+            [
+                ResearchFormImportController::class,
+                'destroy',
+            ],
+        )
+            ->whereUuid('researchFormImport')
+            ->name(
+                'research-form-imports.destroy',
             );
 
         Route::get(
