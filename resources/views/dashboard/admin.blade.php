@@ -496,7 +496,7 @@
                             <article class="rounded-2xl border border-slate-200 p-4">
                                 <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                                     <span class="font-bold text-slate-900">
-                                        {{ $log->admin?->fullName() ?? 'Former administrator' }}
+                                        {{ $log->actorDisplayName() }}
                                     </span>
 
                                     <span aria-hidden="true">•</span>
