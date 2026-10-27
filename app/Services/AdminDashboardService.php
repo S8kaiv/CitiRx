@@ -37,6 +37,7 @@ class AdminDashboardService
                 ->select([
                     'log_id',
                     'admin_id',
+                    'actor_name',
                     'action',
                     'target_type',
                     'target_id',

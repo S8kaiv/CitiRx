@@ -811,6 +811,11 @@ Route::middleware([
         */
 
         Route::get(
+            '/audit-logs/export',
+            [AuditLogController::class, 'export'],
+        )->name('audit-logs.export');
+
+        Route::get(
             '/audit-logs',
             [AuditLogController::class, 'index'],
         )->name('audit-logs.index');
