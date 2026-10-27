@@ -23,3 +23,7 @@ Schedule::command(
 )
     ->daily()
     ->withoutOverlapping();
+
+Schedule::command('system:heartbeat')
+    ->everyMinute()
+    ->withoutOverlapping(5);

@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\ResearchAnalyticsController;
 use App\Http\Controllers\Admin\ResearchFormController;
 use App\Http\Controllers\Admin\ResearchParticipantController;
+use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\BookmarkController;
@@ -631,6 +632,11 @@ Route::middleware([
                 'update',
             ],
         )->name('pilot.update');
+
+        Route::get(
+            '/system-health',
+            [SystemHealthController::class, 'index'],
+        )->name('system-health.index');
 
         /*
         |--------------------------------------------------------------------------

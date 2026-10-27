@@ -549,7 +549,7 @@
                     Quick Actions
                 </h3>
 
-                <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
                     @foreach ([
                         [
                             'label' => 'Users',
@@ -570,6 +570,10 @@
                         [
                             'label' => 'Audit Logs',
                             'route' => route('admin.audit-logs.index'),
+                        ],
+                        [
+                            'label' => 'System Health',
+                            'route' => route('admin.system-health.index'),
                         ],
                     ] as $action)
                         <a
