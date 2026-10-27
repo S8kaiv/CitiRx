@@ -1,0 +1,120 @@
+name: Quality
+
+on:
+  pull_request:
+    branches:
+      - main
+
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  application:
+    name: Application
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: citirx_testing
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping
+          --host=127.0.0.1
+          --user=root
+          --password=root"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      APP_ENV: testing
+      APP_DEBUG: "false"
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: citirx_testing
+      DB_USERNAME: root
+      DB_PASSWORD: root
+
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+
+      CITIRX_ALLOW_UNVALIDATED_RESEARCH_FORMS: "false"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.5"
+          extensions: >-
+            mbstring,
+            pdo_mysql,
+            intl,
+            bcmath,
+            fileinfo,
+            sockets
+          coverage: none
+          tools: composer:v2
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install PHP dependencies
+        run: >-
+          composer install
+          --no-interaction
+          --prefer-dist
+          --no-progress
+          --optimize-autoloader
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Reject sensitive tracked artifacts
+        shell: bash
+        run: |
+          tracked="$(git ls-files -- '*.sql' '.env' '*.pem' '*.key')"
+
+          if [ -n "$tracked" ]; then
+            echo "Sensitive or generated files are tracked:"
+            echo "$tracked"
+            exit 1
+          fi
+
+      - name: Check Composer security advisories
+        run: composer audit --locked
+
+      - name: Check PHP formatting
+        run: php vendor/bin/pint --test
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Verify database migrations
+        run: php artisan migrate:fresh --force
+
+      - name: Run automated tests
+        run: php artisan test
