@@ -508,6 +508,20 @@
                                 <span>Audit History</span>
                             </a>
 
+                            <a href="{{ route('admin.system-health.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3
+                                    {{ request()->routeIs('admin.system-health.*')
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80' }}">
+                                <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                                    stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3.75 4.5h16.5v12H3.75v-12ZM8.25 19.5h7.5M12 16.5v3M6.75 10.5H9l1.5-3 2.25 6 1.5-3h3" />
+                                </svg>
+
+                                <span>System Health</span>
+                            </a>
+
                             @php
                                 $pilotControlsActive = request()->routeIs('admin.pilot.*');
                             @endphp
@@ -787,6 +801,18 @@
                         </svg>
 
                         <span>Audits</span>
+                    </a>
+
+                    <a href="{{ route('admin.system-health.index') }}"
+                        class="flex min-w-[4rem] shrink-0 flex-col items-center gap-1
+                            {{ request()->routeIs('admin.system-health.*') ? 'text-primary' : 'text-slate-500' }}">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                            stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 4.5h16.5v12H3.75v-12ZM8.25 19.5h7.5M12 16.5v3M6.75 10.5H9l1.5-3 2.25 6 1.5-3h3" />
+                        </svg>
+
+                        <span class="text-xs">Health</span>
                     </a>
 
                     {{-- Official Pilot Controls --}}
