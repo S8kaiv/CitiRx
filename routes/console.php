@@ -17,3 +17,9 @@ Schedule::command(
 )
     ->everyMinute()
     ->withoutOverlapping(10);
+
+Schedule::command(
+    'model:prune',
+)
+    ->daily()
+    ->withoutOverlapping();

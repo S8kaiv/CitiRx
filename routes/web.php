@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\CohortAssignmentImportController;
 use App\Http\Controllers\Admin\CohortController;
 use App\Http\Controllers\Admin\PilotControlController;
 use App\Http\Controllers\Admin\QuestionController;
@@ -692,6 +693,52 @@ Route::middleware([
         | Administrator User Management
         |--------------------------------------------------------------------------
         */
+
+        Route::get(
+            '/users/import',
+            [
+                CohortAssignmentImportController::class,
+                'create',
+            ],
+        )->name('cohort-imports.create');
+
+        Route::post(
+            '/users/import/preview',
+            [
+                CohortAssignmentImportController::class,
+                'preview',
+            ],
+        )->name('cohort-imports.preview');
+
+        Route::get(
+            '/users/import/{import}',
+            [
+                CohortAssignmentImportController::class,
+                'show',
+            ],
+        )
+            ->whereUuid('import')
+            ->name('cohort-imports.show');
+
+        Route::post(
+            '/users/import/{import}/commit',
+            [
+                CohortAssignmentImportController::class,
+                'commit',
+            ],
+        )
+            ->whereUuid('import')
+            ->name('cohort-imports.commit');
+
+        Route::delete(
+            '/users/import/{import}',
+            [
+                CohortAssignmentImportController::class,
+                'destroy',
+            ],
+        )
+            ->whereUuid('import')
+            ->name('cohort-imports.destroy');
 
         Route::get(
             '/users',
