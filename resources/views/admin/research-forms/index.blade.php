@@ -11,10 +11,17 @@
                 </h2>
             </div>
 
-            <a href="{{ route('dashboard') }}"
-                class="rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
-                Back to Dashboard
-            </a>
+            <div class="flex flex-wrap items-center gap-3">
+                <a href="{{ route('admin.research-form-imports.index') }}"
+                    class="rounded-xl bg-primary px-4 py-2 text-sm font-extrabold text-white transition hover:opacity-90 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
+                    Import Research CSV
+                </a>
+
+                <a href="{{ route('dashboard') }}"
+                    class="rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
+                    Back to Dashboard
+                </a>
+            </div>
         </div>
     </x-slot>
 
