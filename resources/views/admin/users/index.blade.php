@@ -1,8 +1,17 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-display text-xl font-bold text-slate-900">
-            User Management
-        </h2>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="font-display text-xl font-bold text-slate-900">
+                User Management
+            </h2>
+
+            <a
+                href="{{ route('admin.cohort-imports.create') }}"
+                class="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            >
+                Bulk Assign Cohorts
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-8">
@@ -13,10 +22,16 @@
                 </div>
             @endif
 
-            <form method="GET" class="grid gap-3 rounded-3xl border-2 border-slate-200 bg-white p-5 md:grid-cols-3">
-                <input name="q" value="{{ $filters['q'] }}"
+            <form
+                method="GET"
+                class="grid gap-3 rounded-3xl border-2 border-slate-200 bg-white p-5 md:grid-cols-3"
+            >
+                <input
+                    name="q"
+                    value="{{ $filters['q'] }}"
                     placeholder="Name, email, or student ID"
-                    class="rounded-xl border-slate-300">
+                    class="rounded-xl border-slate-300"
+                >
 
                 <select name="role" class="rounded-xl border-slate-300">
                     <option value="">All roles</option>
@@ -39,19 +54,33 @@
 
                 <select name="verification" class="rounded-xl border-slate-300">
                     <option value="">Any email status</option>
-                    <option value="verified" @selected($filters['verification'] === 'verified')>Verified</option>
-                    <option value="unverified" @selected($filters['verification'] === 'unverified')>Unverified</option>
+                    <option value="verified" @selected($filters['verification'] === 'verified')>
+                        Verified
+                    </option>
+                    <option value="unverified" @selected($filters['verification'] === 'unverified')>
+                        Unverified
+                    </option>
                 </select>
 
                 <select name="status" class="rounded-xl border-slate-300">
-                    <option value="active" @selected($filters['status'] === 'active')>Active</option>
-                    <option value="deleted" @selected($filters['status'] === 'deleted')>Deleted</option>
-                    <option value="all" @selected($filters['status'] === 'all')>All</option>
+                    <option value="active" @selected($filters['status'] === 'active')>
+                        Active
+                    </option>
+                    <option value="deleted" @selected($filters['status'] === 'deleted')>
+                        Deleted
+                    </option>
+                    <option value="all" @selected($filters['status'] === 'all')>
+                        All
+                    </option>
                 </select>
 
                 <label class="flex items-center gap-2 text-sm text-slate-700">
-                    <input type="checkbox" name="no_cohort" value="1"
-                        @checked($filters['no_cohort'])>
+                    <input
+                        type="checkbox"
+                        name="no_cohort"
+                        value="1"
+                        @checked($filters['no_cohort'])
+                    >
                     Without cohort
                 </label>
 
@@ -60,8 +89,10 @@
                         Apply Filters
                     </button>
 
-                    <a href="{{ route('admin.users.index') }}"
-                        class="rounded-xl border-2 border-slate-200 px-4 py-2 font-bold text-slate-700">
+                    <a
+                        href="{{ route('admin.users.index') }}"
+                        class="rounded-xl border-2 border-slate-200 px-4 py-2 font-bold text-slate-700"
+                    >
                         Reset
                     </a>
                 </div>
@@ -83,12 +114,16 @@
                         @forelse ($users as $managedUser)
                             <tr>
                                 <td class="p-4">
-                                    <div class="font-bold">{{ $managedUser->fullName() }}</div>
+                                    <div class="font-bold">
+                                        {{ $managedUser->fullName() }}
+                                    </div>
                                     <div class="text-xs text-slate-500">
                                         {{ $managedUser->student_id ?? 'No student ID' }}
                                     </div>
                                 </td>
-                                <td class="p-4">{{ ucfirst($managedUser->role) }}</td>
+                                <td class="p-4">
+                                    {{ ucfirst($managedUser->role) }}
+                                </td>
                                 <td class="p-4">
                                     {{ $managedUser->cohort?->cohort_name ?? 'Unassigned' }}
                                 </td>
@@ -102,8 +137,10 @@
                                     {{ $managedUser->trashed() ? 'Deleted' : 'Active' }}
                                 </td>
                                 <td class="p-4 text-right">
-                                    <a href="{{ route('admin.users.edit', ['userId' => $managedUser->user_id]) }}"
-                                        class="font-bold text-primary">
+                                    <a
+                                        href="{{ route('admin.users.edit', ['userId' => $managedUser->user_id]) }}"
+                                        class="font-bold text-primary"
+                                    >
                                         Manage
                                     </a>
                                 </td>
