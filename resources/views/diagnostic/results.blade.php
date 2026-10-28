@@ -272,7 +272,7 @@
 
             {{-- Action CTA --}}
             <div class="pt-2 pb-6 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="{{ route('dashboard') }}" style="--lip: #4A2FC4;"
+                <a href="{{ route('dashboard') }}" style="--lip: rgb(var(--color-primary-lip));"
                     class="btn-press w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-8 py-3.5 font-display text-sm font-bold text-white shadow-md transition hover:bg-primary/95">
                     <span>Return to Dashboard</span>
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5"

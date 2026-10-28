@@ -257,7 +257,7 @@
 
             {{-- ACTION BUTTONS --}}
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
-                <a href="{{ route('practice.intro') }}" style="--lip: #4A2FC4;"
+                <a href="{{ route('practice.intro') }}" style="--lip: rgb(var(--color-primary-lip));"
                     class="btn-press w-full sm:w-auto rounded-xl bg-primary px-8 py-2.5 text-center font-display text-sm font-bold text-white shadow-sm transition hover:bg-primary/95">
                     Practice Again
                 </a>

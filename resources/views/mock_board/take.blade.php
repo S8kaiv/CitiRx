@@ -275,7 +275,7 @@
                         type="button"
                         :disabled="saving || submitting"
                         @click="nextQuestion()"
-                        style="--lip: #4A2FC4;"
+                        style="--lip: rgb(var(--color-primary-lip));"
                         class="btn-press rounded-2xl bg-primary px-7 py-3 font-display text-sm font-black text-white transition hover:bg-primary/95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                         Continue

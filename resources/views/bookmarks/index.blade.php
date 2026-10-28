@@ -10,7 +10,7 @@
                 </p>
             </div>
 
-            <a href="{{ route('dashboard') }}" 
+            <a href="{{ route('dashboard') }}"
                class="font-display text-xs font-bold text-muted-ink hover:text-primary transition">
                 Return to Dashboard
             </a>
@@ -50,7 +50,7 @@
 
                     <div class="shrink-0">
                         <a href="{{ route('practice.intro') }}"
-                           style="--lip: #4A2FC4;"
+                           style="--lip: rgb(var(--color-primary-lip));"
                            class="btn-press inline-flex items-center rounded-2xl bg-primary px-6 py-3 font-display text-sm font-bold text-white shadow-md transition hover:bg-primary/95">
                             Practice Questions
                         </a>
@@ -72,7 +72,7 @@
                     </p>
                     <div class="mt-6">
                         <a href="{{ route('practice.intro') }}"
-                           style="--lip: #4A2FC4;"
+                           style="--lip: rgb(var(--color-primary-lip));"
                            class="btn-press inline-flex items-center rounded-xl bg-primary px-6 py-2.5 font-display text-xs font-bold uppercase tracking-wider text-white">
                             Start Practice Session
                         </a>
@@ -84,7 +84,7 @@
                 <div class="space-y-6">
                     @foreach ($grouped as $group)
                         <div class="rounded-2xl border-2 border-b-4 border-slate-200 bg-white shadow-sm overflow-hidden">
-                            
+
                             {{-- Group Domain Header --}}
                             <div class="flex items-center justify-between border-b-2 border-slate-100 bg-slate-50/70 px-6 py-4">
                                 <div class="flex items-center gap-3">
@@ -124,7 +124,7 @@
                                                 @csrf
                                                 @method('DELETE')
 
-                                                <button type="submit" 
+                                                <button type="submit"
                                                         title="Remove from bookmarks"
                                                         class="flex items-center gap-1 rounded-xl border border-weak/30 bg-weak-tint/50 px-2.5 py-1 font-display text-xs font-bold text-weak-ink hover:bg-weak-tint transition">
                                                     <span>✕</span>
@@ -162,7 +162,7 @@
                                             <input type="hidden" name="bookmark_id" value="{{ $bookmark->bookmark_id }}">
 
                                             <div class="flex items-center justify-between">
-                                                <label for="notes-{{ $bookmark->bookmark_id }}" 
+                                                <label for="notes-{{ $bookmark->bookmark_id }}"
                                                        class="font-display text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                                                     <span>📝</span>
                                                     <span>My Study Notes</span>
@@ -170,9 +170,9 @@
                                                 <span class="text-[10px] font-semibold text-muted-ink">Auto-saved to Vault</span>
                                             </div>
 
-                                            <textarea id="notes-{{ $bookmark->bookmark_id }}" 
-                                                      name="personal_notes" 
-                                                      rows="2" 
+                                            <textarea id="notes-{{ $bookmark->bookmark_id }}"
+                                                      name="personal_notes"
+                                                      rows="2"
                                                       maxlength="2000"
                                                       class="w-full rounded-xl border-2 border-slate-200 bg-white p-3 text-xs font-medium text-slate-800 shadow-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                                                       placeholder="Write mnemonics, key formulas, or drug interactions to remember...">{{ old('bookmark_id') === $bookmark->bookmark_id ? old('personal_notes') : $bookmark->personal_notes }}</textarea>
@@ -187,7 +187,7 @@
 
                                             <div class="flex justify-end">
                                                 <button type="submit"
-                                                        style="--lip: #4A2FC4;"
+                                                        style="--lip: rgb(var(--color-primary-lip));"
                                                         class="btn-press rounded-xl bg-primary px-4 py-2 font-display text-xs font-bold text-white shadow-sm transition hover:bg-primary/95">
                                                     Save Notes
                                                 </button>
@@ -205,7 +205,7 @@
             {{-- BOTTOM NAVIGATION BUTTONS --}}
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
                 <a href="{{ route('practice.intro') }}"
-                   style="--lip: #4A2FC4;"
+                   style="--lip: rgb(var(--color-primary-lip));"
                    class="btn-press w-full sm:w-auto rounded-xl bg-primary px-8 py-3 text-center font-display text-sm font-bold text-white shadow-sm transition hover:bg-primary/95">
                     Practice Now
                 </a>

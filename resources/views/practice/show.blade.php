@@ -222,7 +222,7 @@
                     <form method="POST" action="{{ route('practice.next', ['session' => $session->session_id]) }}"
                         class="pt-1">
                         @csrf
-                        <button type="submit" style="--lip: #4A2FC4;"
+                        <button type="submit" style="--lip: rgb(var(--color-primary-lip));"
                             class="btn-press w-full rounded-xl bg-primary py-2.5 sm:py-3 font-display text-sm font-bold text-white shadow-sm transition hover:bg-primary/95">
                             Continue
                         </button>
@@ -241,7 +241,7 @@
                             No Practice question is available right now.
                         </p>
                         <div class="mt-4">
-                            <a href="{{ route('practice.intro') }}" style="--lip: #4A2FC4;"
+                            <a href="{{ route('practice.intro') }}" style="--lip: rgb(var(--color-primary-lip));"
                                 class="btn-press inline-flex items-center rounded-xl bg-primary px-5 py-2 font-display text-xs font-bold text-white">
                                 Back to Practice Setup
                             </a>
@@ -321,7 +321,7 @@
 
                             {{-- Compact Submit Button --}}
                             <div class="pt-3">
-                                <button type="submit" style="--lip: #4A2FC4;"
+                                <button type="submit" style="--lip: rgb(var(--color-primary-lip));"
                                     class="btn-press w-full rounded-xl bg-primary py-2.5 sm:py-3 font-display text-sm font-bold text-white shadow-sm transition hover:bg-primary/95">
                                     Submit Answer
                                 </button>

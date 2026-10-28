@@ -32,11 +32,11 @@
             {{-- 1. CURRENT LEVEL HERO CARD (Chunky 2.5D)  --}}
             {{-- ========================================= --}}
             <section class="relative overflow-hidden rounded-3xl border-2 border-b-4 border-amber-300 bg-gradient-to-br from-amber-50 via-white to-orange-50/30 p-6 sm:p-8 shadow-sm">
-                
+
                 <div class="flex flex-col sm:flex-row items-center sm:items-center gap-5 text-center sm:text-left">
-                    
+
                     {{-- Tactile 3D Crest --}}
-                    <div style="--lip: #D97706;" 
+                    <div style="--lip: #D97706;"
                          class="btn-press flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-amber-400 bg-gradient-to-b from-amber-100 to-amber-200/70 text-3xl shadow-sm">
                         🛡️
                     </div>
@@ -74,7 +74,7 @@
                     <div class="mt-6 pt-6 border-t border-amber-200/60"
                          x-data="{ barWidth: '0%' }"
                          x-init="$nextTick(() => { setTimeout(() => barWidth = '{{ min(100, max(0, round($progressPercent, 1))) }}%', 120) })">
-                        
+
                         <div class="flex items-center justify-between mb-2 font-display text-xs font-extrabold uppercase tracking-wider text-slate-600">
                             <span>Level {{ $currentLevel->level_number }}</span>
                             <span class="text-primary font-black">Level {{ $nextLevel->level_number }}</span>
@@ -128,7 +128,7 @@
                     @endphp
 
                     <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-7 shadow-sm">
-                        
+
                         {{-- Chapter Header --}}
                         <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
                             <div class="flex items-center gap-2.5">
@@ -150,7 +150,7 @@
 
                         {{-- Timeline Track Wrapper --}}
                         <div class="relative space-y-4 pl-2">
-                            
+
                             {{-- Base Gray Spine (Contained securely inside this tier card) --}}
                             <div class="absolute left-8 top-6 bottom-6 w-1.5 -translate-x-1/2 rounded-full bg-slate-200 z-0"></div>
 
@@ -161,10 +161,10 @@
                                 @endphp
 
                                 <div class="relative z-10 flex items-center gap-4">
-                                    
+
                                     {{-- Tactile Node Puck --}}
                                     @if ($isCurrent)
-                                        <div style="--lip: #4A2FC4;"
+                                        <div style="--lip: rgb(var(--color-primary-lip));"
                                              class="btn-press flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-primary/50 bg-primary text-white shadow-md ring-4 ring-primary/20">
                                             <span class="font-display text-base font-black">🎯</span>
                                         </div>
@@ -192,7 +192,7 @@
                                                 <h5 class="font-display text-sm sm:text-base font-black text-slate-900 leading-none">
                                                     Level {{ $level->level_number }}
                                                 </h5>
-                                                
+
                                                 @if ($isCurrent)
                                                     <span class="rounded-full bg-primary px-2 py-0.5 font-display text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-white shadow-xs">
                                                         Active Standing
@@ -235,7 +235,7 @@
             {{-- ========================================= --}}
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
                 <a href="{{ route('practice.intro') }}"
-                   style="--lip: #4A2FC4;"
+                   style="--lip: rgb(var(--color-primary-lip));"
                    class="btn-press w-full sm:w-auto rounded-2xl bg-primary px-8 py-3.5 text-center font-display text-sm font-black text-white shadow-sm transition hover:bg-primary/95">
                     Earn More XP →
                 </a>

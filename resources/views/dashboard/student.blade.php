@@ -122,7 +122,7 @@
                             </p>
                             <div class="mt-6">
                                 <a href="{{ $inProgressDiagnostic ? route('diagnostic.take', ['session' => $inProgressDiagnostic->session_id]) : route('diagnostic.intro') }}"
-                                    style="--lip: #4A2FC4;"
+                                    style="--lip: rgb(var(--color-primary-lip));"
                                     class="btn-press inline-flex items-center rounded-2xl bg-primary px-7 py-3.5 font-display text-base font-bold text-white shadow-md">
                                     {{ $inProgressDiagnostic ? 'Resume Diagnostic' : 'Start Diagnostic' }}
                                 </a>
@@ -155,7 +155,7 @@
 
                             <div class="mt-6 flex flex-wrap items-center gap-4">
                                 <a href="{{ $inProgressPractice ? route('practice.show', ['session' => $inProgressPractice->session_id]) : route('practice.intro') }}"
-                                    style="--lip: #4A2FC4;"
+                                    style="--lip: rgb(var(--color-primary-lip));"
                                     class="btn-press inline-flex items-center rounded-2xl bg-primary px-6 py-3 font-display text-base font-bold text-white shadow-md">
                                     {{ $inProgressPractice ? 'Resume Session' : 'Start Practice Session' }}
                                 </a>

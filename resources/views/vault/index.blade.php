@@ -191,7 +191,7 @@
                                 across your sessions.
                             </p>
                             <div class="mt-5">
-                                <a href="{{ route('practice.intro') }}" style="--lip: #4A2FC4;"
+                                <a href="{{ route('practice.intro') }}" style="--lip: rgb(var(--color-primary-lip));"
                                     class="btn-press inline-flex items-center rounded-2xl bg-primary px-6 py-2.5 font-display text-xs font-bold text-white shadow-xs">
                                     Start Practice Session
                                 </a>
@@ -447,7 +447,7 @@
 
             {{-- Bottom Navigation Actions --}}
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
-                <a href="{{ route('practice.intro') }}" style="--lip: #4A2FC4;"
+                <a href="{{ route('practice.intro') }}" style="--lip: rgb(var(--color-primary-lip));"
                     class="btn-press w-full sm:w-auto rounded-2xl bg-primary px-8 py-3 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-sm transition hover:bg-primary/95">
                     Start Adaptive Practice
                 </a>

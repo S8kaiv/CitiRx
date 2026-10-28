@@ -168,7 +168,7 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                 {{-- Settings Tab Switcher Button --}}
                 <div class="flex items-center shrink-0">
                     <button type="button" @click="activeTab = (activeTab === 'overview' ? 'settings' : 'overview')"
-                        style="--lip: #4A2FC4;"
+                        style="--lip: rgb(var(--color-primary-lip));"
                         class="btn-press w-full sm:w-auto inline-flex justify-center items-center gap-2 rounded-2xl bg-primary px-5 py-3 font-display text-xs font-black uppercase tracking-wider text-white shadow-sm transition hover:bg-primary/95">
                         <span x-text="activeTab === 'overview' ? 'Settings' : 'Overview'">Settings</span>
                     </button>

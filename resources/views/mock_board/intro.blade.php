@@ -199,7 +199,7 @@
                                         href="{{ route('mock-board.results', [
                                             'session' => $completed->session_id,
                                         ]) }}"
-                                        style="--lip: #4A2FC4;"
+                                        style="--lip: rgb(var(--color-primary-lip));"
                                         class="btn-press inline-flex w-full items-center justify-center rounded-2xl bg-primary px-6 py-3.5 font-display text-sm font-black text-white shadow-sm transition hover:bg-primary/95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
                                     >
                                         View Results
@@ -223,7 +223,7 @@
 
                                         <button
                                             type="submit"
-                                            style="--lip: #4A2FC4;"
+                                            style="--lip: rgb(var(--color-primary-lip));"
                                             class="btn-press inline-flex w-full items-center justify-center rounded-2xl bg-primary px-6 py-3.5 font-display text-sm font-black text-white shadow-sm transition hover:bg-primary/95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
                                         >
                                             Start Post-Test
