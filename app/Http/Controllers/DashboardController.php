@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AssessmentSession;
 use App\Models\Badge;
+use App\Models\Level;
 use App\Models\QuestionBookmark;
 use App\Models\RxVault;
 use App\Models\UserBadge;
@@ -48,6 +49,11 @@ class DashboardController extends Controller
                     'level.tier',
                 ]),
 
+                'xpJourneyTarget' => max(
+                    1,
+                    (int) Level::query()->max('min_xp'),
+                ),
+
                 'inProgressDiagnostic' => AssessmentSession::query()
                     ->where('user_id', $user->user_id)
                     ->where('session_type', 'diagnostic')
@@ -63,16 +69,16 @@ class DashboardController extends Controller
                     ->first(),
 
                 'readinessBand' => $user->predicted_readiness_pct !== null
-                        ? $this->readiness->band(
-                            (float) $user
-                                ->predicted_readiness_pct,
-                        )
-                        : null,
+                    ? $this->readiness->band(
+                        (float) $user
+                            ->predicted_readiness_pct,
+                    )
+                    : null,
 
                 'studyRecommendation' => $user->is_diagnostic_completed
-                        ? $this->studyRecommendations
-                            ->forUser($user)
-                        : null,
+                    ? $this->studyRecommendations
+                        ->forUser($user)
+                    : null,
 
                 'unlockedBadgeCount' => UserBadge::query()
                     ->where('user_id', $user->user_id)
