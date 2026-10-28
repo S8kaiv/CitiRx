@@ -171,40 +171,10 @@
 
                     {{-- MOBILE-ONLY LEVEL WIDGET (Appears first on mobile screens before Hub cards) --}}
                     <div class="block lg:hidden">
-                        <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm">
-                            <div class="flex items-center justify-between gap-3">
-                                <div class="flex items-center gap-3 min-w-0">
-                                    <div
-                                        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gold-tint text-xl shadow-2xs">
-                                        🛡️
-                                    </div>
-                                    <div class="min-w-0">
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <h3
-                                                class="font-display text-base font-extrabold text-slate-900 leading-tight">
-                                                Level {{ $user->current_level ?? 1 }}
-                                            </h3>
-                                            @if ($user->level?->tier)
-                                                <span
-                                                    class="inline-flex items-center rounded-lg bg-primary-tint px-2 py-0.5 font-display text-[10px] font-bold text-primary">
-                                                    {{ $user->level->tier->tier_name }}
-                                                </span>
-                                            @endif
-                                        </div>
-                                        <p class="text-xs font-semibold text-muted-ink mt-0.5">
-                                            {{ number_format((int) $user->total_xp) }} Total XP
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="mt-5 border-t border-slate-100 pt-4">
-                                <a href="{{ route('progress.index') }}"
-                                    class="font-display text-xs font-bold text-primary hover:underline">
-                                    View Full Progress Breakdown →
-                                </a>
-                            </div>
-                        </section>
+                        <x-xp-journey
+                            :current-xp="$user->total_xp"
+                            :target-xp="$xpJourneyTarget"
+                        />
                     </div>
 
                     {{-- 2. RX VAULT, BOOKMARKS & ACHIEVEMENTS ROW (Duolingo Tactile Button Vibe) --}}
@@ -293,40 +263,10 @@
 
                     {{-- Level & Progression Widget (Hidden on mobile since it's displayed above on mobile) --}}
                     <div class="hidden lg:block">
-                        <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm">
-                            <div class="flex items-center justify-between gap-3">
-                                <div class="flex items-center gap-3 min-w-0">
-                                    <div
-                                        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gold-tint text-xl shadow-2xs">
-                                        🛡️
-                                    </div>
-                                    <div class="min-w-0">
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <h3
-                                                class="font-display text-base font-extrabold text-slate-900 leading-tight">
-                                                Level {{ $user->current_level ?? 1 }}
-                                            </h3>
-                                            @if ($user->level?->tier)
-                                                <span
-                                                    class="inline-flex items-center rounded-lg bg-primary-tint px-2 py-0.5 font-display text-[10px] font-bold text-primary">
-                                                    {{ $user->level->tier->tier_name }}
-                                                </span>
-                                            @endif
-                                        </div>
-                                        <p class="text-xs font-semibold text-muted-ink mt-0.5">
-                                            {{ number_format((int) $user->total_xp) }} Total XP
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="mt-5 border-t border-slate-100 pt-4">
-                                <a href="{{ route('progress.index') }}"
-                                    class="font-display text-xs font-bold text-primary hover:underline">
-                                    View Full Progress Breakdown →
-                                </a>
-                            </div>
-                        </section>
+                        <x-xp-journey
+                            :current-xp="$user->total_xp"
+                            :target-xp="$xpJourneyTarget"
+                        />
                     </div>
 
                     {{-- Board Readiness Prediction Widget --}}

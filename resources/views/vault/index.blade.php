@@ -3,10 +3,10 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="font-display text-xl font-black text-slate-900 leading-tight">
+                <h1 class="font-display text-xl font-black leading-tight text-slate-900">
                     {{ __('Rx Vault') }}
                 </h1>
-                <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
+                <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
                     Remediation & Spaced Recovery Hub
                 </p>
             </div>

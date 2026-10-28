@@ -177,3 +177,15 @@ test('email can be reused after account deletion', function () {
         'deleted_at' => null,
     ]);
 });
+
+test('profile accurately describes account soft deletion as deactivation', function () {
+    $user = User::factory()->create();
+
+    $this
+        ->actingAs($user)
+        ->get(route('profile.edit'))
+        ->assertOk()
+        ->assertSee('Deactivate Account')
+        ->assertSee('may retain assessment, research, and audit records')
+        ->assertDontSee('all of its resources and data will be permanently deleted');
+});

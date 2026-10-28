@@ -125,3 +125,33 @@ it('protects the progress page from guests', function () {
         ->get(route('progress.index'))
         ->assertRedirect(route('login'));
 });
+
+it('uses the configured maximum level threshold for the dashboard journey', function () {
+    Level::query()
+        ->where('level_number', 10)
+        ->update([
+            'min_xp' => 12000,
+        ]);
+
+    $user = User::factory()->create([
+        'role' => 'student',
+        'total_xp' => 6000,
+        'current_level' => 8,
+        'is_diagnostic_completed' => false,
+    ]);
+
+    $this
+        ->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee('6,000')
+        ->assertSee('12,000')
+        ->assertSee(
+            'aria-valuemax="12000"',
+            escape: false,
+        )
+        ->assertSee(
+            'aria-valuenow="6000"',
+            escape: false,
+        );
+});
