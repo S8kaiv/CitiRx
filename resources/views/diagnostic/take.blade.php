@@ -3,7 +3,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <a href="{{ route('dashboard') }}" 
+                <a href="{{ route('dashboard') }}"
                    title="Exit Diagnostic"
                    class="flex h-10 w-10 items-center justify-center rounded-2xl border-2 border-b-4 border-slate-200 bg-white text-slate-400 shadow-xs transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 active:translate-y-0.5 active:border-b-2">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
@@ -21,7 +21,7 @@
                 </div>
             </div>
 
-            <a href="{{ route('dashboard') }}" 
+            <a href="{{ route('dashboard') }}"
                class="font-display text-xs font-bold text-muted-ink transition hover:text-primary">
                 Exit
             </a>
@@ -113,7 +113,7 @@
             <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-7 shadow-xs">
                 <template x-for="(question, index) in questions" :key="question.id">
                     <div x-show="currentIndex === index" x-cloak class="space-y-5">
-                        
+
                         {{-- Domain Pill & Competency --}}
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="inline-flex items-center gap-1.5 rounded-xl border border-b-2 border-clinical/30 bg-clinical-tint px-3 py-1 font-display text-xs font-extrabold text-clinical-ink"
@@ -141,10 +141,10 @@
                                            class="peer sr-only">
 
                                     <div class="flex items-center gap-4 rounded-2xl border-2 border-b-4 p-3.5 sm:p-4 transition-all duration-150 active:translate-y-0.5 active:border-b-2"
-                                         :class="answers[question.id] === choice.id 
-                                            ? 'border-primary border-b-primary-lip bg-primary-tint/40 shadow-xs' 
+                                         :class="answers[question.id] === choice.id
+                                            ? 'border-primary border-b-primary-lip bg-primary-tint/40 shadow-xs'
                                             : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80'">
-                                        
+
                                         {{-- Choice Letter Pip --}}
                                         <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 font-display text-sm font-black transition-all duration-150"
                                              :class="answers[question.id] === choice.id
@@ -186,7 +186,7 @@
 
                 {{-- Action Controls --}}
                 <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
-                    
+
                     {{-- Previous Button --}}
                     <button type="button"
                             @click="previousQuestion()"
@@ -203,7 +203,7 @@
                         <button type="button"
                                 @click="nextQuestion()"
                                 :disabled="saving"
-                                style="--lip: #4A2FC4;"
+                                style="--lip: rgb(var(--color-primary-lip));"
                                 class="btn-press inline-flex items-center gap-2 rounded-2xl bg-primary px-7 py-3 font-display text-sm font-black uppercase tracking-wider text-white shadow-sm transition hover:bg-primary/95 disabled:opacity-40 disabled:cursor-not-allowed">
                             <span>Continue</span>
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">

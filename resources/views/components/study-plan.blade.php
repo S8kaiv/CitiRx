@@ -49,7 +49,7 @@
             @if ($requiresDiagnostic)
                 <a
                     href="{{ route('diagnostic.intro') }}"
-                    style="--lip: #4A2FC4;"
+                    style="--lip: rgb(var(--color-primary-lip));"
                     class="btn-press mt-5 inline-flex rounded-xl bg-primary px-5 py-2.5 font-display text-sm font-bold text-white"
                 >
                     Take Diagnostic
@@ -128,7 +128,7 @@
                             'domain_filter_id' => $action['domain_id'],
                             'length' => $action['suggested_length'],
                         ]) }}"
-                        style="--lip: #4A2FC4;"
+                        style="--lip: rgb(var(--color-primary-lip));"
                         class="btn-press mt-4 inline-flex rounded-xl bg-primary px-5 py-2.5 font-display text-sm font-bold text-white"
                     >
                         Set Up Targeted Practice

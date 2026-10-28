@@ -60,7 +60,7 @@
     </div>
 
     <div class="flex flex-wrap gap-3 border-t border-slate-100 pt-5">
-        <button type="submit" style="--lip: #4A2FC4;"
+        <button type="submit" style="--lip: rgb(var(--color-primary-lip));"
             class="btn-press rounded-2xl bg-primary px-6 py-3 font-display text-sm font-bold text-white shadow-md">
             {{ $submitLabel }}
         </button>

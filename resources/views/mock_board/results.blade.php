@@ -234,7 +234,7 @@
             <div class="flex justify-center">
                 <a
                     href="{{ route('dashboard') }}"
-                    style="--lip: #4A2FC4;"
+                    style="--lip: rgb(var(--color-primary-lip));"
                     class="btn-press inline-flex items-center justify-center rounded-2xl bg-primary px-8 py-3.5 font-display text-sm font-black text-white transition hover:bg-primary/95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
                 >
                     Return to Dashboard

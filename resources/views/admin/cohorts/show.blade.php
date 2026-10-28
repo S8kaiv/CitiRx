@@ -12,7 +12,7 @@
 
             <div class="flex flex-wrap gap-2">
                 @if (! $cohort->archived_at)
-                    <a href="{{ route('admin.cohorts.edit', ['cohort' => $cohort]) }}" style="--lip: #4A2FC4;"
+                    <a href="{{ route('admin.cohorts.edit', ['cohort' => $cohort]) }}" style="--lip: rgb(var(--color-primary-lip));"
                         class="btn-press rounded-xl bg-primary px-4 py-2 font-display text-sm font-bold text-white shadow-md">
                         Edit Cohort
                     </a>
@@ -163,7 +163,7 @@
                                 </div>
 
                                 <div class="md:col-span-2">
-                                    <button style="--lip: #4A2FC4;"
+                                    <button style="--lip: rgb(var(--color-primary-lip));"
                                         class="btn-press rounded-2xl bg-primary px-6 py-3 font-display text-sm font-bold text-white shadow-md">
                                         Save Post-test Window
                                     </button>

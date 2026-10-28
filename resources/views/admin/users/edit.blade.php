@@ -100,7 +100,7 @@
                         @error('reason') <p class="mt-1 text-xs font-bold text-rose-600">{{ $message }}</p> @enderror
                     </div>
 
-                    <button style="--lip: #4A2FC4;"
+                    <button style="--lip: rgb(var(--color-primary-lip));"
                         class="btn-press rounded-2xl bg-primary px-6 py-3 font-display text-sm font-bold text-white shadow-md">
                         Save Assignment
                     </button>

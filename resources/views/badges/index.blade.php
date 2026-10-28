@@ -169,7 +169,7 @@
             {{-- CALL TO ACTION BUTTONS --}}
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
                 <a href="{{ route('practice.intro') }}"
-                   style="--lip: #4A2FC4;"
+                   style="--lip: rgb(var(--color-primary-lip));"
                    class="btn-press w-full sm:w-auto rounded-2xl bg-primary px-8 py-3.5 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-sm transition hover:bg-primary/95">
                     Practice to Earn XP
                 </a>

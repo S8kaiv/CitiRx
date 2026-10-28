@@ -10,7 +10,7 @@
                 </p>
             </div>
 
-            <a href="{{ route('admin.cohorts.create') }}" style="--lip: #4A2FC4;"
+            <a href="{{ route('admin.cohorts.create') }}" style="--lip: rgb(var(--color-primary-lip));"
                 class="btn-press rounded-xl bg-primary px-4 py-2 font-display text-sm font-bold text-white shadow-md">
                 Create Cohort
             </a>
@@ -147,7 +147,7 @@
                         </div>
 
                         <div class="mt-5">
-                            <a href="{{ route('admin.cohorts.show', ['cohort' => $cohort]) }}" style="--lip: #4A2FC4;"
+                            <a href="{{ route('admin.cohorts.show', ['cohort' => $cohort]) }}" style="--lip: rgb(var(--color-primary-lip));"
                                 class="btn-press block w-full rounded-2xl bg-primary py-3 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-md">
                                 View Cohort
                             </a>

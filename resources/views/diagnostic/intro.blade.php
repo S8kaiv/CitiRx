@@ -143,7 +143,7 @@
                     class="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <form method="POST" action="{{ route('diagnostic.start') }}" class="w-full sm:w-auto">
                         @csrf
-                        <button type="submit" style="--lip: #4A2FC4;"
+                        <button type="submit" style="--lip: rgb(var(--color-primary-lip));"
                             class="btn-press w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-8 py-3.5 font-display text-sm font-bold text-white shadow-md transition hover:bg-primary/95">
                             <span>Begin Diagnostic Assessment</span>
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5"

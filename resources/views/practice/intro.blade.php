@@ -125,7 +125,7 @@
 
                     {{-- Action Buttons --}}
                     <div class="pt-3 space-y-3">
-                        <button type="submit" style="--lip: #4A2FC4;"
+                        <button type="submit" style="--lip: rgb(var(--color-primary-lip));"
                             class="btn-press w-full rounded-2xl bg-primary py-3.5 font-display text-sm font-bold text-white shadow-md transition hover:bg-primary/95">
                             Start Practice Session
                         </button>

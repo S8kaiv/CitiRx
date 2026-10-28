@@ -80,7 +80,7 @@
                 </div>
 
                 <div class="flex items-end gap-2">
-                    <button type="submit" style="--lip: #4A2FC4;"
+                    <button type="submit" style="--lip: rgb(var(--color-primary-lip));"
                         class="btn-press flex-1 rounded-xl bg-primary px-4 py-2.5 font-display text-sm font-bold text-white shadow-md">
                         Filter
                     </button>

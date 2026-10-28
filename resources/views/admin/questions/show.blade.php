@@ -64,7 +64,7 @@
                     </div>
 
                     <a href="{{ route('admin.questions.edit', ['question' => $question->question_id]) }}"
-                        style="--lip: #4A2FC4;"
+                        style="--lip: rgb(var(--color-primary-lip));"
                         class="btn-press rounded-2xl bg-primary px-6 py-3 font-display text-sm font-bold text-white shadow-md">
                         Edit Question
                     </a>

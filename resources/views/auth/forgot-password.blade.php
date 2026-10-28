@@ -141,7 +141,7 @@
 
                         <button type="submit"
                             :disabled="busy"
-                            style="--lip: #4A2FC4;"
+                            style="--lip: rgb(var(--color-primary-lip));"
                             class="btn-press flex w-full items-center justify-center rounded-2xl bg-primary px-7 py-3.5 font-display text-base font-bold text-white shadow-md hover:bg-primary-lip disabled:opacity-70 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
                             <span x-text="busy ? 'Sending Link…' : 'Send reset link'">Send reset link</span>
                         </button>

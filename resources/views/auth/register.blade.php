@@ -238,18 +238,18 @@
                                     required autocomplete="email"
                                     class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
                                     placeholder="student@citirx.edu">
-                            </div>
 
-                            <p class="mt-1.5 text-xs text-slate-500">
-                                Use an email address you can access.
-                                Temporary and disposable email services are not accepted.
-                            </p>
-
-                            @error('email')
-                                <p class="mt-1.5 text-xs font-medium text-weak">
-                                    {{ $message }}
+                                <p class="mt-1.5 text-xs text-slate-500">
+                                    Use an email address you can access.
+                                    Temporary and disposable email services are not accepted.
                                 </p>
-                            @enderror
+
+                                @error('email')
+                                    <p class="mt-1.5 text-xs font-medium text-weak">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
                         </div>
 
                         {{-- Password --}}
@@ -299,7 +299,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" :disabled="busy" style="--lip: #4A2FC4;"
+                        <button type="submit" :disabled="busy" style="--lip: rgb(var(--color-primary-lip));"
                             class="btn-press flex w-full items-center justify-center rounded-2xl bg-primary px-7 py-3.5 font-display text-base font-bold text-white shadow-md hover:bg-primary-lip disabled:opacity-70 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
                             <span x-text="busy ? 'Creating Account…' : 'Create Account'">Create Account</span>
                         </button>
