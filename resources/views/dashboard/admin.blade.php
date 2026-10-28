@@ -334,19 +334,28 @@
             </section>
 
             <section aria-labelledby="research-form-heading">
-                <div class="mb-3">
-                    <h3
-                        id="research-form-heading"
-                        class="font-display text-lg font-extrabold text-slate-900"
-                    >
-                        Research Forms
-                    </h3>
+                <div class="mb-3 flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                        <h3
+                            id="research-form-heading"
+                            class="font-display text-lg font-extrabold text-slate-900"
+                        >
+                            Research Forms
+                        </h3>
 
-                    <p class="mt-1 text-xs text-slate-500">
-                        These cards show content and validation progress.
-                        The complete blueprint must still pass
-                        <code>research:audit-forms</code>.
-                    </p>
+                        <p class="mt-1 text-xs text-slate-500">
+                            These dashboard cards are lightweight summaries.
+                            Open readiness for the complete shared blueprint
+                            and validation audit.
+                        </p>
+                    </div>
+
+                    <a
+                        href="{{ route('admin.research-forms.index') }}"
+                        class="text-sm font-bold text-primary hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                    >
+                        Open readiness audit
+                    </a>
                 </div>
 
                 <div class="grid gap-5 lg:grid-cols-2">
@@ -487,7 +496,7 @@
                             <article class="rounded-2xl border border-slate-200 p-4">
                                 <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                                     <span class="font-bold text-slate-900">
-                                        {{ $log->admin?->fullName() ?? 'Former administrator' }}
+                                        {{ $log->actorDisplayName() }}
                                     </span>
 
                                     <span aria-hidden="true">•</span>
@@ -540,7 +549,7 @@
                     Quick Actions
                 </h3>
 
-                <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
                     @foreach ([
                         [
                             'label' => 'Users',
@@ -561,6 +570,10 @@
                         [
                             'label' => 'Audit Logs',
                             'route' => route('admin.audit-logs.index'),
+                        ],
+                        [
+                            'label' => 'System Health',
+                            'route' => route('admin.system-health.index'),
                         ],
                     ] as $action)
                         <a

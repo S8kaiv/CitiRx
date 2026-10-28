@@ -44,6 +44,7 @@ class AssessmentSession extends Model
         'domain_mastery_snapshot',
         'exam_form_version',
         'submission_reason',
+        'form_version_id',
     ];
 
     protected $casts = [
@@ -102,6 +103,15 @@ class AssessmentSession extends Model
             AssessmentResponse::class,
             'session_id',
             'session_id',
+        );
+    }
+
+    public function formVersion(): BelongsTo
+    {
+        return $this->belongsTo(
+            ResearchFormVersion::class,
+            'form_version_id',
+            'form_version_id',
         );
     }
 }

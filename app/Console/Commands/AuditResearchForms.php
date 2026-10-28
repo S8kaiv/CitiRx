@@ -2,319 +2,180 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Question;
+use App\Models\ResearchFormVersion;
+use App\Services\ResearchFormAuditService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
 
 class AuditResearchForms extends Command
 {
-    private const TOTAL_ITEMS = 60;
-
-    private const ITEMS_PER_DOMAIN = 10;
-
-    private const BLUEPRINTS = [
-        Question::FORM_PRE_TEST_A => [
-            1 => ['PC-01' => 4, 'PC-02' => 5, 'PC-03' => 1],
-            2 => ['PB-01' => 5, 'PB-02' => 5],
-            3 => ['PP-01' => 2, 'PP-02' => 4, 'PP-03' => 2, 'PP-04' => 2],
-            4 => ['PK-01' => 6, 'PK-02' => 2, 'PK-03' => 2],
-            5 => ['PH-01' => 3, 'PH-02' => 3, 'PH-03' => 2, 'PH-04' => 2],
-            6 => ['QC-01' => 3, 'QC-02' => 2, 'QC-03' => 3, 'QC-04' => 2],
-        ],
-        Question::FORM_POST_TEST_B => [
-            1 => ['PC-01' => 4, 'PC-02' => 5, 'PC-03' => 1],
-            2 => ['PB-01' => 5, 'PB-02' => 5],
-            3 => ['PP-01' => 2, 'PP-02' => 4, 'PP-03' => 2, 'PP-04' => 2],
-            4 => ['PK-01' => 6, 'PK-02' => 2, 'PK-03' => 2],
-            5 => ['PH-01' => 3, 'PH-02' => 3, 'PH-03' => 2, 'PH-04' => 2],
-            6 => ['QC-01' => 2, 'QC-02' => 2, 'QC-03' => 3, 'QC-04' => 3],
-        ],
-    ];
-
     protected $signature = 'research:audit-forms
         {--form= : Audit one form only}
+        {--form-version= : Audit one exact registered version code}
         {--require-validation : Require both validation fields}';
 
-    protected $description = 'Audit research forms for blueprint, content, answer-key, and validation integrity';
+    protected $description =
+        'Audit research forms for blueprint, content, '
+        .'answer-key, and validation integrity';
 
-    public function handle(): int
-    {
-        $selectedForm = trim((string) ($this->option('form') ?? ''));
-        $forms = $selectedForm === ''
-            ? array_keys(self::BLUEPRINTS)
-            : [$selectedForm];
+    public function handle(
+        ResearchFormAuditService $audit,
+    ): int {
+        $selectedForm = trim(
+            (string) ($this->option('form') ?? ''),
+        );
 
-        foreach ($forms as $form) {
-            if (! array_key_exists($form, self::BLUEPRINTS)) {
-                $this->error("Unknown research form: {$form}");
+        $selectedVersionCode = trim(
+            (string) ($this->option('form-version') ?? ''),
+        );
 
-                return self::FAILURE;
-            }
+        if (
+            $selectedForm !== ''
+            && ! $audit->hasForm($selectedForm)
+        ) {
+            $this->error(
+                "Unknown research form: {$selectedForm}",
+            );
+
+            return self::FAILURE;
         }
 
-        $requireValidation = (bool) $this->option('require-validation');
+        $requireValidation = (bool) $this->option(
+            'require-validation',
+        );
+
+        if ($selectedVersionCode !== '') {
+            return $this->auditExactVersion(
+                audit: $audit,
+                selectedForm: $selectedForm,
+                versionCode: $selectedVersionCode,
+                requireValidation: $requireValidation,
+            );
+        }
+
+        $forms = $selectedForm === ''
+            ? array_keys(
+                $audit->formDefinitions(),
+            )
+            : [$selectedForm];
+
         $failed = false;
 
         foreach ($forms as $form) {
-            [$metrics, $errors] = $this->auditForm(
+            $report = $audit->audit(
                 $form,
                 $requireValidation,
             );
 
-            $this->newLine();
-            $this->info("Research-form audit: {$form}");
-            $this->table(
-                ['Check', 'Result'],
-                collect($metrics)
-                    ->map(fn (mixed $value, string $label): array => [
-                        $label,
-                        $value,
-                    ])
-                    ->values()
-                    ->all(),
+            $this->displayReport(
+                "{$form} active version",
+                $report,
             );
 
-            if ($errors === []) {
-                $this->info("{$form} passed the requested audit.");
-
-                continue;
-            }
-
-            $failed = true;
-            $this->error("{$form} failed with ".count($errors).' issue(s):');
-
-            foreach ($errors as $error) {
-                $this->line("  - {$error}");
+            if ($report['errors'] !== []) {
+                $failed = true;
             }
         }
 
-        return $failed ? self::FAILURE : self::SUCCESS;
+        return $failed
+            ? self::FAILURE
+            : self::SUCCESS;
+    }
+
+    private function auditExactVersion(
+        ResearchFormAuditService $audit,
+        string $selectedForm,
+        string $versionCode,
+        bool $requireValidation,
+    ): int {
+        $version = ResearchFormVersion::query()
+            ->where('version_code', $versionCode)
+            ->first();
+
+        if (! $version) {
+            $this->error(
+                "Unknown research-form version: {$versionCode}",
+            );
+
+            return self::FAILURE;
+        }
+
+        if (
+            $selectedForm !== ''
+            && $version->research_form
+                !== $selectedForm
+        ) {
+            $this->error(
+                "{$versionCode} belongs to "
+                    ."{$version->research_form}, not "
+                    ."{$selectedForm}.",
+            );
+
+            return self::FAILURE;
+        }
+
+        $report = $audit->auditVersion(
+            $version,
+            $requireValidation,
+        );
+
+        $this->displayReport(
+            "{$version->research_form} "
+                ."({$version->version_code})",
+            $report,
+        );
+
+        return $report['errors'] === []
+            ? self::SUCCESS
+            : self::FAILURE;
     }
 
     /**
-     * @return array{0: array<string, int|string>, 1: array<int, string>}
+     * @param  array<string, mixed>  $report
      */
-    private function auditForm(
-        string $form,
-        bool $requireValidation,
-    ): array {
-        $questions = Question::query()
-            ->where('research_form', $form)
-            ->where('is_active', true)
-            ->with([
-                'choices',
-                'competency.domain',
-            ])
-            ->orderBy('form_position')
-            ->get();
+    private function displayReport(
+        string $label,
+        array $report,
+    ): void {
+        $this->newLine();
 
-        $errors = [];
-        $activeCount = $questions->count();
-
-        if ($activeCount !== self::TOTAL_ITEMS) {
-            $errors[] = "Expected 60 active questions; found {$activeCount}.";
-        }
-
-        $positions = $questions
-            ->pluck('form_position')
-            ->map(fn (mixed $position): int => (int) $position)
-            ->sort()
-            ->values()
-            ->all();
-
-        if ($positions !== range(1, self::TOTAL_ITEMS)) {
-            $errors[] = 'Active positions must uniquely cover 1 through 60.';
-        }
-
-        $missingRelationships = $questions->filter(
-            fn (Question $question): bool => $question->competency === null
-                || $question->competency->domain === null,
+        $this->info(
+            "Research-form audit: {$label}",
         );
 
-        if ($missingRelationships->isNotEmpty()) {
-            $errors[] = 'Questions with missing competency/domain relationships: '
-                .$this->positions($missingRelationships).'.';
-        }
-
-        $domainCounts = $questions
-            ->filter(fn (Question $question): bool => $question->competency?->domain !== null)
-            ->countBy(fn (Question $question): int => (int) $question->competency->domain->domain_number);
-
-        foreach (range(1, 6) as $domainNumber) {
-            $actual = (int) $domainCounts->get($domainNumber, 0);
-
-            if ($actual !== self::ITEMS_PER_DOMAIN) {
-                $errors[] = "Domain {$domainNumber} requires 10 items; found {$actual}.";
-            }
-        }
-
-        $competencyCounts = $questions
-            ->filter(fn (Question $question): bool => $question->competency !== null)
-            ->countBy(fn (Question $question): string => $question->competency->competency_code);
-
-        $expectedCodes = [];
-
-        foreach (self::BLUEPRINTS[$form] as $domainNumber => $quotas) {
-            foreach ($quotas as $code => $expected) {
-                $expectedCodes[] = $code;
-                $actual = (int) $competencyCounts->get($code, 0);
-
-                if ($actual !== $expected) {
-                    $errors[] = "{$code} requires {$expected} item(s); found {$actual}.";
-                }
-            }
-
-            $wrongDomain = $questions->filter(
-                fn (Question $question): bool => in_array(
-                    $question->competency?->competency_code,
-                    array_keys($quotas),
-                    true,
+        $this->table(
+            ['Check', 'Result'],
+            collect($report['console_metrics'])
+                ->map(
+                    fn (
+                        mixed $value,
+                        string $metric,
+                    ): array => [
+                        $metric,
+                        $value,
+                    ],
                 )
-                    && (int) $question->competency?->domain?->domain_number
-                        !== $domainNumber,
+                ->values()
+                ->all(),
+        );
+
+        if ($report['errors'] === []) {
+            $this->info(
+                "{$label} passed the requested audit.",
             );
 
-            if ($wrongDomain->isNotEmpty()) {
-                $errors[] = "Domain mismatch for {$domainNumber} at positions "
-                    .$this->positions($wrongDomain).'.';
-            }
+            return;
         }
 
-        $unexpectedCodes = $competencyCounts
-            ->keys()
-            ->diff($expectedCodes)
-            ->values();
-
-        if ($unexpectedCodes->isNotEmpty()) {
-            $errors[] = 'Unexpected competency codes: '
-                .$unexpectedCodes->implode(', ').'.';
-        }
-
-        $invalidChoices = $questions->filter(
-            fn (Question $question): bool => $question->choices->count() !== 4
-                || $question->choices
-                    ->where('is_correct', true)
-                    ->count() !== 1,
+        $this->error(
+            "{$label} failed with "
+                .count($report['errors'])
+                .' issue(s):',
         );
 
-        if ($invalidChoices->isNotEmpty()) {
-            $errors[] = 'Questions without four choices and exactly one correct choice: '
-                .$this->positions($invalidChoices).'.';
+        foreach ($report['errors'] as $error) {
+            $this->line(
+                "  - {$error}",
+            );
         }
-
-        $emptyContent = $questions->filter(
-            fn (Question $question): bool => trim($question->question_text) === ''
-                || $question->choices->contains(
-                    fn ($choice): bool => trim($choice->choice_text) === '',
-                ),
-        );
-
-        if ($emptyContent->isNotEmpty()) {
-            $errors[] = 'Questions with an empty stem or choice: '
-                .$this->positions($emptyContent).'.';
-        }
-
-        $placeholders = $questions->filter(
-            fn (Question $question): bool => str_contains(
-                mb_strtoupper($question->question_text),
-                'DEVELOPMENT MOCK',
-            ),
-        );
-
-        if ($placeholders->isNotEmpty()) {
-            $errors[] = 'Development placeholders remain at positions '
-                .$this->positions($placeholders).'.';
-        }
-
-        $duplicatePositions = $questions
-            ->groupBy(fn (Question $question): string => $this->normalizeStem($question->question_text))
-            ->filter(fn (Collection $group, string $stem): bool => $stem !== '' && $group->count() > 1)
-            ->map(fn (Collection $group): string => $this->positions($group))
-            ->values();
-
-        if ($duplicatePositions->isNotEmpty()) {
-            $errors[] = 'Exact normalized duplicate stems occur at positions '
-                .$duplicatePositions->implode('; ').'.';
-        }
-
-        $missingRationales = $questions->filter(
-            fn (Question $question): bool => trim((string) $question->hypercorrection_rationale) === '',
-        );
-
-        if ($missingRationales->isNotEmpty()) {
-            $errors[] = 'Missing rationales at positions '
-                .$this->positions($missingRationales).'.';
-        }
-
-        $invalidCognitiveLevels = $questions->filter(
-            fn (Question $question): bool => ! in_array(
-                $question->cognitive_level,
-                Question::COGNITIVE_LEVELS,
-                true,
-            ),
-        );
-
-        if ($invalidCognitiveLevels->isNotEmpty()) {
-            $errors[] = 'Missing or invalid cognitive levels at positions '
-                .$this->positions($invalidCognitiveLevels).'.';
-        }
-
-        $fullyValidated = $questions->filter(
-            fn (Question $question): bool => $question->research_validated_at !== null
-                && $question->research_validated_by !== null,
-        )->count();
-
-        $partialValidation = $questions->filter(
-            fn (Question $question): bool => ($question->research_validated_at === null)
-                !== ($question->research_validated_by === null),
-        );
-
-        if ($partialValidation->isNotEmpty()) {
-            $errors[] = 'Partially validated questions occur at positions '
-                .$this->positions($partialValidation).'.';
-        }
-
-        if ($requireValidation && $fullyValidated !== self::TOTAL_ITEMS) {
-            $errors[] = "Expected 60 fully validated questions; found {$fullyValidated}.";
-        }
-
-        $metrics = [
-            'Active questions' => "{$activeCount}/60",
-            'Fully validated' => "{$fullyValidated}/60",
-            'Placeholders' => $placeholders->count(),
-            'Positions 1-60' => $positions === range(1, self::TOTAL_ITEMS)
-                ? 'Pass'
-                : 'Fail',
-            'Domains with 10 items' => collect(range(1, 6))
-                ->filter(fn (int $domain): bool => (int) $domainCounts->get($domain, 0)
-                    === self::ITEMS_PER_DOMAIN)
-                ->count().'/6',
-            'Invalid choice structures' => $invalidChoices->count(),
-            'Empty stems/choices' => $emptyContent->count(),
-            'Duplicate stems' => $duplicatePositions->count(),
-            'Missing rationales' => $missingRationales->count(),
-            'Missing/invalid cognitive levels' => $invalidCognitiveLevels->count(),
-        ];
-
-        return [$metrics, $errors];
-    }
-
-    private function normalizeStem(string $stem): string
-    {
-        $normalized = mb_strtolower(trim($stem));
-        $normalized = preg_replace('/[^\pL\pN]+/u', ' ', $normalized)
-            ?? $normalized;
-
-        return trim(preg_replace('/\s+/u', ' ', $normalized) ?? $normalized);
-    }
-
-    /** @param Collection<int, Question> $questions */
-    private function positions(Collection $questions): string
-    {
-        return $questions
-            ->pluck('form_position')
-            ->map(fn (mixed $position): int => (int) $position)
-            ->sort()
-            ->implode(', ');
     }
 }

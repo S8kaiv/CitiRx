@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureUserCanManageMicroPearls;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsFaculty;
 use App\Http\Middleware\EnsureUserIsStudent;
@@ -24,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
             'faculty' => EnsureUserIsFaculty::class,
             'student' => EnsureUserIsStudent::class,
+            'pearl-editor' => EnsureUserCanManageMicroPearls::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

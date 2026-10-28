@@ -60,6 +60,7 @@ class Question extends Model
         'research_form',
         'form_position',
         'cognitive_level',
+        'form_version_id',
     ];
 
     protected $table = 'questions';
@@ -88,6 +89,7 @@ class Question extends Model
         'cognitive_level',
         'research_validated_at',
         'research_validated_by',
+        'form_version_id',
     ];
 
     protected $casts = [
@@ -164,6 +166,15 @@ class Question extends Model
         return $this->first_served_at !== null
             || $this->research_validated_at !== null
             || $this->research_validated_by !== null;
+    }
+
+    public function formVersion(): BelongsTo
+    {
+        return $this->belongsTo(
+            ResearchFormVersion::class,
+            'form_version_id',
+            'form_version_id',
+        );
     }
 
     protected static function booted(): void

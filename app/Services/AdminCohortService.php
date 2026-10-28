@@ -14,6 +14,7 @@ class AdminCohortService
     public function __construct(
         protected AdminAuditService $audit,
         protected ResearchFormService $researchForms,
+        protected PilotControlService $pilotControls,
     ) {}
 
     public function create(
@@ -108,6 +109,9 @@ class AdminCohortService
             $data,
             $reason,
         ): void {
+            $this->pilotControls
+                ->assertResearchConfigurationMutable();
+
             $cohort = Cohort::query()
                 ->lockForUpdate()
                 ->findOrFail($cohort->cohort_id);

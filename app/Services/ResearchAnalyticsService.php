@@ -2,15 +2,26 @@
 
 namespace App\Services;
 
+use App\Models\Question;
+use App\Models\ResearchFormVersion;
 use App\Models\TosDomain;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class ResearchAnalyticsService
 {
     private const EPSILON = 1.0E-9;
 
     private const EXACT_MAX_N = 25;
+
+    /**
+     * @var array{
+     *     pre_test: ResearchFormVersion,
+     *     post_test: ResearchFormVersion
+     * }|null
+     */
+    private ?array $resolvedResearchVersions = null;
 
     public function __construct(
         protected ResearchAttemptEligibilityService $attemptEligibility,
@@ -34,8 +45,23 @@ class ResearchAnalyticsService
             'generated_at' => now(),
 
             'form_versions' => [
-                'pre_test' => $this->preTestVersion(),
-                'post_test' => $this->postTestVersion(),
+                'pre_test' => $this
+                    ->researchVersions()['pre_test']
+                    ->version_code,
+
+                'post_test' => $this
+                    ->researchVersions()['post_test']
+                    ->version_code,
+            ],
+
+            'form_version_ids' => [
+                'pre_test' => $this
+                    ->researchVersions()['pre_test']
+                    ->form_version_id,
+
+                'post_test' => $this
+                    ->researchVersions()['post_test']
+                    ->form_version_id,
             ],
 
             'eligibility' => $dataset['eligibility'],
@@ -273,9 +299,11 @@ class ResearchAnalyticsService
      */
     private function loadDataset(): array
     {
+        $versions = $this->researchVersions();
+
         return $this->attemptEligibility->dataset(
-            preTestVersion: $this->preTestVersion(),
-            postTestVersion: $this->postTestVersion(),
+            preTestVersion: $versions['pre_test'],
+            postTestVersion: $versions['post_test'],
         );
     }
 
@@ -477,6 +505,14 @@ class ResearchAnalyticsService
             'excluded_duplicate_post' => $eligibility['duplicate_post_attempts'],
 
             'excluded_invalid_chronology' => $eligibility['invalid_chronology'],
+
+            'excluded_pre_participant_scope' => array_sum(
+                $eligibility['pre_participant_scope_exclusions'],
+            ),
+
+            'excluded_post_participant_scope' => array_sum(
+                $eligibility['post_participant_scope_exclusions'],
+            ),
         ];
     }
 
@@ -669,13 +705,105 @@ class ResearchAnalyticsService
         return $sessionId.'|'.$domainId;
     }
 
-    private function preTestVersion(): string
+    /**
+     * Resolve the immutable research-form versions selected for the
+     * analytics report.
+     *
+     * The configured version codes pin the report to a reproducible
+     * Form A/Form B pair. Session and question eligibility are then
+     * checked using the corresponding form_version_id values.
+     *
+     * @return array{
+     *     pre_test: ResearchFormVersion,
+     *     post_test: ResearchFormVersion
+     * }
+     */
+    private function researchVersions(): array
     {
-        return (string) config('citirx.research.pre_test_form_version', 'pre_test_a_v1');
-    }
+        if ($this->resolvedResearchVersions !== null) {
+            return $this->resolvedResearchVersions;
+        }
 
-    private function postTestVersion(): string
-    {
-        return (string) config('citirx.research.post_test_form_version', 'post_test_b_v1');
+        $definitions = [
+            'pre_test' => [
+                'research_form' => Question::FORM_PRE_TEST_A,
+
+                'version_code' => trim(
+                    (string) config(
+                        'citirx.research.pre_test_form_version',
+                        'pre_test_a_v1',
+                    ),
+                ),
+            ],
+
+            'post_test' => [
+                'research_form' => Question::FORM_POST_TEST_B,
+
+                'version_code' => trim(
+                    (string) config(
+                        'citirx.research.post_test_form_version',
+                        'post_test_b_v1',
+                    ),
+                ),
+            ],
+        ];
+
+        foreach ($definitions as $phase => $definition) {
+            if ($definition['version_code'] === '') {
+                throw new RuntimeException(
+                    "The configured {$phase} research-form "
+                        .'version cannot be empty.',
+                );
+            }
+        }
+
+        $versions = ResearchFormVersion::query()
+            ->whereIn(
+                'version_code',
+                collect($definitions)
+                    ->pluck('version_code')
+                    ->all(),
+            )
+            ->get()
+            ->keyBy('version_code');
+
+        $resolved = [];
+
+        foreach ($definitions as $phase => $definition) {
+            $version = $versions->get(
+                $definition['version_code'],
+            );
+
+            if (! $version instanceof ResearchFormVersion) {
+                throw new RuntimeException(
+                    'Research-form version '
+                        ."{$definition['version_code']} "
+                        .'is not registered.',
+                );
+            }
+
+            if (
+                $version->research_form
+                !== $definition['research_form']
+            ) {
+                throw new RuntimeException(
+                    'Research-form version '
+                        ."{$version->version_code} belongs to "
+                        ."{$version->research_form}, not "
+                        ."{$definition['research_form']}.",
+                );
+            }
+
+            $resolved[$phase] = $version;
+        }
+
+        /** @var array{
+         *     pre_test: ResearchFormVersion,
+         *     post_test: ResearchFormVersion
+         * } $resolved
+         */
+        $this->resolvedResearchVersions = $resolved;
+
+        return $this->resolvedResearchVersions;
     }
 }

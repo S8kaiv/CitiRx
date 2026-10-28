@@ -3,6 +3,7 @@
 use App\Models\AssessmentResponse;
 use App\Models\AssessmentSession;
 use App\Models\Cohort;
+use App\Models\PilotControl;
 use App\Models\Question;
 use App\Models\TosCompetency;
 use App\Models\User;
@@ -26,6 +27,14 @@ beforeEach(function () {
         'citirx.research.post_test_form_version',
         'post_test_b_v1',
     );
+
+    /*
+     * Establish the normal starting condition required
+     * by every Mock Board service test.
+     */
+    PilotControl::query()->update([
+        'phase' => PilotControl::PHASE_POST_TEST_OPEN,
+    ]);
 
     $this->seed(TosSeeder::class);
     $this->seed(ResearchQuestionSeeder::class);

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AssessmentResponse;
 use App\Models\AssessmentSession;
+use App\Models\PilotControl;
 use App\Models\Question;
 use App\Models\QuestionChoice;
 use App\Models\User;
@@ -20,6 +21,7 @@ class MockBoardService
         protected ResearchFormService $researchForms,
         protected ReadinessService $readiness,
         protected QuestionUsageService $questionUsage,
+        protected PilotControlService $pilotControls,
     ) {}
 
     /**
@@ -48,9 +50,17 @@ class MockBoardService
                 fn (AssessmentSession $session): bool => $session->completed_at === null,
             );
 
-        $availability = $this->researchForms->availability(
-            Question::FORM_POST_TEST_B,
-        );
+        $formVersion = $this
+            ->researchForms
+            ->activeVersion(
+                Question::FORM_POST_TEST_B,
+            );
+
+        $availability = $this
+            ->researchForms
+            ->availabilityForVersion(
+                $formVersion,
+            );
 
         $canStart = false;
         $reason = null;
@@ -59,6 +69,13 @@ class MockBoardService
             $reason = 'You have already completed the research post-test.';
         } elseif ($inProgress) {
             $reason = 'Resume your existing research post-test.';
+        } elseif (
+            ! PilotControl::query()
+                ->sole()
+                ->postTestIsOpen()
+        ) {
+            $reason = 'The official mock-board '
+                .'examination is not currently open.';
         } elseif (! $user->is_diagnostic_completed) {
             $reason = 'Complete the diagnostic before starting the research post-test.';
         } elseif (! $this->cohortWindowIsOpen($user)) {
@@ -90,7 +107,7 @@ class MockBoardService
             'in_progress' => $inProgress,
             'completed' => $completed,
             'duration_minutes' => $this->durationMinutes(),
-            'form_version' => $this->formVersion(),
+            'form_version' => $formVersion->version_code,
         ];
     }
 
@@ -141,6 +158,9 @@ class MockBoardService
                 return $existing;
             }
 
+            $this->pilotControls
+                ->assertPostTestStartAllowed();
+
             $this->assertStartEligibility($user);
 
             /*
@@ -152,9 +172,16 @@ class MockBoardService
              * - four choices per question
              * - one correct choice per question
              */
-            $questions = $this->researchForms->load(
-                Question::FORM_POST_TEST_B,
-            );
+            $formVersion = $this
+                ->researchForms
+                ->activeVersion(
+                    Question::FORM_POST_TEST_B,
+                    lockForUpdate: true,
+                );
+
+            $questions = $this
+                ->researchForms
+                ->loadVersion($formVersion);
 
             /*
              * Preserve readiness before the post-test. The Mock Board
@@ -201,7 +228,9 @@ class MockBoardService
                     ->addMinutes($this->durationMinutes()),
                 'readiness_snapshot_pct' => $readiness['total'],
                 'domain_mastery_snapshot' => $domainSnapshot,
-                'exam_form_version' => $this->formVersion(),
+                'form_version_id' => $formVersion->form_version_id,
+
+                'exam_form_version' => $formVersion->version_code,
                 'submission_reason' => null,
             ]);
 
@@ -231,6 +260,15 @@ class MockBoardService
 
             $this->questionUsage->markServed(
                 $orderedQuestions->pluck('question_id'),
+                $startedAt,
+            );
+
+            /*
+            * Record when this complete research-form version
+            * was first used by a student.
+            */
+            $this->researchForms->markServed(
+                $formVersion,
                 $startedAt,
             );
 
@@ -611,24 +649,6 @@ class MockBoardService
         }
 
         return $duration;
-    }
-
-    private function formVersion(): string
-    {
-        $version = trim(
-            (string) config(
-                'citirx.research.post_test_form_version',
-                '',
-            ),
-        );
-
-        if ($version === '') {
-            throw new RuntimeException(
-                'The post-test form version is not configured.',
-            );
-        }
-
-        return $version;
     }
 
     /**
