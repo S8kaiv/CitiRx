@@ -1,230 +1,100 @@
-<x-guest-layout fullscreen>
-    <style>
-        @keyframes capsule-float {
-
-            0%,
-            100% {
-                transform: translateY(0) rotate(var(--r));
-            }
-
-            50% {
-                transform: translateY(-14px) rotate(calc(var(--r) + 6deg));
-            }
-        }
-
-        .capsule {
-            animation: capsule-float 7s ease-in-out infinite;
-        }
-
-        .capsule:nth-child(2) {
-            animation-delay: -2s;
-            animation-duration: 9s;
-        }
-
-        .capsule:nth-child(3) {
-            animation-delay: -4s;
-            animation-duration: 8s;
-        }
-
-        .capsule:nth-child(4) {
-            animation-delay: -1s;
-            animation-duration: 10s;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .capsule {
-                animation: none;
-            }
-        }
-    </style>
-
-    {{-- Full-screen breakout container compatible across all devices --}}
-    <div class="min-h-screen bg-slate-50 lg:bg-white text-slate-800">
-        <div class="min-h-screen grid grid-cols-1 lg:grid-cols-[0.80fr_1fr]">
-
-            {{-- ============ LEFT: brand + feature highlights (Desktop / Large Screens) ============ --}}
-            <aside
-                class="relative hidden lg:flex flex-col justify-between overflow-hidden bg-[#4A2FC4] p-8 xl:p-12 text-white min-h-screen">
-
-                {{-- Floating capsules --}}
-                <div class="pointer-events-none absolute inset-0" aria-hidden="true">
-                    <div class="capsule absolute -top-4 right-16 h-10 w-28 rounded-full bg-[linear-gradient(90deg,#fbbf24_50%,#ffffff_50%)] opacity-90 shadow-lg"
-                        style="--r:-28deg"></div>
-                    <div class="capsule absolute top-1/3 -right-6 h-9 w-24 rounded-full bg-[linear-gradient(90deg,#34d399_50%,#ffffff_50%)] opacity-80 shadow-lg"
-                        style="--r:35deg"></div>
-                    <div class="capsule absolute bottom-24 -left-6 h-10 w-28 rounded-full bg-[linear-gradient(90deg,#fb7185_50%,#ffffff_50%)] opacity-80 shadow-lg"
-                        style="--r:20deg"></div>
-                    <div class="capsule absolute bottom-6 right-24 h-8 w-20 rounded-full bg-[linear-gradient(90deg,#38bdf8_50%,#ffffff_50%)] opacity-80 shadow-lg"
-                        style="--r:-15deg"></div>
-                </div>
-
-                {{-- Brand Header --}}
-                <div class="relative flex items-center gap-3">
-                    <div
-                        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-indigo-600 font-display text-xl font-extrabold shadow-lg rotate-[-6deg]">
-                        Rx
-                    </div>
-                    <div>
-                        <p class="font-display text-2xl font-extrabold leading-none">CitiRx</p>
-                        <p class="mt-1 text-xs font-medium text-indigo-100">PHLE adaptive prep</p>
-                    </div>
-                </div>
-
-                {{-- Headline and feature highlights --}}
-                <div class="relative my-auto max-w-lg py-8">
-                    <h2 class="font-display text-4xl font-extrabold leading-[1.08] tracking-tight xl:text-5xl">
-                        Build a smarter path toward PHLE readiness.
-                    </h2>
-
-                    <p class="mt-4 text-sm text-indigo-100 xl:text-base">
-                        Sign in to continue your diagnostic, targeted practice,
-                        progress tracking, and competency review.
-                    </p>
-
-                    <div class="mt-8 space-y-3">
-                        @foreach ([['🎯', 'Targeted Practice', 'Focus your review on competencies that need more work.'], ['📊', 'Readiness Tracking', 'See how your competency mastery changes over time.'], ['💊', 'Structured PHLE Review', 'Practice using content organized around the official domains.']] as [$icon, $title, $description])
-                            <div
-                                class="flex items-start gap-4 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
-                                <span
-                                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20 text-xl"
-                                    aria-hidden="true">
-                                    {{ $icon }}
-                                </span>
-
-                                <div>
-                                    <p class="font-display text-sm font-bold text-white">
-                                        {{ $title }}
-                                    </p>
-
-                                    <p class="mt-1 text-xs leading-5 text-indigo-100">
-                                        {{ $description }}
-                                    </p>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-
-                <p class="relative text-xs text-indigo-100">Built for future pharmacists.</p>
-            </aside>
-
-            {{-- ============ RIGHT: sign-in form ============ --}}
-            <main
-                class="flex flex-col items-center justify-center px-6 py-10 sm:px-10 lg:px-12 xl:px-16 bg-white min-h-screen">
-
-                {{-- Mobile / Tablet Brand Header --}}
-                <div class="mb-8 flex items-center gap-3 lg:hidden">
-                    <div
-                        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-fuchsia-600 text-white font-display text-xl font-extrabold shadow-lg rotate-[-6deg]">
-                        Rx
-                    </div>
-                    <div>
-                        <p class="font-display text-2xl font-extrabold leading-none text-slate-900">CitiRx</p>
-                        <p class="mt-1 text-xs font-medium text-slate-400">PHLE adaptive prep</p>
-                    </div>
-                </div>
-
-                <div
-                    class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-indigo-100/60 lg:border-0 lg:p-0 lg:shadow-none">
-                    <div class="mb-6 sm:mb-8 text-left sm:text-left">
-                        <h1 class="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-                            Welcome back</h1>
-                        <p class="mt-2 text-sm text-slate-500">Sign in to pick up your review where you left off.</p>
-                    </div>
-
-                    {{-- Native Validation Errors --}}
-                    @if ($errors->any())
-                        <div
-                            class="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-700">
-                            <div class="font-bold">Whoops! Something went wrong.</div>
-                            <ul class="mt-2 list-disc pl-5 space-y-1">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-                    @session('status')
-                        <div
-                            class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-700">
-                            {{ $value }}
-                        </div>
-                    @endsession
-
-                    <form method="POST" action="{{ route('login') }}" class="space-y-5" x-data="{ show: false, busy: false }"
-                        @submit="busy = true" @pageshow.window="busy = false">
-                        @csrf
-
-                        <div>
-                            <label for="email" class="mb-2 block text-sm font-semibold text-slate-700">Email
-                                address</label>
-                            <div class="relative">
-                                <span
-                                    class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                        stroke-width="1.8">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-                                    </svg>
-                                </span>
-                                <input id="email" type="email" name="email" value="{{ old('email') }}" required
-                                    autofocus autocomplete="username"
-                                    class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
-                                    placeholder="student@citirx.edu">
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="mb-2 flex items-center justify-between">
-                                <label for="password"
-                                    class="block text-sm font-semibold text-slate-700">Password</label>
-                                @if (Route::has('password.request'))
-                                    <a href="{{ route('password.request') }}"
-                                        class="text-xs font-semibold text-indigo-600 hover:text-fuchsia-600">Forgot
-                                        password?</a>
-                                @endif
-                            </div>
-                            <div class="relative">
-                                <span
-                                    class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                        stroke-width="1.8">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-                                    </svg>
-                                </span>
-                                <input id="password" type="password" :type="show ? 'text' : 'password'" name="password"
-                                    required autocomplete="current-password"
-                                    class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-16 text-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
-                                    placeholder="Your password">
-                                <button type="button" @click="show = !show"
-                                    class="absolute inset-y-0 right-0 px-4 text-xs font-semibold text-slate-500 hover:text-indigo-600 focus:outline-none focus-visible:text-indigo-600"
-                                    x-text="show ? 'Hide' : 'Show'">Show</button>
-                            </div>
-                        </div>
-
-                        <label for="remember_me" class="flex cursor-pointer items-center gap-2">
-                            <input id="remember_me" type="checkbox" name="remember"
-                                class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                            <span class="text-sm text-slate-600">Keep me signed in on this device</span>
-                        </label>
-
-                        <button type="submit" :disabled="busy" style="--lip: rgb(var(--color-primary-lip));"
-                            class="btn-press flex w-full items-center justify-center rounded-2xl bg-primary px-7 py-3.5 font-display text-base font-bold text-white shadow-md hover:bg-primary-lip disabled:opacity-70 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
-                            <span x-text="busy ? 'Signing in…' : 'Sign In'">Sign In</span>
-                        </button>
-                    </form>
-
-                    @if (Route::has('register'))
-                        <p class="mt-8 text-center text-sm text-slate-500">
-                            New to CitiRx?
-                            <a href="{{ route('register') }}"
-                                class="font-bold text-indigo-600 hover:text-fuchsia-600">Create a free account</a>
-                        </p>
-                    @endif
-                </div>
-            </main>
+<x-auth-split-layout
+    :title="__('Welcome back')"
+    :subtitle="__('Sign in to continue your pharmacy board review.')"
+    :headline="__('Build a smarter path toward PhLE readiness.')"
+    :description="__('Continue your diagnostic, targeted practice, progress tracking, and competency review.')"
+    :items="[
+        [
+            'icon' => 'target',
+            'title' => __('Targeted practice'),
+            'description' => __('Focus on competencies that need more work.'),
+        ],
+        [
+            'icon' => 'chart',
+            'title' => __('Readiness tracking'),
+            'description' => __('See how your competency mastery changes over time.'),
+        ],
+        [
+            'icon' => 'book',
+            'title' => __('Structured PhLE review'),
+            'description' => __('Review content organized around the official domains.'),
+        ],
+    ]"
+>
+    @if (session('status'))
+        <div
+            role="status"
+            class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800"
+        >
+            {{ session('status') }}
         </div>
-    </div>
-</x-guest-layout>
+    @endif
+
+    <form
+        method="POST"
+        action="{{ route('login') }}"
+        class="space-y-5"
+        x-data="{ busy: false }"
+        x-on:submit="busy = true"
+        x-on:pageshow.window="busy = false"
+    >
+        @csrf
+
+        <x-auth-field
+            id="email"
+            :label="__('Email address')"
+            type="email"
+            icon="mail"
+            :value="old('email')"
+            required
+            :autofocus="true"
+            autocomplete="username"
+            placeholder="you@gmail.com"
+        />
+
+        <x-auth-field
+            id="password"
+            :label="__('Password')"
+            type="password"
+            icon="lock"
+            :toggle="true"
+            required
+            autocomplete="current-password"
+            :action-href="Route::has('password.request')
+                ? route('password.request')
+                : null"
+            :action-label="__('Forgot password?')"
+            :placeholder="__('Your password')"
+        />
+
+        <label class="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl px-1">
+            <input
+                type="checkbox"
+                name="remember"
+                class="h-5 w-5 rounded border-slate-300 text-primary focus:ring-primary"
+            >
+
+            <span class="text-sm text-slate-700">
+                {{ __('Keep me signed in on this device') }}
+            </span>
+        </label>
+
+        <x-auth-button
+            :label="__('Sign in')"
+            :busy-label="__('Signing in…')"
+        />
+    </form>
+
+    @if (Route::has('register'))
+        <p class="mt-8 text-center text-sm text-slate-600">
+            {{ __('New to CitiRx?') }}
+
+            <a
+                href="{{ route('register') }}"
+                class="font-bold text-primary underline-offset-4 hover:text-primary-lip hover:underline"
+            >
+                {{ __('Create an account') }}
+            </a>
+        </p>
+    @endif
+</x-auth-split-layout>
