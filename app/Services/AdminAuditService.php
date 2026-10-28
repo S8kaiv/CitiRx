@@ -27,6 +27,7 @@ class AdminAuditService
 
         return AdminAuditLog::query()->create([
             'admin_id' => $administrator->user_id,
+            'actor_name' => $administrator->fullName(),
             'action' => $action,
             'target_type' => $target::class,
             'target_id' => (string) $target->getKey(),

@@ -24,6 +24,7 @@ class DiagnosticService
         protected LevelService $levels,
         protected ResearchFormService $researchForms,
         protected QuestionUsageService $questionUsage,
+        protected PilotControlService $pilotControls,
     ) {}
 
     /**
@@ -83,6 +84,9 @@ class DiagnosticService
 
                 return $existingSession;
             }
+
+            $this->pilotControls
+                ->assertDiagnosticStartAllowed();
 
             $formVersion = $this
                 ->researchForms

@@ -6,6 +6,7 @@ use App\Models\Cohort;
 use App\Models\Question;
 use App\Models\QuestionChoice;
 use App\Models\ResearchFormVersion;
+use App\Models\ResearchParticipant;
 use App\Models\ResponseTelemetryLog;
 use App\Models\User;
 use App\Services\ResearchAnalyticsService;
@@ -95,6 +96,33 @@ function analyticsChoice(
     return $choice;
 }
 
+function includeAnalyticsParticipant(
+    User $user,
+): void {
+    $administrator = User::query()
+        ->where('role', 'admin')
+        ->first();
+
+    if ($administrator === null) {
+        $administrator = User::factory()->create([
+            'role' => 'admin',
+        ]);
+    }
+
+    ResearchParticipant::query()->updateOrCreate(
+        [
+            'user_id' => $user->user_id,
+        ],
+        [
+            'status' => ResearchParticipant::STATUS_INCLUDED,
+            'reason' => 'Included for research analytics testing.',
+            'changed_by' => $administrator->user_id,
+            'changed_at' => now(),
+            'lock_version' => 1,
+        ],
+    );
+}
+
 /**
  * Create a structurally valid 60-item Form A/Form B pair.
  *
@@ -120,6 +148,8 @@ function createFullAnalyticsPair(
             'Invalid analytics fixture totals.',
         );
     }
+
+    includeAnalyticsParticipant($user);
 
     $preQuestions = analyticsFormQuestions(
         Question::FORM_PRE_TEST_A,
@@ -569,7 +599,16 @@ it('enforces full 60-item research eligibility', function () {
         ->and(
             $report['funnel']['excluded_invalid_chronology'],
         )
-        ->toBe(1);
+        ->toBe(1)
+
+        ->and(
+            $report['funnel']['excluded_pre_participant_scope'],
+        )
+        ->toBe(0)
+        ->and(
+            $report['funnel']['excluded_post_participant_scope'],
+        )
+        ->toBe(0);
 
     /*
      * The incomplete student's post-test score remains 20/60.
@@ -728,4 +767,194 @@ it('does not expose participant identifiers', function () {
         expect($serializedReport)
             ->not->toContain($identifier);
     }
+});
+
+it('includes only explicitly included research participants', function (): void {
+    $this->seed([
+        TosSeeder::class,
+        ResearchQuestionSeeder::class,
+    ]);
+
+    $cohort = Cohort::query()->create([
+        'cohort_name' => 'Participant Scope Cohort',
+        'academic_year' => '2026-2027',
+        'target_phle_date' => '2027-11-15',
+    ]);
+
+    $includedStudent = User::factory()->create([
+        'role' => 'student',
+        'cohort_id' => $cohort->cohort_id,
+    ]);
+
+    $eligibleStudent = User::factory()->create([
+        'role' => 'student',
+        'cohort_id' => $cohort->cohort_id,
+    ]);
+
+    $excludedStudent = User::factory()->create([
+        'role' => 'student',
+        'cohort_id' => $cohort->cohort_id,
+    ]);
+
+    $withdrawnStudent = User::factory()->create([
+        'role' => 'student',
+        'cohort_id' => $cohort->cohort_id,
+    ]);
+
+    $developmentStudent = User::factory()->create([
+        'role' => 'student',
+        'cohort_id' => $cohort->cohort_id,
+    ]);
+
+    $unregisteredStudent = User::factory()->create([
+        'role' => 'student',
+        'cohort_id' => $cohort->cohort_id,
+    ]);
+
+    foreach ([
+        $includedStudent,
+        $eligibleStudent,
+        $excludedStudent,
+        $withdrawnStudent,
+        $developmentStudent,
+        $unregisteredStudent,
+    ] as $student) {
+        createFullAnalyticsPair(
+            user: $student,
+            preCorrectItems: 20,
+            postCorrectItems: 40,
+            postAnsweredItems: 60,
+            submissionReason: 'manual',
+        );
+    }
+
+    $administrator = User::query()
+        ->where('role', 'admin')
+        ->firstOrFail();
+
+    foreach ([
+        $eligibleStudent->user_id => ResearchParticipant::STATUS_ELIGIBLE,
+
+        $excludedStudent->user_id => ResearchParticipant::STATUS_EXCLUDED,
+
+        $withdrawnStudent->user_id => ResearchParticipant::STATUS_WITHDRAWN,
+
+        $developmentStudent->user_id => ResearchParticipant::STATUS_DEVELOPMENT,
+    ] as $userId => $status) {
+        ResearchParticipant::query()
+            ->where('user_id', $userId)
+            ->update([
+                'status' => $status,
+                'reason' => "Analytics scope fixture: {$status}.",
+                'changed_by' => $administrator->user_id,
+                'changed_at' => now(),
+                'lock_version' => 2,
+            ]);
+    }
+
+    ResearchParticipant::query()
+        ->where(
+            'user_id',
+            $unregisteredStudent->user_id,
+        )
+        ->delete();
+
+    $dataset = app(
+        ResearchAttemptEligibilityService::class,
+    )->dataset(
+        preTestVersion: ResearchFormVersion::query()
+            ->where(
+                'research_form',
+                Question::FORM_PRE_TEST_A,
+            )
+            ->where(
+                'version_code',
+                'pre_test_a_v1',
+            )
+            ->sole(),
+
+        postTestVersion: ResearchFormVersion::query()
+            ->where(
+                'research_form',
+                Question::FORM_POST_TEST_B,
+            )
+            ->where(
+                'version_code',
+                'post_test_b_v1',
+            )
+            ->sole(),
+    );
+
+    $preExclusions = $dataset['eligibility']['pre_participant_scope_exclusions'];
+
+    $postExclusions = $dataset['eligibility']['post_participant_scope_exclusions'];
+
+    expect($dataset['pairs'])
+        ->toHaveCount(1)
+        ->and(
+            $dataset['pairs']->first()['user_id'],
+        )
+        ->toBe($includedStudent->user_id)
+
+        ->and(
+            $preExclusions[
+                ResearchParticipant::STATUS_ELIGIBLE
+            ] ?? 0,
+        )
+        ->toBe(1)
+        ->and(
+            $preExclusions[
+                ResearchParticipant::STATUS_EXCLUDED
+            ] ?? 0,
+        )
+        ->toBe(1)
+        ->and(
+            $preExclusions[
+                ResearchParticipant::STATUS_WITHDRAWN
+            ] ?? 0,
+        )
+        ->toBe(1)
+        ->and(
+            $preExclusions[
+                ResearchParticipant::STATUS_DEVELOPMENT
+            ] ?? 0,
+        )
+        ->toBe(1)
+        ->and(
+            $preExclusions[
+                ResearchParticipant::STATUS_UNREGISTERED
+            ] ?? 0,
+        )
+        ->toBe(1)
+
+        ->and(
+            $postExclusions[
+                ResearchParticipant::STATUS_ELIGIBLE
+            ] ?? 0,
+        )
+        ->toBe(1)
+        ->and(
+            $postExclusions[
+                ResearchParticipant::STATUS_EXCLUDED
+            ] ?? 0,
+        )
+        ->toBe(1)
+        ->and(
+            $postExclusions[
+                ResearchParticipant::STATUS_WITHDRAWN
+            ] ?? 0,
+        )
+        ->toBe(1)
+        ->and(
+            $postExclusions[
+                ResearchParticipant::STATUS_DEVELOPMENT
+            ] ?? 0,
+        )
+        ->toBe(1)
+        ->and(
+            $postExclusions[
+                ResearchParticipant::STATUS_UNREGISTERED
+            ] ?? 0,
+        )
+        ->toBe(1);
 });

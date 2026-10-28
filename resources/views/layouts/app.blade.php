@@ -184,21 +184,21 @@
         /*
          * Build profile initials from the first and last
          * parts of the user's full name.
- */
-$nameParts = preg_split('/\s+/', $displayName, -1, PREG_SPLIT_NO_EMPTY);
-$firstName = $nameParts[0] ?? 'U';
-$lastName = count($nameParts) > 1 ? $nameParts[array_key_last($nameParts)] : '';
-$initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
+         */
+        $nameParts = preg_split('/\s+/', $displayName, -1, PREG_SPLIT_NO_EMPTY);
+        $firstName = $nameParts[0] ?? 'U';
+        $lastName = count($nameParts) > 1 ? $nameParts[array_key_last($nameParts)] : '';
+        $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
 
-/*
- * Resolve Level and Tier using the CitiRx User relationship.
- */
-$userLevel = $authUser?->role === 'student' ? $authUser->level : null;
-$levelNumber = (int) ($userLevel?->level_number ?? ($authUser?->current_level ?? 1));
-$tierName = strtolower($userLevel?->tier?->tier_name ?? 'beginner');
+        /*
+         * Resolve Level and Tier using the CitiRx User relationship.
+         */
+        $userLevel = $authUser?->role === 'student' ? $authUser->level : null;
+        $levelNumber = (int) ($userLevel?->level_number ?? ($authUser?->current_level ?? 1));
+        $tierName = strtolower($userLevel?->tier?->tier_name ?? 'beginner');
 
-/*
- * Text shown below the user's name.
+        /*
+         * Text shown below the user's name.
          */
         $profileLabel =
             $authUser?->role === 'student'
@@ -207,28 +207,28 @@ $tierName = strtolower($userLevel?->tier?->tier_name ?? 'beginner');
 
         /*
          * Avatar border styling based on the student's tier.
- */
-$tierRingClasses = match (true) {
-    str_contains($tierName, 'expert')
-        => 'ring-2 ring-primary border-primary/40 bg-primary-tint text-primary shadow-[0_0_10px_rgba(109,74,255,0.35)]',
+         */
+        $tierRingClasses = match (true) {
+            str_contains($tierName, 'expert')
+                => 'ring-2 ring-primary border-primary/40 bg-primary-tint text-primary shadow-[0_0_10px_rgba(109,74,255,0.35)]',
 
-    str_contains($tierName, 'advanced')
-        => 'ring-2 ring-[#0EA5A4] border-[#0EA5A4]/40 bg-[#0EA5A4]/10 text-[#0E7A79] shadow-[0_0_10px_rgba(14,165,164,0.35)]',
+            str_contains($tierName, 'advanced')
+                => 'ring-2 ring-[#0EA5A4] border-[#0EA5A4]/40 bg-[#0EA5A4]/10 text-[#0E7A79] shadow-[0_0_10px_rgba(14,165,164,0.35)]',
 
-    str_contains($tierName, 'intermediate')
-        => 'ring-2 ring-[#F5A623] border-[#F5A623]/40 bg-[#F5A623]/10 text-[#B45309] shadow-[0_0_10px_rgba(245,166,35,0.3)]',
+            str_contains($tierName, 'intermediate')
+                => 'ring-2 ring-[#F5A623] border-[#F5A623]/40 bg-[#F5A623]/10 text-[#B45309] shadow-[0_0_10px_rgba(245,166,35,0.3)]',
 
-    default => 'ring-2 ring-slate-300 border-slate-200 bg-slate-100 text-slate-700',
-};
+            default => 'ring-2 ring-slate-300 border-slate-200 bg-slate-100 text-slate-700',
+        };
 
-/*
- * Small Level badge attached to the avatar.
- */
-$levelBadgeBg = match (true) {
-    str_contains($tierName, 'expert') => 'bg-primary text-white',
-    str_contains($tierName, 'advanced') => 'bg-[#0EA5A4] text-white',
-    str_contains($tierName, 'intermediate') => 'bg-[#F5A623] text-white',
-    default => 'bg-slate-700 text-white',
+        /*
+         * Small Level badge attached to the avatar.
+         */
+        $levelBadgeBg = match (true) {
+            str_contains($tierName, 'expert') => 'bg-primary text-white',
+            str_contains($tierName, 'advanced') => 'bg-[#0EA5A4] text-white',
+            str_contains($tierName, 'intermediate') => 'bg-[#F5A623] text-white',
+            default => 'bg-slate-700 text-white',
         };
     @endphp
 
@@ -449,6 +449,26 @@ $levelBadgeBg = match (true) {
                                 <span>Question Bank</span>
                             </a>
 
+                            <a href="{{ route('content.pearls.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 font-semibold transition
+                                    {{ request()->routeIs('content.pearls.*')
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80' }}">
+                                <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6.253v13m0-13C10.832 5.477
+                                        9.246 5 7.5 5S4.168 5.477 3 6.253v13
+                                        C4.168 18.477 5.754 18 7.5 18
+                                        s3.332.477 4.5 1.253m0-13
+                                        C13.168 5.477 14.754 5 16.5 5
+                                        s3.332.477 4.5 1.253v13
+                                        C19.832 18.477 18.246 18 16.5 18
+                                        s-3.332.477-4.5 1.253" />
+                                </svg>
+
+                                <span>Manage Pearls</span>
+                            </a>
+
                             <a href="{{ route('admin.research-forms.index') }}"
                                 class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
                                     {{ request()->routeIs('admin.research-forms.*')
@@ -486,6 +506,54 @@ $levelBadgeBg = match (true) {
                                         ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
                                         : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80' }}">
                                 <span>Audit History</span>
+                            </a>
+
+                            <a href="{{ route('admin.system-health.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3
+                                    {{ request()->routeIs('admin.system-health.*')
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80' }}">
+                                <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                                    stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3.75 4.5h16.5v12H3.75v-12ZM8.25 19.5h7.5M12 16.5v3M6.75 10.5H9l1.5-3 2.25 6 1.5-3h3" />
+                                </svg>
+
+                                <span>System Health</span>
+                            </a>
+
+                            @php
+                                $pilotControlsActive = request()->routeIs('admin.pilot.*');
+                            @endphp
+
+                            <a href="{{ route('admin.pilot.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ $pilotControlsActive
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <svg class="h-5 w-5 {{ $pilotControlsActive ? 'text-primary' : 'text-slate-400' }}"
+                                    fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                    aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M6.75 3v2.25M17.25 3v2.25M3.75 8.25h16.5M5.25 4.5h13.5A1.5 1.5 0 0 1 20.25 6v13.5A1.5 1.5 0 0 1 18.75 21H5.25a1.5 1.5 0 0 1-1.5-1.5V6a1.5 1.5 0 0 1 1.5-1.5ZM9.75 12.75l1.5 1.5 3-3" />
+                                </svg>
+
+                                <span>Pilot Controls</span>
+                            </a>
+
+                            <a href="{{ route('admin.research-participants.index') }}"
+                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
+                                    {{ request()->routeIs('admin.research-participants.*')
+                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                        : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                    stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479
+                                        3 3 0 0 0-4.682-2.72M15 6.75a3 3 0 1 1-6 0
+                                        3 3 0 0 1 6 0ZM6 18.719a6 6 0 0 1 12 0" />
+                                </svg>
+
+                                <span>Participants</span>
                             </a>
                         @endif
                     </nav>
@@ -610,6 +678,32 @@ $levelBadgeBg = match (true) {
                             {{ request()->routeIs('faculty.interventions.*') ? 'text-primary' : 'text-slate-500' }}">
                         <span>Interventions</span>
                     </a>
+
+                    <a href="{{ route('content.pearls.index') }}"
+                        class="flex flex-col items-center gap-1
+                            {{ request()->routeIs('content.pearls.*') ? 'text-primary' : 'text-slate-500' }}">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6.253v13m0-13C10.832 5.477
+                                9.246 5 7.5 5S4.168 5.477 3 6.253v13
+                                C4.168 18.477 5.754 18 7.5 18
+                                s3.332.477 4.5 1.253m0-13
+                                C13.168 5.477 14.754 5 16.5 5
+                                s3.332.477 4.5 1.253v13
+                                C19.832 18.477 18.246 18 16.5 18
+                                s-3.332.477-4.5 1.253" />
+                        </svg>
+
+                        <span class="text-xs">Pearls</span>
+                    </a>
+
+                    <a href="{{ route('content.pearls.index') }}"
+                        class="flex items-center gap-3.5 rounded-2xl px-4 py-3 font-semibold transition
+                            {{ request()->routeIs('content.pearls.*')
+                                ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
+                                : 'border-2 border-transparent text-slate-600 hover:bg-slate-100/80' }}">
+                        <span>Manage Pearls</span>
+                    </a>
                 @endif
 
                 @if ($authUser?->role === 'admin')
@@ -639,23 +733,32 @@ $levelBadgeBg = match (true) {
                         <span>Questions</span>
                     </a>
 
+                    <a href="{{ route('content.pearls.index') }}"
+                        class="flex min-w-[3.5rem] shrink-0 flex-col items-center gap-1
+                            {{ request()->routeIs('content.pearls.*') ? 'text-primary' : 'text-slate-500' }}">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6.253v13m0-13C10.832 5.477
+                                9.246 5 7.5 5S4.168 5.477 3 6.253v13
+                                C4.168 18.477 5.754 18 7.5 18
+                                s3.332.477 4.5 1.253m0-13
+                                C13.168 5.477 14.754 5 16.5 5
+                                s3.332.477 4.5 1.253v13
+                                C19.832 18.477 18.246 18 16.5 18
+                                s-3.332.477-4.5 1.253" />
+                        </svg>
+
+                        <span class="text-xs">Pearls</span>
+                    </a>
+
                     {{-- Research Form Readiness --}}
                     <a href="{{ route('admin.research-forms.index') }}"
                         class="flex min-w-[3.5rem] shrink-0 flex-col items-center gap-1
                             {{ request()->routeIs('admin.research-forms.*') ? 'text-primary' : 'text-slate-500' }}">
-                        <svg
-                            class="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="2"
-                            stroke="currentColor"
-                            aria-hidden="true"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M9 12h6m-6 4h6m2.25 5H6.75A2.25 2.25 0 0 1 4.5 18.75V5.25A2.25 2.25 0 0 1 6.75 3h6.879c.597 0 1.17.237 1.591.659l2.121 2.121c.422.422.659.994.659 1.591V18.75A2.25 2.25 0 0 1 17.25 21Z"
-                            />
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12h6m-6 4h6m2.25 5H6.75A2.25 2.25 0 0 1 4.5 18.75V5.25A2.25 2.25 0 0 1 6.75 3h6.879c.597 0 1.17.237 1.591.659l2.121 2.121c.422.422.659.994.659 1.591V18.75A2.25 2.25 0 0 1 17.25 21Z" />
                         </svg>
 
                         <span>Forms</span>
@@ -698,6 +801,43 @@ $levelBadgeBg = match (true) {
                         </svg>
 
                         <span>Audits</span>
+                    </a>
+
+                    <a href="{{ route('admin.system-health.index') }}"
+                        class="flex min-w-[4rem] shrink-0 flex-col items-center gap-1
+                            {{ request()->routeIs('admin.system-health.*') ? 'text-primary' : 'text-slate-500' }}">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                            stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 4.5h16.5v12H3.75v-12ZM8.25 19.5h7.5M12 16.5v3M6.75 10.5H9l1.5-3 2.25 6 1.5-3h3" />
+                        </svg>
+
+                        <span class="text-xs">Health</span>
+                    </a>
+
+                    {{-- Official Pilot Controls --}}
+                    <a href="{{ route('admin.pilot.index') }}"
+                        class="flex min-w-[3.5rem] shrink-0 flex-col items-center gap-1
+                            {{ request()->routeIs('admin.pilot.*') ? 'text-primary' : 'text-slate-500' }}">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M6.75 3v2.25M17.25 3v2.25M3.75 8.25h16.5M5.25 4.5h13.5A1.5 1.5 0 0 1 20.25 6v13.5A1.5 1.5 0 0 1 18.75 21H5.25a1.5 1.5 0 0 1-1.5-1.5V6a1.5 1.5 0 0 1 1.5-1.5ZM9.75 12.75l1.5 1.5 3-3" />
+                        </svg>
+
+                        <span>Pilot</span>
+                    </a>
+
+                    <a href="{{ route('admin.research-participants.index') }}"
+                        class="flex min-w-[3.5rem] shrink-0 flex-col items-center gap-1
+        {{ request()->routeIs('admin.research-participants.*') ? 'text-primary' : 'text-slate-500' }}">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 6.75a3 3 0 1 1-6 0
+                3 3 0 0 1 6 0ZM6 20.25a6 6 0 0 1 12 0" />
+                        </svg>
+
+                        <span>Scope</span>
                     </a>
                 @endif
 

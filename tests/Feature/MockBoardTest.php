@@ -3,6 +3,7 @@
 use App\Models\AssessmentResponse;
 use App\Models\AssessmentSession;
 use App\Models\Cohort;
+use App\Models\PilotControl;
 use App\Models\Question;
 use App\Models\ResponseTelemetryLog;
 use App\Models\RxVault;
@@ -79,6 +80,14 @@ beforeEach(function () {
         'citirx.research.post_test_form_version',
         'post_test_b_v1',
     );
+
+    /*
+     * These are Mock Board tests, so the official
+     * post-test must be open.
+     */
+    PilotControl::query()->update([
+        'phase' => PilotControl::PHASE_POST_TEST_OPEN,
+    ]);
 
     $this->seed([
         TierAndLevelSeeder::class,

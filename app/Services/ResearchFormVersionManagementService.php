@@ -16,6 +16,7 @@ class ResearchFormVersionManagementService
     public function __construct(
         protected ResearchFormAuditService $audit,
         protected AdminAuditService $adminAudit,
+        protected PilotControlService $pilotControls,
     ) {}
 
     public function copyToDraft(
@@ -270,6 +271,13 @@ class ResearchFormVersionManagementService
                 $expectedLockVersion,
                 $reason,
             ): ResearchFormVersion {
+                /*
+                 * This check must run inside the same transaction as
+                 * publishing so it can share the pilot-control row lock.
+                 */
+                $this->pilotControls
+                    ->assertResearchConfigurationMutable();
+
                 $version = $this->lockedVersion(
                     $version,
                     $expectedLockVersion,

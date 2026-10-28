@@ -1,32 +1,42 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h2 class="font-display text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
-                    Research Form Readiness
-                </h2>
-                <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
+                <p class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary">
                     Research Administration
                 </p>
+
+                <h2 class="font-display text-xl font-extrabold text-slate-900">
+                    Research Form Readiness
+                </h2>
             </div>
 
-            <a href="{{ route('dashboard') }}" style="--lip: #CBD5E1;"
-                class="btn-press rounded-xl border-2 border-b-4 border-slate-300 bg-white px-4 py-2 font-display text-sm font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
-                Back to Dashboard
-            </a>
+            <div class="flex flex-wrap items-center gap-3">
+                <a href="{{ route('admin.research-form-imports.index') }}"
+                    class="rounded-xl bg-primary px-4 py-2 text-sm font-extrabold text-white transition hover:opacity-90 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
+                    Import Research CSV
+                </a>
+
+                <a href="{{ route('dashboard') }}"
+                    class="rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
+                    Back to Dashboard
+                </a>
+            </div>
         </div>
     </x-slot>
 
-    <div class="py-6 font-sans text-slate-900 antialiased">
+    <div class="py-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-            <section class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-gradient-to-br from-primary-tint via-[#FAF8FF] to-white p-6 sm:p-8 shadow-sm">
-                <span class="inline-flex items-center rounded-full bg-white px-3 py-1 font-display text-xs font-bold text-primary shadow-sm ring-1 ring-primary/20">
+            <section class="rounded-3xl border-2 border-primary/20 bg-primary-tint/40 p-5">
+                <h3 class="font-display text-base font-extrabold text-slate-900">
                     Shared readiness audit
-                </span>
+                </h3>
 
-                <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-700">
+                <p class="mt-2 text-sm leading-relaxed text-slate-600">
                     This page and the
-                    <code class="rounded bg-white px-1.5 py-0.5 text-xs">research:audit-forms</code>
+                    <code class="rounded bg-white px-1.5 py-0.5 text-xs">
+                        research:audit-forms
+                    </code>
                     command use the same audit service. Each research
                     question is now bound to a registered form version.
                     “Ready for pilot” confirms the content and version
@@ -36,10 +46,12 @@
             </section>
 
             @if ($developmentOverrideConfigured)
-                <div role="alert" class="rounded-3xl border-2 border-b-4 border-amber-300 bg-gradient-to-br from-amber-50/80 via-white to-white p-5 sm:p-6 text-amber-900 shadow-sm">
-                    <p class="font-display text-lg font-black">Development override is enabled</p>
+                <div role="alert" class="rounded-3xl border-2 border-amber-300 bg-amber-50 p-5 text-amber-900">
+                    <p class="font-display font-extrabold">
+                        Development override is enabled
+                    </p>
 
-                    <p class="mt-1 text-sm font-medium">
+                    <p class="mt-1 text-sm">
                         <code>CITIRX_ALLOW_UNVALIDATED_RESEARCH_FORMS</code>
                         is enabled. This must be false before staging,
                         deployment, or official pilot collection.
@@ -47,13 +59,13 @@
                 </div>
             @endif
 
-            <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+            <section class="rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-sm">
                 <div>
-                    <p class="font-display text-xs font-extrabold uppercase tracking-wider text-primary">
+                    <p class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary">
                         Immutable version history
                     </p>
 
-                    <h3 class="mt-1 font-display text-lg font-black text-slate-900">
+                    <h3 class="mt-1 font-display text-lg font-extrabold text-slate-900">
                         Research Form Versions
                     </h3>
 
@@ -66,21 +78,24 @@
                 </div>
 
                 @if (session('status'))
-                    <div role="status" class="mt-5 rounded-2xl border-2 border-b-4 border-emerald-300 bg-emerald-50 p-4 font-display text-sm font-bold text-emerald-800 shadow-2xs">
+                    <div role="status"
+                        class="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
                         {{ session('status') }}
                     </div>
                 @endif
 
                 <div class="mt-6 space-y-6">
                     @foreach ($versions as $form => $formVersions)
-                        <div class="overflow-hidden rounded-2xl border-2 border-slate-200">
+                        <div class="overflow-hidden rounded-2xl border border-slate-200">
                             <div class="bg-slate-50 px-4 py-3">
-                                <h4 class="font-display font-black text-slate-900">{{ $form }}</h4>
+                                <h4 class="font-display font-extrabold text-slate-900">
+                                    {{ $form }}
+                                </h4>
                             </div>
 
                             <div class="overflow-x-auto">
                                 <table class="min-w-full text-left text-sm">
-                                    <thead class="border-b border-slate-200 text-xs font-extrabold uppercase tracking-wider text-muted-ink">
+                                    <thead class="border-b border-slate-200 text-xs uppercase text-slate-500">
                                         <tr>
                                             <th class="px-4 py-3">Version</th>
                                             <th class="px-4 py-3">Status</th>
@@ -99,45 +114,47 @@
                                                 </td>
 
                                                 <td class="px-4 py-3">
-                                                    <span class="rounded-full bg-primary-tint px-2.5 py-1 font-display text-xs font-bold text-primary">
-                                                        {{ str($version->status)->replace('_', ' ')->title() }}
-                                                    </span>
+                                                    {{ str($version->status)->replace('_', ' ')->title() }}
                                                 </td>
-
-                                                <td class="px-4 py-3 font-semibold">{{ $version->questions_count }}/60</td>
 
                                                 <td class="px-4 py-3">
-                                                    <span class="rounded-full px-2.5 py-1 font-display text-xs font-bold {{ $version->is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500' }}">
-                                                        {{ $version->is_active ? 'Yes' : 'No' }}
-                                                    </span>
+                                                    {{ $version->questions_count }}/60
                                                 </td>
 
-                                                <td class="px-4 py-3">{{ $version->lock_version }}</td>
+                                                <td
+                                                    class="px-4 py-3 font-bold {{ $version->is_active ? 'text-emerald-700' : 'text-slate-500' }}">
+                                                    {{ $version->is_active ? 'Yes' : 'No' }}
+                                                </td>
+
+                                                <td class="px-4 py-3">
+                                                    {{ $version->lock_version }}
+                                                </td>
 
                                                 <td class="px-4 py-3">
                                                     <details>
-                                                        <summary class="cursor-pointer font-display text-xs font-bold text-primary">
+                                                        <summary class="cursor-pointer font-bold text-primary">
                                                             Manage
                                                         </summary>
 
                                                         <div class="mt-3 w-80 space-y-4">
                                                             <form method="POST"
                                                                 action="{{ route('admin.research-forms.versions.copy', $version) }}"
-                                                                class="space-y-2 rounded-2xl border-2 border-slate-100 bg-slate-50 p-3">
+                                                                class="space-y-2 rounded-xl bg-slate-50 p-3">
                                                                 @csrf
 
-                                                                <input type="hidden" name="expected_lock_version" value="{{ $version->lock_version }}">
+                                                                <input type="hidden" name="expected_lock_version"
+                                                                    value="{{ $version->lock_version }}">
 
                                                                 <input name="version_code" required
                                                                     placeholder="{{ $form }}_v{{ $version->version_number + 1 }}"
-                                                                    class="w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary">
+                                                                    class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary">
 
                                                                 <textarea name="reason" required minlength="10" maxlength="500" rows="2"
                                                                     placeholder="Reason for creating a new version"
-                                                                    class="w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary"></textarea>
+                                                                    class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary"></textarea>
 
-                                                                <button type="submit" style="--lip: #4A2FC4;"
-                                                                    class="btn-press rounded-xl bg-primary px-3 py-2 font-display text-xs font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
+                                                                <button type="submit"
+                                                                    class="rounded-xl bg-primary px-3 py-2 text-xs font-bold text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
                                                                     Copy to Draft
                                                                 </button>
                                                             </form>
@@ -145,18 +162,19 @@
                                                             @if ($version->status === 'draft')
                                                                 <form method="POST"
                                                                     action="{{ route('admin.research-forms.versions.submit-review', $version) }}"
-                                                                    class="space-y-2 rounded-2xl border-2 border-sky-200 bg-sky-50 p-3">
+                                                                    class="space-y-2 rounded-xl bg-blue-50 p-3">
                                                                     @csrf
                                                                     @method('PATCH')
 
-                                                                    <input type="hidden" name="expected_lock_version" value="{{ $version->lock_version }}">
+                                                                    <input type="hidden" name="expected_lock_version"
+                                                                        value="{{ $version->lock_version }}">
 
                                                                     <textarea name="reason" required minlength="10" maxlength="500" rows="2"
                                                                         placeholder="Why this version is ready for review"
-                                                                        class="w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary"></textarea>
+                                                                        class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary"></textarea>
 
-                                                                    <button type="submit" style="--lip: #075985;"
-                                                                        class="btn-press rounded-xl bg-sky-600 px-3 py-2 font-display text-xs font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-300">
+                                                                    <button type="submit"
+                                                                        class="rounded-xl bg-blue-700 px-3 py-2 text-xs font-bold text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300">
                                                                         Submit for Review
                                                                     </button>
                                                                 </form>
@@ -165,18 +183,19 @@
                                                             @if ($version->status === 'in_review')
                                                                 <form method="POST"
                                                                     action="{{ route('admin.research-forms.versions.validate', $version) }}"
-                                                                    class="space-y-2 rounded-2xl border-2 border-violet-200 bg-violet-50 p-3">
+                                                                    class="space-y-2 rounded-xl bg-violet-50 p-3">
                                                                     @csrf
                                                                     @method('PATCH')
 
-                                                                    <input type="hidden" name="expected_lock_version" value="{{ $version->lock_version }}">
+                                                                    <input type="hidden" name="expected_lock_version"
+                                                                        value="{{ $version->lock_version }}">
 
                                                                     <textarea name="reason" required minlength="10" maxlength="500" rows="2"
                                                                         placeholder="Validation completion evidence"
-                                                                        class="w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary"></textarea>
+                                                                        class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary"></textarea>
 
-                                                                    <button type="submit" style="--lip: #5B21B6;"
-                                                                        class="btn-press rounded-xl bg-violet-600 px-3 py-2 font-display text-xs font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300">
+                                                                    <button type="submit"
+                                                                        class="rounded-xl bg-violet-700 px-3 py-2 text-xs font-bold text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300">
                                                                         Confirm Validation
                                                                     </button>
                                                                 </form>
@@ -185,23 +204,24 @@
                                                             @if ($version->status === 'validated' && !$version->is_active)
                                                                 <form method="POST"
                                                                     action="{{ route('admin.research-forms.versions.publish', $version) }}"
-                                                                    class="space-y-2 rounded-2xl border-2 border-amber-200 bg-amber-50 p-3">
+                                                                    class="space-y-2 rounded-xl bg-amber-50 p-3">
                                                                     @csrf
                                                                     @method('PATCH')
 
-                                                                    <input type="hidden" name="expected_lock_version" value="{{ $version->lock_version }}">
+                                                                    <input type="hidden" name="expected_lock_version"
+                                                                        value="{{ $version->lock_version }}">
 
                                                                     <textarea name="reason" required minlength="10" maxlength="500" rows="2"
                                                                         placeholder="Reason for publishing this official version"
-                                                                        class="w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary"></textarea>
+                                                                        class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary"></textarea>
 
                                                                     <input type="password" name="password" required
                                                                         autocomplete="current-password"
                                                                         placeholder="Current admin password"
-                                                                        class="w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary">
+                                                                        class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary">
 
-                                                                    <button type="submit" style="--lip: #B45309;"
-                                                                        class="btn-press rounded-xl bg-amber-500 px-3 py-2 font-display text-xs font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300">
+                                                                    <button type="submit"
+                                                                        class="rounded-xl bg-amber-600 px-3 py-2 text-xs font-bold text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300">
                                                                         Publish Version
                                                                     </button>
                                                                 </form>
@@ -223,76 +243,103 @@
                 @foreach ($reports as $report)
                     @php
                         $statusClasses = match ($report['status']['key']) {
-                            'development' => 'border-amber-300 bg-amber-100 text-amber-800',
-                            'needs_review' => 'border-rose-300 bg-rose-100 text-rose-800',
-                            'structurally_valid' => 'border-sky-300 bg-sky-100 text-sky-800',
-                            'validated' => 'border-violet-300 bg-violet-100 text-violet-800',
+                            'development' => 'border-amber-200 bg-amber-50 text-amber-800',
+                            'needs_review' => 'border-red-200 bg-red-50 text-red-800',
+                            'structurally_valid' => 'border-blue-200 bg-blue-50 text-blue-800',
+                            'validated' => 'border-violet-200 bg-violet-50 text-violet-800',
                             'locked' => 'border-slate-300 bg-slate-100 text-slate-800',
-                            'ready_for_pilot' => 'border-emerald-300 bg-emerald-100 text-emerald-800',
+                            'ready_for_pilot' => 'border-emerald-200 bg-emerald-50 text-emerald-800',
                             default => 'border-slate-200 bg-slate-50 text-slate-700',
                         };
                     @endphp
 
-                    <article class="overflow-hidden rounded-3xl border-2 border-b-4 border-slate-200 bg-white shadow-sm">
-                        <div class="border-b border-slate-200 p-5 sm:p-6">
+                    <article class="overflow-hidden rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
+                        <div class="border-b border-slate-200 p-6">
                             <div class="flex flex-wrap items-start justify-between gap-4">
                                 <div>
-                                    <p class="font-mono text-xs text-muted-ink">{{ $report['form'] }}</p>
+                                    <p class="font-mono text-xs text-slate-500">
+                                        {{ $report['form'] }}
+                                    </p>
 
-                                    <h3 class="mt-1 font-display text-xl font-black text-slate-900">
+                                    <h3 class="mt-1 font-display text-xl font-extrabold text-slate-900">
                                         {{ $report['label'] }}
                                     </h3>
 
                                     <p class="mt-2 text-sm text-slate-600">
                                         Expected version:
-                                        <strong class="text-slate-900">{{ $report['expected_version'] }}</strong>
+                                        <strong class="text-slate-900">
+                                            {{ $report['expected_version'] }}
+                                        </strong>
                                     </p>
 
-                                    <p class="mt-1 text-xs font-semibold text-amber-700">
+                                    <p class="mt-1 text-xs text-amber-700">
                                         {{ $report['version_binding'] }}
                                     </p>
                                 </div>
 
-                                <span class="rounded-full border px-3 py-1 font-display text-xs font-extrabold {{ $statusClasses }}">
+                                <span
+                                    class="rounded-full border px-3 py-1 text-xs font-extrabold {{ $statusClasses }}">
                                     {{ $report['status']['label'] }}
                                 </span>
                             </div>
 
                             <dl class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                                <div class="rounded-2xl border-2 border-slate-100 bg-slate-50 p-3">
-                                    <dt class="text-[10px] font-extrabold uppercase tracking-wider text-muted-ink">Active</dt>
-                                    <dd class="mt-1 font-display text-xl font-black text-slate-900">{{ $report['active_questions'] }}/60</dd>
+                                <div class="rounded-2xl bg-slate-50 p-3">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                                        Active
+                                    </dt>
+
+                                    <dd class="mt-1 text-xl font-extrabold text-slate-900">
+                                        {{ $report['active_questions'] }}/60
+                                    </dd>
                                 </div>
 
-                                <div class="rounded-2xl border-2 border-slate-100 bg-slate-50 p-3">
-                                    <dt class="text-[10px] font-extrabold uppercase tracking-wider text-muted-ink">Validated</dt>
-                                    <dd class="mt-1 font-display text-xl font-black text-slate-900">{{ $report['fully_validated'] }}/60</dd>
+                                <div class="rounded-2xl bg-slate-50 p-3">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                                        Validated
+                                    </dt>
+
+                                    <dd class="mt-1 text-xl font-extrabold text-slate-900">
+                                        {{ $report['fully_validated'] }}/60
+                                    </dd>
                                 </div>
 
-                                <div class="rounded-2xl border-2 border-slate-100 bg-slate-50 p-3">
-                                    <dt class="text-[10px] font-extrabold uppercase tracking-wider text-muted-ink">Placeholders</dt>
-                                    <dd class="mt-1 font-display text-xl font-black {{ $report['placeholders'] > 0 ? 'text-amber-700' : 'text-emerald-700' }}">
+                                <div class="rounded-2xl bg-slate-50 p-3">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                                        Placeholders
+                                    </dt>
+
+                                    <dd
+                                        class="mt-1 text-xl font-extrabold {{ $report['placeholders'] > 0 ? 'text-amber-700' : 'text-emerald-700' }}">
                                         {{ $report['placeholders'] }}
                                     </dd>
                                 </div>
 
-                                <div class="rounded-2xl border-2 border-slate-100 bg-slate-50 p-3">
-                                    <dt class="text-[10px] font-extrabold uppercase tracking-wider text-muted-ink">Served</dt>
-                                    <dd class="mt-1 font-display text-xl font-black text-slate-900">{{ $report['served_questions'] }}</dd>
+                                <div class="rounded-2xl bg-slate-50 p-3">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                                        Served
+                                    </dt>
+
+                                    <dd class="mt-1 text-xl font-extrabold text-slate-900">
+                                        {{ $report['served_questions'] }}
+                                    </dd>
                                 </div>
                             </dl>
                         </div>
 
-                        <div class="space-y-6 p-5 sm:p-6">
+                        <div class="space-y-6 p-6">
                             <section>
-                                <h4 class="font-display text-sm font-black text-slate-900">Integrity checks</h4>
+                                <h4 class="font-display text-sm font-extrabold text-slate-900">
+                                    Integrity checks
+                                </h4>
 
                                 <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
                                     @php
                                         $checks = [
                                             'Positions 1–60' => $report['positions_complete'],
                                             'Six domains × 10' => $report['domains_matching'] === 6,
-                                            'Competency blueprint' => $report['competencies_matching'] === count($report['competency_rows']),
+                                            'Competency blueprint' =>
+                                                $report['competencies_matching'] === count($report['competency_rows']),
                                             'Choice structures' => $report['invalid_choice_structures'] === 0,
                                             'Stems and choices' => $report['missing_stems_or_choices'] === 0,
                                             'Rationales' => $report['missing_rationales'] === 0,
@@ -303,10 +350,13 @@
                                     @endphp
 
                                     @foreach ($checks as $label => $passes)
-                                        <div class="flex items-center justify-between gap-4 rounded-xl border-2 border-slate-100 bg-slate-50 px-3 py-2">
-                                            <dt class="text-slate-600">{{ $label }}</dt>
+                                        <div
+                                            class="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-3 py-2">
+                                            <dt class="text-slate-600">
+                                                {{ $label }}
+                                            </dt>
 
-                                            <dd class="font-display font-black {{ $passes ? 'text-emerald-700' : 'text-rose-700' }}">
+                                            <dd class="font-bold {{ $passes ? 'text-emerald-700' : 'text-red-700' }}">
                                                 {{ $passes ? 'Pass' : 'Fail' }}
                                             </dd>
                                         </div>
@@ -315,7 +365,9 @@
                             </section>
 
                             <section>
-                                <h4 class="font-display text-sm font-black text-slate-900">First-served status</h4>
+                                <h4 class="font-display text-sm font-extrabold text-slate-900">
+                                    First-served status
+                                </h4>
 
                                 <p class="mt-2 text-sm text-slate-600">
                                     @if ($report['first_served_at'])
@@ -328,17 +380,20 @@
                                     @endif
                                 </p>
 
-                                <p class="mt-1 text-xs font-semibold text-muted-ink">
-                                    Locked questions: {{ $report['locked_questions'] }}
+                                <p class="mt-1 text-xs text-slate-500">
+                                    Locked questions:
+                                    {{ $report['locked_questions'] }}
                                 </p>
                             </section>
 
                             <section>
-                                <h4 class="font-display text-sm font-black text-slate-900">Domain allocation</h4>
+                                <h4 class="font-display text-sm font-extrabold text-slate-900">
+                                    Domain allocation
+                                </h4>
 
                                 <div class="mt-3 overflow-x-auto">
                                     <table class="min-w-full text-left text-sm">
-                                        <thead class="text-xs font-extrabold uppercase tracking-wider text-muted-ink">
+                                        <thead class="text-xs uppercase text-slate-500">
                                             <tr>
                                                 <th class="px-3 py-2">Domain</th>
                                                 <th class="px-3 py-2 text-right">Expected</th>
@@ -351,11 +406,20 @@
                                             @foreach ($report['domain_rows'] as $domain)
                                                 <tr>
                                                     <td class="px-3 py-2 font-semibold text-slate-800">
-                                                        {{ $domain['domain_number'] }}. {{ $domain['domain_name'] }}
+                                                        {{ $domain['domain_number'] }}.
+                                                        {{ $domain['domain_name'] }}
                                                     </td>
-                                                    <td class="px-3 py-2 text-right">{{ $domain['expected'] }}</td>
-                                                    <td class="px-3 py-2 text-right">{{ $domain['actual'] }}</td>
-                                                    <td class="px-3 py-2 text-right font-display font-black {{ $domain['matches'] ? 'text-emerald-700' : 'text-rose-700' }}">
+
+                                                    <td class="px-3 py-2 text-right">
+                                                        {{ $domain['expected'] }}
+                                                    </td>
+
+                                                    <td class="px-3 py-2 text-right">
+                                                        {{ $domain['actual'] }}
+                                                    </td>
+
+                                                    <td
+                                                        class="px-3 py-2 text-right font-bold {{ $domain['matches'] ? 'text-emerald-700' : 'text-red-700' }}">
                                                         {{ $domain['matches'] ? 'Match' : 'Mismatch' }}
                                                     </td>
                                                 </tr>
@@ -366,11 +430,13 @@
                             </section>
 
                             <section>
-                                <h4 class="font-display text-sm font-black text-slate-900">Competency blueprint</h4>
+                                <h4 class="font-display text-sm font-extrabold text-slate-900">
+                                    Competency blueprint
+                                </h4>
 
                                 <div class="mt-3 overflow-x-auto">
                                     <table class="min-w-full text-left text-sm">
-                                        <thead class="text-xs font-extrabold uppercase tracking-wider text-muted-ink">
+                                        <thead class="text-xs uppercase text-slate-500">
                                             <tr>
                                                 <th class="px-3 py-2">Domain</th>
                                                 <th class="px-3 py-2">Code</th>
@@ -383,11 +449,24 @@
                                         <tbody class="divide-y divide-slate-100">
                                             @foreach ($report['competency_rows'] as $competency)
                                                 <tr>
-                                                    <td class="px-3 py-2">{{ $competency['domain_number'] }}</td>
-                                                    <td class="px-3 py-2 font-mono font-bold text-slate-800">{{ $competency['competency_code'] }}</td>
-                                                    <td class="px-3 py-2 text-right">{{ $competency['expected'] }}</td>
-                                                    <td class="px-3 py-2 text-right">{{ $competency['actual'] }}</td>
-                                                    <td class="px-3 py-2 text-right font-display font-black {{ $competency['matches'] ? 'text-emerald-700' : 'text-rose-700' }}">
+                                                    <td class="px-3 py-2">
+                                                        {{ $competency['domain_number'] }}
+                                                    </td>
+
+                                                    <td class="px-3 py-2 font-mono font-bold text-slate-800">
+                                                        {{ $competency['competency_code'] }}
+                                                    </td>
+
+                                                    <td class="px-3 py-2 text-right">
+                                                        {{ $competency['expected'] }}
+                                                    </td>
+
+                                                    <td class="px-3 py-2 text-right">
+                                                        {{ $competency['actual'] }}
+                                                    </td>
+
+                                                    <td
+                                                        class="px-3 py-2 text-right font-bold {{ $competency['matches'] ? 'text-emerald-700' : 'text-red-700' }}">
                                                         {{ $competency['matches'] ? 'Match' : 'Mismatch' }}
                                                     </td>
                                                 </tr>
@@ -398,16 +477,20 @@
                             </section>
 
                             <section>
-                                <h4 class="font-display text-sm font-black text-slate-900">Audit findings</h4>
+                                <h4 class="font-display text-sm font-extrabold text-slate-900">
+                                    Audit findings
+                                </h4>
 
                                 @if ($report['errors'] === [])
-                                    <div class="mt-3 rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-4 text-sm font-bold text-emerald-800">
+                                    <div
+                                        class="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
                                         No content or validation errors were found.
                                     </div>
                                 @else
                                     <ul class="mt-3 space-y-2">
                                         @foreach ($report['errors'] as $error)
-                                            <li class="rounded-xl border-2 border-rose-100 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-800">
+                                            <li
+                                                class="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-800">
                                                 {{ $error }}
                                             </li>
                                         @endforeach

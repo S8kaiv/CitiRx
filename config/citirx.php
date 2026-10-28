@@ -30,5 +30,10 @@ return [
             false,
         ),
 
+        'import_preview_minutes' => (int) env(
+            'CITIRX_RESEARCH_IMPORT_PREVIEW_MINUTES',
+            30,
+        ),
+
     ],
 ];

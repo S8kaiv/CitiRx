@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\IndexAuditLogRequest;
-use App\Models\AdminAuditLog;
-use App\Models\User;
+use App\Services\AdminAuditLogQueryService;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AuditLogController extends Controller
 {
+    public function __construct(
+        protected AdminAuditLogQueryService $auditLogs,
+    ) {}
+
     public function index(
         IndexAuditLogRequest $request,
     ): View {
@@ -18,56 +22,110 @@ class AuditLogController extends Controller
                 'action' => null,
                 'admin_id' => null,
                 'target_type' => null,
+                'target_id' => null,
+                'date_from' => null,
+                'date_to' => null,
             ],
             $request->validated(),
         );
 
-        $query = AdminAuditLog::query()
-            ->with('admin');
+        $logs = $this->auditLogs
+            ->filtered($filters)
+            ->with([
+                'admin:user_id,first_name,middle_name,last_name,deleted_at',
+            ])
+            ->latest('created_at')
+            ->latest('log_id')
+            ->paginate(40)
+            ->withQueryString();
 
-        foreach (
+        return view(
+            'admin.audit-logs.index',
             [
-                'action',
-                'admin_id',
-                'target_type',
-            ] as $field
-        ) {
-            if ($filters[$field] !== null) {
-                $query->where(
-                    $field,
-                    $filters[$field],
+                'logs' => $logs,
+                'targetLinks' => $this->auditLogs
+                    ->targetLinks($logs->getCollection()),
+                'administrators' => $this->auditLogs
+                    ->administrators(),
+                'actions' => $this->auditLogs->actions(),
+                'targetTypes' => AdminAuditLogQueryService::TARGET_TYPES,
+                'filters' => $filters,
+            ],
+        );
+    }
+
+    public function export(
+        IndexAuditLogRequest $request,
+    ): StreamedResponse {
+        $filters = $request->validated();
+
+        return response()->streamDownload(
+            function () use ($filters): void {
+                $output = fopen('php://output', 'wb');
+
+                if ($output === false) {
+                    return;
+                }
+
+                fwrite($output, "\xEF\xBB\xBF");
+
+                fputcsv(
+                    $output,
+                    [
+                        'timestamp',
+                        'administrator',
+                        'action',
+                        'target_type',
+                        'target_id',
+                        'changed_fields',
+                    ],
+                    ',',
+                    '"',
+                    '',
                 );
-            }
-        }
 
-        return view('admin.audit-logs.index', [
-            'logs' => $query
-                ->latest('created_at')
-                ->paginate(40)
-                ->withQueryString(),
+                $logs = $this->auditLogs
+                    ->filtered($filters)
+                    ->orderBy('created_at')
+                    ->orderBy('log_id')
+                    ->cursor();
 
-            /*
-             * Use audit records instead of current roles.
-             * A former administrator remains available in
-             * historical audit filters after role changes.
-             */
-            'administrators' => User::withTrashed()
-                ->whereIn(
-                    'user_id',
-                    AdminAuditLog::query()
-                        ->select('admin_id')
-                        ->distinct(),
-                )
-                ->orderBy('last_name')
-                ->orderBy('first_name')
-                ->get(),
+                foreach ($logs as $log) {
+                    $cells = [
+                        $log->created_at?->toIso8601String(),
+                        $log->actor_name
+                            ?? 'Unknown administrator',
+                        $log->action,
+                        $this->auditLogs->targetLabel(
+                            $log->target_type,
+                        ),
+                        $log->target_id,
+                        implode(
+                            '|',
+                            array_keys($log->changes ?? []),
+                        ),
+                    ];
 
-            'actions' => AdminAuditLog::query()
-                ->distinct()
-                ->orderBy('action')
-                ->pluck('action'),
+                    fputcsv(
+                        $output,
+                        array_map(
+                            $this->auditLogs->safeCsvCell(...),
+                            $cells,
+                        ),
+                        ',',
+                        '"',
+                        '',
+                    );
+                }
 
-            'filters' => $filters,
-        ]);
+                fclose($output);
+            },
+            'administrative-audit-'.now()->format('Ymd-His').'.csv',
+            [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'X-Content-Type-Options' => 'nosniff',
+                'Cache-Control' => 'no-store, private',
+            ],
+        );
     }
 }
