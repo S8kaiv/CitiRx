@@ -3,23 +3,23 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="font-display text-xl font-bold leading-tight text-slate-900">
+                <h1 class="font-display text-xl font-bold leading-tight text-ink">
                     {{ __('Diagnostic Results') }}
                 </h1>
-                <p class="font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                <p class="font-display text-[10px] font-bold uppercase tracking-wider text-ink-muted">
                     PhLE Baseline Mastery Calibration
                 </p>
             </div>
 
             <a href="{{ route('dashboard') }}"
-                class="font-display text-xs font-bold text-muted-ink transition hover:text-primary">
+                class="font-display text-xs font-bold text-ink-muted transition hover:text-primary">
                 Exit to Dashboard
             </a>
         </div>
     </x-slot>
 
     {{-- Main --}}
-    <div class="py-8 sm:py-10 font-sans antialiased text-slate-900">
+    <div class="py-8 sm:py-10 font-sans antialiased text-ink">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             {{-- Level Up Notification Banner --}}
             <x-level-up-alert />
@@ -30,7 +30,7 @@
                     $session->total_items > 0 ? round((100 * $session->correct_items) / $session->total_items) : 0;
             @endphp
 
-            <div class="rounded-3xl border-2 border-b-4 border-slate-200/90 bg-white p-6 sm:p-8 shadow-xs">
+            <div class="rounded-3xl border-2 border-b-4 border-line/90 bg-surface p-6 sm:p-8 shadow-xs">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                     <div>
                         <div class="flex items-center gap-2">
@@ -41,25 +41,25 @@
                             </span>
                             @if ($session->completed_at)
                                 <span class="font-bold text-slate-300">&bull;</span>
-                                <span class="font-mono text-xs text-muted-ink">
+                                <span class="font-mono text-xs text-ink-muted">
                                     {{ $session->completed_at->diffForHumans() }}
                                 </span>
                             @endif
                         </div>
 
-                        <h2 class="mt-2 font-display text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+                        <h2 class="mt-2 font-display text-2xl sm:text-3xl font-black tracking-tight text-ink">
                             Diagnostic Assessment Complete
                         </h2>
-                        <p class="mt-1 text-sm text-slate-600 max-w-lg leading-relaxed">
+                        <p class="mt-1 text-sm text-ink-muted max-w-lg leading-relaxed">
                             Your performance has calibrated initial parameters across all six examination subjects
                         </p>
                     </div>
 
                     <div
-                        class="grid grid-cols-2 gap-4 border-t border-slate-100 pt-4 sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0">
+                        class="grid grid-cols-2 gap-4 border-t border-line pt-4 sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0">
                         {{-- Raw score --}}
                         <div class="text-center sm:text-right">
-                            <span class="block font-mono text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                            <span class="block font-mono text-[10px] font-bold uppercase tracking-wider text-ink-muted">
                                 Raw Accuracy
                             </span>
 
@@ -70,7 +70,7 @@
 
                         {{-- Official TOS-weighted score --}}
                         <div class="text-center sm:text-right">
-                            <span class="block font-mono text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                            <span class="block font-mono text-[10px] font-bold uppercase tracking-wider text-ink-muted">
                                 TOS-Weighted Score
                             </span>
 
@@ -81,7 +81,7 @@
 
                         <div class="col-span-2 text-center sm:text-right">
                             <span
-                                class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 font-display text-xs font-extrabold text-slate-700">
+                                class="inline-flex items-center gap-1 rounded-full bg-surface-2 px-3 py-1 font-display text-xs font-extrabold text-ink">
                                 {{ $session->correct_items }}
                                 /
                                 {{ $session->total_items }}
@@ -91,8 +91,8 @@
                     </div>
                 </div>
 
-                <div class="mt-6 pt-5 border-t border-slate-100">
-                    <div class="h-3 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 ring-1 ring-inset ring-slate-200/60"
+                <div class="mt-6 pt-5 border-t border-line">
+                    <div class="h-3 w-full overflow-hidden rounded-full bg-surface-2 p-0.5 ring-1 ring-inset ring-slate-200/60"
                         role="progressbar" aria-label="Raw diagnostic accuracy" aria-valuemin="0" aria-valuemax="100"
                         aria-valuenow="{{ $overallPercentage }}">
                         <div class="h-full rounded-full bg-primary transition-all duration-700"
@@ -102,13 +102,13 @@
             </div>
 
             {{-- Domain Breakdown Table --}}
-            <div class="rounded-3xl border-2 border-b-4 border-slate-200/90 bg-white p-6 sm:p-8 shadow-xs">
+            <div class="rounded-3xl border-2 border-b-4 border-line/90 bg-surface p-6 sm:p-8 shadow-xs">
                 <div class="flex items-center justify-between gap-4 mb-4">
                     <div>
-                        <h3 class="font-display text-lg font-bold text-slate-900">
+                        <h3 class="font-display text-lg font-bold text-ink">
                             Performance by Subject
                         </h3>
-                        <p class="text-xs text-muted-ink">
+                        <p class="text-xs text-ink-muted">
                             Breakdown of accuracy according to the PhLE Table of Specifications.
                         </p>
                     </div>
@@ -122,7 +122,7 @@
                     <table class="w-full text-left font-sans text-sm">
                         <thead>
                             <tr
-                                class="border-b-2 border-slate-100 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
+                                class="border-b-2 border-line font-display text-[11px] font-bold uppercase tracking-wider text-ink-muted">
                                 <th class="pb-3 pr-4">Subject</th>
                                 <th class="pb-3 px-4 text-center">Score</th>
                                 <th class="pb-3 px-4 text-right">Accuracy</th>
@@ -130,18 +130,18 @@
                             </tr>
                         </thead>
 
-                        <tbody class="divide-y divide-slate-100">
+                        <tbody class="divide-y divide-line">
                             @foreach ($perDomain as $domain)
                                 @php
                                     $domainPercentage =
                                         $domain['total'] > 0 ? round((100 * $domain['correct']) / $domain['total']) : 0;
                                 @endphp
-                                <tr class="transition-colors hover:bg-slate-50/70">
-                                    <td class="py-3.5 pr-4 font-semibold text-slate-900">
+                                <tr class="transition-colors hover:bg-surface-2/70">
+                                    <td class="py-3.5 pr-4 font-semibold text-ink">
                                         {{ $domain['domain_name'] }}
                                     </td>
 
-                                    <td class="py-3.5 px-4 text-center font-mono text-xs text-slate-600">
+                                    <td class="py-3.5 px-4 text-center font-mono text-xs text-ink-muted">
                                         {{ $domain['correct'] }} / {{ $domain['total'] }}
                                     </td>
 
@@ -154,7 +154,7 @@
 
                                     <td class="py-3.5 pl-4 text-right hidden sm:table-cell">
                                         <div
-                                            class="h-2 w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-inset ring-slate-200/60">
+                                            class="h-2 w-full overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-slate-200/60">
                                             <div class="h-full rounded-full {{ $domainPercentage >= 75 ? 'bg-strong' : ($domainPercentage >= 50 ? 'bg-amber-500' : 'bg-weak') }}"
                                                 style="width: {{ $domainPercentage }}%"></div>
                                         </div>
@@ -167,12 +167,12 @@
             </div>
 
             {{-- Initial BKT Mastery Estimates (NEW COMPACT ACCORDION DESIGN) --}}
-            <div class="rounded-3xl border-2 border-b-4 border-slate-200/90 bg-white p-6 sm:p-8 shadow-xs">
+            <div class="rounded-3xl border-2 border-b-4 border-line/90 bg-surface p-6 sm:p-8 shadow-xs">
                 <div class="mb-5">
-                    <h3 class="font-display text-lg font-bold text-slate-900">
+                    <h3 class="font-display text-lg font-bold text-ink">
                         Initial Mastery Estimates (BKT)
                     </h3>
-                    <p class="text-xs sm:text-sm text-slate-600 leading-relaxed mt-1">
+                    <p class="text-xs sm:text-sm text-ink-muted leading-relaxed mt-1">
                         These values anchor your Knowledge Tracing model. Posterior mastery estimates update dynamically
                         following every response in daily practice.
                     </p>
@@ -184,26 +184,26 @@
                         <section x-data="{
                             expanded: @js($loop->first)
                         }" x-id="['mastery-panel']"
-                            class="overflow-hidden rounded-2xl border-2 border-slate-100 bg-white transition duration-200"
+                            class="overflow-hidden rounded-2xl border-2 border-line bg-surface transition duration-200"
                             :class="expanded
                                 ?
                                 'border-primary/20 shadow-sm' :
-                                'hover:border-slate-200'">
+                                'hover:border-line'">
                             <button type="button" @click="expanded = !expanded" :aria-expanded="expanded.toString()"
                                 :aria-controls="$id('mastery-panel')"
-                                class="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-slate-50"
+                                class="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-surface-2"
                                 :class="expanded
                                     ?
                                     'bg-primary-tint/30' :
                                     ''">
                                 <span class="flex items-center gap-3">
                                     <span
-                                        class="font-display text-sm font-bold uppercase tracking-wider text-slate-800">
+                                        class="font-display text-sm font-bold uppercase tracking-wider text-ink">
                                         {{ $domainName }}
                                     </span>
 
                                     <span
-                                        class="rounded-full bg-slate-200 px-2 py-0.5 font-mono text-[10px] font-bold text-slate-600">
+                                        class="rounded-full bg-slate-200 px-2 py-0.5 font-mono text-[10px] font-bold text-ink-muted">
                                         {{ $domainResults->count() }}
                                         Competencies
                                     </span>
@@ -212,7 +212,7 @@
                                 <svg :class="expanded
                                     ?
                                     'rotate-180 text-primary' :
-                                    'text-slate-400'"
+                                    'text-ink-muted'"
                                     class="h-5 w-5 transform transition-transform duration-200" fill="none"
                                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -224,7 +224,7 @@
                                 x-transition:enter="transition ease-out duration-200"
                                 x-transition:enter-start="opacity-0 -translate-y-2"
                                 x-transition:enter-end="opacity-100 translate-y-0"
-                                class="border-t-2 border-slate-100 bg-slate-50/50 p-4">
+                                class="border-t-2 border-line bg-surface-2/50 p-4">
                                 <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                                     @foreach ($domainResults as $result)
                                         @php
@@ -232,30 +232,30 @@
                                         @endphp
 
                                         <div
-                                            class="flex items-center justify-between gap-4 rounded-xl border-2 border-slate-200/60 bg-white p-3 shadow-2xs">
+                                            class="flex items-center justify-between gap-4 rounded-xl border-2 border-line/60 bg-surface p-3 shadow-2xs">
                                             <div class="min-w-0 flex-1">
-                                                <h5 class="truncate font-display text-xs font-bold text-slate-900"
+                                                <h5 class="truncate font-display text-xs font-bold text-ink"
                                                     title="{{ $result['competency_title'] }}">
                                                     {{ $result['competency_title'] }}
                                                 </h5>
 
                                                 <div class="mt-1.5 flex items-center gap-2.5">
                                                     <div
-                                                        class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100 ring-1 ring-inset ring-slate-200/50">
+                                                        class="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-slate-200/50">
                                                         <div class="h-full rounded-full bg-primary"
                                                             style="width: {{ $masteryPercentage }}%"></div>
                                                     </div>
 
                                                     <span
-                                                        class="w-8 text-right font-mono text-[10px] font-bold text-slate-600">
+                                                        class="w-8 text-right font-mono text-[10px] font-bold text-ink-muted">
                                                         {{ $masteryPercentage }}%
                                                     </span>
                                                 </div>
                                             </div>
 
                                             <div
-                                                class="flex shrink-0 items-center justify-center rounded-lg border border-slate-100 bg-slate-50 px-2 py-1">
-                                                <span class="font-mono text-[9px] font-bold uppercase text-muted-ink">
+                                                class="flex shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2 px-2 py-1">
+                                                <span class="font-mono text-[9px] font-bold uppercase text-ink-muted">
                                                     {{ $result['correct'] }}
                                                     /
                                                     {{ $result['total'] }}
@@ -271,20 +271,36 @@
             </div>
 
             {{-- Action CTA --}}
-            <div class="pt-2 pb-6 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="{{ route('dashboard') }}" style="--lip: rgb(var(--color-primary-lip));"
-                    class="btn-press w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-8 py-3.5 font-display text-sm font-bold text-white shadow-md transition hover:bg-primary/95">
-                    <span>Return to Dashboard</span>
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                    </svg>
-                </a>
+            <div class="flex flex-col items-center justify-center gap-3 pb-6 pt-2 sm:flex-row">
+                <x-ui.button
+                    :href="route('dashboard')"
+                    class="w-full sm:w-auto"
+                >
+                    Return to Dashboard
 
-                <a href="{{ route('practice.intro') }}"
-                    class="w-full sm:w-auto inline-flex items-center justify-center rounded-2xl border-2 border-slate-200 bg-white px-6 py-3.5 font-display text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-slate-900">
+                    <svg
+                        class="h-4 w-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        aria-hidden="true"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                        />
+                    </svg>
+                </x-ui.button>
+
+                <x-ui.button
+                    :href="route('practice.intro')"
+                    variant="secondary"
+                    class="w-full sm:w-auto"
+                >
                     Start Adaptive Practice
-                </a>
+                </x-ui.button>
             </div>
 
         </div>

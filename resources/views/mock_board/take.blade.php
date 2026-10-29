@@ -1,11 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <h1 class="font-display text-xl font-black leading-tight text-slate-900">
+            <h1 class="font-display text-xl font-black leading-tight text-ink">
                 Research Post-Test
             </h1>
 
-            <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
+            <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-ink-muted">
                 Form B · Timed Assessment
             </p>
         </div>
@@ -59,7 +59,7 @@
     @endphp
 
     <div
-        class="py-5 sm:py-8"
+        class="ui-assessment-stage py-5 sm:py-8"
         x-data="mockBoardExam()"
         x-cloak
     >
@@ -74,14 +74,14 @@
                 </div>
             @endif
 
-            <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-4 shadow-xs sm:p-5">
+            <section class="rounded-3xl border-2 border-b-4 border-line bg-surface p-4 shadow-xs sm:p-5">
                 <div class="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <p class="font-display text-[10px] font-black uppercase tracking-wider text-muted-ink">
+                        <p class="font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
                             Current progress
                         </p>
 
-                        <p class="mt-1 font-display text-sm font-black text-slate-900">
+                        <p class="mt-1 font-display text-sm font-black text-ink">
                             Question
                             <span class="text-primary" x-text="currentIndex + 1"></span>
                             of
@@ -123,23 +123,26 @@
                 </div>
 
                 <div
-                    class="mt-4 h-4 overflow-hidden rounded-full border-2 border-slate-200 bg-slate-100 p-0.5"
+                    class="ui-progress-track mt-4"
                     role="progressbar"
                     aria-label="Answered questions"
                     aria-valuemin="0"
                     aria-valuemax="100"
-                    :aria-valuenow="Math.round(progressPercentage)"
+                    x-bind:aria-valuenow="
+                        Math.round(progressPercentage)
+                    "
                 >
                     <div
-                        class="relative h-full rounded-full bg-gradient-to-r from-primary to-[#8F75FF] transition-all duration-300"
-                        :style="`width: ${progressPercentage}%`"
-                    >
-                        <div class="absolute inset-x-0 top-0.5 h-1 rounded-full bg-white/30"></div>
-                    </div>
+                        class="ui-progress-fill"
+                        x-bind:style="
+                            `--ui-progress:
+                                ${progressPercentage / 100}`
+                        "
+                    ></div>
                 </div>
             </section>
 
-            <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-xs sm:p-8">
+            <section class="rounded-3xl border-2 border-b-4 border-line bg-surface p-5 shadow-xs sm:p-8">
                 <template x-if="currentQuestion">
                     <div>
                         <div class="flex flex-wrap items-center gap-2">
@@ -153,13 +156,13 @@
                             </span>
 
                             <span
-                                class="font-display text-xs font-bold text-muted-ink"
+                                class="font-display text-xs font-bold text-ink-muted"
                                 x-text="currentQuestion.competency"
                             ></span>
                         </div>
 
                         <h2
-                            class="mt-5 font-display text-lg font-black leading-relaxed text-slate-900 sm:text-xl"
+                            class="mt-5 font-display text-lg font-black leading-relaxed text-ink sm:text-xl"
                             x-text="currentQuestion.text"
                         ></h2>
 
@@ -168,55 +171,51 @@
                                 x-for="choice in currentQuestion.choices"
                                 :key="choice.id"
                             >
-                                <label class="group block cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        class="peer sr-only"
-                                        :name="'question_' + currentQuestion.id"
-                                        :value="choice.id"
-                                        :checked="answers[currentQuestion.id] === choice.id"
-                                        :disabled="saving || submitting || expirySubmitted"
-                                        @change="saveAnswer(
-                                            currentQuestion.id,
-                                            choice.id
-                                        )"
-                                    >
-
-                                    <div
-                                        class="flex items-center gap-4 rounded-2xl border-2 border-b-4 p-4 transition active:translate-y-0.5 active:border-b-2 peer-focus-visible:ring-4 peer-focus-visible:ring-primary/25"
-                                        :class="answers[currentQuestion.id] === choice.id
-                                            ? 'border-primary bg-primary-tint/40'
-                                            : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'"
-                                    >
-                                        <div
-                                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 font-display text-sm font-black transition"
-                                            :class="answers[currentQuestion.id] === choice.id
-                                                ? 'border-primary-lip bg-primary text-white'
-                                                : 'border-slate-200 bg-slate-100 text-slate-600'"
+                                <x-ui.choice-card>
+                                    <x-slot:control>
+                                        <input
+                                            type="radio"
+                                            class="peer sr-only"
+                                            x-bind:name="
+                                                'question_'
+                                                    + currentQuestion.id
+                                            "
+                                            x-bind:value="choice.id"
+                                            x-bind:checked="
+                                                answers[currentQuestion.id]
+                                                    === choice.id
+                                            "
+                                            x-bind:disabled="
+                                                saving
+                                                || submitting
+                                                || expirySubmitted
+                                            "
+                                            x-on:change="
+                                                saveAnswer(
+                                                    currentQuestion.id,
+                                                    choice.id
+                                                )
+                                            "
                                         >
-                                            <span x-text="choice.letter"></span>
-                                        </div>
+                                    </x-slot:control>
 
-                                        <span
-                                            class="text-sm font-semibold leading-relaxed sm:text-base"
-                                            :class="answers[currentQuestion.id] === choice.id
-                                                ? 'text-primary'
-                                                : 'text-slate-800'"
-                                            x-text="choice.text"
-                                        ></span>
-                                    </div>
-                                </label>
+                                    <x-slot:letter>
+                                        <span x-text="choice.letter"></span>
+                                    </x-slot:letter>
+
+                                    <span x-text="choice.text"></span>
+                                </x-ui.choice-card>
                             </template>
                         </div>
 
-                        <div class="mt-5 flex min-h-7 flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                        <div class="mt-5 flex min-h-7 flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
                             <div
                                 aria-live="polite"
                                 class="text-xs font-bold"
                             >
                                 <span
                                     x-show="saveState === 'idle'"
-                                    class="text-muted-ink"
+                                    class="text-ink-muted"
                                 >
                                     Autosave ready
                                 </span>
@@ -252,7 +251,7 @@
                                     currentQuestion.id,
                                     null
                                 )"
-                                class="rounded-xl px-3 py-1.5 font-display text-xs font-black text-muted-ink transition hover:bg-slate-100 hover:text-weak-ink focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-40"
+                                class="rounded-xl px-3 py-1.5 font-display text-xs font-black text-ink-muted transition hover:bg-surface-2 hover:text-weak-ink focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-40"
                             >
                                 Clear answer
                             </button>
@@ -260,48 +259,64 @@
                     </div>
                 </template>
 
-                <div class="mt-5 flex items-center justify-between gap-3 border-t border-slate-100 pt-5">
-                    <button
-                        type="button"
-                        :disabled="currentIndex === 0 || saving || submitting"
-                        @click="previousQuestion()"
-                        class="rounded-2xl border-2 border-b-4 border-slate-200 bg-white px-5 py-3 font-display text-xs font-black uppercase tracking-wider text-slate-600 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 active:translate-y-0.5 active:border-b-2 disabled:cursor-not-allowed disabled:opacity-30"
-                    >
-                        Back
-                    </button>
+                <x-ui.assessment-actions
+                    label="Mock-board navigation"
+                >
+                    <div class="flex w-full items-center justify-between gap-3">
+                        <x-ui.button
+                            type="button"
+                            variant="secondary"
+                            x-bind:disabled="
+                                currentIndex === 0
+                                || saving
+                                || submitting
+                            "
+                            x-on:click="previousQuestion()"
+                        >
+                            Back
+                        </x-ui.button>
 
-                    <button
-                        x-show="currentIndex < questions.length - 1"
-                        type="button"
-                        :disabled="saving || submitting"
-                        @click="nextQuestion()"
-                        style="--lip: rgb(var(--color-primary-lip));"
-                        class="btn-press rounded-2xl bg-primary px-7 py-3 font-display text-sm font-black text-white transition hover:bg-primary/95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                        Continue
-                    </button>
+                        <x-ui.button
+                            x-show="
+                                currentIndex
+                                    < questions.length - 1
+                            "
+                            type="button"
+                            x-bind:disabled="
+                                saving || submitting
+                            "
+                            x-on:click="nextQuestion()"
+                        >
+                            Continue
+                        </x-ui.button>
 
-                    <button
-                        x-show="currentIndex === questions.length - 1"
-                        type="button"
-                        :disabled="saving || submitting"
-                        @click="submitDialogOpen = true"
-                        style="--lip: #15803D;"
-                        class="btn-press rounded-2xl bg-strong px-7 py-3 font-display text-sm font-black text-white transition hover:brightness-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-strong/25 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                        Review & Submit
-                    </button>
-                </div>
+                        <x-ui.button
+                            x-show="
+                                currentIndex
+                                    === questions.length - 1
+                            "
+                            type="button"
+                            x-bind:disabled="
+                                saving || submitting
+                            "
+                            x-on:click="
+                                submitDialogOpen = true
+                            "
+                        >
+                            Review and Submit
+                        </x-ui.button>
+                    </div>
+                </x-ui.assessment-actions>
             </section>
 
-            <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-xs">
+            <section class="rounded-3xl border-2 border-b-4 border-line bg-surface p-5 shadow-xs">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h2 class="font-display text-sm font-black text-slate-900">
+                        <h2 class="font-display text-sm font-black text-ink">
                             Question navigator
                         </h2>
 
-                        <p class="mt-1 text-xs font-semibold text-muted-ink">
+                        <p class="mt-1 text-xs font-semibold text-ink-muted">
                             Page
                             <span x-text="currentPage + 1"></span>
                             of
@@ -331,7 +346,7 @@
                             class="h-9 min-w-9 rounded-xl border-2 border-b-4 px-2 font-display text-xs font-black transition focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 active:translate-y-0.5 active:border-b-2 disabled:cursor-not-allowed disabled:opacity-40"
                             :class="currentPage === page - 1
                                 ? 'border-primary-lip bg-primary text-white'
-                                : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-white'"
+                                : 'border-line bg-surface-2 text-ink-muted hover:bg-surface'"
                             x-text="page"
                         ></button>
                     </template>
@@ -355,7 +370,7 @@
                                     currentIndex !== item.index
                                     && answers[item.question.id],
 
-                                'border-slate-200 bg-slate-50 text-slate-600 hover:bg-white':
+                                'border-line bg-surface-2 text-ink-muted hover:bg-surface':
                                     currentIndex !== item.index
                                     && !answers[item.question.id]
                             }"
@@ -364,17 +379,17 @@
                     </template>
                 </div>
 
-                <div class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                <div class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
                     <button
                         type="button"
                         :disabled="saving || submitting"
                         @click="exitAssessment()"
-                        class="font-display text-xs font-black text-muted-ink transition hover:text-primary focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-40"
+                        class="font-display text-xs font-black text-ink-muted transition hover:text-primary focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                         Save and exit
                     </button>
 
-                    <p class="font-mono text-[10px] text-muted-ink">
+                    <p class="font-mono text-[10px] text-ink-muted">
                         Session: {{ $session->session_id }}
                     </p>
                 </div>
@@ -401,23 +416,23 @@
                         submitDialogOpen = false;
                     }
                 "
-                class="w-full max-w-md rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-xl sm:p-7"
+                class="w-full max-w-md rounded-3xl border-2 border-b-4 border-line bg-surface p-6 shadow-xl sm:p-7"
             >
                 <h2
                     id="submit-dialog-title"
-                    class="font-display text-xl font-black text-slate-900"
+                    class="font-display text-xl font-black text-ink"
                 >
                     Submit your post-test?
                 </h2>
 
-                <p class="mt-3 text-sm font-medium leading-relaxed text-slate-600">
+                <p class="mt-3 text-sm font-medium leading-relaxed text-ink-muted">
                     You answered
                     <strong
-                        class="text-slate-900"
+                        class="text-ink"
                         x-text="answeredCount"
                     ></strong>
                     of
-                    <strong class="text-slate-900">
+                    <strong class="text-ink">
                         {{ count($questionPayload) }}
                     </strong>
                     questions.
@@ -435,7 +450,7 @@
                     remain unanswered in your final score.
                 </div>
 
-                <p class="mt-4 text-sm font-semibold text-slate-600">
+                <p class="mt-4 text-sm font-semibold text-ink-muted">
                     Submission is final. You cannot retry or change your answers.
                 </p>
 
@@ -444,7 +459,7 @@
                         type="button"
                         :disabled="submitting"
                         @click="submitDialogOpen = false"
-                        class="rounded-2xl border-2 border-b-4 border-slate-200 bg-white px-5 py-3 font-display text-xs font-black text-slate-600 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 active:translate-y-0.5 active:border-b-2 disabled:opacity-40"
+                        class="rounded-2xl border-2 border-b-4 border-line bg-surface px-5 py-3 font-display text-xs font-black text-ink-muted transition hover:bg-surface-2 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 active:translate-y-0.5 active:border-b-2 disabled:opacity-40"
                     >
                         Continue Reviewing
                     </button>

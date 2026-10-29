@@ -2,16 +2,16 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="font-display text-xl font-black text-slate-900 leading-tight">
+                <h1 class="font-display text-xl font-black text-ink leading-tight">
                     {{ __('Practice Summary') }}
                 </h1>
-                <p class="text-xs font-semibold uppercase tracking-wider text-muted-ink">
+                <p class="text-xs font-semibold uppercase tracking-wider text-ink-muted">
                     Session Mastery & Performance
                 </p>
             </div>
 
             <a href="{{ route('dashboard') }}"
-                class="font-display text-xs font-bold text-muted-ink hover:text-primary transition">
+                class="font-display text-xs font-bold text-ink-muted hover:text-primary transition">
                 Return to Dashboard
             </a>
         </div>
@@ -25,9 +25,14 @@
         $ringOffset = $circumference * (1 - $scoreRatio);
 
         $ringColor = match (true) {
-            $rawAccuracy >= 80 => '#22C55E', // Strong Green
-            $rawAccuracy >= 60 => '#6D4AFF', // Primary Violet
-            default => '#F5A623', // Gold
+            $rawAccuracy >= 80 =>
+                'rgb(var(--color-success-strong))',
+
+            $rawAccuracy >= 60 =>
+                'rgb(var(--color-primary-default))',
+
+            default =>
+                'rgb(var(--color-warning-strong))',
         };
 
         // Identify lowest domain for session takeaway
@@ -43,7 +48,7 @@
                 : 0;
     @endphp
 
-    <div class="pt-6 pb-12 font-sans text-slate-900 antialiased">
+    <div class="pt-6 pb-12 font-sans text-ink antialiased">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-4">
             {{-- Level Up Notification Banner --}}
             <x-level-up-alert />
@@ -62,10 +67,10 @@
 
                 {{-- LEFT: Score Donut Card --}}
                 <div
-                    class="md:col-span-5 lg:col-span-4 flex flex-col justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-sm text-center">
+                    class="md:col-span-5 lg:col-span-4 flex flex-col justify-between rounded-2xl border-2 border-b-4 border-line bg-surface p-5 shadow-sm text-center">
                     <div>
                         <span
-                            class="inline-flex items-center rounded-full bg-slate-100 px-3 py-0.5 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
+                            class="inline-flex items-center rounded-full bg-surface-2 px-3 py-0.5 font-display text-[11px] font-bold uppercase tracking-wider text-ink-muted">
                             Session Complete
                         </span>
 
@@ -73,7 +78,7 @@
                         <div class="relative mx-auto mt-3 mb-4" style="width: 176px; height: 176px;">
                             <svg style="width: 176px; height: 176px;" class="-rotate-90" viewBox="0 0 176 176">
                                 <circle cx="88" cy="88" r="{{ $radius }}" fill="none"
-                                    stroke="#F1F5F9" stroke-width="15" />
+                                    stroke="rgb(var(--color-line))" stroke-width="15" />
                                 <circle cx="88" cy="88" r="{{ $radius }}" fill="none"
                                     stroke="{{ $ringColor }}" stroke-width="15" stroke-linecap="round"
                                     stroke-dasharray="{{ round($circumference, 2) }}"
@@ -82,11 +87,11 @@
                             </svg>
 
                             <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                <span class="font-display text-4xl font-extrabold text-slate-900 leading-none">
-                                    {{ round($rawAccuracy) }}<span class="text-xl font-bold text-muted-ink">%</span>
+                                <span class="font-display text-4xl font-extrabold text-ink leading-none">
+                                    {{ round($rawAccuracy) }}<span class="text-xl font-bold text-ink-muted">%</span>
                                 </span>
                                 <span
-                                    class="font-display text-[11px] font-bold text-muted-ink uppercase tracking-wider mt-1.5">
+                                    class="font-display text-[11px] font-bold text-ink-muted uppercase tracking-wider mt-1.5">
                                     Accuracy
                                 </span>
                             </div>
@@ -96,7 +101,7 @@
                     {{-- Score & XP Stats --}}
                     <div class="space-y-2">
                         <div
-                            class="rounded-xl border border-slate-200 bg-slate-50 py-1.5 px-3 font-display text-xs font-bold text-slate-700">
+                            class="rounded-xl border border-line bg-surface-2 py-1.5 px-3 font-display text-xs font-bold text-ink">
                             Score: {{ $session->correct_items }} / {{ $session->total_items }} Correct
                         </div>
 
@@ -110,9 +115,9 @@
                         </div>
 
                         @if ($eligibleCount < $session->total_items)
-                            <p class="text-[10px] text-muted-ink leading-tight">
+                            <p class="text-[10px] text-ink-muted leading-tight">
                                 Eligible: <strong
-                                    class="text-slate-800">{{ number_format($eligibleAccuracy, 1) }}%</strong>
+                                    class="text-ink">{{ number_format($eligibleAccuracy, 1) }}%</strong>
                                 ({{ $eligibleCorrect }}/{{ $eligibleCount }} non-speed-flagged).
                             </p>
                         @endif
@@ -121,13 +126,13 @@
 
                 {{-- RIGHT: 2-Column Domain Breakdown Card --}}
                 <div
-                    class="md:col-span-7 lg:col-span-8 flex flex-col justify-between rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-sm">
+                    class="md:col-span-7 lg:col-span-8 flex flex-col justify-between rounded-2xl border-2 border-b-4 border-line bg-surface p-5 shadow-sm">
                     <div>
-                        <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
-                            <h3 class="font-display text-sm font-bold text-slate-900">
+                        <div class="flex items-center justify-between mb-4 border-b border-line pb-2">
+                            <h3 class="font-display text-sm font-bold text-ink">
                                 Breakdown by Domain
                             </h3>
-                            <span class="font-display text-[11px] font-semibold text-muted-ink">
+                            <span class="font-display text-[11px] font-semibold text-ink-muted">
                                 Performance
                             </span>
                         </div>
@@ -150,29 +155,29 @@
 
                                     <div class="space-y-1.5">
                                         <div class="flex items-center justify-between gap-2 text-xs">
-                                            <span class="font-display font-bold text-slate-800 truncate"
+                                            <span class="font-display font-bold text-ink truncate"
                                                 title="{{ $domain['domain_name'] }}">
                                                 {{ $domain['domain_name'] }}
                                             </span>
-                                            <span class="font-display font-bold text-slate-900 shrink-0">
+                                            <span class="font-display font-bold text-ink shrink-0">
                                                 {{ $domainPercentage }}%
                                             </span>
                                         </div>
 
                                         <div
-                                            class="h-2 w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-inset ring-slate-200/60">
+                                            class="h-2 w-full overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-slate-200/60">
                                             <div class="h-full rounded-full {{ $barColor }} transition-all duration-700"
                                                 style="width: {{ $domainPercentage }}%"></div>
                                         </div>
 
-                                        <div class="text-[11px] font-medium text-muted-ink">
+                                        <div class="text-[11px] font-medium text-ink-muted">
                                             {{ $domain['correct'] }}/{{ $domain['total'] }} answered
                                         </div>
                                     </div>
                                 @endforeach
                             </div>
                         @else
-                            <p class="text-xs text-muted-ink py-8 text-center">
+                            <p class="text-xs text-ink-muted py-8 text-center">
                                 No domain data recorded for this session.
                             </p>
                         @endif
@@ -193,7 +198,7 @@
             {{-- MIDDLE ROW: LAST QUESTION & BOOKMARK REMEDIATION --}}
             @if ($lastQuestion)
                 <div
-                    class="relative overflow-hidden rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-sm">
+                    class="relative overflow-hidden rounded-2xl border-2 border-b-4 border-line bg-surface p-5 shadow-sm">
                     {{-- Star / Bookmark Form --}}
                     <form method="POST"
                         action="{{ $lastQuestionIsBookmarked
@@ -208,22 +213,22 @@
                         <button type="submit"
                             aria-label="{{ $lastQuestionIsBookmarked ? 'Remove bookmark' : 'Bookmark last question' }}"
                             title="{{ $lastQuestionIsBookmarked ? 'Remove bookmark' : 'Bookmark last question' }}"
-                            class="flex h-9 w-9 items-center justify-center rounded-xl border-2 transition {{ $lastQuestionIsBookmarked ? 'border-[#F5A623]/40 bg-gold-tint text-gold shadow-sm' : 'border-slate-200 bg-slate-50 text-slate-400 hover:text-gold hover:border-[#F5A623]/40' }}">
+                            class="flex h-9 w-9 items-center justify-center rounded-xl border-2 transition {{ $lastQuestionIsBookmarked ? 'border-[#F5A623]/40 bg-gold-tint text-gold shadow-sm' : 'border-line bg-surface-2 text-ink-muted hover:text-gold hover:border-[#F5A623]/40' }}">
                             <span class="text-xl leading-none">{{ $lastQuestionIsBookmarked ? '★' : '☆' }}</span>
                         </button>
                     </form>
 
                     <div class="pr-12">
                         <span
-                            class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                            class="inline-flex items-center rounded-full bg-surface-2 px-2.5 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-ink-muted">
                             Last Question Addressed
                         </span>
 
-                        <p class="mt-2 text-sm font-bold text-slate-900 leading-snug">
+                        <p class="mt-2 text-sm font-bold text-ink leading-snug">
                             {{ $lastQuestion->question_text }}
                         </p>
 
-                        <p class="mt-2 text-xs text-muted-ink">
+                        <p class="mt-2 text-xs text-ink-muted">
                             Star this question to save it to your <strong>Bookmarks</strong> for later review.
                         </p>
                     </div>
@@ -232,16 +237,16 @@
 
             {{-- BOTTOM ROW: UPDATED PHLE ESTIMATE --}}
             <div
-                class="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-2xl border-2 border-b-4 border-slate-200 bg-white p-4 sm:px-6 shadow-sm">
+                class="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-2xl border-2 border-b-4 border-line bg-surface p-4 sm:px-6 shadow-sm">
                 <div>
-                    <span class="font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                    <span class="font-display text-[10px] font-bold uppercase tracking-wider text-ink-muted">
                         Updated PhLE Estimate
                     </span>
                     <div class="mt-0.5 flex items-baseline gap-2">
-                        <span class="font-display text-2xl sm:text-3xl font-extrabold text-slate-900">
+                        <span class="font-display text-2xl sm:text-3xl font-extrabold text-ink">
                             {{ $currentReadiness !== null ? number_format($currentReadiness, 1) . '%' : 'Pending' }}
                         </span>
-                        <span class="text-xs font-medium text-muted-ink">Board Readiness</span>
+                        <span class="text-xs font-medium text-ink-muted">Board Readiness</span>
                     </div>
                 </div>
 
@@ -255,17 +260,22 @@
 
             <x-study-plan :recommendation="$studyRecommendation" />
 
-            {{-- ACTION BUTTONS --}}
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
-                <a href="{{ route('practice.intro') }}" style="--lip: rgb(var(--color-primary-lip));"
-                    class="btn-press w-full sm:w-auto rounded-xl bg-primary px-8 py-2.5 text-center font-display text-sm font-bold text-white shadow-sm transition hover:bg-primary/95">
+            {{-- Action buttons --}}
+            <div class="flex flex-col items-center justify-center gap-3 pt-1 sm:flex-row">
+                <x-ui.button
+                    :href="route('practice.intro')"
+                    class="w-full sm:w-auto"
+                >
                     Practice Again
-                </a>
+                </x-ui.button>
 
-                <a href="{{ route('dashboard') }}" style="--lip: #CBD5E1;"
-                    class="btn-press w-full sm:w-auto rounded-xl border-2 border-slate-200 bg-white px-8 py-2.5 text-center font-display text-sm font-bold text-slate-700 transition hover:bg-slate-50">
+                <x-ui.button
+                    :href="route('dashboard')"
+                    variant="secondary"
+                    class="w-full sm:w-auto"
+                >
                     Back to Dashboard
-                </a>
+                </x-ui.button>
             </div>
 
         </div>

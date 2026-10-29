@@ -5,24 +5,24 @@
             <div class="flex items-center gap-3">
                 <a href="{{ route('dashboard') }}"
                    title="Exit Diagnostic"
-                   class="flex h-10 w-10 items-center justify-center rounded-2xl border-2 border-b-4 border-slate-200 bg-white text-slate-400 shadow-xs transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 active:translate-y-0.5 active:border-b-2">
+                   class="flex h-10 w-10 items-center justify-center rounded-2xl border-2 border-b-4 border-line bg-surface text-ink-muted shadow-xs transition hover:border-line-strong hover:bg-surface-2 hover:text-ink active:translate-y-0.5 active:border-b-2">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </a>
 
                 <div>
-                    <h1 class="font-display text-lg sm:text-xl font-black leading-tight text-slate-900">
+                    <h1 class="font-display text-lg sm:text-xl font-black leading-tight text-ink">
                         {{ __('Diagnostic Test') }}
                     </h1>
-                    <p class="font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                    <p class="font-display text-[10px] font-bold uppercase tracking-wider text-ink-muted">
                         Baseline TOS Calibration
                     </p>
                 </div>
             </div>
 
             <a href="{{ route('dashboard') }}"
-               class="font-display text-xs font-bold text-muted-ink transition hover:text-primary">
+               class="font-display text-xs font-bold text-ink-muted transition hover:text-primary">
                 Exit
             </a>
         </div>
@@ -54,7 +54,7 @@
 
     {{-- Main --}}
     <div
-        class="py-6 sm:py-8 font-sans antialiased text-slate-900"
+        class="ui-assessment-stage py-6 sm:py-8 font-sans antialiased text-ink"
         x-data="diagnosticForm()"
         x-init="initialize()"
     >
@@ -82,7 +82,7 @@
             {{-- Duolingo-Style Chunky Progress HUD --}}
             <div class="space-y-2">
                 <div class="flex items-center justify-between font-display text-xs font-black uppercase tracking-wider">
-                    <span class="text-slate-700">
+                    <span class="text-ink">
                         Question <span class="text-primary font-black" x-text="currentIndex + 1"></span> of {{ $questions->count() }}
                     </span>
 
@@ -96,21 +96,28 @@
                 </div>
 
                 {{-- Chunky Rounded Progress Bar --}}
-                <div class="h-4 w-full overflow-hidden rounded-full border-2 border-slate-200 bg-slate-100 p-0.5 shadow-inner"
-                     role="progressbar"
-                     aria-label="Diagnostic progress"
-                     aria-valuemin="0"
-                     aria-valuemax="100"
-                     :aria-valuenow="Math.round(progressPercentage)">
-                    <div class="h-full rounded-full bg-gradient-to-r from-primary to-[#8F75FF] transition-all duration-300 ease-out relative"
-                         :style="`width: ${progressPercentage}%`">
-                        <div class="absolute inset-x-0 top-0.5 h-1 rounded-full bg-white/30"></div>
-                    </div>
+                <div
+                    class="ui-progress-track"
+                    role="progressbar"
+                    aria-label="Diagnostic progress"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    x-bind:aria-valuenow="
+                        Math.round(progressPercentage)
+                    "
+                >
+                    <div
+                        class="ui-progress-fill"
+                        x-bind:style="
+                            `--ui-progress:
+                                ${progressPercentage / 100}`
+                        "
+                    ></div>
                 </div>
             </div>
 
             {{-- Main Question Card --}}
-            <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-7 shadow-xs">
+            <div class="rounded-3xl border-2 border-b-4 border-line bg-surface p-5 sm:p-7 shadow-xs">
                 <template x-for="(question, index) in questions" :key="question.id">
                     <div x-show="currentIndex === index" x-cloak class="space-y-5">
 
@@ -119,46 +126,51 @@
                             <span class="inline-flex items-center gap-1.5 rounded-xl border border-b-2 border-clinical/30 bg-clinical-tint px-3 py-1 font-display text-xs font-extrabold text-clinical-ink"
                                   x-text="question.domain"></span>
                             <span class="font-bold text-slate-300">&bull;</span>
-                            <span class="font-display text-xs font-bold text-muted-ink"
+                            <span class="font-display text-xs font-bold text-ink-muted"
                                   x-text="question.competency"></span>
                         </div>
 
                         {{-- Question Stem --}}
-                        <div class="font-display text-lg sm:text-xl font-black leading-snug text-slate-900"
+                        <div class="font-display text-lg sm:text-xl font-black leading-snug text-ink"
                              x-text="question.text"></div>
 
-                        {{-- Duolingo 2.5D Choice Cards --}}
+                        {{-- Shared assessment choices --}}
                         <div class="space-y-3 pt-1">
-                            <template x-for="choice in question.choices" :key="choice.id">
-                                <label class="group relative block cursor-pointer transition-transform duration-150 active:scale-[0.99]"
-                                       :class="{ 'opacity-60 pointer-events-none': saving }">
-                                    <input type="radio"
-                                           :name="'q_' + question.id"
-                                           :value="choice.id"
-                                           :checked="answers[question.id] === choice.id"
-                                           @change="selectAnswer(question.id, choice.id)"
-                                           :disabled="saving"
-                                           class="peer sr-only">
+                            <template
+                                x-for="choice in question.choices"
+                                :key="choice.id"
+                            >
+                                <x-ui.choice-card
+                                    x-bind:class="{
+                                        'pointer-events-none': saving,
+                                    }"
+                                >
+                                    <x-slot:control>
+                                        <input
+                                            type="radio"
+                                            class="peer sr-only"
+                                            x-bind:name="'q_' + question.id"
+                                            x-bind:value="choice.id"
+                                            x-bind:checked="
+                                                answers[question.id]
+                                                    === choice.id
+                                            "
+                                            x-bind:disabled="saving"
+                                            x-on:change="
+                                                selectAnswer(
+                                                    question.id,
+                                                    choice.id
+                                                )
+                                            "
+                                        >
+                                    </x-slot:control>
 
-                                    <div class="flex items-center gap-4 rounded-2xl border-2 border-b-4 p-3.5 sm:p-4 transition-all duration-150 active:translate-y-0.5 active:border-b-2"
-                                         :class="answers[question.id] === choice.id
-                                            ? 'border-primary border-b-primary-lip bg-primary-tint/40 shadow-xs'
-                                            : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80'">
+                                    <x-slot:letter>
+                                        <span x-text="choice.letter"></span>
+                                    </x-slot:letter>
 
-                                        {{-- Choice Letter Pip --}}
-                                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 font-display text-sm font-black transition-all duration-150"
-                                             :class="answers[question.id] === choice.id
-                                                ? 'border-primary border-b-primary-lip bg-primary text-white shadow-xs'
-                                                : 'border-slate-200 bg-slate-100 text-slate-500 group-hover:border-slate-300 group-hover:bg-slate-200/60'">
-                                            <span x-text="choice.letter"></span>
-                                        </div>
-
-                                        {{-- Choice Text --}}
-                                        <span class="font-sans text-sm sm:text-base font-semibold leading-relaxed"
-                                              :class="answers[question.id] === choice.id ? 'text-primary font-bold' : 'text-slate-800'"
-                                              x-text="choice.text"></span>
-                                    </div>
-                                </label>
+                                    <span x-text="choice.text"></span>
+                                </x-ui.choice-card>
                             </template>
                         </div>
 
@@ -166,9 +178,9 @@
                 </template>
 
                 {{-- Autosave Indicator --}}
-                <div class="mt-5 flex items-center justify-between text-xs min-h-6 pt-3 border-t border-slate-100">
+                <div class="mt-5 flex items-center justify-between text-xs min-h-6 pt-3 border-t border-line">
                     <div>
-                        <span x-show="saving" x-cloak class="inline-flex items-center gap-1.5 font-display font-bold text-muted-ink">
+                        <span x-show="saving" x-cloak class="inline-flex items-center gap-1.5 font-display font-bold text-ink-muted">
                             <svg class="h-3.5 w-3.5 animate-spin text-primary" viewBox="0 0 24 24" fill="none">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
@@ -179,73 +191,130 @@
                         <span x-show="saveError" x-cloak x-text="saveError" class="font-bold text-weak-ink"></span>
                     </div>
 
-                    <span class="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <span class="font-mono text-[10px] font-bold uppercase tracking-wider text-ink-muted">
                     Autosave active
                     </span>
                 </div>
 
-                {{-- Action Controls --}}
-                <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
-
-                    {{-- Previous Button --}}
-                    <button type="button"
-                            @click="previousQuestion()"
-                            :disabled="currentIndex === 0 || saving"
-                            class="inline-flex items-center gap-1.5 rounded-2xl border-2 border-b-4 border-slate-200 bg-white px-5 py-3 font-display text-xs font-black uppercase tracking-wider text-slate-600 shadow-xs transition hover:bg-slate-50 hover:text-slate-800 active:translate-y-0.5 active:border-b-2 disabled:opacity-30 disabled:cursor-not-allowed">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-                        </svg>
-                        <span>Back</span>
-                    </button>
-
-                    {{-- Next Button --}}
-                    <template x-if="currentIndex < questions.length - 1">
-                        <button type="button"
-                                @click="nextQuestion()"
-                                :disabled="saving"
-                                style="--lip: rgb(var(--color-primary-lip));"
-                                class="btn-press inline-flex items-center gap-2 rounded-2xl bg-primary px-7 py-3 font-display text-sm font-black uppercase tracking-wider text-white shadow-sm transition hover:bg-primary/95 disabled:opacity-40 disabled:cursor-not-allowed">
-                            <span>Continue</span>
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                {{-- Mobile-safe assessment navigation --}}
+                <x-ui.assessment-actions
+                    label="Diagnostic navigation"
+                >
+                    <div class="flex w-full items-center justify-between gap-3">
+                        <x-ui.button
+                            type="button"
+                            variant="secondary"
+                            x-on:click="previousQuestion()"
+                            x-bind:disabled="
+                                currentIndex === 0
+                                || saving
+                            "
+                        >
+                            <svg
+                                class="h-4 w-4"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="m15.75 19.5-7.5-7.5 7.5-7.5"
+                                />
                             </svg>
-                        </button>
-                    </template>
 
-                    {{-- Duolingo Big Green Submit Button --}}
-                    <template x-if="currentIndex === questions.length - 1">
-                        <form method="POST"
-                              action="{{ route('diagnostic.submit', ['session' => $session->session_id]) }}"
-                              @submit="handleSubmit($event)">
-                            @csrf
+                            <span>Back</span>
+                        </x-ui.button>
 
-                            <template x-for="(choiceId, questionId) in answers" :key="questionId">
-                                <input type="hidden" :name="'answers[' + questionId + ']'" :value="choiceId">
-                            </template>
+                        <template
+                            x-if="
+                                currentIndex
+                                    < questions.length - 1
+                            "
+                        >
+                            <x-ui.button
+                                type="button"
+                                x-on:click="nextQuestion()"
+                                x-bind:disabled="saving"
+                            >
+                                <span>Continue</span>
 
-                            <button type="submit"
-                                    :disabled="answeredCount < questions.length || saving"
-                                    style="--lip: #15803D;"
-                                    class="btn-press inline-flex items-center gap-2 rounded-2xl bg-[#22C55E] px-8 py-3 font-display text-sm font-black uppercase tracking-wider text-white shadow-sm transition hover:bg-[#16A34A] disabled:opacity-40 disabled:cursor-not-allowed">
-                                <span>Complete</span>
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                <svg
+                                    class="h-4 w-4"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                                    />
                                 </svg>
-                            </button>
-                        </form>
-                    </template>
+                            </x-ui.button>
+                        </template>
 
-                </div>
+                        <template
+                            x-if="
+                                currentIndex
+                                    === questions.length - 1
+                            "
+                        >
+                            <form
+                                method="POST"
+                                action="{{ route('diagnostic.submit', [
+                                    'session' => $session->session_id,
+                                ]) }}"
+                                x-on:submit="handleSubmit($event)"
+                            >
+                                @csrf
+
+                                <template
+                                    x-for="
+                                        (choiceId, questionId)
+                                            in answers
+                                    "
+                                    :key="questionId"
+                                >
+                                    <input
+                                        type="hidden"
+                                        x-bind:name="
+                                            'answers['
+                                                + questionId
+                                                + ']'
+                                        "
+                                        x-bind:value="choiceId"
+                                    >
+                                </template>
+
+                                <x-ui.button
+                                    type="submit"
+                                    x-bind:disabled="
+                                        answeredCount
+                                            < questions.length
+                                        || saving
+                                    "
+                                >
+                                    Complete Diagnostic
+                                </x-ui.button>
+                            </form>
+                        </template>
+                    </div>
+                </x-ui.assessment-actions>
 
             </div>
 
             {{-- Duolingo Path Puck Matrix --}}
-            <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-xs">
+            <div class="rounded-3xl border-2 border-b-4 border-line bg-surface p-5 shadow-xs">
                 <div class="flex items-center justify-between mb-3 px-1">
-                    <span class="font-display text-xs font-black uppercase tracking-wider text-slate-800">
+                    <span class="font-display text-xs font-black uppercase tracking-wider text-ink">
                         Item Map
                     </span>
-                    <span class="font-display text-[11px] font-bold text-muted-ink">
+                    <span class="font-display text-[11px] font-bold text-ink-muted">
                         Tap to jump
                     </span>
                 </div>
@@ -259,7 +328,7 @@
                                 :class="{
                                     'border-2 border-b-4 border-primary-lip bg-primary text-white shadow-xs scale-105': currentIndex === index,
                                     'border-2 border-b-4 border-emerald-600 bg-emerald-500 text-white shadow-xs': currentIndex !== index && answers[question.id],
-                                    'border-2 border-b-4 border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-white': currentIndex !== index && !answers[question.id]
+                                    'border-2 border-b-4 border-line bg-surface-2 text-ink-muted hover:border-line-strong hover:bg-surface': currentIndex !== index && !answers[question.id]
                                 }"
                                 x-text="index + 1"></button>
                     </template>
@@ -267,7 +336,7 @@
             </div>
 
             {{-- Session Ref --}}
-            <p class="text-center font-mono text-[10px] text-muted-ink">
+            <p class="text-center font-mono text-[10px] text-ink-muted">
                 Session Ref: {{ $session->session_id }}
             </p>
 

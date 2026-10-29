@@ -1,11 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <h1 class="font-display text-xl font-black leading-tight text-slate-900">
+            <h1 class="font-display text-xl font-black leading-tight text-ink">
                 Post-Test Results
             </h1>
 
-            <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
+            <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-ink-muted">
                 Research Post-Test · Form B
             </p>
         </div>
@@ -33,19 +33,19 @@
                 </div>
             @endif
 
-            <section class="overflow-hidden rounded-3xl border-2 border-b-4 border-slate-200 bg-white shadow-xs">
+            <section class="overflow-hidden rounded-3xl border-2 border-b-4 border-line bg-surface shadow-xs">
                 <div class="grid lg:grid-cols-[0.7fr_1.3fr]">
                     <div class="flex flex-col items-center justify-center bg-primary-tint p-8 text-center sm:p-10">
                         <p class="font-display text-xs font-black uppercase tracking-widest text-primary">
                             Final score
                         </p>
 
-                        <div class="mt-4 flex h-44 w-44 flex-col items-center justify-center rounded-full border-[12px] border-primary bg-white shadow-sm">
-                            <p class="font-display text-4xl font-black text-slate-900">
+                        <div class="mt-4 flex h-44 w-44 flex-col items-center justify-center rounded-full border-[12px] border-primary bg-surface shadow-sm">
+                            <p class="font-display text-4xl font-black text-ink">
                                 {{ $result['correct'] }}
                             </p>
 
-                            <p class="font-display text-sm font-black text-muted-ink">
+                            <p class="font-display text-sm font-black text-ink-muted">
                                 out of {{ $result['total'] }}
                             </p>
                         </div>
@@ -61,11 +61,11 @@
                                 Assessment Completed
                             </span>
 
-                            <h2 class="mt-4 font-display text-3xl font-black leading-tight text-slate-900">
+                            <h2 class="mt-4 font-display text-3xl font-black leading-tight text-ink">
                                 Your responses have been recorded
                             </h2>
 
-                            <p class="mt-3 text-sm font-medium leading-relaxed text-slate-600">
+                            <p class="mt-3 text-sm font-medium leading-relaxed text-ink-muted">
                                 This page provides aggregate research results only.
                                 Correct choices, rationales, and distractor feedback are
                                 intentionally not displayed.
@@ -73,39 +73,39 @@
                         </div>
 
                         <div class="grid gap-3 sm:grid-cols-3">
-                            <div class="rounded-2xl border-2 border-b-4 border-slate-200 bg-slate-50 p-4">
-                                <p class="font-display text-2xl font-black text-slate-900">
+                            <div class="rounded-2xl border-2 border-b-4 border-line bg-surface-2 p-4">
+                                <p class="font-display text-2xl font-black text-ink">
                                     {{ $result['answered'] }}
                                 </p>
 
-                                <p class="font-display text-[10px] font-black uppercase tracking-wider text-muted-ink">
+                                <p class="font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
                                     Answered
                                 </p>
                             </div>
 
-                            <div class="rounded-2xl border-2 border-b-4 border-slate-200 bg-slate-50 p-4">
-                                <p class="font-display text-2xl font-black text-slate-900">
+                            <div class="rounded-2xl border-2 border-b-4 border-line bg-surface-2 p-4">
+                                <p class="font-display text-2xl font-black text-ink">
                                     {{ $result['unanswered'] }}
                                 </p>
 
-                                <p class="font-display text-[10px] font-black uppercase tracking-wider text-muted-ink">
+                                <p class="font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
                                     Unanswered
                                 </p>
                             </div>
 
-                            <div class="rounded-2xl border-2 border-b-4 border-slate-200 bg-slate-50 p-4">
+                            <div class="rounded-2xl border-2 border-b-4 border-line bg-surface-2 p-4">
                                 <p class="font-display text-lg font-black {{ $expired ? 'text-gold-ink' : 'text-clinical-ink' }}">
                                     {{ $expired ? 'Time Expired' : 'Manual' }}
                                 </p>
 
-                                <p class="font-display text-[10px] font-black uppercase tracking-wider text-muted-ink">
+                                <p class="font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
                                     Submission
                                 </p>
                             </div>
                         </div>
 
                         @if ($session->completed_at)
-                            <p class="font-mono text-[11px] text-muted-ink">
+                            <p class="font-mono text-[11px] text-ink-muted">
                                 Completed:
                                 {{ $session->completed_at->format('F j, Y · g:i A') }}
                             </p>
@@ -114,13 +114,13 @@
                 </div>
             </section>
 
-            <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-xs sm:p-8">
+            <section class="rounded-3xl border-2 border-b-4 border-line bg-surface p-6 shadow-xs sm:p-8">
                 <div>
-                    <h2 class="font-display text-xl font-black text-slate-900">
+                    <h2 class="font-display text-xl font-black text-ink">
                         Subject performance
                     </h2>
 
-                    <p class="mt-1 text-sm font-medium text-muted-ink">
+                    <p class="mt-1 text-sm font-medium text-ink-muted">
                         Aggregate results across the six pharmacy subject areas.
                     </p>
                 </div>
@@ -129,19 +129,19 @@
                     <table class="min-w-full border-separate border-spacing-y-2">
                         <thead>
                             <tr class="text-left">
-                                <th class="px-4 py-2 font-display text-[10px] font-black uppercase tracking-wider text-muted-ink">
+                                <th class="px-4 py-2 font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
                                     Subject
                                 </th>
 
-                                <th class="px-4 py-2 text-center font-display text-[10px] font-black uppercase tracking-wider text-muted-ink">
+                                <th class="px-4 py-2 text-center font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
                                     Answered
                                 </th>
 
-                                <th class="px-4 py-2 text-center font-display text-[10px] font-black uppercase tracking-wider text-muted-ink">
+                                <th class="px-4 py-2 text-center font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
                                     Correct
                                 </th>
 
-                                <th class="px-4 py-2 text-center font-display text-[10px] font-black uppercase tracking-wider text-muted-ink">
+                                <th class="px-4 py-2 text-center font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
                                     Score
                                 </th>
                             </tr>
@@ -159,19 +159,19 @@
                                     );
                                 @endphp
 
-                                <tr class="bg-slate-50">
-                                    <td class="rounded-l-2xl border-y-2 border-l-2 border-slate-200 px-4 py-4">
+                                <tr class="bg-surface-2">
+                                    <td class="rounded-l-2xl border-y-2 border-l-2 border-line px-4 py-4">
                                         <p class="font-display text-[10px] font-black uppercase tracking-wider text-primary">
                                             Subject {{ $domain['domain_number'] }}
                                         </p>
 
-                                        <p class="mt-1 font-display text-sm font-black text-slate-900">
+                                        <p class="mt-1 font-display text-sm font-black text-ink">
                                             {{ $domain['domain_name'] }}
                                         </p>
                                     </td>
 
-                                    <td class="border-y-2 border-slate-200 px-4 py-4 text-center">
-                                        <p class="font-display text-sm font-black text-slate-800">
+                                    <td class="border-y-2 border-line px-4 py-4 text-center">
+                                        <p class="font-display text-sm font-black text-ink">
                                             {{ $domain['answered'] }}/{{ $domain['total'] }}
                                         </p>
 
@@ -183,13 +183,13 @@
                                         @endif
                                     </td>
 
-                                    <td class="border-y-2 border-slate-200 px-4 py-4 text-center">
-                                        <p class="font-display text-sm font-black text-slate-800">
+                                    <td class="border-y-2 border-line px-4 py-4 text-center">
+                                        <p class="font-display text-sm font-black text-ink">
                                             {{ $domain['correct'] }}/{{ $domain['total'] }}
                                         </p>
                                     </td>
 
-                                    <td class="rounded-r-2xl border-y-2 border-r-2 border-slate-200 px-4 py-4">
+                                    <td class="rounded-r-2xl border-y-2 border-r-2 border-line px-4 py-4">
                                         <div class="min-w-28">
                                             <div class="flex items-center justify-between gap-2">
                                                 <span class="font-display text-xs font-black text-primary">
@@ -232,19 +232,15 @@
             </section>
 
             <div class="flex justify-center">
-                <a
-                    href="{{ route('dashboard') }}"
-                    style="--lip: rgb(var(--color-primary-lip));"
-                    class="btn-press inline-flex items-center justify-center rounded-2xl bg-primary px-8 py-3.5 font-display text-sm font-black text-white transition hover:bg-primary/95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                <x-ui.button
+                    :href="route('dashboard')"
                 >
                     Return to Dashboard
-                </a>
+                </x-ui.button>
             </div>
-
-            <p class="text-center font-mono text-[10px] text-muted-ink">
+            <p class="text-center font-mono text-[10px] text-ink-muted">
                 Session: {{ $session->session_id }}
             </p>
-
         </div>
     </div>
 </x-app-layout>

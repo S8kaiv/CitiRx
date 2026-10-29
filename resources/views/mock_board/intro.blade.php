@@ -1,11 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <h1 class="font-display text-xl font-black leading-tight text-slate-900">
+            <h1 class="font-display text-xl font-black leading-tight text-ink">
                 Research Post-Test
             </h1>
 
-            <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
+            <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-ink-muted">
                 Mock Board Examination · Form B
             </p>
         </div>
@@ -47,7 +47,7 @@
                 </div>
             @endif
 
-            <section class="overflow-hidden rounded-3xl border-2 border-b-4 border-slate-200 bg-white shadow-xs">
+            <section class="overflow-hidden rounded-3xl border-2 border-b-4 border-line bg-surface shadow-xs">
                 <div class="grid lg:grid-cols-[1.35fr_0.65fr]">
 
                     <div class="space-y-6 p-6 sm:p-8 lg:p-10">
@@ -62,11 +62,11 @@
                                 </span>
                             </div>
 
-                            <h2 class="font-display text-3xl font-black leading-tight text-slate-900 sm:text-4xl">
+                            <h2 class="font-display text-3xl font-black leading-tight text-ink sm:text-4xl">
                                 Pharmacy Mock Board Assessment
                             </h2>
 
-                            <p class="max-w-2xl text-sm font-medium leading-relaxed text-muted-ink sm:text-base">
+                            <p class="max-w-2xl text-sm font-medium leading-relaxed text-ink-muted sm:text-base">
                                 This assessment measures your knowledge after using CitiRx.
                                 Your responses are saved automatically, and no correctness
                                 feedback is shown while the assessment is active.
@@ -74,43 +74,43 @@
                         </div>
 
                         <div class="grid gap-3 sm:grid-cols-3">
-                            <div class="rounded-2xl border-2 border-b-4 border-slate-200 bg-slate-50 p-4">
+                            <div class="rounded-2xl border-2 border-b-4 border-line bg-surface-2 p-4">
                                 <p class="font-display text-2xl font-black text-primary">
                                     60
                                 </p>
 
-                                <p class="font-display text-xs font-bold uppercase tracking-wider text-muted-ink">
+                                <p class="font-display text-xs font-bold uppercase tracking-wider text-ink-muted">
                                     Questions
                                 </p>
                             </div>
 
-                            <div class="rounded-2xl border-2 border-b-4 border-slate-200 bg-slate-50 p-4">
+                            <div class="rounded-2xl border-2 border-b-4 border-line bg-surface-2 p-4">
                                 <p class="font-display text-2xl font-black text-primary">
                                     {{ $durationMinutes }}
                                 </p>
 
-                                <p class="font-display text-xs font-bold uppercase tracking-wider text-muted-ink">
+                                <p class="font-display text-xs font-bold uppercase tracking-wider text-ink-muted">
                                     Minutes
                                 </p>
                             </div>
 
-                            <div class="rounded-2xl border-2 border-b-4 border-slate-200 bg-slate-50 p-4">
+                            <div class="rounded-2xl border-2 border-b-4 border-line bg-surface-2 p-4">
                                 <p class="font-display text-2xl font-black text-primary">
                                     6
                                 </p>
 
-                                <p class="font-display text-xs font-bold uppercase tracking-wider text-muted-ink">
+                                <p class="font-display text-xs font-bold uppercase tracking-wider text-ink-muted">
                                     Subjects
                                 </p>
                             </div>
                         </div>
 
-                        <div class="rounded-2xl border-2 border-slate-200 bg-slate-50 p-5">
-                            <h3 class="font-display text-sm font-black text-slate-900">
+                        <div class="rounded-2xl border-2 border-line bg-surface-2 p-5">
+                            <h3 class="font-display text-sm font-black text-ink">
                                 Before you begin
                             </h3>
 
-                            <ul class="mt-3 space-y-2 text-sm font-medium leading-relaxed text-slate-600">
+                            <ul class="mt-3 space-y-2 text-sm font-medium leading-relaxed text-ink-muted">
                                 <li class="flex gap-2">
                                     <span class="font-black text-primary">•</span>
                                     <span>
@@ -149,11 +149,11 @@
                         </div>
                     </div>
 
-                    <aside class="border-t-2 border-slate-200 bg-slate-50 p-6 sm:p-8 lg:border-l-2 lg:border-t-0">
+                    <aside class="border-t-2 border-line bg-surface-2 p-6 sm:p-8 lg:border-l-2 lg:border-t-0">
                         <div class="flex h-full flex-col justify-between gap-6">
                             <div class="space-y-5">
                                 <div>
-                                    <p class="font-display text-[11px] font-black uppercase tracking-wider text-muted-ink">
+                                    <p class="font-display text-[11px] font-black uppercase tracking-wider text-ink-muted">
                                         Assessment status
                                     </p>
 
@@ -170,24 +170,24 @@
                                             Available
                                         </div>
                                     @else
-                                        <div class="mt-3 inline-flex rounded-xl border-2 border-b-4 border-slate-300 bg-white px-4 py-2 font-display text-sm font-black text-slate-600">
+                                        <div class="mt-3 inline-flex rounded-xl border-2 border-b-4 border-line-strong bg-surface px-4 py-2 font-display text-sm font-black text-ink-muted">
                                             Unavailable
                                         </div>
                                     @endif
                                 </div>
 
                                 @if ($reason)
-                                    <p class="text-sm font-semibold leading-relaxed text-slate-600">
+                                    <p class="text-sm font-semibold leading-relaxed text-ink-muted">
                                         {{ $reason }}
                                     </p>
                                 @endif
 
-                                <div class="border-t border-slate-200 pt-4">
-                                    <p class="font-mono text-[10px] uppercase tracking-wider text-muted-ink">
+                                <div class="border-t border-line pt-4">
+                                    <p class="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
                                         Form version
                                     </p>
 
-                                    <p class="mt-1 font-mono text-xs font-bold text-slate-700">
+                                    <p class="mt-1 font-mono text-xs font-bold text-ink">
                                         {{ $formVersion }}
                                     </p>
                                 </div>
@@ -195,25 +195,23 @@
 
                             <div>
                                 @if ($completed)
-                                    <a
-                                        href="{{ route('mock-board.results', [
+                                    <x-ui.button
+                                        :href="route('mock-board.results', [
                                             'session' => $completed->session_id,
-                                        ]) }}"
-                                        style="--lip: rgb(var(--color-primary-lip));"
-                                        class="btn-press inline-flex w-full items-center justify-center rounded-2xl bg-primary px-6 py-3.5 font-display text-sm font-black text-white shadow-sm transition hover:bg-primary/95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                                        ])"
+                                        class="w-full"
                                     >
                                         View Results
-                                    </a>
+                                    </x-ui.button>
                                 @elseif ($inProgress)
-                                    <a
-                                        href="{{ route('mock-board.take', [
+                                    <x-ui.button
+                                        :href="route('mock-board.take', [
                                             'session' => $inProgress->session_id,
-                                        ]) }}"
-                                        style="--lip: #7A4B06;"
-                                        class="btn-press inline-flex w-full items-center justify-center rounded-2xl bg-gold px-6 py-3.5 font-display text-sm font-black text-white shadow-sm transition hover:brightness-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold/25"
+                                        ])"
+                                        class="w-full"
                                     >
                                         Resume Post-Test
-                                    </a>
+                                    </x-ui.button>
                                 @elseif ($canStart)
                                     <form
                                         method="POST"
@@ -221,22 +219,22 @@
                                     >
                                         @csrf
 
-                                        <button
+                                        <x-ui.button
                                             type="submit"
-                                            style="--lip: rgb(var(--color-primary-lip));"
-                                            class="btn-press inline-flex w-full items-center justify-center rounded-2xl bg-primary px-6 py-3.5 font-display text-sm font-black text-white shadow-sm transition hover:bg-primary/95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                                            class="w-full"
                                         >
                                             Start Post-Test
-                                        </button>
+                                        </x-ui.button>
                                     </form>
                                 @else
-                                    <button
+                                    <x-ui.button
                                         type="button"
-                                        disabled
-                                        class="w-full cursor-not-allowed rounded-2xl border-b-4 border-slate-300 bg-slate-200 px-6 py-3.5 font-display text-sm font-black text-slate-500"
+                                        :disabled="true"
+                                        variant="secondary"
+                                        class="w-full"
                                     >
                                         Post-Test Unavailable
-                                    </button>
+                                    </x-ui.button>
                                 @endif
                             </div>
                         </div>
@@ -244,14 +242,14 @@
                 </div>
             </section>
 
-            <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-xs">
+            <section class="rounded-3xl border-2 border-b-4 border-line bg-surface p-6 shadow-xs">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h2 class="font-display text-lg font-black text-slate-900">
+                        <h2 class="font-display text-lg font-black text-ink">
                             Form B subject availability
                         </h2>
 
-                        <p class="mt-1 text-sm font-medium text-muted-ink">
+                        <p class="mt-1 text-sm font-medium text-ink-muted">
                             Each subject requires exactly 10 validated questions.
                         </p>
                     </div>
@@ -273,14 +271,14 @@
                                 $subject['available'] === $subject['required'];
                         @endphp
 
-                        <div class="rounded-2xl border-2 border-slate-200 bg-slate-50 p-4">
+                        <div class="rounded-2xl border-2 border-line bg-surface-2 p-4">
                             <div class="flex items-start justify-between gap-3">
                                 <div>
                                     <p class="font-display text-[10px] font-black uppercase tracking-wider text-primary">
                                         Subject {{ $subject['domain_number'] }}
                                     </p>
 
-                                    <h3 class="mt-1 font-display text-sm font-black leading-snug text-slate-900">
+                                    <h3 class="mt-1 font-display text-sm font-black leading-snug text-ink">
                                         {{ $subject['domain_name'] }}
                                     </h3>
                                 </div>
