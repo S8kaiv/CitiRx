@@ -2,10 +2,10 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="font-display text-xl font-black leading-tight text-slate-900">
+                <h2 class="font-display text-xl font-black leading-tight text-ink">
                     {{ __('Account Profile') }}
                 </h2>
-                <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
+                <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-ink-muted">
                     Manage Identity & Statistics
                 </p>
             </div>
@@ -42,7 +42,7 @@ $tierRingClasses = match (true) {
     str_contains($tierName, 'intermediate')
         => 'ring-2 ring-[#F5A623] border-[#F5A623]/40 bg-[#F5A623]/10 text-[#B45309] shadow-[0_0_10px_rgba(245,166,35,0.3)]',
 
-    default => 'ring-2 ring-slate-300 border-slate-200 bg-slate-100 text-slate-700',
+    default => 'ring-2 ring-slate-300 border-slate-200 bg-surface-2 text-ink',
 };
 
 $levelBadgeBg = match (true) {
@@ -93,8 +93,8 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
     ],
     default => [
         'label' => 'Pending Diagnostic',
-        'bg' => 'bg-slate-100',
-        'text' => 'text-muted-ink',
+        'bg' => 'bg-surface-2',
+        'text' => 'text-ink-muted',
         'border' => 'border-slate-200',
         'hex' => '#94A3B8',
             ],
@@ -108,14 +108,14 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
     </style>
 
     {{-- Alpine State: activeTab controls switching, activeTheme tracks the color state --}}
-    <div class="pt-6 pb-20 font-sans text-slate-900 antialiased" x-data="{
+    <div class="pt-6 pb-20 font-sans text-ink antialiased" x-data="{
         activeTab: @js($errors->any() || session('status') ? 'settings' : 'overview')
     }">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
 
             {{-- 1. STUDENT IDENTITY CREST WITH DYNAMIC TIER AVATAR --}}
             <div
-                class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+                class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-6 sm:p-8 shadow-sm">
                 <div class="flex items-center gap-4 min-w-0">
 
                     {{-- DYNAMIC TIER-BASED AVATAR RING & LEVEL BADGE --}}
@@ -133,13 +133,13 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                     </div>
 
                     <div class="min-w-0">
-                        <h3 class="font-display text-xl font-black text-slate-900 truncate">
+                        <h3 class="font-display text-xl font-black text-ink truncate">
                             {{ $displayName }}
                         </h3>
-                        <p class="text-xs text-muted-ink font-medium mt-0.5 truncate">
+                        <p class="text-xs text-ink-muted font-medium mt-0.5 truncate">
                             {{ $user->email }}
                             @if ($isStudent && $user->cohort)
-                                · <span class="font-semibold text-slate-700">
+                                · <span class="font-semibold text-ink">
                                     {{ $user->cohort->cohort_name }}
                                 </span>
                             @endif
@@ -184,7 +184,7 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                 @if ($isStudent)
                     <div class="space-y-4">
 
-                        <h3 class="font-display text-lg font-black text-slate-900 px-1">
+                        <h3 class="font-display text-lg font-black text-ink px-1">
                             Statistics
                         </h3>
 
@@ -193,18 +193,18 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
 
                             {{-- Card 1: Streak --}}
                             <div
-                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-4 sm:p-5 shadow-sm">
                                 <div
                                     class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-3 border-amber-300 bg-gold-tint text-lg sm:text-xl shadow-2xs">
                                     🔥
                                 </div>
                                 <div class="min-w-0">
                                     <span
-                                        class="font-display text-xl sm:text-2xl font-black text-slate-900 leading-none block truncate">
+                                        class="font-display text-xl sm:text-2xl font-black text-ink leading-none block truncate">
                                         {{ $streak }}
                                     </span>
                                     <p
-                                        class="font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-ink mt-0.5 truncate">
+                                        class="font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-ink-muted mt-0.5 truncate">
                                         Day Streak
                                     </p>
                                 </div>
@@ -212,18 +212,18 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
 
                             {{-- Card 2: Total XP --}}
                             <div
-                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-4 sm:p-5 shadow-sm">
                                 <div
                                     class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-3 border-amber-300 bg-gold-tint text-lg sm:text-xl shadow-2xs">
                                     ⚡
                                 </div>
                                 <div class="min-w-0">
                                     <span
-                                        class="font-display text-xl sm:text-2xl font-black text-slate-900 leading-none block truncate">
+                                        class="font-display text-xl sm:text-2xl font-black text-ink leading-none block truncate">
                                         {{ number_format($xp) }}
                                     </span>
                                     <p
-                                        class="font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-ink mt-0.5 truncate">
+                                        class="font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-ink-muted mt-0.5 truncate">
                                         Total XP
                                     </p>
                                 </div>
@@ -231,18 +231,18 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
 
                             {{-- Card 3: Current Tier --}}
                             <div
-                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-4 sm:p-5 shadow-sm">
                                 <div
                                     class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-3 border-primary/30 bg-primary-tint text-lg sm:text-xl shadow-2xs">
                                     🛡️
                                 </div>
                                 <div class="min-w-0">
                                     <span
-                                        class="font-display text-lg sm:text-2xl font-black text-slate-900 leading-none block truncate">
+                                        class="font-display text-lg sm:text-2xl font-black text-ink leading-none block truncate">
                                         {{ $tierDisplayName }}
                                     </span>
                                     <p
-                                        class="font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-ink mt-0.5 truncate">
+                                        class="font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-ink-muted mt-0.5 truncate">
                                         Current Tier
                                     </p>
                                 </div>
@@ -250,18 +250,18 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
 
                             {{-- Card 4: Badges Earned --}}
                             <div
-                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-4 sm:p-5 shadow-sm">
                                 <div
                                     class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-3 border-indigo-300 bg-indigo-50 text-lg sm:text-xl shadow-2xs">
                                     🏆
                                 </div>
                                 <div class="min-w-0">
                                     <span
-                                        class="font-display text-xl sm:text-2xl font-black text-slate-900 leading-none block truncate">
+                                        class="font-display text-xl sm:text-2xl font-black text-ink leading-none block truncate">
                                         {{ $badgesCount}}
                                     </span>
                                     <p
-                                        class="font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-ink mt-0.5 truncate">
+                                        class="font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-ink-muted mt-0.5 truncate">
                                         Badges Unlocked
                                     </p>
                                 </div>
@@ -272,8 +272,8 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                         {{-- Predicted Readiness Card (Mobile View Only) --}}
                         @if ($user->is_diagnostic_completed || $dashPct > 0)
                             <div
-                                class="block sm:hidden rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 text-center shadow-sm mt-6">
-                                <h4 class="font-display text-xs font-extrabold uppercase tracking-wider text-muted-ink">
+                                class="block sm:hidden rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-6 text-center shadow-sm mt-6">
+                                <h4 class="font-display text-xs font-extrabold uppercase tracking-wider text-ink-muted">
                                     Predicted PhLE Readiness
                                 </h4>
 
@@ -316,10 +316,10 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
 
                                         <div class="absolute flex flex-col items-center justify-center">
                                             <span
-                                                class="font-display text-2xl font-extrabold text-slate-900 leading-none">
+                                                class="font-display text-2xl font-extrabold text-ink leading-none">
                                                 <span
                                                     x-text="displayScore">{{ number_format($dashPct, 1) }}</span><span
-                                                    class="text-sm font-bold text-muted-ink">%</span>
+                                                    class="text-sm font-bold text-ink-muted">%</span>
                                             </span>
                                         </div>
                                     </div>
@@ -362,19 +362,35 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                 class="space-y-6">
 
                 <div class="space-y-4">
-                    <h3 class="font-display text-lg font-black text-slate-900 px-1">
+                    <h3 class="px-1 font-display text-lg font-black text-ink">
                         Settings & Security
                     </h3>
 
-                    {{-- NEW: 6-LEVEL THEME LOCKER (Dynamic Array Loop) --}}
+                    {{-- Comfort mode is available to every role. --}}
+                    <x-ui.card class="space-y-4">
+                        <div>
+                            <h2 class="font-display text-lg font-extrabold text-ink">
+                                Reading comfort
+                            </h2>
+
+                            <p class="mt-1 max-w-2xl text-sm leading-relaxed text-ink-muted">
+                                Choose how CitiRx appears while you study or manage the system.
+                                Auto follows your device setting.
+                            </p>
+                        </div>
+
+                        <x-ui.comfort-toggle />
+                    </x-ui.card>
+
+                    {{-- Cosmetic themes remain student-only. --}}
                     @if ($isStudent)
-                        <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                        <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-6 shadow-sm sm:p-8">
                             <header>
-                                <h2 class="font-display text-lg font-black text-slate-900">
+                                <h2 class="font-display text-lg font-black text-ink">
                                     Theme Locker
                                 </h2>
 
-                                <p class="mt-1 text-xs font-semibold uppercase tracking-wider text-muted-ink">
+                                <p class="mt-1 text-xs font-semibold uppercase tracking-wider text-ink-muted">
                                     Level up to unlock additional themes
                                 </p>
                             </header>
@@ -392,10 +408,10 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                                         :class="{
                                             'border-primary bg-primary-tint ring-2 ring-primary/20': globalTheme ===
                                                 theme.id,
-                                            'border-slate-200 bg-white hover:-translate-y-1 hover:shadow-md': isUnlocked(
+                                            'border-slate-200 bg-surface hover:-translate-y-1 hover:shadow-md': isUnlocked(
                                                     theme) &&
                                                 globalTheme !== theme.id,
-                                            'cursor-not-allowed border-slate-100 bg-slate-50 opacity-70':
+                                            'cursor-not-allowed border-slate-100 bg-surface-2 opacity-70':
                                                 !isUnlocked(theme),
                                         }"
                                         class="relative flex flex-col items-center rounded-2xl border-2 border-b-4 p-4 text-left transition duration-200">
@@ -415,13 +431,13 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                                                                     `"
                                             aria-hidden="true"></span>
 
-                                        <span class="text-center font-display text-sm font-black text-slate-800"
+                                        <span class="text-center font-display text-sm font-black text-ink"
                                             x-text="theme.name"></span>
 
                                         <span
                                             class="mt-1 text-center font-display text-[10px] font-bold uppercase tracking-wider"
                                             :class="isUnlocked(theme) ?
-                                                'text-muted-ink' :
+                                                'text-ink-muted' :
                                                 'text-rose-500'"
                                             x-text="
                             isUnlocked(theme)
@@ -439,21 +455,21 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                     @endif
 
                     {{-- Profile Details Form --}}
-                    <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+                    <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-6 sm:p-8 shadow-sm">
                         <div class="max-w-xl">
                             @include('profile.partials.update-profile-information-form')
                         </div>
                     </div>
 
                     {{-- Password / Security Form --}}
-                    <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+                    <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-6 sm:p-8 shadow-sm">
                         <div class="max-w-xl">
                             @include('profile.partials.update-password-form')
                         </div>
                     </div>
 
                     {{-- Danger Zone (Delete Account) --}}
-                    <div class="rounded-3xl border-2 border-b-4 border-weak/40 bg-white p-6 sm:p-8 shadow-sm">
+                    <div class="rounded-3xl border-2 border-b-4 border-weak/40 bg-surface p-6 sm:p-8 shadow-sm">
                         <div class="max-w-xl">
                             @include('profile.partials.delete-user-form')
                         </div>

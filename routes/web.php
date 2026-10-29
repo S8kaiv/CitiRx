@@ -683,6 +683,11 @@ Route::middleware([
             [SystemHealthController::class, 'index'],
         )->name('system-health.index');
 
+        Route::view(
+            '/ui-style-guide',
+            'admin.style-guide',
+        )->name('style-guide');
+
         /*
         |--------------------------------------------------------------------------
         | Administrator Question Bank
