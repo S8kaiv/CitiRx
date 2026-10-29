@@ -2121,3 +2121,339 @@ html:not([data-comfort])
     }
 }
 
+@layer components {
+    /*
+     * Assessment pages use a calm canvas above cosmetic theme
+     * scenery. This keeps questions readable and distraction-free.
+     */
+    .ui-assessment-stage {
+        position: relative;
+        z-index: 10;
+        min-height: calc(100dvh - 5rem);
+        padding-bottom: 11rem;
+        background:
+            rgb(var(--color-canvas));
+        color:
+            rgb(var(--color-ink));
+    }
+
+    /*
+     * Shared answer choice.
+     * The soft lower edge preserves the CitiRx/Duolingo tactile
+     * language without introducing a harsh black outline.
+     */
+    .ui-choice {
+        position: relative;
+        display: block;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .ui-choice-card {
+        display: flex;
+        min-height: 3.75rem;
+        align-items: center;
+        gap: 1rem;
+        border: 2px solid
+            rgb(var(--color-line));
+        border-radius: 1rem;
+        background:
+            rgb(var(--color-surface));
+        padding: 0.875rem 1rem;
+        color:
+            rgb(var(--color-ink));
+        box-shadow:
+            0 3px 0
+            rgb(var(--color-line-strong));
+        transform: translateY(0);
+        transition:
+            transform 120ms var(--ease-out),
+            box-shadow 120ms var(--ease-out),
+            border-color 150ms var(--ease-out),
+            background-color 150ms var(--ease-out),
+            color 150ms var(--ease-out),
+            opacity 150ms var(--ease-out);
+    }
+
+    .ui-choice-card-compact {
+        min-height: 3.25rem;
+        gap: 0.75rem;
+        padding: 0.625rem 0.875rem;
+    }
+
+    .ui-choice-letter {
+        display: inline-flex;
+        width: 2.5rem;
+        height: 2.5rem;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid
+            rgb(var(--color-line));
+        border-radius: 0.75rem;
+        background:
+            rgb(var(--color-surface-2));
+        color:
+            rgb(var(--color-ink-muted));
+        font-family:
+            theme("fontFamily.display");
+        font-size: 0.875rem;
+        font-weight: 800;
+        transition:
+            border-color 150ms var(--ease-out),
+            background-color 150ms var(--ease-out),
+            color 150ms var(--ease-out);
+    }
+
+    .ui-choice-card-compact .ui-choice-letter {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.625rem;
+        font-size: 0.75rem;
+    }
+
+    .ui-choice-copy {
+        min-width: 0;
+        color:
+            rgb(var(--color-ink));
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: 1.55;
+    }
+
+    .ui-choice > .peer:checked ~ .ui-choice-card {
+        border-color:
+            rgb(var(--color-primary-default));
+        background:
+            rgb(var(--color-primary-tint) / 0.72);
+        color:
+            rgb(var(--color-primary-ink));
+        box-shadow:
+            0 3px 0
+            rgb(var(--color-primary-lip));
+    }
+
+    .ui-choice
+        > .peer:checked
+        ~ .ui-choice-card
+        .ui-choice-letter {
+        border-color:
+            rgb(var(--color-primary-strong));
+        background:
+            rgb(var(--color-primary-strong));
+        color: white;
+    }
+
+    .ui-choice
+        > .peer:checked
+        ~ .ui-choice-card
+        .ui-choice-copy {
+        color:
+            rgb(var(--color-primary-ink));
+        font-weight: 700;
+    }
+
+    .ui-choice > .peer:focus-visible ~ .ui-choice-card {
+        outline:
+            3px solid
+            rgb(var(--color-primary-default) / 0.7);
+        outline-offset: 3px;
+    }
+
+    .ui-choice > .peer:disabled ~ .ui-choice-card {
+        cursor: wait;
+        opacity: 0.58;
+    }
+
+    .ui-choice:active .ui-choice-card {
+        box-shadow:
+            0 1px 0
+            rgb(var(--color-line-strong));
+        transform: translateY(2px);
+    }
+
+    /*
+     * Practice feedback uses semantic success/danger colors,
+     * visible icons, and text so meaning never depends on color.
+     */
+    .ui-feedback-sheet {
+        border: 2px solid currentColor;
+        border-radius: 1rem;
+        padding: 1rem;
+    }
+
+    .ui-feedback-sheet-correct {
+        background:
+            rgb(var(--color-success-tint));
+        color:
+            rgb(var(--color-success-ink));
+    }
+
+    .ui-feedback-sheet-incorrect {
+        background:
+            rgb(var(--color-danger-tint));
+        color:
+            rgb(var(--color-danger-ink));
+    }
+
+    .ui-feedback-sheet-information {
+        background:
+            rgb(var(--color-info-tint));
+        color:
+            rgb(var(--color-info-ink));
+    }
+
+    .ui-feedback-heading {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+    }
+
+    .ui-feedback-icon {
+        display: inline-flex;
+        width: 2rem;
+        height: 2rem;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.625rem;
+        background:
+            rgb(var(--color-surface) / 0.84);
+    }
+
+    .ui-feedback-icon svg {
+        width: 1.125rem;
+        height: 1.125rem;
+    }
+
+    .ui-feedback-title {
+        font-family:
+            theme("fontFamily.display");
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1.3;
+    }
+
+    .ui-feedback-answer {
+        margin-top: 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 700;
+        line-height: 1.55;
+    }
+
+    .ui-feedback-body {
+        margin-top: 0.875rem;
+        border-top: 1px solid currentColor;
+        padding-top: 0.875rem;
+        font-size: 0.875rem;
+        line-height: 1.6;
+    }
+
+    .ui-feedback-meta {
+        margin-top: 0.875rem;
+    }
+
+    /*
+     * The application already has a mobile navigation bar.
+     * Assessment actions sit immediately above it.
+     */
+    .ui-assessment-actions {
+        position: fixed;
+        z-index: 35;
+        right: 1rem;
+        bottom:
+            calc(
+                4.75rem
+                + env(safe-area-inset-bottom)
+            );
+        left: 1rem;
+    }
+
+    .ui-assessment-actions-inner {
+        display: flex;
+        width: 100%;
+        max-width: 42rem;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-inline: auto;
+        border: 1px solid
+            rgb(var(--color-line));
+        border-radius: 1rem;
+        background:
+            rgb(var(--color-surface));
+        padding: 0.75rem;
+        box-shadow:
+            0 12px 32px
+            rgb(15 23 42 / 0.16);
+    }
+
+    .ui-assessment-actions-inner
+        > :only-child {
+        width: 100%;
+    }
+
+    .ui-assessment-actions .ui-button {
+        min-width: 7rem;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .ui-choice:hover .ui-choice-card {
+            border-color:
+                rgb(var(--color-line-strong));
+            background:
+                rgb(var(--color-surface-2));
+        }
+    }
+
+    @media (min-width: 768px) {
+        .ui-assessment-stage {
+            padding-bottom: 2rem;
+        }
+
+        .ui-assessment-actions {
+            position: static;
+            margin-top: 1rem;
+        }
+
+        .ui-assessment-actions-inner {
+            max-width: none;
+            border: 0;
+            background: transparent;
+            padding: 0;
+            box-shadow: none;
+        }
+    }
+
+    @media (max-width: 479px) {
+        .ui-choice-copy {
+            font-size: 0.9375rem;
+        }
+
+        .ui-assessment-actions {
+            right: 0.75rem;
+            left: 0.75rem;
+        }
+
+        .ui-assessment-actions-inner {
+            gap: 0.5rem;
+            padding: 0.625rem;
+        }
+
+        .ui-assessment-actions .ui-button {
+            min-width: 0;
+            padding-inline: 0.75rem;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .ui-choice-card,
+        .ui-choice-letter {
+            transition: none;
+        }
+
+        .ui-choice:active .ui-choice-card {
+            transform: none;
+        }
+    }
+}

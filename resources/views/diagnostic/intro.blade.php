@@ -3,23 +3,23 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="font-display text-xl font-bold leading-tight text-slate-900">
+                <h1 class="font-display text-xl font-bold leading-tight text-ink">
                     {{ __('Diagnostic Test') }}
                 </h1>
-                <p class="font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
+                <p class="font-display text-[10px] font-bold uppercase tracking-wider text-ink-muted">
                     PhLE Table of Specifications Baseline
                 </p>
             </div>
 
             <a href="{{ route('dashboard') }}"
-                class="font-display text-xs font-bold text-muted-ink transition hover:text-primary">
+                class="font-display text-xs font-bold text-ink-muted transition hover:text-primary">
                 Exit to Dashboard
             </a>
         </div>
     </x-slot>
 
     {{-- Main --}}
-    <div class="py-8 sm:py-10 font-sans antialiased text-slate-900">
+    <div class="py-8 sm:py-10 font-sans antialiased text-ink">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             @if (session('error'))
@@ -36,7 +36,7 @@
             @endif
 
             {{-- Assessment Card --}}
-            <div class="rounded-3xl border-2 border-b-4 border-slate-200/90 bg-white p-6 sm:p-8 shadow-xs">
+            <div class="rounded-3xl border-2 border-b-4 border-line/90 bg-surface p-6 sm:p-8 shadow-xs">
 
                 <div class="space-y-2">
                     <div class="flex items-center gap-2">
@@ -46,16 +46,16 @@
                             Calibration Engine
                         </span>
                         <span class="font-bold text-slate-300">&bull;</span>
-                        <span class="font-display text-xs font-bold uppercase tracking-wider text-muted-ink">
+                        <span class="font-display text-xs font-bold uppercase tracking-wider text-ink-muted">
                             One-Time Assessment
                         </span>
                     </div>
 
-                    <h2 class="font-display text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+                    <h2 class="font-display text-2xl sm:text-3xl font-black tracking-tight text-ink">
                         Establish your baseline
                     </h2>
 
-                    <p class="text-sm sm:text-base leading-relaxed text-slate-600 max-w-2xl pt-1">
+                    <p class="text-sm sm:text-base leading-relaxed text-ink-muted max-w-2xl pt-1">
                         This 60-item diagnostic covers the six official Pharmacy Licensure Examination subjects using a
                         scaled Table of Specifications blueprint.
                     </p>
@@ -64,22 +64,22 @@
                 {{-- Parameter Badges --}}
                 <div class="mt-6 sm:mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
 
-                    <div class="flex items-start gap-3 rounded-2xl border-2 border-slate-200/80 bg-slate-50/70 p-4">
+                    <div class="flex items-start gap-3 rounded-2xl border-2 border-line/80 bg-surface-2/70 p-4">
                         <div
                             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-b-2 border-primary/30 bg-primary-tint/60 text-primary font-display font-bold text-sm shadow-xs">
                             60
                         </div>
                         <div>
-                            <h3 class="font-display text-xs font-bold uppercase tracking-wider text-slate-900">
+                            <h3 class="font-display text-xs font-bold uppercase tracking-wider text-ink">
                                 Domain Coverage
                             </h3>
-                            <p class="mt-0.5 text-xs text-slate-600 leading-snug">
+                            <p class="mt-0.5 text-xs text-ink-muted leading-snug">
                                 Exactly 10 validated Form A questions from each official subject, for a total of 60 items.
                             </p>
                         </div>
                     </div>
 
-                    <div class="flex items-start gap-3 rounded-2xl border-2 border-slate-200/80 bg-slate-50/70 p-4">
+                    <div class="flex items-start gap-3 rounded-2xl border-2 border-line/80 bg-surface-2/70 p-4">
                         <div
                             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-b-2 border-teal-200 bg-teal-50 text-teal-600 shadow-xs">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
@@ -89,16 +89,16 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="font-display text-xs font-bold uppercase tracking-wider text-slate-900">
+                            <h3 class="font-display text-xs font-bold uppercase tracking-wider text-ink">
                                 Unrestricted Pacing
                             </h3>
-                            <p class="mt-0.5 text-xs text-slate-600 leading-snug">
+                            <p class="mt-0.5 text-xs text-ink-muted leading-snug">
                                 No countdown clock &mdash; prioritize clinical accuracy and reasoning.
                             </p>
                         </div>
                     </div>
 
-                    <div class="flex items-start gap-3 rounded-2xl border-2 border-slate-200/80 bg-slate-50/70 p-4">
+                    <div class="flex items-start gap-3 rounded-2xl border-2 border-line/80 bg-surface-2/70 p-4">
                         <div
                             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-b-2 border-amber-200 bg-amber-50 text-amber-600 shadow-xs">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
@@ -108,16 +108,16 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="font-display text-xs font-bold uppercase tracking-wider text-slate-900">
+                            <h3 class="font-display text-xs font-bold uppercase tracking-wider text-ink">
                                 Session Continuity
                             </h3>
-                            <p class="mt-0.5 text-xs text-slate-600 leading-snug">
+                            <p class="mt-0.5 text-xs text-ink-muted leading-snug">
                                 Resume any time. Responses commit to telemetry when submitted.
                             </p>
                         </div>
                     </div>
 
-                    <div class="flex items-start gap-3 rounded-2xl border-2 border-slate-200/80 bg-slate-50/70 p-4">
+                    <div class="flex items-start gap-3 rounded-2xl border-2 border-line/80 bg-surface-2/70 p-4">
                         <div
                             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-b-2 border-indigo-200 bg-indigo-50 text-indigo-600 shadow-xs">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
@@ -127,10 +127,10 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="font-display text-xs font-bold uppercase tracking-wider text-slate-900">
+                            <h3 class="font-display text-xs font-bold uppercase tracking-wider text-ink">
                                 Singular Baseline
                             </h3>
-                            <p class="mt-0.5 text-xs text-slate-600 leading-snug">
+                            <p class="mt-0.5 text-xs text-ink-muted leading-snug">
                                 Completed only once to anchor your personal progress curve.
                             </p>
                         </div>
@@ -140,21 +140,38 @@
 
                 {{-- Action Form --}}
                 <div
-                    class="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <form method="POST" action="{{ route('diagnostic.start') }}" class="w-full sm:w-auto">
+                    class="mt-8 pt-6 border-t border-line flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <form
+                        method="POST"
+                        action="{{ route('diagnostic.start') }}"
+                        class="w-full sm:w-auto"
+                    >
                         @csrf
-                        <button type="submit" style="--lip: rgb(var(--color-primary-lip));"
-                            class="btn-press w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-8 py-3.5 font-display text-sm font-bold text-white shadow-md transition hover:bg-primary/95">
+
+                        <x-ui.button
+                            type="submit"
+                            class="w-full sm:w-auto"
+                        >
                             <span>Begin Diagnostic Assessment</span>
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+
+                            <svg
+                                class="h-4 w-4"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                                />
                             </svg>
-                        </button>
+                        </x-ui.button>
                     </form>
 
-                    <span class="text-center sm:text-right font-mono text-[11px] text-muted-ink">
+                    <span class="text-center sm:text-right font-mono text-[11px] text-ink-muted">
                         Estimated: 35–45 mins
                     </span>
                 </div>
