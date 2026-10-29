@@ -47,101 +47,239 @@ const CITI_RX_THEMES = [
     },
 ];
 
-Alpine.data("themeManager", (level = 1) => {
-    const parsedLevel = Number.parseInt(level, 10);
+const COMFORT_STORAGE_KEY = "citiRxComfort";
+const THEME_STORAGE_KEY = "citiRxTheme";
 
-    const currentLevel = Number.isFinite(parsedLevel)
-        ? Math.max(1, parsedLevel)
-        : 1;
+const validComfortModes = [
+    "light",
+    "dark",
+    "auto",
+];
 
-    return {
-        themes: CITI_RX_THEMES.map((theme) => ({
-            ...theme,
-        })),
+const readStoredValue = (key) => {
+    try {
+        return window.localStorage.getItem(key);
+    } catch {
+        return null;
+    }
+};
 
-        currentLevel,
-        globalTheme: "theme-standard",
-        animationsPaused: document.hidden,
-        visibilityHandler: null,
+const storeValue = (key, value) => {
+    try {
+        window.localStorage.setItem(key, value);
+    } catch {
+        // Storage may be unavailable in private mode.
+    }
+};
 
-        isUnlocked(themeOrId) {
-            const theme =
-                typeof themeOrId === "string"
-                    ? this.themes.find(
-                          (candidate) =>
-                              candidate.id === themeOrId,
-                      )
-                    : themeOrId;
+const normaliseComfortMode = (value) =>
+    validComfortModes.includes(value)
+        ? value
+        : "auto";
 
-            return (
-                Boolean(theme) &&
-                this.currentLevel >= theme.requiredLevel
-            );
-        },
+const resolveComfortMode = (mode) => {
+    if (mode === "dark") {
+        return "dark";
+    }
 
-        readStoredTheme() {
-            try {
-                return window.localStorage.getItem(
-                    "citiRxTheme",
+    if (mode === "light") {
+        return "light";
+    }
+
+    return window.matchMedia(
+        "(prefers-color-scheme: dark)",
+    ).matches
+        ? "dark"
+        : "light";
+};
+
+const applyDocumentComfort = (mode) => {
+    const resolved = resolveComfortMode(mode);
+
+    document.documentElement.dataset.comfort =
+        resolved;
+
+    const meta = document.querySelector(
+        'meta[name="theme-color"]',
+    );
+
+    meta?.setAttribute(
+        "content",
+        resolved === "dark"
+            ? "#0F172A"
+            : "#F8FAFC",
+    );
+
+    return resolved;
+};
+
+const initialComfortMode = normaliseComfortMode(
+    readStoredValue(COMFORT_STORAGE_KEY),
+);
+
+applyDocumentComfort(initialComfortMode);
+
+Alpine.data(
+    "themeManager",
+    (
+        level = 1,
+        surface = "student",
+    ) => {
+        const parsedLevel = Number.parseInt(
+            level,
+            10,
+        );
+
+        const currentLevel = Number.isFinite(
+            parsedLevel,
+        )
+            ? Math.max(1, parsedLevel)
+            : 1;
+
+        return {
+            themes: CITI_RX_THEMES.map(
+                (theme) => ({
+                    ...theme,
+                }),
+            ),
+
+            surface,
+            currentLevel,
+            globalTheme: "theme-standard",
+
+            comfortMode: initialComfortMode,
+            resolvedComfort:
+                applyDocumentComfort(
+                    initialComfortMode,
+                ),
+
+            animationsPaused: document.hidden,
+            visibilityHandler: null,
+            comfortQuery: null,
+            comfortHandler: null,
+
+            isUnlocked(themeOrId) {
+                const theme =
+                    typeof themeOrId === "string"
+                        ? this.themes.find(
+                              (candidate) =>
+                                  candidate.id ===
+                                  themeOrId,
+                          )
+                        : themeOrId;
+
+                if (!theme) {
+                    return false;
+                }
+
+                if (this.surface !== "student") {
+                    return (
+                        theme.id ===
+                        "theme-standard"
+                    );
+                }
+
+                return (
+                    this.currentLevel >=
+                    theme.requiredLevel
                 );
-            } catch {
-                return null;
-            }
-        },
+            },
 
-        storeTheme(themeId) {
-            try {
-                window.localStorage.setItem(
-                    "citiRxTheme",
+            applyTheme(themeId) {
+                if (!this.isUnlocked(themeId)) {
+                    return false;
+                }
+
+                this.globalTheme = themeId;
+
+                storeValue(
+                    THEME_STORAGE_KEY,
                     themeId,
                 );
-            } catch {
-                /*
-                 * Storage can be blocked by browser privacy
-                 * settings. The selected theme still works for
-                 * the current page.
-                 */
-            }
-        },
 
-        applyTheme(themeId) {
-            if (!this.isUnlocked(themeId)) {
-                return false;
-            }
+                return true;
+            },
 
-            this.globalTheme = themeId;
-            this.storeTheme(themeId);
+            setComfort(mode) {
+                this.comfortMode =
+                    normaliseComfortMode(mode);
 
-            return true;
-        },
+                storeValue(
+                    COMFORT_STORAGE_KEY,
+                    this.comfortMode,
+                );
 
-        init() {
-            const storedTheme = this.readStoredTheme();
+                this.resolvedComfort =
+                    applyDocumentComfort(
+                        this.comfortMode,
+                    );
+            },
 
-            if (!this.applyTheme(storedTheme)) {
-                this.applyTheme("theme-standard");
-            }
+            init() {
+                const storedTheme = readStoredValue(
+                    THEME_STORAGE_KEY,
+                );
 
-            this.visibilityHandler = () => {
-                this.animationsPaused = document.hidden;
-            };
+                if (!this.applyTheme(storedTheme)) {
+                    this.applyTheme(
+                        "theme-standard",
+                    );
+                }
 
-            document.addEventListener(
-                "visibilitychange",
-                this.visibilityHandler,
-            );
-        },
+                this.visibilityHandler = () => {
+                    this.animationsPaused =
+                        document.hidden;
+                };
 
-        destroy() {
-            if (this.visibilityHandler !== null) {
-                document.removeEventListener(
+                document.addEventListener(
                     "visibilitychange",
                     this.visibilityHandler,
                 );
-            }
-        },
-    };
-});
+
+                this.comfortQuery =
+                    window.matchMedia(
+                        "(prefers-color-scheme: dark)",
+                    );
+
+                this.comfortHandler = () => {
+                    if (
+                        this.comfortMode === "auto"
+                    ) {
+                        this.resolvedComfort =
+                            applyDocumentComfort(
+                                "auto",
+                            );
+                    }
+                };
+
+                this.comfortQuery.addEventListener(
+                    "change",
+                    this.comfortHandler,
+                );
+            },
+
+            destroy() {
+                if (this.visibilityHandler) {
+                    document.removeEventListener(
+                        "visibilitychange",
+                        this.visibilityHandler,
+                    );
+                }
+
+                if (
+                    this.comfortQuery
+                    && this.comfortHandler
+                ) {
+                    this.comfortQuery
+                        .removeEventListener(
+                            "change",
+                            this.comfortHandler,
+                        );
+                }
+            },
+        };
+    },
+);
 
 /**
  * Animated readiness percentage ring.

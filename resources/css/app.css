@@ -8,133 +8,301 @@
 
 @layer components {
     .btn-press {
-        border-bottom-width: 4px;
-        border-bottom-color: var(--lip, rgba(0, 0, 0, 0.15));
+        --button-lip:
+            var(
+                --lip,
+                rgb(var(--color-primary-lip))
+            );
+
+        box-shadow:
+            0 var(--lip-size) 0
+            var(--button-lip);
+
+        transform: translateY(0);
+
         transition:
-            transform 100ms ease,
-            background-color 150ms ease,
-            border-color 150ms ease,
-            color 150ms ease;
+            transform 120ms var(--ease-out),
+            box-shadow 120ms var(--ease-out),
+            background-color 150ms var(--ease-out),
+            border-color 150ms var(--ease-out),
+            color 150ms var(--ease-out);
     }
 
-    .btn-press:active {
-        transform: translateY(2px);
+    .btn-press:active:not(:disabled) {
+        box-shadow: 0 0 0 var(--button-lip);
+        transform: translateY(var(--lip-size));
+    }
+
+    .btn-press:disabled {
+        box-shadow: none;
+        transform: none;
     }
 }
 
 @layer base {
-    /* Level 1: Standard (Violet) */
+    :root {
+        color-scheme: light;
+
+        --color-canvas: 248 250 252;
+        --color-surface: 255 255 255;
+        --color-surface-2: 241 245 249;
+
+        --color-ink: 30 41 59;
+        --color-ink-muted: 71 85 105;
+
+        --color-line: 226 232 240;
+        --color-line-strong: 203 213 225;
+
+        --color-success-strong: 4 120 87;
+        --color-success-tint: 236 253 245;
+        --color-success-ink: 4 120 87;
+
+        --color-danger-strong: 190 18 60;
+        --color-danger-tint: 255 241 242;
+        --color-danger-ink: 190 18 60;
+
+        --color-warning-strong: 180 83 9;
+        --color-warning-tint: 255 251 235;
+        --color-warning-ink: 146 64 14;
+
+        --color-info-strong: 3 105 161;
+        --color-info-tint: 240 249 255;
+        --color-info-ink: 3 105 161;
+
+        --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+        --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+        --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+        --radius-card: 1rem;
+        --radius-control: 0.75rem;
+        --space-card: 1.25rem;
+        --control-h: 2.75rem;
+        --lip-size: 2px;
+    }
+
     :root,
     .theme-standard {
-        --color-primary-default: 109 74 255; /* #6D4AFF */
-        --color-primary-lip: 74 47 196; /* #4A2FC4 */
-        --color-primary-tint: 241 237 255; /* #F1EDFF */
+        --color-primary-default: 109 74 255;
+        --color-primary-strong: 109 74 255;
+        --color-primary-lip: 74 47 196;
+        --color-primary-tint: 241 237 255;
+        --color-primary-ink: 74 47 196;
     }
 
-    /* Level 2: Forest Grove (Emerald) */
     .theme-forest {
-        --color-primary-default: 16 185 129; /* #10B981 */
-        --color-primary-lip: 4 120 87; /* #047857 */
-        --color-primary-tint: 209 250 229; /* #D1FAE5 */
+        --color-primary-default: 16 185 129;
+        --color-primary-strong: 4 120 87;
+        --color-primary-lip: 6 95 70;
+        --color-primary-tint: 209 250 229;
+        --color-primary-ink: 6 95 70;
     }
 
-    /* Level 4: Sakura Romance (Rose) */
     .theme-sakura {
-        --color-primary-default: 244 63 94; /* #F43F5E */
-        --color-primary-lip: 190 18 60; /* #BE123C */
-        --color-primary-tint: 255 228 230; /* #FFE4E6 */
+        --color-primary-default: 244 63 94;
+        --color-primary-strong: 190 18 60;
+        --color-primary-lip: 159 18 57;
+        --color-primary-tint: 255 228 230;
+        --color-primary-ink: 159 18 57;
     }
 
-    /* Level 6: Midnight Slate (Dark Navy) */
     .theme-midnight {
-        --color-primary-default: 30 41 59; /* #1E293B */
-        --color-primary-lip: 2 6 23; /* #020617 */
-        --color-primary-tint: 241 245 249; /* #F1F5F9 */
+        --color-primary-default: 71 85 105;
+        --color-primary-strong: 51 65 85;
+        --color-primary-lip: 15 23 42;
+        --color-primary-tint: 241 245 249;
+        --color-primary-ink: 30 41 59;
     }
 
-    /* Level 8: Ocean Abyss (Sky Blue) */
     .theme-ocean {
-        --color-primary-default: 14 165 233; /* #0EA5E9 */
-        --color-primary-lip: 3 105 161; /* #0369A1 */
-        --color-primary-tint: 224 242 254; /* #E0F2FE */
+        --color-primary-default: 14 165 233;
+        --color-primary-strong: 3 105 161;
+        --color-primary-lip: 7 89 133;
+        --color-primary-tint: 224 242 254;
+        --color-primary-ink: 7 89 133;
     }
 
-    /* Level 10: Solar Gold (Amber) */
     .theme-solar {
-        --color-primary-default: 245 158 11; /* #F59E0B */
-        --color-primary-lip: 180 83 9; /* #B45309 */
-        --color-primary-tint: 254 243 199; /* #FEF3C7 */
+        --color-primary-default: 245 158 11;
+        --color-primary-strong: 180 83 9;
+        --color-primary-lip: 146 64 14;
+        --color-primary-tint: 254 243 199;
+        --color-primary-ink: 146 64 14;
     }
-}
 
-/* Theme-aware foregrounds; keep Midnight legible without whitening light panels. */
-body.theme-standard {
-    --theme-ink-strong: #1e293b;
-}
-body.theme-forest {
-    --theme-ink-strong: #14532d;
-}
-body.theme-sakura {
-    --theme-ink-strong: #881337;
-}
-body.theme-midnight {
-    --theme-ink-strong: #f1f5f9;
-}
-body.theme-ocean {
-    --theme-ink-strong: #0c4a6e;
-}
-body.theme-solar {
-    --theme-ink-strong: #78350f;
-}
+    [data-surface="student"] {
+        --radius-card: 1.5rem;
+        --radius-control: 0.75rem;
+        --space-card: 1.5rem;
+        --control-h: 3rem;
+        --lip-size: 4px;
+    }
 
-body[class*="theme-"] .text-slate-900 {
-    color: var(--theme-ink-strong);
-}
-body.theme-midnight
-    :is(
-        .text-slate-900,
-        .text-slate-800,
-        .text-slate-700,
-        .text-slate-600,
-        .text-muted-ink
-    ) {
-    color: #e2e8f0;
-}
-body.theme-midnight
-    :is(
-        .bg-white,
-        .bg-white\/70,
-        .bg-white\/85,
-        .bg-white\/90,
-        .bg-white\/95,
-        .bg-gradient-to-br.from-primary-tint,
-        .bg-gradient-to-br.from-amber-50,
-        .bg-gradient-to-br.from-rose-50\/80,
-        .bg-gradient-to-br.from-amber-50\/80,
-        .bg-gradient-to-br.from-indigo-50\/80,
-        .bg-slate-50,
-        .bg-slate-100,
-        .bg-slate-200,
-        .bg-primary-tint,
-        .bg-primary-tint\/50,
-        .bg-clinical-tint,
-        .bg-strong-tint,
-        .bg-weak-tint,
-        .bg-gold-tint,
-        .bg-amber-50
-    )
-    :is(
-        .text-slate-900,
-        .text-slate-800,
-        .text-slate-700,
-        .text-slate-600,
-        .text-slate-500,
-        .text-muted-ink
-    ) {
-    color: #334155;
-}
-body.theme-midnight :is(input, textarea, select).text-slate-900 {
-    color: #0f172a;
+    [data-surface="faculty"] {
+        --radius-card: 1rem;
+        --radius-control: 0.75rem;
+        --space-card: 1.25rem;
+        --control-h: 2.75rem;
+        --lip-size: 2px;
+    }
+
+    [data-surface="admin"] {
+        --radius-card: 1rem;
+        --radius-control: 0.75rem;
+        --space-card: 1.25rem;
+        --control-h: 2.75rem;
+        --lip-size: 2px;
+    }
+
+    html[data-comfort="dark"] {
+        color-scheme: dark;
+
+        --color-canvas: 15 23 42;
+        --color-surface: 30 41 59;
+        --color-surface-2: 51 65 85;
+
+        --color-ink: 226 232 240;
+        --color-ink-muted: 148 163 184;
+
+        --color-line: 71 85 105;
+        --color-line-strong: 100 116 139;
+
+        --color-success-strong: 52 211 153;
+        --color-success-tint: 6 78 59;
+        --color-success-ink: 167 243 208;
+
+        --color-danger-strong: 251 113 133;
+        --color-danger-tint: 76 5 25;
+        --color-danger-ink: 254 205 211;
+
+        --color-warning-strong: 251 191 36;
+        --color-warning-tint: 69 26 3;
+        --color-warning-ink: 253 230 138;
+
+        --color-info-strong: 56 189 248;
+        --color-info-tint: 8 47 73;
+        --color-info-ink: 186 230 253;
+    }
+
+    /*
+    * Dark-comfort variants for cosmetic themes.
+    * Bright colors remain accents; text-bearing buttons continue
+    * using the accessible strong shade.
+    */
+
+    html[data-comfort="dark"] body.theme-standard,
+    .ui-dark-preview .theme-standard {
+        --color-primary-default: 167 139 250;
+        --color-primary-strong: 124 58 237;
+        --color-primary-lip: 91 33 182;
+        --color-primary-tint: 46 16 101;
+        --color-primary-ink: 221 214 254;
+    }
+
+    html[data-comfort="dark"] body.theme-forest,
+    .ui-dark-preview .theme-forest {
+        --color-primary-default: 52 211 153;
+        --color-primary-strong: 4 120 87;
+        --color-primary-lip: 6 95 70;
+        --color-primary-tint: 6 78 59;
+        --color-primary-ink: 167 243 208;
+    }
+
+    html[data-comfort="dark"] body.theme-sakura,
+    .ui-dark-preview .theme-sakura {
+        --color-primary-default: 251 113 133;
+        --color-primary-strong: 190 18 60;
+        --color-primary-lip: 159 18 57;
+        --color-primary-tint: 76 5 25;
+        --color-primary-ink: 254 205 211;
+    }
+
+    html[data-comfort="dark"] body.theme-midnight,
+    .ui-dark-preview .theme-midnight {
+        --color-primary-default: 148 163 184;
+        --color-primary-strong: 71 85 105;
+        --color-primary-lip: 30 41 59;
+        --color-primary-tint: 30 41 59;
+        --color-primary-ink: 226 232 240;
+    }
+
+    html[data-comfort="dark"] body.theme-ocean,
+    .ui-dark-preview .theme-ocean {
+        --color-primary-default: 56 189 248;
+        --color-primary-strong: 3 105 161;
+        --color-primary-lip: 7 89 133;
+        --color-primary-tint: 8 47 73;
+        --color-primary-ink: 186 230 253;
+    }
+
+    html[data-comfort="dark"] body.theme-solar,
+    .ui-dark-preview .theme-solar {
+        --color-primary-default: 251 191 36;
+        --color-primary-strong: 180 83 9;
+        --color-primary-lip: 146 64 14;
+        --color-primary-tint: 69 26 3;
+        --color-primary-ink: 253 230 138;
+    }
+
+    html {
+        min-height: 100%;
+        background: rgb(var(--color-canvas));
+    }
+
+    body {
+        min-height: 100dvh;
+        background: rgb(var(--color-canvas));
+        color: rgb(var(--color-ink));
+    }
+
+    ::selection {
+        background:
+            rgb(var(--color-primary-default) / 0.22);
+        color:
+            rgb(var(--color-ink));
+    }
+
+    :focus-visible {
+        outline:
+            3px solid
+            rgb(var(--color-primary-default) / 0.75);
+        outline-offset: 3px;
+    }
+
+    input,
+    textarea,
+    select {
+        caret-color:
+            rgb(var(--color-primary-default));
+        accent-color:
+            rgb(var(--color-primary-strong));
+    }
+
+    button,
+    a,
+    [role="button"] {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+
+    button,
+    [role="button"] {
+        user-select: none;
+    }
+
+    @media (pointer: coarse) {
+        input,
+        textarea,
+        select {
+            font-size: 1rem;
+        }
+    }
+
+    @media (pointer: fine) {
+        [data-surface="admin"] {
+            --space-card: 1rem;
+            --control-h: 2.625rem;
+        }
+    }
 }
 
 /* Kinetic Micro-Animations */
@@ -349,20 +517,35 @@ body.theme-sakura .sakura-petal {
 }
 
 /* 4. Midnight Slate (Dark Navy & Stars) */
+/*
+ * Midnight Slate in Light comfort:
+ * retain the slate atmosphere without becoming a second dark-mode switch.
+ */
 body.theme-midnight .theme-environment {
     background:
         radial-gradient(
             ellipse at 72% 22%,
-            rgba(91, 33, 182, 0.3),
+            rgb(99 102 241 / 0.12),
             transparent 38%
         ),
         radial-gradient(
             ellipse at 15% 82%,
-            rgba(14, 116, 144, 0.22),
+            rgb(14 116 144 / 0.1),
             transparent 40%
         ),
-        linear-gradient(145deg, #080d1c 0%, #17243d 56%, #10182c 100%);
+        linear-gradient(
+            145deg,
+            #f8fafc 0%,
+            #eef2f7 56%,
+            #e2e8f0 100%
+        );
 }
+
+body.theme-midnight .galaxy-scene {
+    display: block;
+    opacity: 0.2;
+}
+
 body.theme-midnight .galaxy-scene {
     display: block;
     background-image:
@@ -792,3 +975,1149 @@ body.theme-solar .solar-scene {
         transition: none !important;
     }
 }
+
+/* =========================================================
+   ADMIN OPERATIONS UI
+   ========================================================= */
+
+:root {
+    --admin-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --admin-border: 226 232 240;
+    --admin-ink: 15 23 42;
+    --admin-muted: 71 85 105;
+    --admin-surface: 255 255 255;
+    --admin-canvas: 248 250 252;
+}
+
+.role-admin {
+    background: rgb(var(--admin-canvas));
+}
+
+.role-admin .admin-topbar {
+    border-bottom-width: 1px;
+    border-color: rgb(var(--admin-border));
+    background: rgb(var(--admin-surface) / 0.97);
+    backdrop-filter: none;
+}
+
+/* =========================================================
+   CITIRX DUOLINGO-INSPIRED ADMIN SIDEBAR
+   ========================================================= */
+
+.admin-sidebar {
+    border-right: 2px solid rgb(226 232 240);
+    box-shadow: 8px 0 24px rgb(15 23 42 / 0.035);
+}
+
+.admin-sidebar-scroll {
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgb(203 213 225)
+        transparent;
+}
+
+.admin-sidebar-scroll::-webkit-scrollbar {
+    width: 7px;
+}
+
+.admin-sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-sidebar-scroll::-webkit-scrollbar-thumb {
+    border: 2px solid white;
+    border-radius: 999px;
+    background: rgb(203 213 225);
+}
+
+.admin-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgb(148 163 184);
+}
+
+.admin-nav-group-label {
+    margin-top: 1.1rem;
+    margin-bottom: 0.4rem;
+    padding-inline: 0.75rem;
+    color: rgb(100 116 139);
+    font-size: 0.6875rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.admin-nav-group-label:first-child {
+    margin-top: 0;
+}
+
+.admin-nav-link {
+    display: flex;
+    min-height: 3.25rem;
+    align-items: center;
+    gap: 0.75rem;
+    border: 2px solid transparent;
+    border-bottom-width: 4px;
+    border-radius: 1rem;
+    padding: 0.625rem 0.75rem;
+    color: rgb(71 85 105);
+    font-size: 0.875rem;
+    font-weight: 800;
+    line-height: 1.15;
+    transform: translateY(0);
+    transition:
+        transform 80ms ease,
+        border-color 140ms ease,
+        background-color 140ms ease,
+        color 140ms ease;
+    touch-action: manipulation;
+}
+
+.admin-nav-link:hover {
+    border-color: rgb(226 232 240);
+    border-bottom-color: rgb(203 213 225);
+    background: rgb(248 250 252);
+    color: rgb(15 23 42);
+}
+
+.admin-nav-link:active {
+    transform: translateY(2px);
+}
+
+.admin-nav-link:focus-visible {
+    outline: none;
+    box-shadow:
+        0 0 0 4px
+        rgb(var(--color-primary-default) / 0.2);
+}
+
+.admin-nav-icon-wrap {
+    display: flex;
+    height: 2rem;
+    width: 2rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    color: rgb(100 116 139);
+    transition:
+        transform 150ms cubic-bezier(0.16, 1, 0.3, 1),
+        background-color 140ms ease,
+        color 140ms ease;
+}
+
+.admin-nav-link:hover .admin-nav-icon-wrap {
+    transform: rotate(-3deg) scale(1.04);
+    background: white;
+    color: rgb(51 65 85);
+}
+
+.admin-nav-link-active {
+    border-color:
+        rgb(var(--color-primary-default) / 0.28);
+    border-bottom-color:
+        rgb(var(--color-primary-default) / 0.28);
+    background:
+        rgb(var(--color-primary-default) / 0.07);
+    color:
+        rgb(var(--color-primary-default));
+    box-shadow: none;
+}
+
+.admin-nav-link-active:hover {
+    border-color:
+        rgb(var(--color-primary-default) / 0.38);
+    border-bottom-color:
+        rgb(var(--color-primary-default) / 0.38);
+    background:
+        rgb(var(--color-primary-default) / 0.1);
+    color:
+        rgb(var(--color-primary-default));
+}
+
+.admin-nav-link-active .admin-nav-icon-wrap,
+.admin-nav-link-active:hover .admin-nav-icon-wrap {
+    background: transparent;
+    color:
+        rgb(var(--color-primary-default));
+    box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-nav-link,
+    .admin-nav-icon-wrap {
+        transition:
+            border-color 140ms ease,
+            background-color 140ms ease,
+            color 140ms ease;
+    }
+
+    .admin-nav-link:active {
+        transform: none;
+    }
+
+    .admin-nav-link:hover .admin-nav-icon-wrap {
+        transform: none;
+    }
+}
+
+.admin-nav-icon {
+    transition:
+        transform 180ms var(--admin-ease-out),
+        color 140ms ease;
+}
+
+.admin-nav-link:hover .admin-nav-icon,
+.admin-nav-link-active .admin-nav-icon {
+    transform: translateX(2px);
+}
+
+.admin-mobile-link {
+    display: flex;
+    min-width: 3.75rem;
+    min-height: 3rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    border: 2px solid transparent;
+    border-bottom-width: 3px;
+    border-radius: 0.875rem;
+    padding: 0.25rem 0.4rem;
+    font-size: 0.625rem;
+    font-weight: 900;
+    transform: translateY(0);
+    transition:
+        transform 80ms ease,
+        border-color 140ms ease,
+        background-color 140ms ease,
+        color 140ms ease;
+    touch-action: manipulation;
+}
+
+.admin-mobile-link:hover {
+    background: rgb(248 250 252);
+}
+
+.admin-mobile-link:active {
+    transform: translateY(1px);
+}
+
+.admin-mobile-link[aria-current="page"] {
+    border-color:
+        rgb(var(--color-primary-default) / 0.24);
+    border-bottom-color:
+        rgb(var(--color-primary-lip) / 0.65);
+    background:
+        rgb(var(--color-primary-default) / 0.1);
+    color: rgb(var(--color-primary-default));
+}
+
+.admin-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.admin-surface {
+    color: rgb(var(--admin-ink));
+}
+
+.admin-panel {
+    border: 1px solid rgb(var(--admin-border));
+    border-radius: 1rem;
+    background: rgb(var(--admin-surface));
+    padding: 1.25rem;
+    box-shadow: 0 12px 30px rgb(15 23 42 / 0.055);
+}
+
+.admin-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    border: 1px solid;
+    border-radius: 0.875rem;
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 650;
+    animation: admin-notice-in 260ms var(--admin-ease-out);
+}
+
+.admin-notice-success {
+    border-color: rgb(167 243 208);
+    background: rgb(236 253 245);
+    color: rgb(6 95 70);
+}
+
+.admin-notice-error {
+    border-color: rgb(254 202 202);
+    background: rgb(254 242 242);
+    color: rgb(153 27 27);
+}
+
+.admin-progress-fill {
+    width: 100%;
+    transform: scaleX(var(--admin-progress));
+    transform-origin: left center;
+    animation: admin-progress-in 620ms var(--admin-ease-out);
+}
+
+.role-admin main table {
+    font-variant-numeric: tabular-nums;
+}
+
+.role-admin main thead {
+    background: rgb(248 250 252);
+}
+
+.role-admin main th {
+    color: rgb(var(--admin-muted));
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.role-admin main tbody tr {
+    transition: background-color 140ms ease;
+}
+
+.role-admin main tbody tr:hover {
+    background: rgb(248 250 252 / 0.85);
+}
+
+.role-admin main :is(
+    input[type="text"],
+    input[type="email"],
+    input[type="search"],
+    input[type="password"],
+    input[type="date"],
+    input[type="datetime-local"],
+    input[type="number"],
+    select,
+    textarea
+) {
+    min-height: 2.75rem;
+}
+
+.role-admin main :is(
+    button,
+    a
+):focus-visible {
+    outline: none;
+    box-shadow:
+        0 0 0 4px
+        rgb(var(--color-primary-default) / 0.22);
+}
+
+.role-admin main :is(
+    section,
+    article,
+    form,
+    div
+).rounded-3xl {
+    border-radius: 1rem;
+}
+
+.admin-mobile-dialog {
+    position: fixed;
+    inset: auto 0 0;
+    width: 100%;
+    max-width: none;
+    max-height: min(78dvh, 42rem);
+    margin: 0;
+    overflow-y: auto;
+    border: 0;
+    border-radius: 1rem 1rem 0 0;
+    background: white;
+    color: rgb(var(--admin-ink));
+    padding: 0;
+    box-shadow: 0 -18px 50px rgb(15 23 42 / 0.2);
+}
+
+.admin-mobile-dialog[open] {
+    animation: admin-sheet-in 280ms var(--admin-ease-out);
+}
+
+.admin-mobile-dialog::backdrop {
+    background: rgb(15 23 42 / 0.48);
+    animation: admin-backdrop-in 180ms ease-out;
+}
+
+@keyframes admin-notice-in {
+    from {
+        opacity: 0;
+        clip-path: inset(0 0 100% 0 round 0.875rem);
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        clip-path: inset(0 0 0 0 round 0.875rem);
+        transform: translateY(0);
+    }
+}
+
+@keyframes admin-progress-in {
+    from {
+        transform: scaleX(0);
+    }
+
+    to {
+        transform: scaleX(var(--admin-progress));
+    }
+}
+
+@keyframes admin-sheet-in {
+    from {
+        opacity: 0.7;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes admin-backdrop-in {
+    from {
+        background: rgb(15 23 42 / 0);
+    }
+
+    to {
+        background: rgb(15 23 42 / 0.48);
+    }
+}
+
+@media (min-width: 640px) {
+    .admin-panel {
+        padding: 1.5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-notice,
+    .admin-progress-fill,
+    .admin-mobile-dialog[open],
+    .admin-mobile-dialog::backdrop {
+        animation: none;
+    }
+
+    .admin-nav-icon {
+        transition: color 140ms ease;
+    }
+
+    .admin-nav-link:hover .admin-nav-icon,
+    .admin-nav-link-active .admin-nav-icon {
+        transform: none;
+    }
+}
+
+@media print {
+    .admin-notice,
+    .admin-progress-fill,
+    .admin-mobile-dialog {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+@layer components {
+    .ui-button {
+        display: inline-flex;
+        min-height: var(--control-h);
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        border: 2px solid transparent;
+        border-radius: var(--radius-control);
+        padding: 0.625rem 1rem;
+        font-family: theme("fontFamily.display");
+        font-size: 0.875rem;
+        font-weight: 800;
+        line-height: 1.2;
+        text-align: center;
+        transform: translateY(0);
+        transition:
+            transform 120ms var(--ease-out),
+            box-shadow 120ms var(--ease-out),
+            background-color 150ms var(--ease-out),
+            border-color 150ms var(--ease-out),
+            color 150ms var(--ease-out),
+            opacity 150ms var(--ease-out);
+    }
+
+    .ui-button-primary {
+        --button-lip:
+            rgb(var(--color-primary-lip));
+
+        margin-bottom: var(--lip-size);
+        border-color:
+            rgb(var(--color-primary-strong));
+        background:
+            rgb(var(--color-primary-strong));
+        color: white;
+        box-shadow:
+            0 var(--lip-size) 0
+            var(--button-lip);
+    }
+
+    .ui-button-primary:active:not(:disabled) {
+        box-shadow: 0 0 0 var(--button-lip);
+        transform: translateY(var(--lip-size));
+    }
+
+    .ui-button-secondary {
+        border-color:
+            rgb(var(--color-line-strong));
+        background:
+            rgb(var(--color-surface));
+        color:
+            rgb(var(--color-ink));
+    }
+
+    .ui-button-danger {
+        border-color:
+            rgb(var(--color-danger-strong));
+        background:
+            rgb(var(--color-danger-strong));
+        color: white;
+    }
+
+    .ui-button-ghost {
+        background: transparent;
+        color:
+            rgb(var(--color-primary-ink));
+    }
+
+    .ui-button:disabled,
+    .ui-button[aria-disabled="true"] {
+        cursor: not-allowed;
+        opacity: 0.55;
+        box-shadow: none;
+        transform: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .ui-button-primary:hover {
+            filter: brightness(0.96);
+        }
+
+        .ui-button-secondary:hover,
+        .ui-button-ghost:hover {
+            background:
+                rgb(var(--color-surface-2));
+        }
+
+        .ui-button-danger:hover {
+            filter: brightness(0.94);
+        }
+    }
+
+    .ui-field-control {
+        display: block;
+        min-height: var(--control-h);
+        width: 100%;
+        border: 2px solid rgb(var(--color-line-strong));
+        border-radius: var(--radius-control);
+        background: rgb(var(--color-surface));
+        color: rgb(var(--color-ink));
+        font-size: 1rem;
+        line-height: 1.5;
+        transition:
+            border-color 150ms var(--ease-out),
+            box-shadow 150ms var(--ease-out),
+            background-color 150ms var(--ease-out);
+    }
+
+    .ui-field-control::placeholder {
+        color:
+            rgb(var(--color-ink-muted) / 0.78);
+    }
+
+    .ui-field-control:focus {
+        border-color:
+            rgb(var(--color-primary-default));
+        box-shadow:
+            0 0 0 4px
+            rgb(var(--color-primary-default) / 0.14);
+        outline: none;
+    }
+
+    .ui-field-control[aria-invalid="true"] {
+        border-color:
+            rgb(var(--color-danger-strong));
+    }
+
+    .ui-card {
+        border: 1px solid rgb(var(--color-line));
+        border-radius: var(--radius-card);
+        background: rgb(var(--color-surface));
+        color: rgb(var(--color-ink));
+    }
+
+    .ui-card-padded {
+        padding: var(--space-card);
+    }
+
+    .ui-card-raised {
+        border-color: transparent;
+        box-shadow:
+            0 10px 28px rgb(15 23 42 / 0.08);
+    }
+
+    .ui-alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        border: 1px solid currentColor;
+        border-radius: var(--radius-control);
+        padding: 0.875rem 1rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+    .ui-alert-success {
+        background:
+            rgb(var(--color-success-tint));
+        color:
+            rgb(var(--color-success-ink));
+    }
+
+    .ui-alert-danger {
+        background:
+            rgb(var(--color-danger-tint));
+        color:
+            rgb(var(--color-danger-ink));
+    }
+
+    .ui-alert-warning {
+        background:
+            rgb(var(--color-warning-tint));
+        color:
+            rgb(var(--color-warning-ink));
+    }
+
+    .ui-alert-info {
+        background:
+            rgb(var(--color-info-tint));
+        color:
+            rgb(var(--color-info-ink));
+    }
+
+    .ui-progress-track {
+        height: 0.625rem;
+        overflow: hidden;
+        border-radius: 999px;
+        background:
+            rgb(var(--color-surface-2));
+    }
+
+    .ui-progress-fill {
+        height: 100%;
+        border-radius: inherit;
+        background:
+            rgb(var(--color-primary-default));
+        transform:
+            scaleX(var(--ui-progress, 0));
+        transform-origin: left center;
+        transition:
+            transform 280ms var(--ease-out);
+    }
+
+    .ui-page-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .ui-page-title {
+        color:
+            rgb(var(--color-ink));
+        font-family: theme("fontFamily.display");
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+    }
+
+    .ui-page-description {
+        margin-top: 0.375rem;
+        max-width: 70ch;
+        color:
+            rgb(var(--color-ink-muted));
+        font-size: 0.875rem;
+        line-height: 1.55;
+    }
+
+    .ui-badge {
+        display: inline-flex;
+        min-height: 1.75rem;
+        align-items: center;
+        border-radius: 999px;
+        padding: 0.25rem 0.625rem;
+        font-size: 0.75rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .ui-dark-preview {
+        color-scheme: dark;
+
+        --color-canvas: 15 23 42;
+        --color-surface: 30 41 59;
+        --color-surface-2: 51 65 85;
+
+        --color-ink: 226 232 240;
+        --color-ink-muted: 148 163 184;
+
+        --color-line: 71 85 105;
+        --color-line-strong: 100 116 139;
+
+        --color-success-strong: 52 211 153;
+        --color-success-tint: 6 78 59;
+        --color-success-ink: 167 243 208;
+
+        --color-danger-strong: 251 113 133;
+        --color-danger-tint: 76 5 25;
+        --color-danger-ink: 254 205 211;
+
+        --color-warning-strong: 251 191 36;
+        --color-warning-tint: 69 26 3;
+        --color-warning-ink: 253 230 138;
+
+        --color-info-strong: 56 189 248;
+        --color-info-tint: 8 47 73;
+        --color-info-ink: 186 230 253;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .ui-button,
+        .ui-field-control,
+        .ui-progress-fill {
+            transition-duration: 0ms;
+        }
+
+        .ui-button-primary:active:not(:disabled) {
+            box-shadow:
+                0 var(--lip-size) 0
+                var(--button-lip);
+            transform: none;
+        }
+    }
+
+    @media print {
+        .ui-button,
+        .ui-field-control,
+        .ui-progress-fill {
+            animation: none !important;
+            transition: none !important;
+        }
+    }
+}
+
+/* =========================================================
+   DARK-COMFORT LEGACY BRIDGE
+
+   Remove individual selectors as their views migrate to
+   bg-surface, text-ink, text-ink-muted, and border-line.
+   ========================================================= */
+
+html[data-comfort="dark"] body {
+    background-color:
+        rgb(var(--color-canvas));
+    color:
+        rgb(var(--color-ink));
+
+    --admin-canvas: var(--color-canvas);
+    --admin-surface: var(--color-surface);
+    --admin-border: var(--color-line);
+    --admin-ink: var(--color-ink);
+    --admin-muted: var(--color-ink-muted);
+}
+
+/* Shared white surfaces */
+html[data-comfort="dark"] body :is(
+    .bg-white,
+    .bg-white\/70,
+    .bg-white\/80,
+    .bg-white\/85,
+    .bg-white\/90,
+    .bg-white\/95
+) {
+    background-color:
+        rgb(var(--color-surface));
+}
+
+/*
+ * Legacy cards contain light-only gradients whose white stops
+ * remain visible in dark comfort. Dark mode uses solid surfaces.
+ */
+html[data-comfort="dark"] body :is(
+    .bg-gradient-to-br.from-primary-tint,
+    .bg-gradient-to-br.from-rose-50\/80,
+    .bg-gradient-to-br.from-amber-50\/80,
+    .bg-gradient-to-br.from-amber-50,
+    .bg-gradient-to-br.from-indigo-50\/80,
+    .bg-gradient-to-br.from-emerald-50\/80
+) {
+    background-color:
+        rgb(var(--color-surface));
+    background-image: none;
+}
+
+/*
+ * Legacy buttons use bg-primary, which is an accent swatch.
+ * Text-bearing buttons need the stronger shade in dark comfort.
+ */
+html[data-comfort="dark"] body .bg-primary {
+    background-color:
+        rgb(var(--color-primary-strong));
+}
+
+html[data-comfort="dark"]
+    body
+    .peer:checked
+    ~ .peer-checked\:bg-primary-tint\/30 {
+    background-color:
+        rgb(var(--color-primary-tint) / 0.78);
+}
+
+/* Cooler secondary surfaces */
+html[data-comfort="dark"] body :is(
+    .bg-slate-50,
+    .bg-slate-100,
+    .bg-slate-200
+) {
+    background-color:
+        rgb(var(--color-surface-2));
+}
+
+/* Strong text */
+html[data-comfort="dark"] body :is(
+    .text-slate-950,
+    .text-slate-900,
+    .text-slate-800,
+    .text-slate-700
+) {
+    color:
+        rgb(var(--color-ink));
+}
+
+/* Secondary text and icons */
+html[data-comfort="dark"] body :is(
+    .text-slate-600,
+    .text-slate-500,
+    .text-slate-400,
+    .text-muted,
+    .text-muted-ink
+) {
+    color:
+        rgb(var(--color-ink-muted));
+}
+
+/* Ordinary dividers */
+html[data-comfort="dark"] body :is(
+    .border-slate-100,
+    .border-slate-200
+) {
+    border-color:
+        rgb(var(--color-line));
+}
+
+/* Stronger interactive borders */
+html[data-comfort="dark"] body :is(
+    .border-slate-300,
+    .border-slate-400
+) {
+    border-color:
+        rgb(var(--color-line-strong));
+}
+
+/* Table and list separators */
+html[data-comfort="dark"] body
+    .divide-slate-100
+    > :not([hidden])
+    ~ :not([hidden]),
+html[data-comfort="dark"] body
+    .divide-slate-200
+    > :not([hidden])
+    ~ :not([hidden]) {
+    border-color:
+        rgb(var(--color-line));
+}
+
+/* Inputs that have not yet migrated to x-ui.field */
+html[data-comfort="dark"] body :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    textarea,
+    select
+) {
+    border-color:
+        rgb(var(--color-line-strong));
+    background-color:
+        rgb(var(--color-surface));
+    color:
+        rgb(var(--color-ink));
+}
+
+html[data-comfort="dark"] body :is(
+    input,
+    textarea
+)::placeholder {
+    color:
+        rgb(var(--color-ink-muted) / 0.78);
+}
+
+/* Avatar and badge rings should match their surface */
+html[data-comfort="dark"] body .ring-white {
+    --tw-ring-color:
+        rgb(var(--color-surface));
+}
+
+/* Shared application chrome */
+html[data-comfort="dark"] body .admin-sidebar,
+html[data-comfort="dark"] body .admin-topbar {
+    border-color:
+        rgb(var(--color-line));
+    background-color:
+        rgb(var(--color-surface));
+}
+
+html[data-comfort="dark"] body .admin-sidebar {
+    box-shadow:
+        8px 0 24px
+        rgb(2 6 23 / 0.18);
+}
+
+/*
+ * Animated cosmetic environments should never force a light
+ * background when dark comfort is enabled.
+ */
+html[data-comfort="dark"] body .theme-environment {
+    background:
+        rgb(var(--color-canvas));
+}
+
+html[data-comfort="dark"] body .theme-scene {
+    opacity: 0.18;
+}
+/*
+
+ * Restore the Midnight Slate environment after the generic
+ * dark-comfort environment fallback.
+ */
+html[data-comfort="dark"]
+    body.theme-midnight
+    .theme-environment {
+    background:
+        radial-gradient(
+            ellipse at 72% 22%,
+            rgb(91 33 182 / 0.3),
+            transparent 38%
+        ),
+        radial-gradient(
+            ellipse at 15% 82%,
+            rgb(14 116 144 / 0.22),
+            transparent 40%
+        ),
+        linear-gradient(
+            145deg,
+            #080d1c 0%,
+            #17243d 56%,
+            #10182c 100%
+        );
+}
+
+html[data-comfort="dark"]
+    body.theme-midnight
+    .galaxy-scene {
+    opacity: 0.58;
+}
+
+
+/* =========================================================
+   FINAL DARK-COMFORT COMPATIBILITY LAYER
+
+   Keep this block last. It intentionally overrides legacy
+   light-only Tailwind utilities until those views migrate to
+   semantic surface, ink, muted, and line tokens.
+   ========================================================= */
+
+html[data-comfort="dark"] body {
+    background-color:
+        rgb(var(--color-canvas)) !important;
+    color:
+        rgb(var(--color-ink));
+}
+
+/*
+ * Legacy student cards use light gradients whose white stops
+ * are not compatible with dark comfort. In dark mode every
+ * diagonal legacy card becomes one calm, solid surface.
+ */
+html[data-comfort="dark"]
+    body
+    [class~="bg-gradient-to-br"] {
+    background-color:
+        rgb(var(--color-surface)) !important;
+    background-image:
+        none !important;
+}
+
+/* White and pale legacy surfaces become semantic dark surfaces. */
+html[data-comfort="dark"] body :is(
+    [class~="bg-white"],
+    [class~="bg-white/70"],
+    [class~="bg-white/80"],
+    [class~="bg-white/85"],
+    [class~="bg-white/90"],
+    [class~="bg-white/95"]
+) {
+    background-color:
+        rgb(var(--color-surface)) !important;
+}
+
+/* Pale slate utility surfaces become the raised dark surface. */
+html[data-comfort="dark"] body :is(
+    [class~="bg-slate-50"],
+    [class~="bg-slate-100"],
+    [class~="bg-slate-200"]
+) {
+    background-color:
+        rgb(var(--color-surface-2)) !important;
+}
+
+/* Preserve readable hierarchy across legacy dashboard markup. */
+html[data-comfort="dark"] body :is(
+    [class~="text-slate-950"],
+    [class~="text-slate-900"],
+    [class~="text-slate-800"],
+    [class~="text-slate-700"]
+) {
+    color:
+        rgb(var(--color-ink)) !important;
+}
+
+html[data-comfort="dark"] body :is(
+    [class~="text-slate-600"],
+    [class~="text-slate-500"],
+    [class~="text-slate-400"],
+    [class~="text-muted"],
+    [class~="text-muted-ink"]
+) {
+    color:
+        rgb(var(--color-ink-muted)) !important;
+}
+
+/* Keep legacy borders visible without becoming harsh. */
+html[data-comfort="dark"] body :is(
+    [class~="border-slate-100"],
+    [class~="border-slate-200"]
+) {
+    border-color:
+        rgb(var(--color-line)) !important;
+}
+
+html[data-comfort="dark"] body :is(
+    [class~="border-slate-300"],
+    [class~="border-slate-400"]
+) {
+    border-color:
+        rgb(var(--color-line-strong)) !important;
+}
+
+/*
+ * Accent buttons use the accessible strong shade in dark mode.
+ * Text remains white; decorative accents keep their theme color.
+ */
+html[data-comfort="dark"]
+    body
+    [class~="bg-primary"] {
+    background-color:
+        rgb(var(--color-primary-strong)) !important;
+}
+
+/* Checked practice choices must remain visibly selected. */
+html[data-comfort="dark"]
+    body
+    .peer:checked
+    ~ [class~="peer-checked:bg-primary-tint/30"] {
+    background-color:
+        rgb(var(--color-primary-tint) / 0.9) !important;
+}
+
+/* Inputs that have not yet migrated to the shared field component. */
+html[data-comfort="dark"] body :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    textarea,
+    select
+) {
+    border-color:
+        rgb(var(--color-line-strong)) !important;
+    background-color:
+        rgb(var(--color-surface)) !important;
+    color:
+        rgb(var(--color-ink)) !important;
+}
+
+/* Dark comfort always owns the page environment. */
+html[data-comfort="dark"]
+    body
+    .theme-environment {
+    background:
+        rgb(var(--color-canvas)) !important;
+}
+
+/*
+ * Midnight Slate keeps its restrained cosmic setting behind the
+ * interface. Cards remain solid because of the rule above.
+ */
+html[data-comfort="dark"]
+    body.theme-midnight
+    .theme-environment {
+    background:
+        radial-gradient(
+            ellipse at 72% 22%,
+            rgb(91 33 182 / 0.22),
+            transparent 38%
+        ),
+        radial-gradient(
+            ellipse at 15% 82%,
+            rgb(14 116 144 / 0.16),
+            transparent 40%
+        ),
+        #0b1222 !important;
+}
+
+html[data-comfort="dark"]
+    body.theme-midnight
+    .galaxy-scene {
+    opacity:
+        0.42;
+}
+
+/* Avoid transitions during the first theme application. */
+html:not([data-comfort])
+    body,
+html:not([data-comfort])
+    body * {
+    transition:
+        none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .theme-environment,
+    .theme-scene,
+    .theme-scene * {
+        animation:
+            none !important;
+        transition:
+            none !important;
+    }
+}
+
