@@ -2,6 +2,7 @@
 
 namespace App\View\Components;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\Component;
 use Illuminate\View\View;
@@ -13,7 +14,15 @@ class AppLayout extends Component
     public function __construct(
         ?string $surface = null,
     ) {
-        $role = Auth::user()?->getAttribute('role');
+        $user = Auth::user();
+
+        $roleAttribute = $user instanceof User
+            ? $user->getAttribute('role')
+            : null;
+
+        $role = is_string($roleAttribute)
+            ? $roleAttribute
+            : null;
 
         $resolvedSurface = $surface ?? match ($role) {
             'admin' => 'admin',
