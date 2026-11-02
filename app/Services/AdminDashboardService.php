@@ -7,10 +7,15 @@ use App\Models\AssessmentSession;
 use App\Models\Cohort;
 use App\Models\MicroPearl;
 use App\Models\Question;
+use App\Models\ResearchFormVersion;
 use App\Models\User;
 
 class AdminDashboardService
 {
+    public function __construct(
+        protected ResearchFormAuditService $formAudits,
+    ) {}
+
     /**
      * @return array<string, mixed>
      */
@@ -201,28 +206,31 @@ class AdminDashboardService
      */
     private function questionStats(): array
     {
+        /*
+        * Only questions belonging to a version formally submitted
+        * for review belong in the validation work queue.
+        */
+        $needingReview = Question::query()
+            ->whereNotNull('research_form')
+            ->where('is_active', true)
+            ->whereNull('research_validated_at')
+            ->whereNull('research_validated_by')
+            ->whereHas(
+                'formVersion',
+                fn ($versionQuery) => $versionQuery
+                    ->where(
+                        'status',
+                        ResearchFormVersion::STATUS_IN_REVIEW,
+                    ),
+            )
+            ->count();
+
         $row = Question::query()
             ->selectRaw(
                 'COUNT(*) AS total',
             )
             ->selectRaw(
                 'SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) AS active',
-            )
-            ->selectRaw(
-                <<<'SQL'
-                SUM(
-                    CASE
-                        WHEN research_form IS NOT NULL
-                        AND is_active = 1
-                        AND (
-                            research_validated_at IS NULL
-                            OR research_validated_by IS NULL
-                        )
-                        THEN 1
-                        ELSE 0
-                    END
-                ) AS needing_review
-                SQL,
             )
             ->selectRaw(
                 <<<'SQL'
@@ -271,9 +279,7 @@ class AdminDashboardService
 
             'active' => (int) ($row?->active ?? 0),
 
-            'needing_review' => (int) (
-                $row?->needing_review ?? 0
-            ),
+            'needing_review' => $needingReview,
 
             'validation_issues' => (int) (
                 $row?->validation_issues ?? 0
@@ -288,134 +294,49 @@ class AdminDashboardService
     }
 
     /**
-     * This is a lightweight summary, not a replacement for
-     * research:audit-forms. The full command remains the source of
-     * truth for blueprint and content-integrity validation.
-     *
      * @return array<string, array<string, mixed>>
      */
     private function formStats(): array
     {
-        $forms = [
-            Question::FORM_PRE_TEST_A => 'Form A — Diagnostic',
+        $reports = $this->formAudits->auditAll(
+            requireValidation: true,
+        );
 
-            Question::FORM_POST_TEST_B => 'Form B — Mock Board',
-        ];
+        return collect($reports)
+            ->mapWithKeys(
+                function (
+                    array $report,
+                    string $form,
+                ): array {
+                    return [
+                        $form => [
+                            'label' => $report['label'],
 
-        $rows = Question::query()
-            ->whereIn(
-                'research_form',
-                array_keys($forms),
+                            'version_code' => $report['expected_version'],
+
+                            'version_status' => $report['version_status'],
+
+                            'active_questions' => $report['active_questions'],
+
+                            'validated_questions' => $report['fully_validated'],
+
+                            'validation_issues' => $report['partial_validation'],
+
+                            'placeholders' => $report['placeholders'],
+
+                            'positions_complete' => $report['positions_complete'],
+
+                            /*
+                            * This includes structure, validation,
+                            * publication, version binding, and the
+                            * unsafe-development-override gate.
+                            */
+                            'validation_complete' => $report['content_gate_ready'],
+                        ],
+                    ];
+                },
             )
-            ->where('is_active', true)
-            ->select('research_form')
-            ->selectRaw(
-                'COUNT(*) AS active_questions',
-            )
-            ->selectRaw(
-                <<<'SQL'
-                SUM(
-                    CASE
-                        WHEN research_validated_at IS NOT NULL
-                        AND research_validated_by IS NOT NULL
-                        THEN 1
-                        ELSE 0
-                    END
-                ) AS validated_questions
-                SQL,
-            )
-            ->selectRaw(
-                <<<'SQL'
-                SUM(
-                    CASE
-                        WHEN (
-                            research_validated_at IS NULL
-                        ) <> (
-                            research_validated_by IS NULL
-                        )
-                        THEN 1
-                        ELSE 0
-                    END
-                ) AS validation_issues
-                SQL,
-            )
-            ->selectRaw(
-                <<<'SQL'
-                SUM(
-                    CASE
-                        WHEN UPPER(question_text) LIKE ?
-                        THEN 1
-                        ELSE 0
-                    END
-                ) AS placeholders
-                SQL,
-                ['%DEVELOPMENT MOCK%'],
-            )
-            ->selectRaw(
-                'COUNT(DISTINCT form_position) AS distinct_positions',
-            )
-            ->selectRaw(
-                'MIN(form_position) AS first_position',
-            )
-            ->selectRaw(
-                'MAX(form_position) AS last_position',
-            )
-            ->groupBy('research_form')
-            ->get()
-            ->keyBy('research_form');
-
-        $result = [];
-
-        foreach ($forms as $form => $label) {
-            $row = $rows->get($form);
-
-            $activeQuestions = (int) (
-                $row?->active_questions ?? 0
-            );
-
-            $validatedQuestions = (int) (
-                $row?->validated_questions ?? 0
-            );
-
-            $validationIssues = (int) (
-                $row?->validation_issues ?? 0
-            );
-
-            $placeholders = (int) (
-                $row?->placeholders ?? 0
-            );
-
-            $positionsComplete =
-                (int) ($row?->distinct_positions ?? 0) === 60
-                && (int) ($row?->first_position ?? 0) === 1
-                && (int) ($row?->last_position ?? 0) === 60;
-
-            $result[$form] = [
-                'label' => $label,
-
-                'active_questions' => $activeQuestions,
-
-                'validated_questions' => $validatedQuestions,
-
-                'validation_issues' => $validationIssues,
-
-                'placeholders' => $placeholders,
-
-                'positions_complete' => $positionsComplete,
-
-                /*
-                 * Do not call this full research readiness.
-                 * The blueprint audit still has to pass.
-                 */
-                'validation_complete' => $activeQuestions === 60
-                    && $validatedQuestions === 60
-                    && $validationIssues === 0
-                    && $placeholders === 0
-                    && $positionsComplete,
-            ];
-        }
-
-        return $result;
+            ->all();
     }
 
     /**

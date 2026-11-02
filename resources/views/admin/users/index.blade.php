@@ -1,27 +1,25 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="font-display text-xl font-bold text-slate-900">
-                User Management
-            </h2>
-
-            <a
-                href="{{ route('admin.cohort-imports.create') }}"
-                class="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            >
-                Bulk Assign Cohorts
-            </a>
-        </div>
+        <x-admin.page-header
+            title="Users"
+            description="Manage roles, email verification, cohort assignments, and account access."
+        >
+            <x-slot:actions>
+                <a
+                    href="{{ route(
+                        'admin.cohort-imports.create',
+                    ) }}"
+                    class="btn-press inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                    style="--lip: rgb(var(--color-primary-lip));"
+                >
+                    Bulk assign cohorts
+                </a>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     <div class="py-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div class="rounded-2xl border border-green-200 bg-green-50 p-4 text-green-800">
-                    {{ session('status') }}
-                </div>
-            @endif
-
             <form
                 method="GET"
                 class="grid gap-3 rounded-3xl border-2 border-slate-200 bg-white p-5 md:grid-cols-3"

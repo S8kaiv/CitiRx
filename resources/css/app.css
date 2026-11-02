@@ -1300,22 +1300,28 @@ body.theme-solar .solar-scene {
 }
 
 .admin-notice-success {
-    border-color: rgb(167 243 208);
-    background: rgb(236 253 245);
-    color: rgb(6 95 70);
+    border-color:
+        rgb(var(--color-success-strong) / 0.35);
+    background:
+        rgb(var(--color-success-tint));
+    color:
+        rgb(var(--color-success-ink));
 }
 
 .admin-notice-error {
-    border-color: rgb(254 202 202);
-    background: rgb(254 242 242);
-    color: rgb(153 27 27);
+    border-color:
+        rgb(var(--color-danger-strong) / 0.35);
+    background:
+        rgb(var(--color-danger-tint));
+    color:
+        rgb(var(--color-danger-ink));
 }
 
 .admin-progress-fill {
     width: 100%;
-    transform: scaleX(var(--admin-progress));
+    transform:
+        scaleX(var(--admin-progress));
     transform-origin: left center;
-    animation: admin-progress-in 620ms var(--admin-ease-out);
 }
 
 .role-admin main table {
@@ -1323,8 +1329,10 @@ body.theme-solar .solar-scene {
 }
 
 .role-admin main thead {
-    background: rgb(248 250 252);
+    background:
+        rgb(var(--color-surface-2));
 }
+
 
 .role-admin main th {
     color: rgb(var(--admin-muted));
@@ -1339,7 +1347,8 @@ body.theme-solar .solar-scene {
 }
 
 .role-admin main tbody tr:hover {
-    background: rgb(248 250 252 / 0.85);
+    background:
+        rgb(var(--color-surface-2) / 0.85);
 }
 
 .role-admin main :is(
@@ -1385,10 +1394,13 @@ body.theme-solar .solar-scene {
     overflow-y: auto;
     border: 0;
     border-radius: 1rem 1rem 0 0;
-    background: white;
-    color: rgb(var(--admin-ink));
+    background:
+        rgb(var(--color-surface));
+    color:
+        rgb(var(--color-ink));
     padding: 0;
-    box-shadow: 0 -18px 50px rgb(15 23 42 / 0.2);
+    box-shadow:
+        0 -18px 50px rgb(15 23 42 / 0.2);
 }
 
 .admin-mobile-dialog[open] {

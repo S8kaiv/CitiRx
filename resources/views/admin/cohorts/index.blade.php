@@ -1,36 +1,23 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h2 class="font-display text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
-                    Cohort Management
-                </h2>
-                <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
-                    Batches, faculty assignments and post-test schedules
-                </p>
-            </div>
-
-            <a href="{{ route('admin.cohorts.create') }}" style="--lip: rgb(var(--color-primary-lip));"
-                class="btn-press rounded-xl bg-primary px-4 py-2 font-display text-sm font-bold text-white shadow-md">
-                Create Cohort
-            </a>
-        </div>
+        <x-admin.page-header
+            title="Cohorts"
+            description="Manage student batches, faculty assignments, assessment windows, and archival status."
+        >
+            <x-slot:actions>
+                <a
+                    href="{{ route('admin.cohorts.create') }}"
+                    class="btn-press inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                    style="--lip: rgb(var(--color-primary-lip));"
+                >
+                    Create cohort
+                </a>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     <div class="py-6 font-sans text-slate-900 antialiased">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div role="status" class="rounded-2xl border-2 border-b-4 border-emerald-300 bg-emerald-50 p-4 font-display text-sm font-bold text-emerald-800 shadow-2xs">
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div role="alert" class="rounded-2xl border-2 border-b-4 border-rose-300 bg-rose-50 p-4 font-display text-sm font-bold text-rose-800 shadow-2xs">
-                    {{ session('error') }}
-                </div>
-            @endif
-
             {{-- Desktop table --}}
             <div class="hidden overflow-hidden rounded-3xl border-2 border-b-4 border-slate-200 bg-white shadow-sm md:block">
                 <div class="overflow-x-auto">

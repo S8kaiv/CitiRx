@@ -1,20 +1,21 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h2 class="font-display text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
-                    Question Detail
-                </h2>
-                <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
-                    Version {{ $question->edit_version }}
-                </p>
-            </div>
-
-            <a href="{{ route('admin.questions.index') }}" style="--lip: #CBD5E1;"
-                class="btn-press rounded-xl border-2 border-b-4 border-slate-300 bg-white px-4 py-2 font-display text-sm font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50">
-                Back to Question Bank
-            </a>
-        </div>
+        <x-admin.page-header
+            title="Question detail"
+            :description="'Question version '
+                .$question->edit_version"
+        >
+            <x-slot:actions>
+                <a
+                    href="{{ route(
+                        'admin.questions.index',
+                    ) }}"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                >
+                    Back to question bank
+                </a>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     @php
@@ -37,18 +38,6 @@
 
     <div class="py-6 font-sans text-slate-900 antialiased">
         <div class="mx-auto max-w-5xl space-y-6 px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div role="status" class="rounded-2xl border-2 border-b-4 border-emerald-300 bg-emerald-50 p-4 font-display text-sm font-bold text-emerald-800 shadow-2xs">
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div role="alert" class="rounded-2xl border-2 border-b-4 border-rose-300 bg-rose-50 p-4 font-display text-sm font-bold text-rose-800 shadow-2xs">
-                    {{ session('error') }}
-                </div>
-            @endif
-
             @if ($isLocked)
                 <div class="rounded-3xl border-2 border-b-4 border-amber-300 bg-gradient-to-br from-amber-50/80 via-white to-white p-5 sm:p-6 shadow-sm">
                     <h3 class="font-display text-lg font-black text-amber-900">Locked question</h3>

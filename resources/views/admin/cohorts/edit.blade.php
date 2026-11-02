@@ -1,22 +1,29 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <h2 class="font-display text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
-                Edit Cohort
-            </h2>
-            <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
-                {{ $cohort->cohort_name }} · {{ $cohort->academic_year }}
-            </p>
-        </div>
+        <x-admin.page-header
+            title="Edit cohort"
+            :description="$cohort->cohort_name
+                .' · '
+                .$cohort->academic_year"
+        >
+            <x-slot:actions>
+                <a
+                    href="{{ route(
+                        'admin.cohorts.show',
+                        [
+                            'cohort' => $cohort,
+                        ],
+                    ) }}"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                >
+                    View cohort
+                </a>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     <div class="py-6 font-sans text-slate-900 antialiased">
         <div class="mx-auto max-w-2xl space-y-5 px-4 sm:px-6 lg:px-8">
-            @if (session('error'))
-                <div role="alert" class="rounded-2xl border-2 border-b-4 border-rose-300 bg-rose-50 p-4 font-display text-sm font-bold text-rose-800 shadow-2xs">
-                    {{ session('error') }}
-                </div>
-            @endif
 
             @if ($cohort->archived_at)
                 <div role="alert" class="rounded-2xl border-2 border-b-4 border-amber-300 bg-amber-50 p-4 font-display text-sm font-bold text-amber-800 shadow-2xs">

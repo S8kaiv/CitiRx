@@ -1,22 +1,21 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h2 class="font-display text-xl font-bold text-slate-900">
-                    Administrative Audit Center
-                </h2>
-                <p class="mt-1 text-sm text-slate-500">
-                    Immutable history of sensitive administrative actions.
-                </p>
-            </div>
-
-            <a
-                href="{{ route('admin.audit-logs.export', request()->query()) }}"
-                class="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white transition hover:opacity-90"
-            >
-                Export filtered CSV
-            </a>
-        </div>
+        <x-admin.page-header
+            title="Audit history"
+            description="Review the immutable record of sensitive administrative actions."
+        >
+            <x-slot:actions>
+                <a
+                    href="{{ route(
+                        'admin.audit-logs.export',
+                        request()->query(),
+                    ) }}"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                >
+                    Export filtered CSV
+                </a>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     <div class="py-8">

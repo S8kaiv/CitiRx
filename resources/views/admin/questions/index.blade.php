@@ -1,29 +1,25 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <h2 class="font-display text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
-                Question Bank
-            </h2>
-            <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
-                Review, revise, freeze and retire assessment questions
-            </p>
-        </div>
+        <x-admin.page-header
+            title="Question bank"
+            description="Review, revise, validate, freeze, and retire assessment questions."
+        >
+            <x-slot:actions>
+                <a
+                    href="{{ route(
+                        'admin.research-form-imports.index',
+                    ) }}"
+                    class="btn-press inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                    style="--lip: rgb(var(--color-primary-lip));"
+                >
+                    Import research CSV
+                </a>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     <div class="py-6 font-sans text-slate-900 antialiased">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div role="status" class="rounded-2xl border-2 border-b-4 border-emerald-300 bg-emerald-50 p-4 font-display text-sm font-bold text-emerald-800 shadow-2xs">
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div role="alert" class="rounded-2xl border-2 border-b-4 border-rose-300 bg-rose-50 p-4 font-display text-sm font-bold text-rose-800 shadow-2xs">
-                    {{ session('error') }}
-                </div>
-            @endif
-
             <form method="GET" action="{{ route('admin.questions.index') }}"
                 class="grid grid-cols-1 gap-3 rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 shadow-sm md:grid-cols-2 xl:grid-cols-6">
                 <div class="xl:col-span-2">
@@ -67,6 +63,7 @@
                             'locked' => 'Locked',
                             'validated' => 'Validated',
                             'unvalidated' => 'Unvalidated',
+                            'awaiting_validation' => 'Awaiting validation',
                             'validation_issue' => 'Validation issue',
                             'served' => 'Served',
                             'unserved' => 'Never served',
@@ -120,10 +117,31 @@
 
                                 <tr class="align-top hover:bg-slate-50/70">
                                     <td class="whitespace-nowrap px-4 py-4">
-                                        <div class="font-display font-black text-slate-800">{{ $question->research_form ?? 'Practice' }}</div>
+                                        <div class="font-display font-black text-slate-800">
+                                            {{ $question->research_form ?? 'Practice' }}
+                                        </div>
+
+                                        @if ($question->formVersion)
+                                            <div class="mt-1 font-mono text-xs font-bold text-primary">
+                                                {{ $question->formVersion->version_code }}
+                                            </div>
+
+                                            <span
+                                                class="mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold
+                                                    {{ $question->formVersion->is_active
+                                                        ? 'bg-emerald-100 text-emerald-800'
+                                                        : 'bg-slate-100 text-slate-600' }}"
+                                            >
+                                                {{ $question->formVersion->is_active
+                                                    ? 'Current version'
+                                                    : 'Historical version' }}
+                                            </span>
+                                        @endif
 
                                         @if ($question->form_position !== null)
-                                            <div class="text-xs text-muted-ink">Position {{ $question->form_position }}</div>
+                                            <div class="mt-1 text-xs text-muted-ink">
+                                                Position {{ $question->form_position }}
+                                            </div>
                                         @endif
                                     </td>
 

@@ -1,27 +1,24 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <p class="text-xs font-black uppercase tracking-[0.18em] text-primary">
-                Official research scope
-            </p>
-
-            <h1 class="text-xl font-black text-slate-900">
-                Research Participants
-            </h1>
-        </div>
+        <x-admin.page-header
+            title="Research Participants"
+            description="Manage explicit inclusion, exclusion, withdrawal, and development-data classifications."
+        >
+            <x-slot:actions>
+                <a
+                    href="{{ route(
+                        'admin.research-analytics.index',
+                    ) }}"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                >
+                    Open analytics
+                </a>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     <div class="py-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div
-                    role="status"
-                    class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800"
-                >
-                    {{ session('status') }}
-                </div>
-            @endif
-
             <section class="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
                 <h2 class="font-black text-slate-900">
                     Participant-scope policy

@@ -3,9 +3,11 @@
 use App\Models\Question;
 use App\Models\QuestionChoice;
 use App\Models\QuestionEdit;
+use App\Models\ResearchFormVersion;
 use App\Models\TosCompetency;
 use App\Models\TosDomain;
 use App\Models\User;
+use App\Services\AdminDashboardService;
 use App\Services\QuestionEditService;
 use App\Services\QuestionLockService;
 use App\Services\QuestionUsageService;
@@ -883,4 +885,62 @@ it('keeps question audit records immutable', function () {
     )->toThrow(
         LogicException::class,
     );
+});
+
+it('keeps the dashboard review count aligned with the question filter', function (): void {
+    $administrator = questionBankAdmin();
+
+    $reviewVersion = ResearchFormVersion::query()->create([
+        'research_form' => Question::FORM_PRE_TEST_A,
+        'version_number' => 90,
+        'version_code' => 'pre_test_a_review_test',
+        'status' => ResearchFormVersion::STATUS_IN_REVIEW,
+        'is_active' => false,
+        'active_slot' => null,
+        'created_by' => $administrator->user_id,
+        'lock_version' => 1,
+    ]);
+
+    $draftVersion = ResearchFormVersion::query()->create([
+        'research_form' => Question::FORM_PRE_TEST_A,
+        'version_number' => 91,
+        'version_code' => 'pre_test_a_draft_test',
+        'status' => ResearchFormVersion::STATUS_DRAFT,
+        'is_active' => false,
+        'active_slot' => null,
+        'created_by' => $administrator->user_id,
+        'lock_version' => 1,
+    ]);
+
+    $reviewQuestion = questionBankQuestion([
+        'question_text' => 'Question submitted for validation review.',
+        'research_form' => Question::FORM_PRE_TEST_A,
+        'form_position' => 1,
+        'form_version_id' => $reviewVersion->form_version_id,
+    ]);
+
+    $draftQuestion = questionBankQuestion([
+        'question_text' => 'Question still belonging to a draft version.',
+        'research_form' => Question::FORM_PRE_TEST_A,
+        'form_position' => 1,
+        'form_version_id' => $draftVersion->form_version_id,
+    ]);
+
+    $dashboardData = app(
+        AdminDashboardService::class,
+    )->data();
+
+    expect(
+        $dashboardData['questionStats']['needing_review'],
+    )->toBe(1);
+
+    $this->actingAs($administrator)
+        ->get(route('admin.questions.index', [
+            'status' => 'awaiting_validation',
+        ]))
+        ->assertOk()
+        ->assertSeeText($reviewQuestion->question_text)
+        ->assertSeeText($reviewVersion->version_code)
+        ->assertDontSeeText($draftQuestion->question_text)
+        ->assertDontSeeText($draftVersion->version_code);
 });

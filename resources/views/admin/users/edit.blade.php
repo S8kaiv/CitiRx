@@ -1,36 +1,22 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h2 class="font-display text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
-                    Manage {{ $managedUser->fullName() }}
-                </h2>
-                <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
-                    User account
-                </p>
-            </div>
-
-            <a href="{{ route('admin.users.index') }}" style="--lip: #CBD5E1;"
-                class="btn-press rounded-xl border-2 border-b-4 border-slate-300 bg-white px-4 py-2 font-display text-sm font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50">
-                All Users
-            </a>
-        </div>
+        <x-admin.page-header
+            :title="'Manage '.$managedUser->fullName()"
+            description="Update role, cohort assignment, and account status without changing credentials."
+        >
+            <x-slot:actions>
+                <a
+                    href="{{ route('admin.users.index') }}"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                >
+                    All users
+                </a>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     <div class="py-6 font-sans text-slate-900 antialiased">
         <div class="mx-auto max-w-3xl space-y-6 px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div role="status" class="rounded-2xl border-2 border-b-4 border-emerald-300 bg-emerald-50 p-4 font-display text-sm font-bold text-emerald-800 shadow-2xs">
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div role="alert" class="rounded-2xl border-2 border-b-4 border-rose-300 bg-rose-50 p-4 font-display text-sm font-bold text-rose-800 shadow-2xs">
-                    {{ session('error') }}
-                </div>
-            @endif
-
             <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
                 <dl class="grid gap-3 sm:grid-cols-2">
                     <div class="rounded-2xl border-2 border-slate-100 bg-slate-50 p-3.5">

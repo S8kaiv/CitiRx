@@ -1,29 +1,33 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h2 class="font-display text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
-                    {{ $cohort->cohort_name }}
-                </h2>
-                <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
-                    {{ $cohort->academic_year }}
-                </p>
-            </div>
-
-            <div class="flex flex-wrap gap-2">
+        <x-admin.page-header
+            :title="$cohort->cohort_name"
+            :description="$cohort->academic_year"
+        >
+            <x-slot:actions>
                 @if (! $cohort->archived_at)
-                    <a href="{{ route('admin.cohorts.edit', ['cohort' => $cohort]) }}" style="--lip: rgb(var(--color-primary-lip));"
-                        class="btn-press rounded-xl bg-primary px-4 py-2 font-display text-sm font-bold text-white shadow-md">
-                        Edit Cohort
+                    <a
+                        href="{{ route(
+                            'admin.cohorts.edit',
+                            [
+                                'cohort' => $cohort,
+                            ],
+                        ) }}"
+                        class="btn-press inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                        style="--lip: rgb(var(--color-primary-lip));"
+                    >
+                        Edit cohort
                     </a>
                 @endif
 
-                <a href="{{ route('admin.cohorts.index') }}" style="--lip: #CBD5E1;"
-                    class="btn-press rounded-xl border-2 border-b-4 border-slate-300 bg-white px-4 py-2 font-display text-sm font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50">
-                    All Cohorts
+                <a
+                    href="{{ route('admin.cohorts.index') }}"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                >
+                    All cohorts
                 </a>
-            </div>
-        </div>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     @php
@@ -40,17 +44,6 @@
 
     <div class="py-6 font-sans text-slate-900 antialiased">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div role="status" class="rounded-2xl border-2 border-b-4 border-emerald-300 bg-emerald-50 p-4 font-display text-sm font-bold text-emerald-800 shadow-2xs">
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div role="alert" class="rounded-2xl border-2 border-b-4 border-rose-300 bg-rose-50 p-4 font-display text-sm font-bold text-rose-800 shadow-2xs">
-                    {{ session('error') }}
-                </div>
-            @endif
 
             {{-- Overview --}}
             <section class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-gradient-to-br from-primary-tint via-[#FAF8FF] to-white p-6 sm:p-8 shadow-sm">
