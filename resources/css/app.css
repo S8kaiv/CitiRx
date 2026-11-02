@@ -1005,15 +1005,15 @@ body.theme-solar .solar-scene {
    ========================================================= */
 
 .admin-sidebar {
-    border-right: 2px solid rgb(226 232 240);
-    box-shadow: 8px 0 24px rgb(15 23 42 / 0.035);
+    border-right: 2px solid rgb(var(--color-line));
+    box-shadow: 8px 0 24px rgb(15 23 42 / 0.08);
 }
 
 .admin-sidebar-scroll {
     overscroll-behavior: contain;
     scrollbar-width: thin;
     scrollbar-color:
-        rgb(203 213 225)
+        rgb(var(--color-line-strong))
         transparent;
 }
 
@@ -1026,20 +1026,20 @@ body.theme-solar .solar-scene {
 }
 
 .admin-sidebar-scroll::-webkit-scrollbar-thumb {
-    border: 2px solid white;
+    border: 2px solid rgb(var(--color-surface));
     border-radius: 999px;
-    background: rgb(203 213 225);
+    background: rgb(var(--color-line-strong));
 }
 
 .admin-sidebar-scroll::-webkit-scrollbar-thumb:hover {
-    background: rgb(148 163 184);
+    background: rgb(var(--color-ink-muted));
 }
 
 .admin-nav-group-label {
     margin-top: 1.1rem;
     margin-bottom: 0.4rem;
     padding-inline: 0.75rem;
-    color: rgb(100 116 139);
+    color: rgb(var(--color-ink-muted));
     font-size: 0.6875rem;
     font-weight: 900;
     letter-spacing: 0.1em;
@@ -1059,7 +1059,7 @@ body.theme-solar .solar-scene {
     border-bottom-width: 4px;
     border-radius: 1rem;
     padding: 0.625rem 0.75rem;
-    color: rgb(71 85 105);
+    color: rgb(var(--color-ink-muted));
     font-size: 0.875rem;
     font-weight: 800;
     line-height: 1.15;
@@ -1073,10 +1073,10 @@ body.theme-solar .solar-scene {
 }
 
 .admin-nav-link:hover {
-    border-color: rgb(226 232 240);
-    border-bottom-color: rgb(203 213 225);
-    background: rgb(248 250 252);
-    color: rgb(15 23 42);
+    border-color: rgb(var(--color-line));
+    border-bottom-color: rgb(var(--color-line-strong));
+    background: rgb(var(--color-surface-2));
+    color: rgb(var(--color-ink));
 }
 
 .admin-nav-link:active {
@@ -1098,7 +1098,7 @@ body.theme-solar .solar-scene {
     align-items: center;
     justify-content: center;
     border-radius: 0.75rem;
-    color: rgb(100 116 139);
+    color: rgb(var(--color-ink-muted));
     transition:
         transform 150ms cubic-bezier(0.16, 1, 0.3, 1),
         background-color 140ms ease,
@@ -1107,8 +1107,8 @@ body.theme-solar .solar-scene {
 
 .admin-nav-link:hover .admin-nav-icon-wrap {
     transform: rotate(-3deg) scale(1.04);
-    background: white;
-    color: rgb(51 65 85);
+    background: rgb(var(--color-surface));
+    color: rgb(var(--color-ink));
 }
 
 .admin-nav-link-active {
@@ -1137,27 +1137,8 @@ body.theme-solar .solar-scene {
 .admin-nav-link-active .admin-nav-icon-wrap,
 .admin-nav-link-active:hover .admin-nav-icon-wrap {
     background: transparent;
-    color:
-        rgb(var(--color-primary-default));
+    color: rgb(var(--color-primary-default));
     box-shadow: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .admin-nav-link,
-    .admin-nav-icon-wrap {
-        transition:
-            border-color 140ms ease,
-            background-color 140ms ease,
-            color 140ms ease;
-    }
-
-    .admin-nav-link:active {
-        transform: none;
-    }
-
-    .admin-nav-link:hover .admin-nav-icon-wrap {
-        transform: none;
-    }
 }
 
 .admin-nav-icon {
@@ -1183,6 +1164,7 @@ body.theme-solar .solar-scene {
     border-bottom-width: 3px;
     border-radius: 0.875rem;
     padding: 0.25rem 0.4rem;
+    color: rgb(var(--color-ink-muted));
     font-size: 0.625rem;
     font-weight: 900;
     transform: translateY(0);
@@ -1195,7 +1177,8 @@ body.theme-solar .solar-scene {
 }
 
 .admin-mobile-link:hover {
-    background: rgb(248 250 252);
+    background: rgb(var(--color-surface-2));
+    color: rgb(var(--color-ink));
 }
 
 .admin-mobile-link:active {
@@ -1210,6 +1193,28 @@ body.theme-solar .solar-scene {
     background:
         rgb(var(--color-primary-default) / 0.1);
     color: rgb(var(--color-primary-default));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-nav-link,
+    .admin-nav-icon-wrap,
+    .admin-mobile-link {
+        transition:
+            border-color 140ms ease,
+            background-color 140ms ease,
+            color 140ms ease;
+    }
+
+    .admin-nav-link:active,
+    .admin-mobile-link:active {
+        transform: none;
+    }
+
+    .admin-nav-link:hover .admin-nav-icon-wrap,
+    .admin-nav-link:hover .admin-nav-icon,
+    .admin-nav-link-active .admin-nav-icon {
+        transform: none;
+    }
 }
 
 .admin-page-header {
@@ -2270,6 +2275,133 @@ html:not([data-comfort])
             0 1px 0
             rgb(var(--color-line-strong));
         transform: translateY(2px);
+    }
+
+        /*
+    * Practice-session length selector.
+    * Uses explicit descendant styling because Tailwind peer variants
+    * cannot style text nested inside the peer's sibling.
+    */
+    .ui-length-choice {
+        position: relative;
+        display: block;
+        min-width: 0;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .ui-length-choice-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        margin: -1px;
+        padding: 0;
+        border: 0;
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .ui-length-choice-card {
+        display: flex;
+        min-height: 4rem;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid rgb(var(--color-line));
+        border-radius: 0.75rem;
+        background: rgb(var(--color-surface));
+        padding: 0.75rem 0.5rem;
+        color: rgb(var(--color-ink));
+        box-shadow:
+            0 3px 0
+            rgb(var(--color-line-strong));
+        transform: translateY(0);
+        transition:
+            transform 100ms var(--ease-out),
+            border-color 150ms var(--ease-out),
+            background-color 150ms var(--ease-out),
+            box-shadow 100ms var(--ease-out),
+            color 150ms var(--ease-out);
+    }
+
+    .ui-length-choice-value {
+        color: inherit;
+        font-family: theme("fontFamily.display");
+        font-size: 1.125rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .ui-length-choice-label {
+        margin-top: 0.3rem;
+        color: rgb(var(--color-ink-muted));
+        font-family: theme("fontFamily.display");
+        font-size: 0.625rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        line-height: 1;
+        text-transform: uppercase;
+        transition: color 150ms var(--ease-out);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .ui-length-choice:hover .ui-length-choice-card {
+            border-color: rgb(var(--color-line-strong));
+            background: rgb(var(--color-surface-2));
+        }
+    }
+
+    .ui-length-choice-input:checked + .ui-length-choice-card {
+        border-color: rgb(var(--color-primary-default));
+        background:
+            rgb(var(--color-primary-default) / 0.14);
+        color: rgb(var(--color-primary-ink));
+        box-shadow:
+            0 3px 0
+            rgb(var(--color-primary-strong));
+    }
+
+    .ui-length-choice-input:checked
+        + .ui-length-choice-card
+        .ui-length-choice-label {
+        color: rgb(var(--color-primary-ink));
+    }
+
+    .ui-length-choice-input:focus-visible
+        + .ui-length-choice-card {
+        outline:
+            3px solid
+            rgb(var(--color-primary-default) / 0.7);
+        outline-offset: 3px;
+    }
+
+    .ui-length-choice:active .ui-length-choice-card {
+        box-shadow:
+            0 1px 0
+            rgb(var(--color-line-strong));
+        transform: translateY(2px);
+    }
+
+    .ui-length-choice:has(
+        .ui-length-choice-input:checked
+    ):active
+        .ui-length-choice-card {
+        box-shadow:
+            0 1px 0
+            rgb(var(--color-primary-strong));
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .ui-length-choice-card,
+        .ui-length-choice-label {
+            transition: none;
+        }
+
+        .ui-length-choice:active .ui-length-choice-card {
+            transform: none;
+        }
     }
 
     /*
