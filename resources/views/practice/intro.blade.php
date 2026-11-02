@@ -52,32 +52,44 @@
                     @csrf
 
                     {{-- Question Count Selector (Tactile 3D Radio Cards) --}}
+                    {{-- Session Length Selector --}}
                     <div>
-                        <label
-                            class="block font-display text-xs font-bold uppercase tracking-wider text-ink mb-2.5">
-                            Session Length
-                        </label>
+                        <fieldset>
+                            <legend
+                                class="mb-2.5 block font-display text-xs font-bold uppercase tracking-wider text-ink"
+                            >
+                                Session Length
+                            </legend>
 
-                        <div class="grid w-full grid-cols-3 gap-3">
-                            @foreach ($allowedLengths as $length)
-                                <label class="relative block cursor-pointer group">
-                                    <input type="radio" name="length" value="{{ $length }}"
-                                        @checked((int) old('length', $selectedLength) === $length) class="peer sr-only">
+                            <div class="grid w-full grid-cols-3 gap-3">
+                                @foreach ($allowedLengths as $length)
+                                    <label class="ui-length-choice">
+                                        <input
+                                            type="radio"
+                                            name="length"
+                                            value="{{ $length }}"
+                                            @checked(
+                                                (int) old(
+                                                    'length',
+                                                    $selectedLength,
+                                                ) === $length
+                                            )
+                                            class="ui-length-choice-input"
+                                        >
 
-                                    <div
-                                        class="flex flex-col items-center justify-center px-2 py-3 text-center transition-all bg-surface border-2 border-b-4 border-line rounded-xl hover:border-line-strong hover:bg-surface-2/80 peer-checked:border-primary peer-checked:border-b-primary-lip peer-checked:bg-primary-tint/30 shadow-xs">
-                                        <span
-                                            class="font-display text-lg font-extrabold leading-none text-ink peer-checked:text-primary">
-                                            {{ $length }}
+                                        <span class="ui-length-choice-card">
+                                            <span class="ui-length-choice-value">
+                                                {{ $length }}
+                                            </span>
+
+                                            <span class="ui-length-choice-label">
+                                                Items
+                                            </span>
                                         </span>
-                                        <span
-                                            class="font-display text-[10px] font-bold uppercase tracking-wider text-ink-muted peer-checked:text-primary mt-1">
-                                            Items
-                                        </span>
-                                    </div>
-                                </label>
-                            @endforeach
-                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </fieldset>
 
                         @error('length')
                             <p class="mt-2 text-xs font-semibold text-danger-ink">

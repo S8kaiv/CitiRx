@@ -13,7 +13,7 @@
     {{ $attributes->class([
         'admin-mobile-link',
         'text-primary' => $active,
-        'text-slate-500' => ! $active,
+        'text-ink-muted' => ! $active,
     ]) }}
 >
     <x-admin.icon

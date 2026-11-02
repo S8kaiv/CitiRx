@@ -279,7 +279,11 @@
                     </div>
 
                     {{-- Navigation Rail --}}
-                    <nav class="admin-sidebar-scroll min-h-0 flex-1 space-y-1 overflow-y-auto pr-1 font-display" aria-label="Administration">
+                    <nav class="admin-sidebar-scroll min-h-0 flex-1 space-y-1 overflow-y-auto pr-1 font-display" aria-label="{{ match ($authUser?->role) {
+                        'admin' => 'Administration',
+                        'faculty' => 'Faculty navigation',
+                        default => 'Student navigation',
+                    } }}">
                         @php $active = request()->routeIs('dashboard'); @endphp
                         <x-admin.nav-link
                             :href="route('dashboard')"
@@ -289,116 +293,61 @@
                         />
 
                         @if ($authUser?->role === 'student')
-                            @php $active = request()->routeIs('practice.*'); @endphp
-                            <a href="{{ route('practice.intro') }}"
-                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all {{ $active ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary' : 'border-2 border-transparent text-ink-muted hover:bg-surface-2/80 hover:text-ink' }}">
-                                <svg class="h-5 w-5 {{ $active ? 'text-primary' : 'text-ink-muted' }}" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
-                                </svg>
-                                <span>Practice</span>
-                            </a>
+                            <x-admin.nav-link
+                                :href="route('practice.intro')"
+                                label="Practice"
+                                icon="practice"
+                                :active="request()->routeIs('practice.*')"
+                            />
 
-                            @php
-                                $pearlsActive = request()->routeIs('pearls.*');
-                            @endphp
+                            <x-admin.nav-link
+                                :href="route('pearls.index')"
+                                label="Micro Pearls"
+                                icon="pearls"
+                                :active="request()->routeIs('pearls.*')"
+                            />
 
-                            <a href="{{ route('pearls.index') }}"
-                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
-                                    {{ $pearlsActive
-                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
-                                        : 'border-2 border-transparent text-ink-muted hover:bg-surface-2/80 hover:text-ink' }}">
-                                <svg class="h-5 w-5 {{ $pearlsActive ? 'text-primary' : 'text-ink-muted' }}"
-                                    fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                    aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M12 18.75a6 6 0 0 0 6-6c0-3.314-2.686-6-6-6s-6 2.686-6 6a6 6 0 0 0 6 6Zm0 0v2.25m-3 0h6M9.75 3h4.5" />
-                                </svg>
+                            <x-admin.nav-link
+                                :href="route('leaderboard.index')"
+                                label="Leaderboard"
+                                icon="leaderboard"
+                                :active="request()->routeIs('leaderboard.*')"
+                            />
 
-                                <span>Micro Pearls</span>
-                            </a>
+                            <x-admin.nav-link
+                                :href="route('mock-board.intro')"
+                                label="Mock Board"
+                                icon="mock-board"
+                                :active="request()->routeIs('mock-board.*')"
+                            />
 
-                            @php
-                                $leaderboardActive = request()->routeIs('leaderboard.*');
-                            @endphp
+                            <x-admin.nav-link
+                                :href="route('progress.index')"
+                                label="Progress"
+                                icon="progress"
+                                :active="request()->routeIs('progress.*')"
+                            />
 
-                            <a href="{{ route('leaderboard.index') }}"
-                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
-                                    {{ $leaderboardActive
-                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
-                                        : 'border-2 border-transparent text-ink-muted hover:bg-surface-2/80 hover:text-ink' }}">
-                                <svg class="h-5 w-5 {{ $leaderboardActive ? 'text-primary' : 'text-ink-muted' }}"
-                                    fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                    aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M7.5 14.25v2.25m4.5-6v6m4.5-9v9M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z" />
-                                </svg>
+                            <x-admin.nav-link
+                                :href="route('vault.index')"
+                                label="Rx Vault"
+                                icon="vault"
+                                :active="request()->routeIs('vault.*')"
+                            />
 
-                                <span>Leaderboard</span>
-                            </a>
+                            <x-admin.nav-link
+                                :href="route('readiness.show')"
+                                label="Readiness"
+                                icon="readiness"
+                                :active="request()->routeIs('readiness.*')"
+                            />
 
-                            @php
-                                $active = request()->routeIs('mock-board.*');
-                            @endphp
-
-                            <a href="{{ route('mock-board.intro') }}"
-                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
-                                    {{ $active
-                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
-                                        : 'border-2 border-transparent text-ink-muted hover:bg-surface-2/80 hover:text-ink' }}">
-                                <svg class="h-5 w-5 {{ $active ? 'text-primary' : 'text-ink-muted' }}" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M9 12.75 11.25 15 15 9.75M9 3.75h6m-6 0A2.25 2.25 0 0 0 6.75 6v12A2.25 2.25 0 0 0 9 20.25h6A2.25 2.25 0 0 0 17.25 18V6A2.25 2.25 0 0 0 15 3.75m-6 0v1.5h6v-1.5" />
-                                </svg>
-
-                                <span>Mock Board</span>
-                            </a>
-
-                            @php $active = request()->routeIs('progress.*'); @endphp
-                            <a href="{{ route('progress.index') }}"
-                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all {{ $active ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary' : 'border-2 border-transparent text-ink-muted hover:bg-surface-2/80 hover:text-ink' }}">
-                                <svg class="h-5 w-5 {{ $active ? 'text-primary' : 'text-ink-muted' }}" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
-                                </svg>
-                                <span>Progress</span>
-                            </a>
-
-                            @php $active = request()->routeIs('vault.*'); @endphp
-                            <a href="{{ route('vault.index') }}"
-                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all {{ $active ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary' : 'border-2 border-transparent text-ink-muted hover:bg-surface-2/80 hover:text-ink' }}">
-                                <svg class="h-5 w-5 {{ $active ? 'text-primary' : 'text-ink-muted' }}" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-                                </svg>
-                                <span>Rx Vault</span>
-                            </a>
-
-                            @php $active = request()->routeIs('readiness.*'); @endphp
-                            <a href="{{ route('readiness.show') }}"
-                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all {{ $active ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary' : 'border-2 border-transparent text-ink-muted hover:bg-surface-2/80 hover:text-ink' }}">
-                                <svg class="h-5 w-5 {{ $active ? 'text-primary' : 'text-ink-muted' }}" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
-                                </svg>
-                                <span>Readiness</span>
-                            </a>
-
-                            @php $active = request()->routeIs('badges.*'); @endphp
-                            <a href="{{ route('badges.index') }}"
-                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all {{ $active ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary' : 'border-2 border-transparent text-ink-muted hover:bg-surface-2/80 hover:text-ink' }}">
-                                <svg class="h-5 w-5 {{ $active ? 'text-primary' : 'text-ink-muted' }}" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.003 0H9.497m5.003 0a7.476 7.476 0 0 0 1.996-3.874l.443-2.124a1.875 1.875 0 0 0-1.834-2.252h-1.07a4.875 4.875 0 0 0-4.068 2.193l-.467.7m0 0a4.875 4.875 0 0 0-4.068-2.193H4.427a1.875 1.875 0 0 0-1.834 2.252l.443 2.124c.338 1.62 1.096 3.09 2.196 4.174" />
-                                </svg>
-                                <span>Badges</span>
-                            </a>
+                            <x-admin.nav-link
+                                :href="route('badges.index')"
+                                label="Badges"
+                                icon="badges"
+                                :active="request()->routeIs('badges.*')"
+                            />
                         @endif
 
                         @if ($authUser?->role === 'faculty')
@@ -632,64 +581,39 @@
             {{-- MOBILE BOTTOM NAVIGATION BAR --}}
             <nav
                 aria-label="Mobile navigation"
-                class="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-slate-200 bg-surface/95 px-2 py-2 font-display text-[10px] font-bold shadow-lg backdrop-blur-md md:hidden"
+                class="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-line bg-surface/95 px-2 py-2 font-display text-[10px] font-bold shadow-lg backdrop-blur-md md:hidden"
             >
                 {{-- Home --}}
-                <a href="{{ route('dashboard') }}"
-                    class="flex flex-col items-center gap-1 {{ request()->routeIs('dashboard') ? 'text-primary' : 'text-ink-muted' }}">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-                    </svg>
-                    <span>Home</span>
-                </a>
+                <x-admin.mobile-link :href="route('dashboard')" label="Home" icon="dashboard" :active="request()->routeIs('dashboard')"/>
 
                 @if ($authUser?->role === 'student')
-                    {{-- Practice --}}
-                    <a href="{{ route('practice.intro') }}"
-                        class="flex flex-col items-center gap-1 {{ request()->routeIs('practice.*') ? 'text-primary' : 'text-ink-muted' }}">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
-                        </svg>
-                        <span>Practice</span>
-                    </a>
+                    <x-admin.mobile-link
+                        :href="route('practice.intro')"
+                        label="Practice"
+                        icon="practice"
+                        :active="request()->routeIs('practice.*')"
+                    />
 
-                    {{-- Progress --}}
-                    <a href="{{ route('progress.index') }}"
-                        class="flex flex-col items-center gap-1 {{ request()->routeIs('progress.*') ? 'text-primary' : 'text-ink-muted' }}">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
-                        </svg>
-                        <span>Progress</span>
-                    </a>
+                    <x-admin.mobile-link
+                        :href="route('progress.index')"
+                        label="Progress"
+                        icon="progress"
+                        :active="request()->routeIs('progress.*')"
+                    />
 
-                    {{-- Leaderboard --}}
-                    <a href="{{ route('leaderboard.index') }}"
-                        class="flex flex-col items-center gap-1
-                            {{ request()->routeIs('leaderboard.*') ? 'text-primary' : 'text-ink-muted' }}">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M7.5 14.25v2.25m4.5-6v6m4.5-9v9M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z" />
-                        </svg>
+                    <x-admin.mobile-link
+                        :href="route('leaderboard.index')"
+                        label="Ranks"
+                        icon="leaderboard"
+                        :active="request()->routeIs('leaderboard.*')"
+                    />
 
-                        <span>Ranks</span>
-                    </a>
-
-                    {{-- Vault (Includes Bookmarks tab inside) --}}
-                    <a href="{{ route('vault.index') }}"
-                        class="flex flex-col items-center gap-1 {{ request()->routeIs('vault.*') ? 'text-primary' : 'text-ink-muted' }}">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-                        </svg>
-                        <span>Vault</span>
-                    </a>
+                    <x-admin.mobile-link
+                        :href="route('vault.index')"
+                        label="Vault"
+                        icon="vault"
+                        :active="request()->routeIs('vault.*')"
+                    />
                 @endif
 
                 @if ($authUser?->role === 'faculty')
@@ -902,14 +826,7 @@
                 @endif
 
                 {{-- Profile --}}
-                <a href="{{ route('profile.edit') }}"
-                    class="flex flex-col items-center gap-1 {{ request()->routeIs('profile.*') ? 'text-primary' : 'text-ink-muted' }}">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                    </svg>
-                    <span>Profile</span>
-                </a>
+                <x-admin.mobile-link :href="route('profile.edit')" label="Profile" icon="profile" :active="request()->routeIs('profile.*')"/>
             </nav>
         @endif
 
