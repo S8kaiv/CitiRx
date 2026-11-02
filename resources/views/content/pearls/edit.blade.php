@@ -1,206 +1,324 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <p class="text-xs font-bold uppercase text-primary">
-                {{ str($pearl->content_status)
-                    ->replace('_', ' ')
-                    ->title() }}
-            </p>
+        @php
+            $statusVariant = match ($pearl->content_status) {
+                'published' => 'success',
+                'in_review' => 'warning',
+                'retired' => 'danger',
+                default => 'neutral',
+            };
+        @endphp
 
-            <h1 class="font-display text-xl font-bold">
-                {{ $pearl->title }}
-            </h1>
-        </div>
+        <x-ui.page-header
+            :title="$pearl->title"
+            :description="$pearl->competency->competency_code
+                .' · '
+                .$pearl->competency->title"
+        >
+            <x-slot:actions>
+                <x-ui.badge :variant="$statusVariant">
+                    {{ str($pearl->content_status)
+                        ->replace('_', ' ')
+                        ->title() }}
+                </x-ui.badge>
+
+                <x-ui.button
+                    variant="secondary"
+                    :href="route('content.pearls.index')"
+                >
+                    Back to Pearl Management
+                </x-ui.button>
+            </x-slot:actions>
+        </x-ui.page-header>
     </x-slot>
 
-    <div class="py-8">
-        <div class="mx-auto max-w-6xl space-y-6 px-4">
+    <div class="py-6 sm:py-8">
+        <div class="mx-auto max-w-6xl space-y-6 px-4 sm:px-6 lg:px-8">
             @if (session('status'))
-                <div class="rounded-xl bg-green-50 p-4 text-green-800">
+                <x-ui.alert variant="success">
                     {{ session('status') }}
-                </div>
+                </x-ui.alert>
             @endif
 
             @if (session('error'))
-                <div class="rounded-xl bg-red-50 p-4 text-red-800">
+                <x-ui.alert variant="danger">
                     {{ session('error') }}
-                </div>
+                </x-ui.alert>
             @endif
 
             @if ($pearl->content_status === 'draft')
-                <form
-                    method="POST"
-                    action="{{ route(
-                        'content.pearls.update',
-                        ['pearl' => $pearl->pearl_id],
-                    ) }}"
-                    class="rounded-3xl border-2 border-slate-200 bg-white p-6"
-                >
-                    @csrf
-                    @method('PUT')
-
-                    @include('content.pearls._form')
-                </form>
-
-                <form
-                    method="POST"
-                    action="{{ route(
-                        'content.pearls.submit-review',
-                        ['pearl' => $pearl->pearl_id],
-                    ) }}"
-                    class="rounded-3xl border-2 border-amber-200 bg-amber-50 p-6"
-                >
-                    @csrf
-                    @method('PATCH')
-
-                    <input
-                        type="hidden"
-                        name="edit_version"
-                        value="{{ $pearl->edit_version }}"
+                <x-ui.card>
+                    <form
+                        method="POST"
+                        action="{{ route(
+                            'content.pearls.update',
+                            ['pearl' => $pearl->pearl_id],
+                        ) }}"
                     >
+                        @csrf
+                        @method('PUT')
 
-                    <textarea
-                        name="reason"
-                        required
-                        placeholder="Reason for submitting this content"
-                        class="w-full rounded-xl border-slate-300"
-                    ></textarea>
+                        @include('content.pearls._form')
+                    </form>
+                </x-ui.card>
 
-                    <button class="mt-3 rounded-xl bg-amber-600 px-4 py-2 font-bold text-white">
-                        Submit for Review
-                    </button>
-                </form>
+                <x-ui.card class="border-warning-strong/30 bg-warning-tint">
+                    <div class="mb-5">
+                        <h2 class="font-display text-lg font-extrabold text-warning-ink">
+                            Submit for Review
+                        </h2>
+
+                        <p class="mt-1 text-sm leading-relaxed text-warning-ink/80">
+                            Submission locks draft editing until a different reviewer returns or approves the Pearl.
+                        </p>
+                    </div>
+
+                    <form
+                        method="POST"
+                        action="{{ route(
+                            'content.pearls.submit-review',
+                            ['pearl' => $pearl->pearl_id],
+                        ) }}"
+                        class="space-y-4"
+                    >
+                        @csrf
+                        @method('PATCH')
+
+                        <input
+                            type="hidden"
+                            name="edit_version"
+                            value="{{ $pearl->edit_version }}"
+                        >
+
+                        <x-ui.field
+                            name="reason"
+                            label="Submission reason"
+                            type="textarea"
+                            :rows="3"
+                            required
+                            placeholder="Explain why this content is ready for review."
+                        />
+
+                        <x-ui.button type="submit">
+                            Submit for Review
+                        </x-ui.button>
+                    </form>
+                </x-ui.card>
             @elseif ($pearl->content_status === 'in_review')
-                <div class="grid gap-5 lg:grid-cols-2">
-                    <form
-                        method="POST"
-                        action="{{ route(
-                            'content.pearls.return-draft',
-                            ['pearl' => $pearl->pearl_id],
-                        ) }}"
-                        class="rounded-3xl border-2 border-slate-200 bg-white p-6"
-                    >
-                        @csrf
-                        @method('PATCH')
+                <x-ui.alert variant="warning">
+                    Review the lesson, sources, rights status, and AI disclosure before choosing an outcome.
+                </x-ui.alert>
 
-                        <input type="hidden" name="edit_version" value="{{ $pearl->edit_version }}">
+                <div class="grid gap-6 lg:grid-cols-2">
+                    <x-ui.card>
+                        <div class="mb-5">
+                            <h2 class="font-display text-lg font-extrabold text-ink">
+                                Return for Revision
+                            </h2>
 
-                        <textarea
-                            name="reason"
-                            required
-                            placeholder="Required corrections"
-                            class="w-full rounded-xl border-slate-300"
-                        ></textarea>
+                            <p class="mt-1 text-sm text-ink-muted">
+                                Return the Pearl to draft with clear, actionable corrections.
+                            </p>
+                        </div>
 
-                        <button class="mt-3 rounded-xl bg-slate-700 px-4 py-2 font-bold text-white">
-                            Return to Draft
-                        </button>
-                    </form>
-
-                    <form
-                        method="POST"
-                        action="{{ route(
-                            'content.pearls.publish',
-                            ['pearl' => $pearl->pearl_id],
-                        ) }}"
-                        class="rounded-3xl border-2 border-green-200 bg-green-50 p-6"
-                    >
-                        @csrf
-                        @method('PATCH')
-
-                        <input type="hidden" name="edit_version" value="{{ $pearl->edit_version }}">
-
-                        <input
-                            type="datetime-local"
-                            name="published_at"
-                            class="w-full rounded-xl border-slate-300"
+                        <form
+                            method="POST"
+                            action="{{ route(
+                                'content.pearls.return-draft',
+                                ['pearl' => $pearl->pearl_id],
+                            ) }}"
+                            class="space-y-4"
                         >
+                            @csrf
+                            @method('PATCH')
 
-                        <textarea
-                            name="reason"
-                            required
-                            placeholder="Publication approval reason"
-                            class="mt-3 w-full rounded-xl border-slate-300"
-                        ></textarea>
+                            <input
+                                type="hidden"
+                                name="edit_version"
+                                value="{{ $pearl->edit_version }}"
+                            >
 
-                        <input
-                            type="password"
-                            name="current_password"
-                            required
-                            placeholder="Current password"
-                            class="mt-3 w-full rounded-xl border-slate-300"
+                            <x-ui.field
+                                name="reason"
+                                label="Required corrections"
+                                type="textarea"
+                                :rows="5"
+                                required
+                                placeholder="Describe the changes required before approval."
+                            />
+
+                            <x-ui.button type="submit" variant="secondary">
+                                Return to Draft
+                            </x-ui.button>
+                        </form>
+                    </x-ui.card>
+
+                    <x-ui.card class="border-success-strong/30 bg-success-tint">
+                        <div class="mb-5">
+                            <h2 class="font-display text-lg font-extrabold text-success-ink">
+                                Approve Publication
+                            </h2>
+
+                            <p class="mt-1 text-sm text-success-ink/80">
+                                Confirm approval with your current password. Leave the date blank to publish immediately.
+                            </p>
+                        </div>
+
+                        <form
+                            method="POST"
+                            action="{{ route(
+                                'content.pearls.publish',
+                                ['pearl' => $pearl->pearl_id],
+                            ) }}"
+                            class="space-y-4"
                         >
+                            @csrf
+                            @method('PATCH')
 
-                        <button class="mt-3 rounded-xl bg-green-700 px-4 py-2 font-bold text-white">
-                            Approve Publication
-                        </button>
-                    </form>
+                            <input
+                                type="hidden"
+                                name="edit_version"
+                                value="{{ $pearl->edit_version }}"
+                            >
+
+                            <x-ui.field
+                                name="published_at"
+                                label="Publication date (optional)"
+                                type="datetime-local"
+                            />
+
+                            <x-ui.field
+                                name="reason"
+                                label="Approval reason"
+                                type="textarea"
+                                :rows="4"
+                                required
+                                placeholder="Document why this Pearl is approved for learners."
+                            />
+
+                            <x-ui.field
+                                name="current_password"
+                                label="Current password"
+                                type="password"
+                                required
+                                autocomplete="current-password"
+                            />
+
+                            <x-ui.button type="submit">
+                                Approve Publication
+                            </x-ui.button>
+                        </form>
+                    </x-ui.card>
                 </div>
             @elseif ($pearl->content_status === 'published')
-                <form
-                    method="POST"
-                    action="{{ route(
-                        'content.pearls.retire',
-                        ['pearl' => $pearl->pearl_id],
-                    ) }}"
-                    class="rounded-3xl border-2 border-red-200 bg-red-50 p-6"
-                >
-                    @csrf
-                    @method('PATCH')
+                <x-ui.card class="border-danger-strong/30 bg-danger-tint">
+                    <div class="mb-5">
+                        <h2 class="font-display text-lg font-extrabold text-danger-ink">
+                            Retire Published Pearl
+                        </h2>
 
-                    <input type="hidden" name="edit_version" value="{{ $pearl->edit_version }}">
+                        <p class="mt-1 max-w-3xl text-sm leading-relaxed text-danger-ink/80">
+                            Retirement removes this Pearl from the student library. Confirm the decision with a reason and your current password.
+                        </p>
+                    </div>
 
-                    <textarea
-                        name="reason"
-                        required
-                        placeholder="Reason for retiring this lesson"
-                        class="w-full rounded-xl border-slate-300"
-                    ></textarea>
-
-                    <input
-                        type="password"
-                        name="current_password"
-                        required
-                        placeholder="Current password"
-                        class="mt-3 w-full rounded-xl border-slate-300"
+                    <form
+                        method="POST"
+                        action="{{ route(
+                            'content.pearls.retire',
+                            ['pearl' => $pearl->pearl_id],
+                        ) }}"
+                        class="space-y-4"
                     >
+                        @csrf
+                        @method('PATCH')
 
-                    <button class="mt-3 rounded-xl bg-red-700 px-4 py-2 font-bold text-white">
-                        Retire Pearl
-                    </button>
-                </form>
+                        <input
+                            type="hidden"
+                            name="edit_version"
+                            value="{{ $pearl->edit_version }}"
+                        >
+
+                        <x-ui.field
+                            name="reason"
+                            label="Retirement reason"
+                            type="textarea"
+                            :rows="4"
+                            required
+                            placeholder="Explain why this lesson must be retired."
+                        />
+
+                        <x-ui.field
+                            name="current_password"
+                            label="Current password"
+                            type="password"
+                            required
+                            autocomplete="current-password"
+                        />
+
+                        <x-ui.button type="submit" variant="danger">
+                            Retire Pearl
+                        </x-ui.button>
+                    </form>
+                </x-ui.card>
+            @else
+                <x-ui.alert variant="info">
+                    This retired Pearl is read-only. Its immutable edit history remains available below.
+                </x-ui.alert>
             @endif
 
-            <section class="rounded-3xl border-2 border-slate-200 bg-white p-6">
-                <h2 class="font-display text-lg font-bold">
-                    Immutable Edit History
-                </h2>
+            <x-ui.card>
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 class="font-display text-lg font-extrabold text-ink">
+                            Immutable Edit History
+                        </h2>
 
-                <div class="mt-4 space-y-3">
+                        <p class="mt-1 text-sm text-ink-muted">
+                            Every content and workflow change is retained for accountability.
+                        </p>
+                    </div>
+
+                    <x-ui.badge variant="neutral">
+                        Version {{ $pearl->edit_version }}
+                    </x-ui.badge>
+                </div>
+
+                <div class="mt-5 space-y-3">
                     @forelse ($pearl->edits as $edit)
-                        <article class="rounded-xl bg-slate-50 p-4 text-sm">
-                            <div class="font-bold">
-                                {{ str($edit->action)->replace('_', ' ')->title() }}
+                        <article class="rounded-2xl border border-line bg-surface-2 p-4">
+                            <div class="flex flex-wrap items-start justify-between gap-2">
+                                <h3 class="font-bold text-ink">
+                                    {{ str($edit->action)
+                                        ->replace('_', ' ')
+                                        ->title() }}
+                                </h3>
+
+                                <span class="text-xs font-semibold tabular-nums text-ink-muted">
+                                    Version {{ $edit->version_before }}
+                                    → {{ $edit->version_after }}
+                                </span>
                             </div>
 
-                            <div class="text-slate-500">
+                            <p class="mt-1 text-sm text-ink-muted">
                                 {{ $edit->editor?->fullName() ?? 'Former user' }}
-                                · {{ $edit->edited_at->format('M j, Y g:i A') }}
-                                · version {{ $edit->version_before }}
-                                → {{ $edit->version_after }}
-                            </div>
+                                <span aria-hidden="true">·</span>
+                                {{ $edit->edited_at->format('M j, Y g:i A') }}
+                            </p>
 
                             @if ($edit->reason)
-                                <p class="mt-2">{{ $edit->reason }}</p>
+                                <p class="mt-3 whitespace-pre-line text-sm leading-relaxed text-ink">
+                                    {{ $edit->reason }}
+                                </p>
                             @endif
                         </article>
                     @empty
-                        <p class="text-sm text-slate-500">
+                        <p class="rounded-2xl bg-surface-2 p-5 text-sm text-ink-muted">
                             No history is available.
                         </p>
                     @endforelse
                 </div>
-            </section>
+            </x-ui.card>
         </div>
     </div>
 </x-app-layout>

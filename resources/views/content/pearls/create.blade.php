@@ -1,23 +1,40 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-display text-xl font-bold">
-            Create Micro Pearl
-        </h1>
+        <x-ui.page-header
+            title="Create Micro Pearl"
+            description="Create a governed lesson draft for faculty review before publication."
+        >
+            <x-slot:actions>
+                <x-ui.button
+                    variant="secondary"
+                    :href="route('content.pearls.index')"
+                >
+                    Back to Pearl Management
+                </x-ui.button>
+            </x-slot:actions>
+        </x-ui.page-header>
     </x-slot>
 
-    <div class="py-8">
-        <div class="mx-auto max-w-5xl px-4">
-            <form
-                method="POST"
-                action="{{ route('content.pearls.store') }}"
-                class="rounded-3xl border-2 border-slate-200 bg-white p-6"
-            >
-                @csrf
+    <div class="py-6 sm:py-8">
+        <div class="mx-auto max-w-5xl space-y-5 px-4 sm:px-6 lg:px-8">
+            @if (session('error'))
+                <x-ui.alert variant="danger">
+                    {{ session('error') }}
+                </x-ui.alert>
+            @endif
 
-                @include('content.pearls._form', [
-                    'pearl' => null,
-                ])
-            </form>
+            <x-ui.card>
+                <form
+                    method="POST"
+                    action="{{ route('content.pearls.store') }}"
+                >
+                    @csrf
+
+                    @include('content.pearls._form', [
+                        'pearl' => null,
+                    ])
+                </form>
+            </x-ui.card>
         </div>
     </div>
 </x-app-layout>
