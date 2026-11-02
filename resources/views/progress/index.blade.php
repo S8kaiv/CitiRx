@@ -31,13 +31,13 @@
             {{-- ========================================= --}}
             {{-- 1. CURRENT LEVEL HERO CARD (Chunky 2.5D)  --}}
             {{-- ========================================= --}}
-            <section class="relative overflow-hidden rounded-3xl border-2 border-b-4 border-amber-300 bg-gradient-to-br from-amber-50 via-white to-orange-50/30 p-6 sm:p-8 shadow-sm">
+            <section class="relative overflow-hidden rounded-3xl border-2 border-b-4 border-amber-300 bg-white p-6 sm:p-8 shadow-sm">
 
                 <div class="flex flex-col sm:flex-row items-center sm:items-center gap-5 text-center sm:text-left">
 
                     {{-- Tactile 3D Crest --}}
                     <div style="--lip: #D97706;"
-                         class="btn-press flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-amber-400 bg-gradient-to-b from-amber-100 to-amber-200/70 text-3xl shadow-sm">
+                         class="btn-press flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-amber-400 bg-amber-100 text-3xl shadow-sm">
                         🛡️
                     </div>
 
@@ -82,7 +82,7 @@
 
                         {{-- Chunky Progress Track --}}
                         <div class="h-4 w-full overflow-hidden rounded-full bg-slate-200/70 p-0.5 ring-1 ring-inset ring-slate-300">
-                            <div class="h-full rounded-full bg-gradient-to-r from-primary to-indigo-600 transition-all duration-1000 ease-out shadow-inner"
+                            <div class="h-full rounded-full bg-primary transition-all duration-1000 ease-out shadow-inner"
                                  style="width: 0%;"
                                  :style="'width: ' + barWidth"></div>
                         </div>

@@ -1195,6 +1195,56 @@ body.theme-solar .solar-scene {
     color: rgb(var(--color-primary-default));
 }
 
+/*
+ * Mobile application shell
+ *
+ * Keeps content above the fixed navigation and respects
+ * iPhone/Android safe areas without duplicating padding
+ * inside every student page.
+ */
+.app-mobile-nav {
+    padding-top: 0.5rem;
+    padding-right:
+        max(
+            0.5rem,
+            env(safe-area-inset-right)
+        );
+    padding-bottom:
+        calc(
+            0.5rem
+            + env(safe-area-inset-bottom)
+        );
+    padding-left:
+        max(
+            0.5rem,
+            env(safe-area-inset-left)
+        );
+}
+
+@media (max-width: 767px) {
+    .app-content-shell {
+        padding-bottom:
+            calc(
+                5rem
+                + env(safe-area-inset-bottom)
+            );
+    }
+
+    /*
+     * Students have six primary destinations.
+     * Let all six share the available width while
+     * retaining a minimum 48px touch target.
+     */
+    body[data-surface="student"]
+        .app-mobile-nav
+        .admin-mobile-link {
+        min-width: 3rem;
+        flex: 1 1 0%;
+        padding-right: 0.25rem;
+        padding-left: 0.25rem;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .admin-nav-link,
     .admin-nav-icon-wrap,

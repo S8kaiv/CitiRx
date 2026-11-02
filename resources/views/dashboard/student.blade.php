@@ -108,7 +108,7 @@
                     {{-- 1. HERO CARD: Focus / Diagnostic --}}
                     @if (!$user->is_diagnostic_completed)
                         <section
-                            class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/40 bg-gradient-to-br from-primary-tint via-[#EDE8FF] to-white p-6 sm:p-8 shadow-sm">
+                            class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/40 bg-primary-tint/40 p-6 sm:p-8 shadow-sm">
                             <span
                                 class="inline-flex items-center rounded-full border border-primary/30 bg-white px-3 py-1 font-display text-xs font-bold text-primary shadow-sm">
                                 Step 1: Baseline Assessment
@@ -130,7 +130,7 @@
                         </section>
                     @else
                         <section
-                            class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-gradient-to-br from-primary-tint via-[#FAF8FF] to-white p-6 sm:p-8 shadow-sm">
+                            class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-primary-tint/40 p-6 sm:p-8 shadow-sm">
                             <div class="flex items-center gap-2">
                                 <span
                                     class="inline-flex items-center rounded-full bg-white px-3 py-1 font-display text-xs font-bold text-primary shadow-sm ring-1 ring-primary/20">
@@ -182,7 +182,7 @@
 
                         {{-- Rx Vault Tile (Rose Theme) --}}
                         <div
-                            class="flex flex-col justify-between rounded-3xl border-2 border-b-4 border-rose-300 bg-gradient-to-br from-rose-50/80 via-white to-white p-5 sm:p-6 shadow-sm">
+                            class="flex flex-col justify-between rounded-3xl border-2 border-b-4 border-rose-300 bg-white p-5 sm:p-6 shadow-sm">
                             <div>
                                 <div
                                     class="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-b-3 border-rose-300 bg-rose-100 text-2xl shadow-2xs">
@@ -208,7 +208,7 @@
 
                         {{-- Bookmarks Tile (Amber Theme) --}}
                         <div
-                            class="flex flex-col justify-between rounded-3xl border-2 border-b-4 border-amber-300 bg-gradient-to-br from-amber-50/80 via-white to-white p-5 sm:p-6 shadow-sm">
+                            class="flex flex-col justify-between rounded-3xl border-2 border-b-4 border-amber-300 bg-white p-5 sm:p-6 shadow-sm">
                             <div>
                                 <div
                                     class="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-b-3 border-amber-300 bg-amber-100 text-2xl shadow-2xs">
@@ -234,7 +234,7 @@
 
                         {{-- Achievements Tile (Indigo Theme) --}}
                         <div
-                            class="flex flex-col justify-between rounded-3xl border-2 border-b-4 border-indigo-300 bg-gradient-to-br from-indigo-50/80 via-white to-white p-5 sm:p-6 shadow-sm">
+                            class="flex flex-col justify-between rounded-3xl border-2 border-b-4 border-indigo-300 bg-white p-5 sm:p-6 shadow-sm">
                             <div>
                                 <div
                                     class="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-b-3 border-indigo-300 bg-indigo-100 text-2xl shadow-2xs">
