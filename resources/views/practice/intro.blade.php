@@ -27,7 +27,7 @@
 
             @if (session('error'))
                 <div role="alert"
-                    class="flex items-center gap-3 p-4 border-2 border-b-4 shadow-sm rounded-2xl border-weak/40 bg-weak-tint font-display text-xs font-bold text-weak-ink">
+                    class="flex items-center gap-3 p-4 border-2 border-b-4 shadow-sm rounded-2xl border-danger-strong/40 bg-danger-tint font-display text-xs font-bold text-danger-ink">
                     <span class="text-base">⚠️</span>
                     <span>{{ session('error') }}</span>
                 </div>
@@ -80,7 +80,7 @@
                         </div>
 
                         @error('length')
-                            <p class="mt-2 text-xs font-semibold text-weak-ink">
+                            <p class="mt-2 text-xs font-semibold text-danger-ink">
                                 {{ $message }}
                             </p>
                         @enderror
@@ -112,7 +112,7 @@
                         </select>
 
                         @error('domain_filter_id')
-                            <p class="mt-2 text-xs font-semibold text-weak-ink">
+                            <p class="mt-2 text-xs font-semibold text-danger-ink">
                                 {{ $message }}
                             </p>
                         @enderror

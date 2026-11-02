@@ -68,7 +68,7 @@
             @if (session('error'))
                 <div
                     role="alert"
-                    class="rounded-2xl border-2 border-b-4 border-weak/40 bg-weak-tint p-4 text-sm font-bold text-weak-ink"
+                    class="rounded-2xl border-2 border-b-4 border-danger-strong/40 bg-danger-tint p-4 text-sm font-bold text-danger-ink"
                 >
                     {{ session('error') }}
                 </div>
@@ -90,12 +90,12 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-3">
-                        <div class="rounded-2xl border-2 border-b-4 border-clinical/30 bg-clinical-tint px-4 py-2">
-                            <p class="font-display text-[9px] font-black uppercase tracking-wider text-clinical-ink">
+                        <div class="rounded-2xl border-2 border-b-4 border-info-strong/30 bg-info-tint px-4 py-2">
+                            <p class="font-display text-[9px] font-black uppercase tracking-wider text-info-ink">
                                 Answered
                             </p>
 
-                            <p class="font-display text-base font-black text-clinical-ink">
+                            <p class="font-display text-base font-black text-info-ink">
                                 <span x-text="answeredCount"></span>
                                 /
                                 <span x-text="questions.length"></span>
@@ -107,7 +107,7 @@
                             aria-live="polite"
                             class="min-w-28 rounded-2xl border-2 border-b-4 px-4 py-2 text-center transition"
                             :class="timeIsUrgent
-                                ? 'border-weak/40 bg-weak-tint text-weak-ink'
+                                ? 'border-danger-strong/40 bg-danger-tint text-danger-ink'
                                 : 'border-primary/30 bg-primary-tint text-primary'"
                         >
                             <p class="font-display text-[9px] font-black uppercase tracking-wider">
@@ -147,11 +147,11 @@
                     <div>
                         <div class="flex flex-wrap items-center gap-2">
                             <span
-                                class="rounded-xl border border-b-2 border-clinical/30 bg-clinical-tint px-3 py-1 font-display text-xs font-black text-clinical-ink"
+                                class="rounded-xl border border-b-2 border-info-strong/30 bg-info-tint px-3 py-1 font-display text-xs font-black text-info-ink"
                                 x-text="currentQuestion.domain"
                             ></span>
 
-                            <span class="font-bold text-slate-300">
+                            <span class="font-bold text-line-strong">
                                 •
                             </span>
 
@@ -230,14 +230,14 @@
 
                                 <span
                                     x-show="saveState === 'saved'"
-                                    class="text-strong-ink"
+                                    class="text-success-ink"
                                 >
                                     Answer saved
                                 </span>
 
                                 <span
                                     x-show="saveState === 'error'"
-                                    class="text-weak-ink"
+                                    class="text-danger-ink"
                                     x-text="saveError"
                                 ></span>
                             </div>
@@ -251,7 +251,7 @@
                                     currentQuestion.id,
                                     null
                                 )"
-                                class="rounded-xl px-3 py-1.5 font-display text-xs font-black text-ink-muted transition hover:bg-surface-2 hover:text-weak-ink focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-40"
+                                class="rounded-xl px-3 py-1.5 font-display text-xs font-black text-ink-muted transition hover:bg-surface-2 hover:text-danger-ink focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-40"
                             >
                                 Clear answer
                             </button>
@@ -366,7 +366,7 @@
                                 'border-primary-lip bg-primary text-white':
                                     currentIndex === item.index,
 
-                                'border-strong/50 bg-strong-tint text-strong-ink':
+                                'border-success-strong/50 bg-success-tint text-success-ink':
                                     currentIndex !== item.index
                                     && answers[item.question.id],
 
@@ -405,7 +405,7 @@
                     submitDialogOpen = false;
                 }
             "
-            class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
             role="dialog"
             aria-modal="true"
             aria-labelledby="submit-dialog-title"
@@ -440,7 +440,7 @@
 
                 <div
                     x-show="unansweredCount > 0"
-                    class="mt-4 rounded-2xl border-2 border-gold/30 bg-gold-tint p-4 text-sm font-bold text-gold-ink"
+                    class="mt-4 rounded-2xl border-2 border-warning-strong/30 bg-warning-tint p-4 text-sm font-bold text-warning-ink"
                 >
                     <span x-text="unansweredCount"></span>
                     unanswered
@@ -454,15 +454,15 @@
                     Submission is final. You cannot retry or change your answers.
                 </p>
 
-                <div class="mt-6 flex justify-end gap-3">
-                    <button
+                <div class="mt-6 flex flex-wrap justify-end gap-3">
+                    <x-ui.button
                         type="button"
-                        :disabled="submitting"
-                        @click="submitDialogOpen = false"
-                        class="rounded-2xl border-2 border-b-4 border-line bg-surface px-5 py-3 font-display text-xs font-black text-ink-muted transition hover:bg-surface-2 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 active:translate-y-0.5 active:border-b-2 disabled:opacity-40"
+                        variant="secondary"
+                        x-bind:disabled="submitting"
+                        x-on:click="submitDialogOpen = false"
                     >
                         Continue Reviewing
-                    </button>
+                    </x-ui.button>
 
                     <form
                         x-ref="submitForm"
@@ -470,15 +470,13 @@
                         action="{{ route('mock-board.submit', [
                             'session' => $session->session_id,
                         ]) }}"
-                        @submit="handleSubmit($event)"
+                        x-on:submit="handleSubmit($event)"
                     >
                         @csrf
 
-                        <button
+                        <x-ui.button
                             type="submit"
-                            :disabled="saving || submitting"
-                            style="--lip: #15803D;"
-                            class="btn-press rounded-2xl bg-strong px-6 py-3 font-display text-xs font-black text-white transition hover:brightness-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-strong/25 disabled:cursor-not-allowed disabled:opacity-40"
+                            x-bind:disabled="saving || submitting"
                         >
                             <span x-show="!submitting">
                                 Submit Final
@@ -487,7 +485,7 @@
                             <span x-show="submitting">
                                 Submitting...
                             </span>
-                        </button>
+                        </x-ui.button>
                     </form>
                 </div>
             </div>

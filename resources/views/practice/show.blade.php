@@ -44,7 +44,7 @@
 
             @if (session('error'))
                 <div role="alert"
-                    class="p-3 mb-3 text-xs font-medium border-2 border-b-4 rounded-xl border-weak/40 bg-weak-tint text-weak-ink animate-pop">
+                    class="p-3 mb-3 text-xs font-medium border-2 border-b-4 rounded-xl border-danger-strong/40 bg-danger-tinttext-danger-ink animate-pop">
                     {{ session('error') }}
                 </div>
             @endif
@@ -57,13 +57,13 @@
                     </span>
 
                     <span
-                        class="inline-flex items-center gap-1.5 rounded-full bg-strong-tint px-2 py-0.5 text-xs text-strong-ink shadow-xs">
-                        <span class="h-1.5 w-1.5 rounded-full bg-strong animate-pulse"></span>
+                        class="inline-flex items-center gap-1.5 rounded-full bg-success-tint px-2 py-0.5 text-xs text-success-ink shadow-xs">
+                        <span class="h-1.5 w-1.5 rounded-full bg-success-stronganimate-pulse"></span>
                         {{ $session->correct_items }} Correct
                     </span>
                 </div>
 
-                <div class="h-2.5 w-full overflow-hidden rounded-full bg-surface-2 p-0.5 ring-1 ring-inset ring-slate-200/60"
+                <div class="h-2.5 w-full overflow-hidden rounded-full bg-surface-2 p-0.5 ring-1 ring-inset ring-line/60"
                     role="progressbar" aria-label="Practice progress" aria-valuemin="0" aria-valuemax="100"
                     aria-valuenow="{{ round($progress) }}">
                     <div class="h-full rounded-full bg-primary transition-all duration-700 ease-out"
@@ -101,7 +101,7 @@
                         <button type="submit"
                             aria-label="{{ $isBookmarked ? 'Remove bookmark' : 'Bookmark this question' }}"
                             title="{{ $isBookmarked ? 'Remove bookmark' : 'Bookmark this question' }}"
-                            class="flex h-8 w-8 items-center justify-center rounded-xl border-2 transition active:scale-95 {{ $isBookmarked ? 'border-[#F5A623]/40 bg-gold-tint text-gold shadow-sm' : 'border-line bg-surface-2 text-ink-muted hover:text-gold hover:border-[#F5A623]/40' }}">
+                            class="flex h-8 w-8 items-center justify-center rounded-xl border-2 transition active:scale-95 {{ $isBookmarked ? 'border-warning-strong/40 bg-warning-tint text-warning-strong shadow-sm' : 'border-line bg-surface-2 text-ink-muted hover:text-warning-strong hover:border-warning-strong/40' }}">
                             <span class="text-lg leading-none">{{ $isBookmarked ? '★' : '☆' }}</span>
                         </button>
                     </form>
@@ -109,10 +109,10 @@
                     {{-- Domain Metadata --}}
                     <div class="flex flex-wrap items-center gap-2 pr-10">
                         <span
-                            class="inline-flex items-center rounded-md bg-clinical-tint px-2 py-0.5 font-display text-[11px] font-bold text-clinical-ink">
+                            class="inline-flex items-center rounded-md bg-info-tint px-2 py-0.5 font-display text-[11px] font-bold text-info-ink">
                             {{ $answeredQuestion->competency->domain->domain_name }}
                         </span>
-                        <span class="font-bold text-slate-300">•</span>
+                        <span class="font-bold text-line-strong">•</span>
                         <span class="text-xs font-semibold text-ink-muted">
                             {{ $answeredQuestion->competency->title }}
                         </span>
@@ -203,34 +203,10 @@
                         </x-slot:meta>
                     </x-ui.feedback-sheet>
 
-                    {{-- BKT & XP Telemetry Strip --}}
-                    <div class="grid grid-cols-3 gap-2.5 pt-1">
-                        <div class="p-2 sm:p-2.5 text-center border rounded-xl border-line bg-surface-2/70">
-                            <span class="block text-[10px] font-bold uppercase tracking-wider text-ink-muted">XP
-                                Earned</span>
-                            <span
-                                class="text-base font-bold font-display text-gold-ink">+{{ $feedback['answer_xp'] }}</span>
-                        </div>
-
-                        <div class="p-2 sm:p-2.5 text-center border rounded-xl border-line bg-surface-2/70">
-                            <span class="block text-[10px] font-bold uppercase tracking-wider text-ink-muted">Prior
-                                Mastery</span>
-                            <span
-                                class="text-base font-bold font-display text-ink">{{ number_format($feedback['prior_mastery'] * 100, 1) }}%</span>
-                        </div>
-
-                        <div class="p-2 sm:p-2.5 text-center border rounded-xl border-line bg-surface-2/70">
-                            <span class="block text-[10px] font-bold uppercase tracking-wider text-ink-muted">Updated
-                                Mastery</span>
-                            <span
-                                class="text-base font-bold font-display text-clinical-ink">{{ number_format($feedback['posterior_mastery'] * 100, 1) }}%</span>
-                        </div>
-                    </div>
-
                     {{-- Speed Warning --}}
                     @if ($feedback['is_speed_flagged'])
                         <div
-                            class="rounded-xl border border-gold/40 bg-gold-tint p-2.5 text-[11px] text-gold-ink leading-relaxed">
+                            class="rounded-xl border border-warning-strong/40 bg-warning-tint p-2.5 text-[11px] text-warning-ink leading-relaxed">
                             <strong>Speed-Flagged:</strong> Response submitted in
                             {{ number_format($feedback['response_seconds'], 2) }}s (min:
                             {{ number_format($feedback['minimum_seconds'], 2) }}s). No XP awarded.
@@ -238,14 +214,24 @@
                     @endif
 
                     {{-- Continue Button --}}
-                    <form method="POST" action="{{ route('practice.next', ['session' => $session->session_id]) }}"
-                        class="pt-1">
-                        @csrf
-                        <button type="submit" style="--lip: rgb(var(--color-primary-lip));"
-                            class="btn-press w-full rounded-xl bg-primary py-2.5 sm:py-3 font-display text-sm font-bold text-white shadow-sm transition hover:bg-primary/95">
-                            Continue
-                        </button>
-                    </form>
+                    <x-ui.assessment-actions label="Practice feedback actions">
+                        <form
+                            method="POST"
+                            action="{{ route('practice.next', [
+                                'session' => $session->session_id,
+                            ]) }}"
+                            class="w-full"
+                        >
+                            @csrf
+
+                            <x-ui.button
+                                type="submit"
+                                class="w-full"
+                            >
+                                Continue
+                            </x-ui.button>
+                        </form>
+                    </x-ui.assessment-actions>
 
                 </div>
             @else
@@ -260,10 +246,9 @@
                             No Practice question is available right now.
                         </p>
                         <div class="mt-4">
-                            <a href="{{ route('practice.intro') }}" style="--lip: rgb(var(--color-primary-lip));"
-                                class="btn-press inline-flex items-center rounded-xl bg-primary px-5 py-2 font-display text-xs font-bold text-white">
+                            <x-ui.button :href="route('practice.intro')" class="mt-4">
                                 Back to Practice Setup
-                            </a>
+                            </x-ui.button>
                         </div>
                     </div>
                 @else
@@ -283,7 +268,7 @@
                             <button type="submit"
                                 aria-label="{{ $isBookmarked ? 'Remove bookmark' : 'Bookmark this question' }}"
                                 title="{{ $isBookmarked ? 'Remove bookmark' : 'Bookmark this question' }}"
-                                class="flex h-8 w-8 items-center justify-center rounded-xl border-2 transition active:scale-95 {{ $isBookmarked ? 'border-[#F5A623]/40 bg-gold-tint text-gold shadow-sm' : 'border-line bg-surface-2 text-ink-muted hover:text-gold hover:border-[#F5A623]/40' }}">
+                                class="flex h-8 w-8 items-center justify-center rounded-xl border-2 transition active:scale-95 {{ $isBookmarked ? 'border-warning-strong/40 bg-warning-tint text-warning-strong shadow-sm' : 'border-line bg-surface-2 text-ink-muted hover:text-warning-strong hover:border-warning-strong/40' }}">
                                 <span class="text-lg leading-none">{{ $isBookmarked ? '★' : '☆' }}</span>
                             </button>
                         </form>
@@ -291,10 +276,10 @@
                         {{-- Domain Metadata --}}
                         <div class="flex flex-wrap items-center gap-2 pr-10">
                             <span
-                                class="inline-flex items-center rounded-md bg-clinical-tint px-2 py-0.5 font-display text-[11px] font-bold text-clinical-ink">
+                                class="inline-flex items-center rounded-md bg-info-tint px-2 py-0.5 font-display text-[11px] font-bold text-info-ink">
                                 {{ $question->competency->domain->domain_name }}
                             </span>
-                            <span class="font-bold text-slate-300">•</span>
+                            <span class="font-bold text-line-strong">•</span>
                             <span class="text-xs font-semibold text-ink-muted">
                                 {{ $question->competency->title }}
                             </span>
@@ -337,18 +322,17 @@
                             @endforeach
 
                             @error('selected_choice_id')
-                                <p class="mt-1.5 text-xs font-semibold text-weak-ink">
+                                <p class="mt-1.5 text-xs font-semibold text-danger-ink">
                                     {{ $message }}
                                 </p>
                             @enderror
 
                             {{-- Compact Submit Button --}}
-                            <div class="pt-3">
-                                <button type="submit" style="--lip: rgb(var(--color-primary-lip));"
-                                    class="btn-press w-full rounded-xl bg-primary py-2.5 sm:py-3 font-display text-sm font-bold text-white shadow-sm transition hover:bg-primary/95">
+                            <x-ui.assessment-actions label="Practice answer actions">
+                                <x-ui.button type="submit" class="w-full">
                                     Submit Answer
-                                </button>
-                            </div>
+                                </x-ui.button>
+                            </x-ui.assessment-actions>
                         </form>
 
                     </div>

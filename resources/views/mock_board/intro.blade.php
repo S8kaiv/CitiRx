@@ -32,7 +32,7 @@
             @if (session('error'))
                 <div
                     role="alert"
-                    class="rounded-2xl border-2 border-b-4 border-weak/40 bg-weak-tint p-4 text-sm font-bold text-weak-ink"
+                    class="rounded-2xl border-2 border-b-4 border-danger-strong/40 bg-danger-tint p-4 text-sm font-bold text-danger-ink"
                 >
                     {{ session('error') }}
                 </div>
@@ -41,7 +41,7 @@
             @if (session('status'))
                 <div
                     role="status"
-                    class="rounded-2xl border-2 border-b-4 border-clinical/30 bg-clinical-tint p-4 text-sm font-bold text-clinical-ink"
+                    class="rounded-2xl border-2 border-b-4 border-info-strong/30 bg-info-tint p-4 text-sm font-bold text-info-ink"
                 >
                     {{ session('status') }}
                 </div>
@@ -57,7 +57,7 @@
                                     Research Post-Test
                                 </span>
 
-                                <span class="rounded-xl border border-b-2 border-clinical/30 bg-clinical-tint px-3 py-1 font-display text-xs font-black text-clinical-ink">
+                                <span class="rounded-xl border border-b-2 border-info-strong/30 bg-info-tint px-3 py-1 font-display text-xs font-black text-info-ink">
                                     Form B
                                 </span>
                             </div>
@@ -158,11 +158,11 @@
                                     </p>
 
                                     @if ($completed)
-                                        <div class="mt-3 inline-flex rounded-xl border-2 border-b-4 border-strong/30 bg-strong-tint px-4 py-2 font-display text-sm font-black text-strong-ink">
+                                        <div class="mt-3 inline-flex rounded-xl border-2 border-b-4 border-success-strong/30 bg-success-tint px-4 py-2 font-display text-sm font-black text-success-ink">
                                             Completed
                                         </div>
                                     @elseif ($inProgress)
-                                        <div class="mt-3 inline-flex rounded-xl border-2 border-b-4 border-gold/30 bg-gold-tint px-4 py-2 font-display text-sm font-black text-gold-ink">
+                                        <div class="mt-3 inline-flex rounded-xl border-2 border-b-4 border-warning-strong/30 bg-warning-tint px-4 py-2 font-display text-sm font-black text-warning-ink">
                                             In Progress
                                         </div>
                                     @elseif ($canStart)
@@ -257,8 +257,8 @@
                     <span
                         class="rounded-xl border-2 px-3 py-1 font-display text-xs font-black
                             {{ $formIsReady
-                                ? 'border-strong/30 bg-strong-tint text-strong-ink'
-                                : 'border-gold/30 bg-gold-tint text-gold-ink' }}"
+                                ? 'border-success-strong/30 bg-success-tint text-success-ink'
+                                : 'border-warning-strong/30 bg-warning-tint text-warning-ink' }}"
                     >
                         {{ $formIsReady ? 'Form Ready' : 'Form Incomplete' }}
                     </span>
@@ -286,8 +286,8 @@
                                 <span
                                     class="shrink-0 rounded-lg px-2 py-1 font-mono text-[11px] font-bold
                                         {{ $subjectReady
-                                            ? 'bg-strong-tint text-strong-ink'
-                                            : 'bg-weak-tint text-weak-ink' }}"
+                                            ? 'bg-success-tint text-success-ink'
+                                            : 'bg-danger-tint text-danger-ink' }}"
                                 >
                                     {{ $subject['available'] }}/{{ $subject['required'] }}
                                 </span>

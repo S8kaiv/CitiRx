@@ -106,8 +106,8 @@
                         </div>
 
                         <div
-                            class="flex items-center justify-center gap-1.5 rounded-xl border-2 border-b-4 border-[#F5A623]/30 bg-gold-tint py-1.5 px-3 font-display text-xs font-bold text-gold-ink shadow-sm">
-                            <svg class="h-3.5 w-3.5 text-gold shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                            class="flex items-center justify-center gap-1.5 rounded-xl border-2 border-b-4 border-warning-strong/30 bg-warning-tint py-1.5 px-3 font-display text-xs font-bold text-warning-ink shadow-sm">
+                            <svg class="h-3.5 w-3.5 text-warning-strong shrink-0" viewBox="0 0 24 24" fill="currentColor">
                                 <path
                                     d="M14.615 1.595a.75.75 0 0 1 .359.852L12.982 9.75h7.268a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262l10.5-11.25a.75.75 0 0 1 .913-.143Z" />
                             </svg>
@@ -147,9 +147,9 @@
                                                 : 0;
 
                                         $barColor = match (true) {
-                                            $domainPercentage >= 80 => 'bg-strong',
-                                            $domainPercentage >= 60 => 'bg-clinical',
-                                            default => 'bg-weak',
+                                            $domainPercentage >= 80 => 'bg-success-strong',
+                                            $domainPercentage >= 60 => 'bg-info-strong',
+                                            default => 'bg-danger-strong',
                                         };
                                     @endphp
 
@@ -165,7 +165,7 @@
                                         </div>
 
                                         <div
-                                            class="h-2 w-full overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-slate-200/60">
+                                            class="h-2 w-full overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-line/60">
                                             <div class="h-full rounded-full {{ $barColor }} transition-all duration-700"
                                                 style="width: {{ $domainPercentage }}%"></div>
                                         </div>
@@ -186,7 +186,7 @@
                     {{-- Adaptive Remediation Note --}}
                     @if ($lowestDomain)
                         <div
-                            class="mt-4 rounded-xl border border-clinical/30 bg-clinical-tint/50 p-3 text-xs text-clinical-ink leading-relaxed">
+                            class="mt-4 rounded-xl border border-info-strong/30 bg-info-tint/50 p-3 text-xs text-info-ink leading-relaxed">
                             Your accuracy was lowest in <strong>{{ $lowestDomain['domain_name'] }}</strong>
                             ({{ $lowestPct }}%). Targeted questions will be prioritized in your next session.
                         </div>
@@ -213,7 +213,7 @@
                         <button type="submit"
                             aria-label="{{ $lastQuestionIsBookmarked ? 'Remove bookmark' : 'Bookmark last question' }}"
                             title="{{ $lastQuestionIsBookmarked ? 'Remove bookmark' : 'Bookmark last question' }}"
-                            class="flex h-9 w-9 items-center justify-center rounded-xl border-2 transition {{ $lastQuestionIsBookmarked ? 'border-[#F5A623]/40 bg-gold-tint text-gold shadow-sm' : 'border-line bg-surface-2 text-ink-muted hover:text-gold hover:border-[#F5A623]/40' }}">
+                            class="flex h-9 w-9 items-center justify-center rounded-xl border-2 transition {{ $lastQuestionIsBookmarked ? 'border-warning-strong/40 bg-warning-tint text-warning-strong shadow-sm' : 'border-line bg-surface-2 text-ink-muted hover:text-warning-strong hover:border-warning-strong/40' }}">
                             <span class="text-xl leading-none">{{ $lastQuestionIsBookmarked ? '★' : '☆' }}</span>
                         </button>
                     </form>
