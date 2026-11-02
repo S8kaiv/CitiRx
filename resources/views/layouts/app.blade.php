@@ -284,13 +284,14 @@
                         'faculty' => 'Faculty navigation',
                         default => 'Student navigation',
                     } }}">
-                        @php $active = request()->routeIs('dashboard'); @endphp
-                        <x-admin.nav-link
-                            :href="route('dashboard')"
-                            label="Dashboard"
-                            icon="dashboard"
-                            :active="request()->routeIs('dashboard')"
-                        />
+                        @if ($authUser?->role !== 'faculty')
+                            <x-admin.nav-link
+                                :href="route('dashboard')"
+                                label="Dashboard"
+                                icon="dashboard"
+                                :active="request()->routeIs('dashboard')"
+                            />
+                        @endif
 
                         @if ($authUser?->role === 'student')
                             <x-admin.nav-link
@@ -351,29 +352,7 @@
                         @endif
 
                         @if ($authUser?->role === 'faculty')
-                            @php
-                                $facultyDashboardActive = request()->routeIs('faculty.dashboard');
-                            @endphp
-
-                            <a href="{{ route('faculty.dashboard') }}"
-                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
-                                    {{ $facultyDashboardActive
-                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
-                                        : 'border-2 border-transparent text-ink-muted hover:bg-surface-2/80 hover:text-ink' }}">
-                                <span>Faculty Dashboard</span>
-                            </a>
-
-                            @php
-                                $interventionsActive = request()->routeIs('faculty.interventions.*');
-                            @endphp
-
-                            <a href="{{ route('faculty.interventions.index') }}"
-                                class="flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-all
-                                    {{ $interventionsActive
-                                        ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
-                                        : 'border-2 border-transparent text-ink-muted hover:bg-surface-2/80 hover:text-ink' }}">
-                                <span>Interventions</span>
-                            </a>
+                            <x-faculty.desktop-navigation />
                         @endif
 
                         @if ($authUser?->role === 'admin')
@@ -584,7 +563,9 @@
                 class="app-mobile-nav fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-line bg-surface/95 font-display text-[10px] font-bold shadow-lg backdrop-blur-md md:hidden"
             >
                 {{-- Home --}}
-                <x-admin.mobile-link :href="route('dashboard')" label="Home" icon="dashboard" :active="request()->routeIs('dashboard')"/>
+                @if ($authUser?->role !== 'faculty')
+                    <x-admin.mobile-link :href="route('dashboard')" label="Home" icon="dashboard" :active="request()->routeIs('dashboard')"/>
+                @endif
 
                 @if ($authUser?->role === 'student')
                     <x-admin.mobile-link
@@ -617,43 +598,7 @@
                 @endif
 
                 @if ($authUser?->role === 'faculty')
-                    <a href="{{ route('faculty.dashboard') }}"
-                        class="flex flex-col items-center gap-1
-                            {{ request()->routeIs('faculty.dashboard') ? 'text-primary' : 'text-ink-muted' }}">
-                        <span>Dashboard</span>
-                    </a>
-
-                    <a href="{{ route('faculty.interventions.index') }}"
-                        class="flex flex-col items-center gap-1
-                            {{ request()->routeIs('faculty.interventions.*') ? 'text-primary' : 'text-ink-muted' }}">
-                        <span>Interventions</span>
-                    </a>
-
-                    <a href="{{ route('content.pearls.index') }}"
-                        class="flex flex-col items-center gap-1
-                            {{ request()->routeIs('content.pearls.*') ? 'text-primary' : 'text-ink-muted' }}">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                            aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6.253v13m0-13C10.832 5.477
-                                9.246 5 7.5 5S4.168 5.477 3 6.253v13
-                                C4.168 18.477 5.754 18 7.5 18
-                                s3.332.477 4.5 1.253m0-13
-                                C13.168 5.477 14.754 5 16.5 5
-                                s3.332.477 4.5 1.253v13
-                                C19.832 18.477 18.246 18 16.5 18
-                                s-3.332.477-4.5 1.253" />
-                        </svg>
-
-                        <span class="text-xs">Pearls</span>
-                    </a>
-
-                    <a href="{{ route('content.pearls.index') }}"
-                        class="flex items-center gap-3.5 rounded-2xl px-4 py-3 font-semibold transition
-                            {{ request()->routeIs('content.pearls.*')
-                                ? 'border-2 border-b-4 border-primary/30 bg-primary-tint/50 text-primary'
-                                : 'border-2 border-transparent text-ink-muted hover:bg-surface-2/80' }}">
-                        <span>Manage Pearls</span>
-                    </a>
+                    <x-faculty.mobile-navigation />
                 @endif
 
                 @if ($authUser?->role === 'admin')
