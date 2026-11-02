@@ -48,32 +48,32 @@
 
                         {{-- Mistakes Stat --}}
                         <div
-                            class="flex flex-col items-center justify-center p-4 rounded-2xl border-2 border-b-4 border-rose-200 bg-rose-50/60 text-center">
-                            <span class="font-display text-3xl sm:text-4xl font-black text-rose-600 leading-none">
+                            class="flex flex-col items-center justify-center p-4 rounded-2xl border-2 border-b-4 border-danger-strong/30  bg-danger-tint text-center">
+                            <span class="font-display text-3xl sm:text-4xl font-black text-danger-strong leading-none">
                                 {{ $activeCount }}
                             </span>
                             <span
-                                class="font-display text-[10px] font-bold uppercase tracking-wider text-rose-800 mt-1.5">
+                                class="font-display text-[10px] font-bold uppercase tracking-wider text-danger-ink mt-1.5">
                                 Active Mistakes
                             </span>
                             <span
-                                class="mt-2 inline-flex items-center rounded-full bg-white px-2 py-0.5 font-mono text-[9px] font-bold text-slate-600 border border-slate-200 shadow-2xs">
+                                class="mt-2 inline-flex items-center rounded-full bg-surface px-2 py-0.5 font-mono text-[9px] font-bold text-ink-muted border border-line shadow-2xs">
                                 {{ $clearedCount }} Cleared
                             </span>
                         </div>
 
                         {{-- Bookmarks Stat --}}
                         <div
-                            class="flex flex-col items-center justify-center p-4 rounded-2xl border-2 border-b-4 border-amber-200 bg-amber-50/60 text-center">
-                            <span class="font-display text-3xl sm:text-4xl font-black text-amber-600 leading-none">
+                            class="flex flex-col items-center justify-center p-4 rounded-2xl border-2 border-b-4 border-warning-strong/30 bg-warning-tint text-center">
+                            <span class="font-display text-3xl sm:text-4xl font-black text-warning-strong leading-none">
                                 {{ $bookmarksCount }}
                             </span>
                             <span
-                                class="font-display text-[10px] font-bold uppercase tracking-wider text-amber-800 mt-1.5">
+                                class="font-display text-[10px] font-bold uppercase tracking-wider text-warning-ink mt-1.5">
                                 Bookmarked Questions
                             </span>
                             <span
-                                class="mt-2 inline-flex items-center rounded-full bg-white px-2 py-0.5 font-mono text-[9px] font-bold text-slate-600 border border-slate-200 shadow-2xs">
+                                class="mt-2 inline-flex items-center rounded-full bg-surface px-2 py-0.5 font-mono text-[9px] font-bold text-ink-muted border border-line shadow-2xs">
                                 Starred
                             </span>
                         </div>

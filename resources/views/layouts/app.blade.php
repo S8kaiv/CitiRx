@@ -581,7 +581,7 @@
             {{-- MOBILE BOTTOM NAVIGATION BAR --}}
             <nav
                 aria-label="Mobile navigation"
-                class="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-line bg-surface/95 px-2 py-2 font-display text-[10px] font-bold shadow-lg backdrop-blur-md md:hidden"
+                class="app-mobile-nav fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-line bg-surface/95 font-display text-[10px] font-bold shadow-lg backdrop-blur-md md:hidden"
             >
                 {{-- Home --}}
                 <x-admin.mobile-link :href="route('dashboard')" label="Home" icon="dashboard" :active="request()->routeIs('dashboard')"/>
@@ -831,7 +831,7 @@
         @endif
 
         {{-- MAIN CONTENT AREA --}}
-        <div class="flex-1 flex flex-col min-w-0 {{ !$isFocusMode ? 'md:pl-64 pb-16 md:pb-0' : '' }}">
+        <div class="flex min-w-0 flex-1 flex-col {{ !$isFocusMode ? 'app-content-shell md:pl-64' : '' }}">
             @isset($header)
                 <header class="admin-topbar sticky top-0 z-20 border-b bg-surface">
                     <div class="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">

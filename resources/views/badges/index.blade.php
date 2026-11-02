@@ -22,7 +22,7 @@
         <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-6">
 
             {{-- TOP HERO CARD: TROPHY SHOWCASE & PROGRESSION --}}
-            <div class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-gradient-to-br from-primary-tint via-[#FAF8FF] to-white p-6 sm:p-8 shadow-sm">
+            <div class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-white p-6 sm:p-8 shadow-sm">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
 
                     {{-- Trophy & Heading --}}

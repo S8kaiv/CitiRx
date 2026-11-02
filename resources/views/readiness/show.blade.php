@@ -70,9 +70,9 @@
     <div class="pt-6 pb-16 font-sans text-slate-900 antialiased">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-6">
 
-            {{-- TOP HERO CARD: GRADIENT CONTAINER WITH DIAL & TELEMETRY --}}
+            {{-- TOP HERO CARD: READINESS DIAL & TELEMETRY --}}
             <div
-                class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-gradient-to-br from-primary-tint via-[#FAF8FF] to-white p-6 sm:p-8 shadow-sm">
+                class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-white p-6 sm:p-8 shadow-sm">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
 
                     {{-- Left: Synchronized Dial & Rolling Odometer --}}
@@ -92,7 +92,7 @@
                                 viewBox="0 0 160 160">
                                 {{-- Background Track --}}
                                 <circle cx="80" cy="80" r="{{ $radius }}" fill="none"
-                                    stroke="#FFFFFF" stroke-width="14" />
+                                    stroke="rgb(var(--color-line-strong))" stroke-width="14" />
 
                                 {{-- Animated Ring: Starts at circumference (100% empty) and fills up to score --}}
                                 <circle x-ref="ring" cx="80" cy="80" r="{{ $radius }}"
