@@ -1,505 +1,554 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-            <div>
-                <p class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                    Administration
-                </p>
-
-                <h2 class="font-display text-xl font-extrabold text-slate-900">
-                    Admin Dashboard
-                </h2>
-            </div>
-
-            <div class="flex flex-wrap gap-2">
+        <x-admin.page-header
+        title="Admin Dashboard"
+            description="Manage accounts, research readiness, content, pilot controls, and operational health."
+        >
+            <x-slot:actions>
                 <a
-                    href="{{ route('admin.users.index') }}"
-                    class="rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                    href="{{ route('admin.system-health.index') }}"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
                 >
-                    Manage Users
+                    System health
                 </a>
 
                 <a
-                    href="{{ route('admin.cohorts.index') }}"
-                    class="rounded-xl border-2 border-b-4 border-primary/30 bg-primary px-4 py-2 text-sm font-bold text-white transition hover:bg-[#4A2FC4] focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                    href="{{ route('admin.pilot.index') }}"
+                    class="btn-press inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                    style="--lip: rgb(var(--color-primary-lip));"
                 >
-                    Manage Cohorts
+                    Pilot controls
                 </a>
-            </div>
-        </div>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
-    <div class="py-8">
+    @php
+        $withoutCohort =
+            $accountStats['students_without_cohort']
+            + $accountStats['faculty_without_cohort'];
+
+        $researchFormsNeedingAttention = collect(
+            $formStats,
+        )
+            ->filter(
+                fn (array $stats): bool =>
+                    ! $stats['validation_complete'],
+            )
+            ->count();
+
+        $attentionItems = [
+            [
+                'count' => $withoutCohort,
+                'label' => 'Accounts without cohort assignments',
+                'description' => 'Assign students and faculty before cohort reporting or intervention work.',
+                'route' => route(
+                    'admin.users.index',
+                    [
+                        'no_cohort' => 1,
+                    ],
+                ),
+                'tone' => 'bg-amber-100 text-amber-900',
+            ],
+            [
+                'count' => $researchFormsNeedingAttention,
+                'label' => 'Research forms requiring attention',
+                'description' => 'Resolve structural, validation, or publication readiness requirements.',
+                'route' => route(
+                    'admin.research-forms.index',
+                ),
+                'tone' => 'bg-red-100 text-red-800',
+            ],
+            [
+                'count' => $questionStats['needing_review'],
+                'label' => 'Research questions awaiting validation',
+                'description' => 'Review active research questions submitted for faculty validation.',
+                'route' => route(
+                    'admin.questions.index',
+                    [
+                        'status' => 'awaiting_validation',
+                    ],
+                ),
+                'tone' => 'bg-primary-tint text-primary',
+            ],
+            [
+                'count' => $pearlStats['in_review'],
+                'label' => 'Micro Pearls awaiting review',
+                'description' => 'Review submitted Micro Pearls before publication.',
+                'route' => route(
+                    'content.pearls.index',
+                    [
+                        'status' => 'in_review',
+                    ],
+                ),
+                'tone' => 'bg-violet-100 text-violet-800',
+            ],
+            [
+                'count' => $accountStats['unverified'],
+                'label' => 'Unverified accounts',
+                'description' => 'Check accounts that cannot yet access verified application routes.',
+                'route' => route(
+                    'admin.users.index',
+                    [
+                        'verification' => 'unverified',
+                    ],
+                ),
+                'tone' => 'bg-slate-100 text-slate-800',
+            ],
+        ];
+
+        $attentionTotal = collect(
+            $attentionItems,
+        )->sum('count');
+    @endphp
+
+    <div class="admin-surface py-6 sm:py-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div
-                    role="status"
-                    class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800"
-                >
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            <section class="overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-[#4A2FC4] p-6 text-white shadow-lg sm:p-8">
-                <p class="text-sm font-semibold text-white/80">
-                    Welcome back
-                </p>
-
-                <h3 class="mt-1 font-display text-2xl font-extrabold sm:text-3xl">
-                    {{ $user->fullName() }}
-                </h3>
-
-                <p class="mt-3 max-w-2xl text-sm leading-relaxed text-white/85">
-                    Monitor users, cohorts, assessment participation,
-                    research-form preparation, and administrative activity.
-                </p>
-            </section>
-
-            <section aria-labelledby="account-overview-heading">
-                <div class="mb-3 flex items-center justify-between gap-4">
-                    <h3
-                        id="account-overview-heading"
-                        class="font-display text-lg font-extrabold text-slate-900"
-                    >
-                        Account Overview
-                    </h3>
-
-                    <a
-                        href="{{ route('admin.users.index') }}"
-                        class="text-sm font-bold text-primary hover:underline"
-                    >
-                        View all users
-                    </a>
-                </div>
-
-                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <article class="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
-                        <p class="text-xs font-bold uppercase tracking-wide text-slate-500">
-                            Active Students
-                        </p>
-
-                        <p class="mt-2 font-display text-3xl font-extrabold text-slate-900">
-                            {{ number_format($accountStats['students']) }}
-                        </p>
-                    </article>
-
-                    <article class="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
-                        <p class="text-xs font-bold uppercase tracking-wide text-slate-500">
-                            Active Faculty
-                        </p>
-
-                        <p class="mt-2 font-display text-3xl font-extrabold text-slate-900">
-                            {{ number_format($accountStats['faculty']) }}
-                        </p>
-                    </article>
-
-                    <article class="rounded-3xl border-2 border-amber-200 bg-amber-50 p-5 shadow-sm">
-                        <p class="text-xs font-bold uppercase tracking-wide text-amber-700">
-                            Students Without Cohort
-                        </p>
-
-                        <p class="mt-2 font-display text-3xl font-extrabold text-amber-900">
-                            {{ number_format($accountStats['students_without_cohort']) }}
-                        </p>
-
-                        @if ($accountStats['students_without_cohort'] > 0)
-                            <a
-                                href="{{ route('admin.users.index', [
-                                    'role' => 'student',
-                                    'no_cohort' => 1,
-                                ]) }}"
-                                class="mt-3 inline-flex text-xs font-bold text-amber-800 hover:underline"
-                            >
-                                Assign cohorts
-                            </a>
-                        @endif
-                    </article>
-
-                    <article class="rounded-3xl border-2 border-amber-200 bg-amber-50 p-5 shadow-sm">
-                        <p class="text-xs font-bold uppercase tracking-wide text-amber-700">
-                            Faculty Without Cohort
-                        </p>
-
-                        <p class="mt-2 font-display text-3xl font-extrabold text-amber-900">
-                            {{ number_format($accountStats['faculty_without_cohort']) }}
-                        </p>
-
-                        @if ($accountStats['faculty_without_cohort'] > 0)
-                            <a
-                                href="{{ route('admin.users.index', [
-                                    'role' => 'faculty',
-                                    'no_cohort' => 1,
-                                ]) }}"
-                                class="mt-3 inline-flex text-xs font-bold text-amber-800 hover:underline"
-                            >
-                                Assign cohorts
-                            </a>
-                        @endif
-                    </article>
-                </div>
-
-                <div class="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-500">
-                    <span>
-                        Active cohorts:
-                        <strong class="text-slate-800">
-                            {{ $cohortStats['active'] }}
-                        </strong>
-                    </span>
-
-                    <span>
-                        Archived cohorts:
-                        <strong class="text-slate-800">
-                            {{ $cohortStats['archived'] }}
-                        </strong>
-                    </span>
-
-                    <span>
-                        Unverified accounts:
-                        <strong class="text-slate-800">
-                            {{ $accountStats['unverified'] }}
-                        </strong>
-                    </span>
-                </div>
-            </section>
+            <x-admin.flash />
 
             <section
-                class="grid gap-5 lg:grid-cols-2"
-                aria-labelledby="assessment-progress-heading"
+                aria-labelledby="admin-attention-heading"
+                class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
             >
-                <article class="rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-sm">
-                    <h3
-                        id="assessment-progress-heading"
-                        class="font-display text-lg font-extrabold text-slate-900"
-                    >
-                        Assessment Participation
-                    </h3>
-
-                    <div class="mt-6 space-y-6">
-                        <div>
-                            <div class="flex items-center justify-between gap-4 text-sm">
-                                <span class="font-bold text-slate-700">
-                                    Diagnostic completed
-                                </span>
-
-                                <span class="text-slate-500">
-                                    {{ $assessmentStats['diagnostic_completed'] }}
-                                    /
-                                    {{ $accountStats['students'] }}
-                                </span>
-                            </div>
-
-                            <div
-                                class="mt-2 h-3 overflow-hidden rounded-full bg-slate-100"
-                                role="progressbar"
-                                aria-label="Diagnostic completion"
-                                aria-valuemin="0"
-                                aria-valuemax="100"
-                                aria-valuenow="{{ $assessmentStats['diagnostic_rate'] }}"
-                            >
-                                <div
-                                    class="h-full rounded-full bg-primary"
-                                    style="width: {{ min(
-                                        100,
-                                        max(
-                                            0,
-                                            $assessmentStats['diagnostic_rate'],
-                                        ),
-                                    ) }}%"
-                                ></div>
-                            </div>
-
-                            <p class="mt-2 text-right text-xs font-bold text-primary">
-                                {{ number_format(
-                                    $assessmentStats['diagnostic_rate'],
-                                    1,
-                                ) }}%
-                            </p>
-                        </div>
-
-                        <div>
-                            <div class="flex items-center justify-between gap-4 text-sm">
-                                <span class="font-bold text-slate-700">
-                                    Mock Board finalized
-                                </span>
-
-                                <span class="text-slate-500">
-                                    {{ $assessmentStats['mock_board_completed'] }}
-                                    /
-                                    {{ $accountStats['students'] }}
-                                </span>
-                            </div>
-
-                            <div
-                                class="mt-2 h-3 overflow-hidden rounded-full bg-slate-100"
-                                role="progressbar"
-                                aria-label="Mock Board completion"
-                                aria-valuemin="0"
-                                aria-valuemax="100"
-                                aria-valuenow="{{ $assessmentStats['mock_board_rate'] }}"
-                            >
-                                <div
-                                    class="h-full rounded-full bg-emerald-500"
-                                    style="width: {{ min(
-                                        100,
-                                        max(
-                                            0,
-                                            $assessmentStats['mock_board_rate'],
-                                        ),
-                                    ) }}%"
-                                ></div>
-                            </div>
-
-                            <p class="mt-2 text-right text-xs font-bold text-emerald-700">
-                                {{ number_format(
-                                    $assessmentStats['mock_board_rate'],
-                                    1,
-                                ) }}%
-                            </p>
-                        </div>
-                    </div>
-
-                    <a
-                        href="{{ route('admin.research-analytics.index') }}"
-                        class="mt-6 inline-flex text-sm font-bold text-primary hover:underline"
-                    >
-                        Open detailed research analytics
-                    </a>
-                </article>
-
-                <article class="rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-sm">
-                    <div class="flex items-center justify-between gap-4">
-                        <h3 class="font-display text-lg font-extrabold text-slate-900">
-                            Question Bank
-                        </h3>
-
-                        <a
-                            href="{{ route('admin.questions.index') }}"
-                            class="text-sm font-bold text-primary hover:underline"
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+                    <div>
+                        <h2
+                            id="admin-attention-heading"
+                            class="font-display text-lg font-extrabold text-slate-950"
                         >
-                            Open bank
-                        </a>
+                            Needs attention
+                        </h2>
+
+                        <p class="mt-1 text-sm text-slate-600">
+                            Work requiring administrative action
+                        </p>
                     </div>
 
-                    <dl class="mt-5 grid grid-cols-2 gap-4">
-                        <div class="rounded-2xl bg-slate-50 p-4">
-                            <dt class="text-xs font-bold uppercase text-slate-500">
-                                Total
-                            </dt>
+                    <span
+                        class="rounded-full px-3 py-1 text-xs font-bold
+                            {{ $attentionTotal > 0
+                                ? 'bg-amber-100 text-amber-900'
+                                : 'bg-emerald-100 text-emerald-800' }}"
+                    >
+                        {{ $attentionTotal > 0
+                            ? number_format($attentionTotal).' open'
+                            : 'All clear' }}
+                    </span>
+                </div>
 
-                            <dd class="mt-1 text-2xl font-extrabold text-slate-900">
-                                {{ $questionStats['total'] }}
-                            </dd>
-                        </div>
+                @if ($attentionTotal > 0)
+                    <ul class="divide-y divide-slate-100">
+                        @foreach ($attentionItems as $item)
+                            @continue($item['count'] === 0)
 
-                        <div class="rounded-2xl bg-slate-50 p-4">
-                            <dt class="text-xs font-bold uppercase text-slate-500">
-                                Locked
-                            </dt>
+                            <li>
+                                <a
+                                    href="{{ $item['route'] }}"
+                                    class="group flex min-h-16 items-center gap-4 px-5 py-3 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-primary/25"
+                                >
+                                    <span
+                                        class="flex h-9 min-w-9 items-center justify-center rounded-full px-2 font-display text-sm font-extrabold tabular-nums {{ $item['tone'] }}"
+                                    >
+                                        {{ number_format($item['count']) }}
+                                    </span>
 
-                            <dd class="mt-1 text-2xl font-extrabold text-slate-900">
-                                {{ $questionStats['locked'] }}
-                            </dd>
-                        </div>
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block font-bold text-slate-900">
+                                            {{ $item['label'] }}
+                                        </span>
 
-                        <div class="rounded-2xl bg-amber-50 p-4">
-                            <dt class="text-xs font-bold uppercase text-amber-700">
-                                Needing review
-                            </dt>
+                                        <span class="mt-0.5 block text-xs leading-relaxed text-slate-500">
+                                            {{ $item['description'] }}
+                                        </span>
+                                    </span>
 
-                            <dd class="mt-1 text-2xl font-extrabold text-amber-900">
-                                {{ $questionStats['needing_review'] }}
-                            </dd>
-                        </div>
+                                    <x-admin.icon
+                                        name="arrow"
+                                        class="h-5 w-5 shrink-0 text-slate-400 transition-transform group-hover:translate-x-1"
+                                    />
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <div class="px-5 py-8 text-center">
+                        <p class="font-bold text-emerald-800">
+                            No immediate administrative action is required.
+                        </p>
 
-                        <div class="rounded-2xl bg-red-50 p-4">
-                            <dt class="text-xs font-bold uppercase text-red-700">
-                                Validation issues
-                            </dt>
-
-                            <dd class="mt-1 text-2xl font-extrabold text-red-900">
-                                {{ $questionStats['validation_issues'] }}
-                            </dd>
-                        </div>
-                    </dl>
-
-                    @if ($questionStats['placeholders'] > 0)
-                        <div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                            <strong>
-                                {{ $questionStats['placeholders'] }}
-                            </strong>
-                            development placeholder question(s) remain.
-                        </div>
-                    @endif
-                </article>
+                        <p class="mt-1 text-sm text-slate-500">
+                            Continue monitoring pilot readiness and system health.
+                        </p>
+                    </div>
+                @endif
             </section>
 
-            <section aria-labelledby="research-form-heading">
-                <div class="mb-3 flex flex-wrap items-end justify-between gap-3">
-                    <div>
-                        <h3
-                            id="research-form-heading"
-                            class="font-display text-lg font-extrabold text-slate-900"
-                        >
-                            Research Forms
-                        </h3>
+            <section aria-labelledby="admin-overview-heading">
+                <div class="mb-3">
+                    <h2
+                        id="admin-overview-heading"
+                        class="font-display text-lg font-extrabold text-slate-950"
+                    >
+                        Account overview
+                    </h2>
 
-                        <p class="mt-1 text-xs text-slate-500">
-                            These dashboard cards are lightweight summaries.
-                            Open readiness for the complete shared blueprint
-                            and validation audit.
+                    <p class="mt-1 text-sm text-slate-600">
+                        Current active accounts and cohort coverage
+                    </p>
+                </div>
+
+                <dl class="grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4">
+                    <x-admin.metric
+                        label="Active students"
+                        :value="number_format(
+                            $accountStats['students'],
+                        )"
+                    />
+
+                    <x-admin.metric
+                        label="Active faculty"
+                        :value="number_format(
+                            $accountStats['faculty'],
+                        )"
+                    />
+
+                    <x-admin.metric
+                        label="Active cohorts"
+                        :value="number_format(
+                            $cohortStats['active'],
+                        )"
+                        :hint="$cohortStats['archived'].' archived'"
+                        tone="primary"
+                    />
+
+                    <x-admin.metric
+                        label="Without cohorts"
+                        :value="number_format($withoutCohort)"
+                        hint="Students and faculty"
+                        :tone="$withoutCohort > 0
+                            ? 'warning'
+                            : 'success'"
+                    />
+                </dl>
+            </section>
+
+            <div class="grid gap-6 xl:grid-cols-2">
+                <x-admin.panel
+                    id="assessment-participation-heading"
+                    title="Assessment participation"
+                    description="Completion across active student accounts."
+                >
+                    <x-slot:actions>
+                        <a
+                            href="{{ route(
+                                'admin.research-analytics.index',
+                            ) }}"
+                            class="text-sm font-bold text-primary underline-offset-4 hover:underline"
+                        >
+                            Open analytics
+                        </a>
+                    </x-slot:actions>
+
+                    <div class="space-y-6">
+                        <x-admin.progress
+                            label="Diagnostic completed"
+                            :value="$assessmentStats[
+                                'diagnostic_rate'
+                            ]"
+                            :completed="$assessmentStats[
+                                'diagnostic_completed'
+                            ]"
+                            :total="$accountStats['students']"
+                        />
+
+                        <x-admin.progress
+                            label="Mock Board finalized"
+                            :value="$assessmentStats[
+                                'mock_board_rate'
+                            ]"
+                            :completed="$assessmentStats[
+                                'mock_board_completed'
+                            ]"
+                            :total="$accountStats['students']"
+                            tone="success"
+                        />
+                    </div>
+                </x-admin.panel>
+
+                <x-admin.panel
+                    id="question-bank-heading"
+                    title="Question bank"
+                    description="Availability, locks, and validation readiness."
+                >
+                    <x-slot:actions>
+                        <a
+                            href="{{ route(
+                                'admin.questions.index',
+                            ) }}"
+                            class="text-sm font-bold text-primary underline-offset-4 hover:underline"
+                        >
+                            Open question bank
+                        </a>
+                    </x-slot:actions>
+
+                    <dl class="divide-y divide-slate-100">
+                        @foreach ([
+                            [
+                                'label' => 'Total questions',
+                                'value' => $questionStats['total'],
+                                'class' => 'text-slate-950',
+                            ],
+                            [
+                                'label' => 'Locked questions',
+                                'value' => $questionStats['locked'],
+                                'class' => 'text-slate-950',
+                            ],
+                            [
+                                'label' => 'Needing review',
+                                'value' => $questionStats[
+                                    'needing_review'
+                                ],
+                                'class' => 'text-amber-800',
+                            ],
+                            [
+                                'label' => 'Validation issues',
+                                'value' => $questionStats[
+                                    'validation_issues'
+                                ],
+                                'class' => 'text-red-700',
+                            ],
+                            [
+                                'label' => 'Development placeholders',
+                                'value' => $questionStats[
+                                    'placeholders'
+                                ],
+                                'class' => $questionStats[
+                                    'placeholders'
+                                ] > 0
+                                    ? 'text-amber-800'
+                                    : 'text-emerald-700',
+                            ],
+                        ] as $item)
+                            <div class="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                                <dt class="text-sm text-slate-600">
+                                    {{ $item['label'] }}
+                                </dt>
+
+                                <dd class="font-display text-lg font-extrabold tabular-nums {{ $item['class'] }}">
+                                    {{ number_format(
+                                        $item['value'],
+                                    ) }}
+                                </dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                </x-admin.panel>
+            </div>
+
+            <section aria-labelledby="research-forms-heading">
+                <div class="mb-3 flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                        <h2
+                            id="research-forms-heading"
+                            class="font-display text-lg font-extrabold text-slate-950"
+                        >
+                            Research forms
+                        </h2>
+
+                        <p class="mt-1 text-sm text-slate-600">
+                            Published content and validation readiness
                         </p>
                     </div>
 
                     <a
-                        href="{{ route('admin.research-forms.index') }}"
-                        class="text-sm font-bold text-primary hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                        href="{{ route(
+                            'admin.research-forms.index',
+                        ) }}"
+                        class="text-sm font-bold text-primary underline-offset-4 hover:underline"
                     >
-                        Open readiness audit
+                        Open readiness workflow
                     </a>
                 </div>
 
-                <div class="grid gap-5 lg:grid-cols-2">
+                <div class="grid gap-6 lg:grid-cols-2">
                     @foreach ($formStats as $form => $stats)
-                        <article class="rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-sm">
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <div>
-                                    <h4 class="font-display text-lg font-extrabold text-slate-900">
-                                        {{ $stats['label'] }}
-                                    </h4>
+                        <x-admin.panel
+                            :id="'research-form-'.$form"
+                            :title="$stats['label']"
+                            :description="$form"
+                        >
+                            <x-slot:actions>
+                                <span
+                                    class="rounded-full px-3 py-1 text-xs font-bold
+                                        {{ $stats[
+                                            'validation_complete'
+                                        ]
+                                            ? 'bg-emerald-100 text-emerald-800'
+                                            : 'bg-amber-100 text-amber-900' }}"
+                                >
+                                    {{ $stats[
+                                        'validation_complete'
+                                    ]
+                                        ? 'Validation complete'
+                                        : 'Needs attention' }}
+                                </span>
+                            </x-slot:actions>
 
-                                    <p class="mt-1 font-mono text-xs text-slate-500">
-                                        {{ $form }}
-                                    </p>
-                                </div>
-
-                                @if ($stats['validation_complete'])
-                                    <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
-                                        Validation complete
-                                    </span>
-                                @else
-                                    <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
-                                        Needs attention
-                                    </span>
-                                @endif
-                            </div>
-
-                            <dl class="mt-5 grid grid-cols-2 gap-3 text-sm">
-                                <div class="rounded-xl bg-slate-50 p-3">
+                            <dl class="grid grid-cols-2 divide-x divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200">
+                                <div class="p-3">
                                     <dt class="text-xs text-slate-500">
-                                        Active questions
+                                        Questions
                                     </dt>
 
-                                    <dd class="mt-1 font-bold text-slate-900">
-                                        {{ $stats['active_questions'] }}/60
+                                    <dd class="mt-1 font-bold text-slate-950">
+                                        {{ $stats[
+                                            'active_questions'
+                                        ] }}/60
                                     </dd>
                                 </div>
 
-                                <div class="rounded-xl bg-slate-50 p-3">
+                                <div class="p-3">
                                     <dt class="text-xs text-slate-500">
                                         Validated
                                     </dt>
 
-                                    <dd class="mt-1 font-bold text-slate-900">
-                                        {{ $stats['validated_questions'] }}/60
+                                    <dd class="mt-1 font-bold text-slate-950">
+                                        {{ $stats[
+                                            'validated_questions'
+                                        ] }}/60
                                     </dd>
                                 </div>
 
-                                <div class="rounded-xl bg-slate-50 p-3">
+                                <div class="p-3">
                                     <dt class="text-xs text-slate-500">
-                                        Positions 1–60
+                                        Positions
                                     </dt>
 
-                                    <dd class="mt-1 font-bold {{ $stats['positions_complete'] ? 'text-emerald-700' : 'text-red-700' }}">
-                                        {{ $stats['positions_complete'] ? 'Complete' : 'Incomplete' }}
+                                    <dd
+                                        class="mt-1 font-bold
+                                            {{ $stats[
+                                                'positions_complete'
+                                            ]
+                                                ? 'text-emerald-700'
+                                                : 'text-red-700' }}"
+                                    >
+                                        {{ $stats[
+                                            'positions_complete'
+                                        ]
+                                            ? 'Complete'
+                                            : 'Incomplete' }}
                                     </dd>
                                 </div>
 
-                                <div class="rounded-xl bg-slate-50 p-3">
+                                <div class="p-3">
                                     <dt class="text-xs text-slate-500">
                                         Placeholders
                                     </dt>
 
-                                    <dd class="mt-1 font-bold {{ $stats['placeholders'] === 0 ? 'text-emerald-700' : 'text-amber-800' }}">
+                                    <dd
+                                        class="mt-1 font-bold
+                                            {{ $stats[
+                                                'placeholders'
+                                            ] === 0
+                                                ? 'text-emerald-700'
+                                                : 'text-amber-800' }}"
+                                    >
                                         {{ $stats['placeholders'] }}
                                     </dd>
                                 </div>
                             </dl>
 
                             <a
-                                href="{{ route('admin.questions.index', [
-                                    'form' => $form,
-                                ]) }}"
-                                class="mt-5 inline-flex text-sm font-bold text-primary hover:underline"
+                                href="{{ route(
+                                    'admin.questions.index',
+                                    [
+                                        'form' => $form,
+                                    ],
+                                ) }}"
+                                class="mt-4 inline-flex min-h-11 items-center text-sm font-bold text-primary underline-offset-4 hover:underline"
                             >
-                                Review this form
+                                Review form questions
                             </a>
-                        </article>
+                        </x-admin.panel>
                     @endforeach
                 </div>
             </section>
 
-            <section class="grid gap-5 lg:grid-cols-[1fr_1.35fr]">
-                <article class="rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-sm">
-                    <h3 class="font-display text-lg font-extrabold text-slate-900">
-                        Content Workflow
-                    </h3>
+            <div class="grid gap-6 xl:grid-cols-[0.85fr_1.4fr]">
+                <x-admin.panel
+                    id="content-workflow-heading"
+                    title="Content workflow"
+                    description="Micro Pearl authoring and publication."
+                >
+                    <x-slot:actions>
+                        <a
+                            href="{{ route(
+                                'content.pearls.index',
+                            ) }}"
+                            class="text-sm font-bold text-primary underline-offset-4 hover:underline"
+                        >
+                            Manage pearls
+                        </a>
+                    </x-slot:actions>
 
-                    <dl class="mt-5 space-y-3 text-sm">
-                        <div class="flex justify-between gap-4 rounded-xl bg-slate-50 p-3">
-                            <dt class="text-slate-600">
-                                Micro Pearl drafts
+                    <dl class="divide-y divide-slate-100">
+                        <div class="flex items-center justify-between gap-4 py-3 first:pt-0">
+                            <dt class="text-sm text-slate-600">
+                                Drafts
                             </dt>
 
-                            <dd class="font-bold text-slate-900">
+                            <dd class="font-display text-lg font-extrabold tabular-nums text-slate-950">
                                 {{ $pearlStats['drafts'] }}
                             </dd>
                         </div>
 
-                        <div class="flex justify-between gap-4 rounded-xl bg-amber-50 p-3">
-                            <dt class="text-amber-800">
+                        <div class="flex items-center justify-between gap-4 py-3">
+                            <dt class="text-sm text-slate-600">
                                 Awaiting review
                             </dt>
 
-                            <dd class="font-bold text-amber-900">
+                            <dd class="font-display text-lg font-extrabold tabular-nums text-amber-800">
                                 {{ $pearlStats['in_review'] }}
                             </dd>
                         </div>
 
-                        <div class="flex justify-between gap-4 rounded-xl bg-emerald-50 p-3">
-                            <dt class="text-emerald-800">
-                                Safely published
+                        <div class="flex items-center justify-between gap-4 py-3 last:pb-0">
+                            <dt class="text-sm text-slate-600">
+                                Published
                             </dt>
 
-                            <dd class="font-bold text-emerald-900">
+                            <dd class="font-display text-lg font-extrabold tabular-nums text-emerald-700">
                                 {{ $pearlStats['published'] }}
                             </dd>
                         </div>
                     </dl>
-                </article>
+                </x-admin.panel>
 
-                <article class="rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-sm">
-                    <div class="flex items-center justify-between gap-4">
-                        <h3 class="font-display text-lg font-extrabold text-slate-900">
-                            Recent Administrative Activity
-                        </h3>
-
+                <x-admin.panel
+                    id="recent-admin-activity-heading"
+                    title="Recent administrative activity"
+                    description="Latest recorded governance actions."
+                >
+                    <x-slot:actions>
                         <a
-                            href="{{ route('admin.audit-logs.index') }}"
-                            class="text-sm font-bold text-primary hover:underline"
+                            href="{{ route(
+                                'admin.audit-logs.index',
+                            ) }}"
+                            class="text-sm font-bold text-primary underline-offset-4 hover:underline"
                         >
-                            View all
+                            View audit history
                         </a>
-                    </div>
+                    </x-slot:actions>
 
-                    <div class="mt-5 space-y-3">
+                    <ol class="divide-y divide-slate-100">
                         @forelse ($recentAudits as $log)
-                            <article class="rounded-2xl border border-slate-200 p-4">
-                                <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                            <li class="py-4 first:pt-0 last:pb-0">
+                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
                                     <span class="font-bold text-slate-900">
                                         {{ $log->actorDisplayName() }}
                                     </span>
 
-                                    <span aria-hidden="true">•</span>
+                                    <span aria-hidden="true">·</span>
 
                                     <span>
                                         {{ str($log->action)
@@ -507,84 +556,85 @@
                                             ->title() }}
                                     </span>
 
-                                    <span aria-hidden="true">•</span>
+                                    <span aria-hidden="true">·</span>
 
                                     <time
-                                        datetime="{{ $log->created_at->toIso8601String() }}"
-                                        title="{{ $log->created_at->format('M j, Y g:i A') }}"
+                                        datetime="{{ $log
+                                            ->created_at
+                                            ->toIso8601String() }}"
+                                        title="{{ $log
+                                            ->created_at
+                                            ->format(
+                                                'M j, Y g:i A',
+                                            ) }}"
                                     >
-                                        {{ $log->created_at->diffForHumans() }}
+                                        {{ $log
+                                            ->created_at
+                                            ->diffForHumans() }}
                                     </time>
                                 </div>
 
-                                <p class="mt-2 text-xs text-slate-500">
-                                    {{ class_basename($log->target_type) }}
-                                    ·
-                                    {{ $log->target_id }}
-                                </p>
-
                                 @if ($log->reason)
-                                    <p class="mt-2 text-sm text-slate-700">
+                                    <p class="mt-2 text-sm leading-relaxed text-slate-700">
                                         {{ \Illuminate\Support\Str::limit(
                                             $log->reason,
-                                            140,
+                                            160,
                                         ) }}
                                     </p>
                                 @endif
-                            </article>
+                            </li>
                         @empty
-                            <div class="rounded-2xl bg-slate-50 p-6 text-center text-sm text-slate-500">
+                            <li class="py-8 text-center text-sm text-slate-500">
                                 No administrative activity has been recorded.
-                            </div>
+                            </li>
                         @endforelse
-                    </div>
-                </article>
-            </section>
+                    </ol>
+                </x-admin.panel>
+            </div>
 
-            <section aria-labelledby="quick-actions-heading">
-                <h3
-                    id="quick-actions-heading"
-                    class="font-display text-lg font-extrabold text-slate-900"
+            <nav
+                aria-label="Administrative shortcuts"
+                class="flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-200 pt-5 text-sm font-bold"
+            >
+                <a
+                    href="{{ route('admin.users.index') }}"
+                    class="min-h-11 content-center text-primary underline-offset-4 hover:underline"
                 >
-                    Quick Actions
-                </h3>
+                    Users
+                </a>
 
-                <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-                    @foreach ([
-                        [
-                            'label' => 'Users',
-                            'route' => route('admin.users.index'),
-                        ],
-                        [
-                            'label' => 'Cohorts',
-                            'route' => route('admin.cohorts.index'),
-                        ],
-                        [
-                            'label' => 'Questions',
-                            'route' => route('admin.questions.index'),
-                        ],
-                        [
-                            'label' => 'Analytics',
-                            'route' => route('admin.research-analytics.index'),
-                        ],
-                        [
-                            'label' => 'Audit Logs',
-                            'route' => route('admin.audit-logs.index'),
-                        ],
-                        [
-                            'label' => 'System Health',
-                            'route' => route('admin.system-health.index'),
-                        ],
-                    ] as $action)
-                        <a
-                            href="{{ $action['route'] }}"
-                            class="rounded-2xl border-2 border-slate-200 bg-white p-4 text-center text-sm font-bold text-slate-700 shadow-sm transition hover:border-primary/30 hover:bg-primary-tint focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
-                        >
-                            {{ $action['label'] }}
-                        </a>
-                    @endforeach
-                </div>
-            </section>
+                <a
+                    href="{{ route('admin.cohorts.index') }}"
+                    class="min-h-11 content-center text-primary underline-offset-4 hover:underline"
+                >
+                    Cohorts
+                </a>
+
+                <a
+                    href="{{ route(
+                        'admin.research-form-imports.index',
+                    ) }}"
+                    class="min-h-11 content-center text-primary underline-offset-4 hover:underline"
+                >
+                    Import research CSV
+                </a>
+
+                <a
+                    href="{{ route(
+                        'admin.research-participants.index',
+                    ) }}"
+                    class="min-h-11 content-center text-primary underline-offset-4 hover:underline"
+                >
+                    Participant scope
+                </a>
+
+                <a
+                    href="{{ route('admin.audit-logs.index') }}"
+                    class="min-h-11 content-center text-primary underline-offset-4 hover:underline"
+                >
+                    Audit history
+                </a>
+            </nav>
         </div>
     </div>
 </x-app-layout>

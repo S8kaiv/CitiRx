@@ -1,28 +1,28 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-            <div>
-                <p class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                    Research Administration
-                </p>
-
-                <h2 class="font-display text-xl font-extrabold text-slate-900">
-                    Research Form Readiness
-                </h2>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-3">
-                <a href="{{ route('admin.research-form-imports.index') }}"
-                    class="rounded-xl bg-primary px-4 py-2 text-sm font-extrabold text-white transition hover:opacity-90 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
-                    Import Research CSV
+        <x-admin.page-header
+            title="Research Form Readiness"
+            description="Manage immutable versions, validation readiness, publication status, and pilot eligibility."
+        >
+            <x-slot:actions>
+                <a
+                    href="{{ route(
+                        'admin.research-form-imports.index',
+                    ) }}"
+                    class="btn-press inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                    style="--lip: rgb(var(--color-primary-lip));"
+                >
+                    Import research CSV
                 </a>
 
-                <a href="{{ route('dashboard') }}"
-                    class="rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
-                    Back to Dashboard
+                <a
+                    href="{{ route('dashboard') }}"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                >
+                    Admin dashboard
                 </a>
-            </div>
-        </div>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     <div class="py-8">
@@ -76,13 +76,6 @@
                         questions, a reason, and your current password.
                     </p>
                 </div>
-
-                @if (session('status'))
-                    <div role="status"
-                        class="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
-                        {{ session('status') }}
-                    </div>
-                @endif
 
                 <div class="mt-6 space-y-6">
                     @foreach ($versions as $form => $formVersions)

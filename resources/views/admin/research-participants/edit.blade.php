@@ -1,39 +1,24 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <a
-                href="{{ route('admin.research-participants.index') }}"
-                class="text-sm font-bold text-primary"
-            >
-                ← Research Participants
-            </a>
-
-            <h1 class="mt-1 text-xl font-black text-slate-900">
-                {{ $student->fullName() }}
-            </h1>
-        </div>
+        <x-admin.page-header
+            :title="$student->fullName()"
+            description="Review and update this student’s official research participation status."
+        >
+            <x-slot:actions>
+                <a
+                    href="{{ route(
+                        'admin.research-participants.index',
+                    ) }}"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                >
+                    Back to participants
+                </a>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     <div class="py-8">
         <div class="mx-auto max-w-4xl space-y-6 px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div
-                    role="status"
-                    class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800"
-                >
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div
-                    role="alert"
-                    class="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-800"
-                >
-                    {{ session('error') }}
-                </div>
-            @endif
-
             @if ($errors->any())
                 <div
                     role="alert"

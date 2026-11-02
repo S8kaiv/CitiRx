@@ -1,18 +1,22 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-display text-xl font-bold">
-            Bulk Cohort Assignment
-        </h1>
+        <x-admin.page-header
+            title="Bulk cohort assignment"
+            description="Upload a CSV to preview cohort assignments before applying any changes."
+        >
+            <x-slot:actions>
+                <a
+                    href="{{ route('admin.users.index') }}"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                >
+                    Back to users
+                </a>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     <div class="py-8">
         <div class="mx-auto max-w-4xl space-y-6 px-4">
-            @if (session('status'))
-                <div class="rounded-xl bg-green-50 p-4 text-green-800">
-                    {{ session('status') }}
-                </div>
-            @endif
-
             <section class="rounded-3xl border-2 border-slate-200 bg-white p-6">
                 <h2 class="font-display text-lg font-bold">
                     Required CSV header

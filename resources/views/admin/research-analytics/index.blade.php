@@ -1,20 +1,19 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <p class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                    Administration
-                </p>
-                <h2 class="font-display text-xl font-extrabold text-slate-900">
-                    Research Analytics
-                </h2>
-            </div>
-
-            <button type="button" onclick="window.print()"
-                class="print:hidden rounded-xl border-2 border-slate-200 bg-white px-4 py-2 font-display text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
-                Print report
-            </button>
-        </div>
+        <x-admin.page-header
+            title="Research analytics"
+            description="Review eligible research attempts, paired outcomes, descriptive statistics, and sensitivity analyses."
+        >
+            <x-slot:actions>
+                <button
+                    type="button"
+                    onclick="window.print()"
+                    class="print:hidden inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                >
+                    Print report
+                </button>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     <div class="py-8">

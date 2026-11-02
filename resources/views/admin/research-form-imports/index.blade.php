@@ -1,36 +1,24 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-            <div>
-                <p class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                    Research Administration
-                </p>
-
-                <h2 class="font-display text-xl font-extrabold text-slate-900">
-                    Secure Research Import Portal
-                </h2>
-            </div>
-
-            <a
-                href="{{ route('admin.research-forms.index') }}"
-                class="rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
-            >
-                Back to Research Forms
-            </a>
-        </div>
+        <x-admin.page-header
+            title="Secure Research Import Portal"
+            description="Preview and import research-form content and faculty validation files through a controlled workflow."
+        >
+            <x-slot:actions>
+                <a
+                    href="{{ route(
+                        'admin.research-forms.index',
+                    ) }}"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                >
+                    Back to research forms
+                </a>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     <div class="py-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div
-                    role="status"
-                    class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800"
-                >
-                    {{ session('status') }}
-                </div>
-            @endif
-
             @if ($errors->any())
                 <div
                     role="alert"

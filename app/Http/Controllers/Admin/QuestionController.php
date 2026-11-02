@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\QuestionIndexRequest;
 use App\Http\Requests\Admin\UpdateQuestionRequest;
 use App\Http\Requests\Admin\UpdateQuestionStatusRequest;
 use App\Models\Question;
+use App\Models\ResearchFormVersion;
 use App\Models\TosDomain;
 use App\Services\QuestionEditService;
 use App\Services\QuestionLockService;
@@ -44,6 +45,7 @@ class QuestionController extends Controller
                 'question_text',
                 'research_form',
                 'form_position',
+                'form_version_id',
                 'research_validated_at',
                 'research_validated_by',
                 'first_served_at',
@@ -64,6 +66,14 @@ class QuestionController extends Controller
                         'domain_id',
                         'domain_number',
                         'domain_name',
+                    ]),
+                'formVersion' => fn ($query) => $query
+                    ->select([
+                        'form_version_id',
+                        'version_code',
+                        'version_number',
+                        'status',
+                        'is_active',
                     ]),
             ]);
         if ($filters['form'] !== null) {
@@ -429,6 +439,20 @@ class QuestionController extends Controller
                     'question_text',
                     'like',
                     '[DEVELOPMENT MOCK - NOT VALIDATED]%',
+                ),
+
+            'awaiting_validation' => $query
+                ->whereNotNull('research_form')
+                ->where('is_active', true)
+                ->whereNull('research_validated_at')
+                ->whereNull('research_validated_by')
+                ->whereHas(
+                    'formVersion',
+                    fn ($versionQuery) => $versionQuery
+                        ->where(
+                            'status',
+                            ResearchFormVersion::STATUS_IN_REVIEW,
+                        ),
                 ),
 
             default => null,

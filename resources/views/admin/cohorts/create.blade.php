@@ -1,13 +1,18 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <h2 class="font-display text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
-                Create Cohort
-            </h2>
-            <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
-                Create a new pharmacy student batch
-            </p>
-        </div>
+        <x-admin.page-header
+            title="Create cohort"
+            description="Create a pharmacy student batch and configure its academic year and assessment schedule."
+        >
+            <x-slot:actions>
+                <a
+                    href="{{ route('admin.cohorts.index') }}"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                >
+                    All cohorts
+                </a>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     <div class="py-6 font-sans text-slate-900 antialiased">

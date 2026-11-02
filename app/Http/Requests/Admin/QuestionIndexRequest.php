@@ -39,6 +39,7 @@ class QuestionIndexRequest extends FormRequest
                 Rule::in([
                     'validated',
                     'unvalidated',
+                    'awaiting_validation',
                     'validation_issue',
                     'served',
                     'unserved',

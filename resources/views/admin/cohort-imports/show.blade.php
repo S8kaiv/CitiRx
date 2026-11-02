@@ -1,17 +1,24 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-display text-xl font-bold">
-            Confirm Cohort Assignments
-        </h1>
+        <x-admin.page-header
+            title="Confirm cohort assignments"
+            description="Review the validated preview carefully before committing cohort changes."
+        >
+            <x-slot:actions>
+                <a
+                    href="{{ route(
+                        'admin.cohort-imports.create',
+                    ) }}"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                >
+                    Start over
+                </a>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     <div class="py-8">
         <div class="mx-auto max-w-6xl space-y-6 px-4">
-            @if (session('error'))
-                <div class="rounded-xl bg-red-50 p-4 text-red-800">
-                    {{ session('error') }}
-                </div>
-            @endif
 
             <section class="rounded-3xl border-2 border-slate-200 bg-white p-6">
                 <dl class="grid gap-4 sm:grid-cols-4">

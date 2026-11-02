@@ -1,13 +1,20 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <h2 class="font-display text-xl font-bold text-slate-900">
-                System Health
-            </h2>
-            <p class="mt-1 text-sm text-slate-500">
-                Read-only operational checks. Credentials and connection strings are never displayed.
-            </p>
-        </div>
+        <x-admin.page-header
+            title="System health"
+            description="Review read-only operational checks without exposing credentials, connection strings, or sensitive configuration."
+        >
+            <x-slot:actions>
+                <a
+                    href="{{ route(
+                        'admin.audit-logs.index',
+                    ) }}"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                >
+                    Audit history
+                </a>
+            </x-slot:actions>
+        </x-admin.page-header>
     </x-slot>
 
     @php
