@@ -25,8 +25,8 @@
             @if (session('error'))
                 {{-- Error Alert --}}
                 <div role="alert"
-                    class="flex items-center gap-3 p-4 border-2 border-b-4 rounded-2xl border-weak/40 bg-weak-tint text-weak-ink text-sm font-medium shadow-xs animate-pop">
-                    <svg class="h-5 w-5 shrink-0 text-weak" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                    class="flex items-center gap-3 p-4 border-2 border-b-4 rounded-2xl border-danger-strong/40 bg-danger-tint text-danger-ink text-sm font-medium shadow-xs animate-pop">
+                    <svg class="h-5 w-5 shrink-0 text-danger-strong" fill="none" viewBox="0 0 24 24" stroke-width="2"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
@@ -41,11 +41,11 @@
                 <div class="space-y-2">
                     <div class="flex items-center gap-2">
                         <span
-                            class="inline-flex items-center gap-1.5 rounded-lg bg-clinical-tint px-2.5 py-1 font-display text-[11px] font-bold uppercase tracking-wider text-clinical-ink">
-                            <span class="h-1.5 w-1.5 rounded-full bg-clinical"></span>
+                            class="inline-flex items-center gap-1.5 rounded-lg bg-info-tint px-2.5 py-1 font-display text-[11px] font-bold uppercase tracking-wider text-info-ink">
+                            <span class="h-1.5 w-1.5 rounded-full bg-info-strong"></span>
                             Calibration Engine
                         </span>
-                        <span class="font-bold text-slate-300">&bull;</span>
+                        <span class="font-bold text-line-strong">&bull;</span>
                         <span class="font-display text-xs font-bold uppercase tracking-wider text-ink-muted">
                             One-Time Assessment
                         </span>
@@ -81,7 +81,7 @@
 
                     <div class="flex items-start gap-3 rounded-2xl border-2 border-line/80 bg-surface-2/70 p-4">
                         <div
-                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-b-2 border-teal-200 bg-teal-50 text-teal-600 shadow-xs">
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-b-2 border-info-strong/30 bg-info-tint text-info-ink shadow-xs">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -100,7 +100,7 @@
 
                     <div class="flex items-start gap-3 rounded-2xl border-2 border-line/80 bg-surface-2/70 p-4">
                         <div
-                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-b-2 border-amber-200 bg-amber-50 text-amber-600 shadow-xs">
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-b-2 border-warning-strong/30 bg-warning-tint text-warning-ink shadow-xs">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -119,7 +119,7 @@
 
                     <div class="flex items-start gap-3 rounded-2xl border-2 border-line/80 bg-surface-2/70 p-4">
                         <div
-                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-b-2 border-indigo-200 bg-indigo-50 text-indigo-600 shadow-xs">
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-b-2 border-info-strong/30 bg-info-tint text-info-ink shadow-xs">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round"

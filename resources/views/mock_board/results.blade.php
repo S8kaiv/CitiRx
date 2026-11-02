@@ -27,7 +27,7 @@
             @if (session('status'))
                 <div
                     role="status"
-                    class="rounded-2xl border-2 border-b-4 border-clinical/30 bg-clinical-tint p-4 text-sm font-bold text-clinical-ink"
+                    class="rounded-2xl border-2 border-b-4 border-info-strong/30 bg-info-tint p-4 text-sm font-bold text-info-ink"
                 >
                     {{ session('status') }}
                 </div>
@@ -57,7 +57,7 @@
 
                     <div class="space-y-6 p-6 sm:p-8 lg:p-10">
                         <div>
-                            <span class="inline-flex rounded-xl border border-b-2 border-strong/30 bg-strong-tint px-3 py-1 font-display text-xs font-black text-strong-ink">
+                            <span class="inline-flex rounded-xl border border-b-2 border-success-strong/30 bg-success-tint px-3 py-1 font-display text-xs font-black text-success-ink">
                                 Assessment Completed
                             </span>
 
@@ -94,7 +94,7 @@
                             </div>
 
                             <div class="rounded-2xl border-2 border-b-4 border-line bg-surface-2 p-4">
-                                <p class="font-display text-lg font-black {{ $expired ? 'text-gold-ink' : 'text-clinical-ink' }}">
+                                <p class="font-display text-lg font-black {{ $expired ? 'text-warning-ink' : 'text-info-ink' }}">
                                     {{ $expired ? 'Time Expired' : 'Manual' }}
                                 </p>
 
@@ -176,7 +176,7 @@
                                         </p>
 
                                         @if ($domain['unanswered'] > 0)
-                                            <p class="mt-1 text-[10px] font-bold text-gold-ink">
+                                            <p class="mt-1 text-[10px] font-bold text-warning-ink">
                                                 {{ $domain['unanswered'] }}
                                                 unanswered
                                             </p>
@@ -198,7 +198,7 @@
                                             </div>
 
                                             <div
-                                                class="mt-2 h-2 overflow-hidden rounded-full bg-slate-200"
+                                                class="mt-2 h-2 overflow-hidden rounded-full bg-surface-2"
                                                 role="progressbar"
                                                 aria-label="{{ $domain['domain_name'] }} score"
                                                 aria-valuemin="0"
@@ -219,12 +219,12 @@
                 </div>
             </section>
 
-            <section class="rounded-3xl border-2 border-b-4 border-clinical/30 bg-clinical-tint p-5">
-                <h2 class="font-display text-sm font-black text-clinical-ink">
+            <section class="rounded-3xl border-2 border-b-4 border-info-strong/30 bg-info-tint p-5">
+                <h2 class="font-display text-sm font-black text-info-ink">
                     Research assessment notice
                 </h2>
 
-                <p class="mt-2 text-sm font-medium leading-relaxed text-clinical-ink">
+                <p class="mt-2 text-sm font-medium leading-relaxed text-info-ink">
                     This post-test does not award XP, unlock badges, extend a streak,
                     add questions to the Rx Vault, or update your BKT mastery and
                     readiness estimates.

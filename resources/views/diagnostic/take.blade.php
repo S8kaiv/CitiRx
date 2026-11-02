@@ -62,8 +62,8 @@
 
             {{-- Error Alerts --}}
             @if (session('error'))
-                <div role="alert" class="flex items-center gap-3 p-4 border-2 border-b-4 rounded-2xl border-weak/40 bg-weak-tint text-weak-ink text-sm font-bold shadow-xs animate-pop">
-                    <svg class="h-5 w-5 shrink-0 text-weak" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                <div role="alert" class="flex items-center gap-3 p-4 border-2 border-b-4 rounded-2xl border-danger-strong/40 bg-danger-tint text-danger-ink text-sm font-bold shadow-xs animate-pop">
+                    <svg class="h-5 w-5 shrink-0 text-danger-strong" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
                     </svg>
                     <span>{{ session('error') }}</span>
@@ -71,8 +71,8 @@
             @endif
 
             @if ($errors->any())
-                <div role="alert" class="flex items-center gap-3 p-4 border-2 border-b-4 rounded-2xl border-weak/40 bg-weak-tint text-weak-ink text-sm font-bold shadow-xs animate-pop">
-                    <svg class="h-5 w-5 shrink-0 text-weak" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                <div role="alert" class="flex items-center gap-3 p-4 border-2 border-b-4 rounded-2xl border-danger-strong/40 bg-danger-tint text-danger-ink text-sm font-bold shadow-xs animate-pop">
+                    <svg class="h-5 w-5 shrink-0 text-danger-strong" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
                     </svg>
                     <span>Please answer all diagnostic questions before submitting.</span>
@@ -87,8 +87,8 @@
                     </span>
 
                     {{-- Answered Pill --}}
-                    <div class="inline-flex items-center gap-2 rounded-2xl border-2 border-b-4 border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700 shadow-xs">
-                        <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <div class="inline-flex items-center gap-2 rounded-2xl border-2 border-b-4 border-success-strong/30 bg-success-tint px-3 py-1 text-success-ink shadow-xs">
+                        <span class="h-2 w-2 rounded-full bg-success-strong animate-pulse"></span>
                         <span class="font-display font-black text-xs">
                             <span x-text="answeredCount"></span> / {{ $questions->count() }} Answered
                         </span>
@@ -123,9 +123,9 @@
 
                         {{-- Domain Pill & Competency --}}
                         <div class="flex flex-wrap items-center gap-2">
-                            <span class="inline-flex items-center gap-1.5 rounded-xl border border-b-2 border-clinical/30 bg-clinical-tint px-3 py-1 font-display text-xs font-extrabold text-clinical-ink"
+                            <span class="inline-flex items-center gap-1.5 rounded-xl border border-b-2 border-info-strong/30 bg-info-tint px-3 py-1 font-display text-xs font-extrabold text-info-ink"
                                   x-text="question.domain"></span>
-                            <span class="font-bold text-slate-300">&bull;</span>
+                            <span class="font-bold text-line-strong">&bull;</span>
                             <span class="font-display text-xs font-bold text-ink-muted"
                                   x-text="question.competency"></span>
                         </div>
@@ -188,7 +188,7 @@
                             Syncing answer...
                         </span>
 
-                        <span x-show="saveError" x-cloak x-text="saveError" class="font-bold text-weak-ink"></span>
+                        <span x-show="saveError" x-cloak x-text="saveError" class="font-bold text-danger-ink"></span>
                     </div>
 
                     <span class="font-mono text-[10px] font-bold uppercase tracking-wider text-ink-muted">
@@ -327,7 +327,7 @@
                                 class="h-9 w-9 rounded-xl font-display text-xs font-black transition-all active:translate-y-0.5 active:border-b-2 disabled:opacity-40 disabled:cursor-not-allowed"
                                 :class="{
                                     'border-2 border-b-4 border-primary-lip bg-primary text-white shadow-xs scale-105': currentIndex === index,
-                                    'border-2 border-b-4 border-emerald-600 bg-emerald-500 text-white shadow-xs': currentIndex !== index && answers[question.id],
+                                    'border-2 border-b-4 border-success-strong bg-success-strong text-white shadow-xs': currentIndex !== index && answers[question.id],
                                     'border-2 border-b-4 border-line bg-surface-2 text-ink-muted hover:border-line-strong hover:bg-surface': currentIndex !== index && !answers[question.id]
                                 }"
                                 x-text="index + 1"></button>

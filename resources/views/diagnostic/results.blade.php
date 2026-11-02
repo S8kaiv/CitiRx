@@ -40,7 +40,7 @@
                                 Baseline Established
                             </span>
                             @if ($session->completed_at)
-                                <span class="font-bold text-slate-300">&bull;</span>
+                                <span class="font-bold text-line-strong">&bull;</span>
                                 <span class="font-mono text-xs text-ink-muted">
                                     {{ $session->completed_at->diffForHumans() }}
                                 </span>
@@ -74,7 +74,7 @@
                                 TOS-Weighted Score
                             </span>
 
-                            <div class="font-display text-3xl font-black tracking-tight text-clinical sm:text-4xl">
+                            <div class="font-display text-3xl font-black tracking-tight text-info-strong sm:text-4xl">
                                 {{ number_format($tosWeightedScore, 2) }}%
                             </div>
                         </div>
@@ -92,7 +92,7 @@
                 </div>
 
                 <div class="mt-6 pt-5 border-t border-line">
-                    <div class="h-3 w-full overflow-hidden rounded-full bg-surface-2 p-0.5 ring-1 ring-inset ring-slate-200/60"
+                    <div class="h-3 w-full overflow-hidden rounded-full bg-surface-2 p-0.5 ring-1 ring-inset ring-line/60"
                         role="progressbar" aria-label="Raw diagnostic accuracy" aria-valuemin="0" aria-valuemax="100"
                         aria-valuenow="{{ $overallPercentage }}">
                         <div class="h-full rounded-full bg-primary transition-all duration-700"
@@ -113,7 +113,7 @@
                         </p>
                     </div>
                     <span
-                        class="hidden sm:inline-flex items-center rounded-lg bg-clinical-tint px-2.5 py-1 font-display text-xs font-bold text-clinical-ink">
+                        class="hidden sm:inline-flex items-center rounded-lg bg-info-tint px-2.5 py-1 font-display text-xs font-bold text-info-ink">
                         6 Subjects
                     </span>
                 </div>
@@ -147,15 +147,15 @@
 
                                     <td class="py-3.5 px-4 text-right">
                                         <span
-                                            class="inline-flex items-center rounded-md px-2 py-0.5 font-display text-xs font-bold {{ $domainPercentage >= 75 ? 'bg-strong-tint text-strong-ink' : ($domainPercentage >= 50 ? 'bg-amber-50 text-amber-700' : 'bg-weak-tint text-weak-ink') }}">
+                                            class="inline-flex items-center rounded-md px-2 py-0.5 font-display text-xs font-bold {{ $domainPercentage >= 75 ? 'bg-success-tint text-success-ink' : ($domainPercentage >= 50 ? 'bg-warning-tint text-warning-ink' : 'bg-danger-tint text-danger-ink') }}">
                                             {{ $domainPercentage }}%
                                         </span>
                                     </td>
 
                                     <td class="py-3.5 pl-4 text-right hidden sm:table-cell">
                                         <div
-                                            class="h-2 w-full overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-slate-200/60">
-                                            <div class="h-full rounded-full {{ $domainPercentage >= 75 ? 'bg-strong' : ($domainPercentage >= 50 ? 'bg-amber-500' : 'bg-weak') }}"
+                                            class="h-2 w-full overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-line/60">
+                                            <div class="h-full rounded-full {{ $domainPercentage >= 75 ? 'bg-success-strong' : ($domainPercentage >= 50 ? 'bg-warning-strong' : 'bg-danger-strong') }}"
                                                 style="width: {{ $domainPercentage }}%"></div>
                                         </div>
                                     </td>
@@ -203,7 +203,7 @@
                                     </span>
 
                                     <span
-                                        class="rounded-full bg-slate-200 px-2 py-0.5 font-mono text-[10px] font-bold text-ink-muted">
+                                        class="rounded-full bg-surface-2 px-2 py-0.5 font-mono text-[10px] font-bold text-ink-muted">
                                         {{ $domainResults->count() }}
                                         Competencies
                                     </span>
@@ -241,7 +241,7 @@
 
                                                 <div class="mt-1.5 flex items-center gap-2.5">
                                                     <div
-                                                        class="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-slate-200/50">
+                                                        class="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-line/50">
                                                         <div class="h-full rounded-full bg-primary"
                                                             style="width: {{ $masteryPercentage }}%"></div>
                                                     </div>
