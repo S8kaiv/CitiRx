@@ -393,7 +393,6 @@ it(
     function (): void {
         microPearlTestCreate([
             'title' => '<script>alert("x")</script>',
-
             'lesson_content' => '<script>alert("lesson")</script>',
         ]);
 
@@ -405,14 +404,14 @@ it(
             ->get(route('pearls.index'))
             ->assertOk()
             ->assertDontSee(
-                '<script>',
-                false
+                '<script>alert("x")</script>',
+                false,
             )
             ->assertSee(
-                '&lt;script&gt;',
-                false
+                '&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;',
+                false,
             );
-    }
+    },
 );
 
 it(

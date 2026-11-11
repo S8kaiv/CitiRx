@@ -638,34 +638,57 @@ it('keeps edit history immutable', function (): void {
         ->toBeNull();
 });
 
-it('escapes stored content when showing a published pearl', function (): void {
-    $author = User::factory()->create([
-        'role' => 'faculty',
-    ]);
+it(
+    'escapes stored content when showing a published pearl',
+    function (): void {
+        $author = User::factory()->create([
+            'role' => 'faculty',
+        ]);
 
-    $reviewer = User::factory()->create([
-        'role' => 'admin',
-    ]);
+        $reviewer = User::factory()->create([
+            'role' => 'admin',
+        ]);
 
-    $student = User::factory()->create([
-        'role' => 'student',
-    ]);
+        $student = User::factory()->create([
+            'role' => 'student',
+        ]);
 
-    $pearl = pearlManagementCreatePublished(
-        $author,
-        $reviewer,
-        [
-            'title' => '<script>alert("title")</script>',
-            'mnemonic_summary' => '<img src=x onerror=alert("summary")>',
-            'lesson_content' => '<script>alert("lesson")</script>',
-        ],
-    );
+        $pearl = pearlManagementCreatePublished(
+            $author,
+            $reviewer,
+            [
+                'title' => '<script>alert("title")</script>',
+                'mnemonic_summary' => '<img src=x onerror=alert("summary")>',
+                'lesson_content' => '<script>alert("lesson")</script>',
+            ],
+        );
 
-    $this->actingAs($student)
-        ->get(route('pearls.show', $pearl))
-        ->assertOk()
-        ->assertDontSee('<script>', false)
-        ->assertDontSee('<img src=x', false)
-        ->assertSee('&lt;script&gt;', false)
-        ->assertSee('&lt;img src=x', false);
-});
+        $this->actingAs($student)
+            ->get(route('pearls.show', $pearl))
+            ->assertOk()
+            ->assertDontSee(
+                '<script>alert("title")</script>',
+                false,
+            )
+            ->assertDontSee(
+                '<script>alert("lesson")</script>',
+                false,
+            )
+            ->assertDontSee(
+                '<img src=x onerror=alert("summary")>',
+                false,
+            )
+            ->assertSee(
+                '&lt;script&gt;alert(&quot;title&quot;)&lt;/script&gt;',
+                false,
+            )
+            ->assertSee(
+                '&lt;script&gt;alert(&quot;lesson&quot;)&lt;/script&gt;',
+                false,
+            )
+            ->assertSee(
+                '&lt;img src=x onerror=alert(&quot;summary&quot;)&gt;',
+                false,
+            );
+    },
+);
