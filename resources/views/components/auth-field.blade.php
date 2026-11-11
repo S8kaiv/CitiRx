@@ -22,7 +22,7 @@
         ->implode(' ');
 
     $stateClasses = $invalid
-        ? 'border-weak bg-weak-tint focus:border-weak focus:ring-weak/20'
+        ? 'border-danger-strong bg-danger-tint focus:border-danger-strong focus:ring-danger-strong/20'
         : 'border-slate-200 bg-slate-50 focus:border-primary focus:bg-white focus:ring-primary/20';
 
     $paths = [
@@ -36,14 +36,14 @@
 @endphp
 
 <div @if ($toggle) x-data="{ show: false }" @endif>
-    <div class="mb-1.5 flex min-h-6 items-center justify-between gap-3">
+    <div class="mb-1.5 flex min-h-6 flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <label for="{{ $id }}" class="block text-sm font-semibold text-slate-700">
             {{ $label }}
         </label>
 
         @if ($actionHref && $actionLabel)
             <a href="{{ $actionHref }}"
-                class="rounded-lg px-1 py-1 text-xs font-bold text-primary underline-offset-4 hover:text-primary-lip hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
+                class="inline-flex min-h-11 items-center rounded-lg px-1 py-1 text-xs font-bold text-primary-ink underline-offset-4 hover:text-primary-ink hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
                 {{ $actionLabel }}
             </a>
         @endif
@@ -85,7 +85,7 @@
             });
         "
                 x-bind:aria-pressed="show" x-bind:aria-label="show ? 'Hide password' : 'Show password'"
-                class="absolute inset-y-0 right-0 min-w-12 px-3 text-xs font-bold text-slate-600 hover:text-primary focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                class="absolute inset-y-0 right-0 min-w-12 px-3 text-xs font-bold text-slate-600 hover:text-primary-ink focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
                 x-text="show ? 'Hide' : 'Show'">
                 Show
             </button>
@@ -99,7 +99,7 @@
     @endif
 
     @error($name)
-        <p id="{{ $id }}-error" class="mt-1.5 text-xs font-semibold text-weak-ink">
+        <p id="{{ $id }}-error" class="mt-1.5 text-xs font-semibold text-danger-ink">
             {{ $message }}
         </p>
     @enderror

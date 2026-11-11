@@ -1,17 +1,9 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <h1 class="font-display text-xl font-black leading-tight text-slate-900">
-                Micro Pearls
-            </h1>
-
-            <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
-                Short, reviewed lessons for focused PhLE recall.
-            </p>
-        </div>
+        <x-ui.page-header title="Micro Pearls" description="Short, reviewed lessons for focused PhLE recall" />
     </x-slot>
 
-    <div class="py-8">
+    <div class="pt-6 pb-8">
         <div class="mx-auto max-w-6xl space-y-6 px-4 sm:px-6 lg:px-8">
 
             <form method="GET" action="{{ route('pearls.index') }}"

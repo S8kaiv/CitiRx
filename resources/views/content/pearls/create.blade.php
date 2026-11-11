@@ -15,8 +15,8 @@
         </x-ui.page-header>
     </x-slot>
 
-    <div class="py-6 sm:py-8">
-        <div class="mx-auto max-w-5xl space-y-5 px-4 sm:px-6 lg:px-8">
+    <div class="pt-6 pb-6 sm:pb-8">
+        <div class="mx-auto max-w-5xl space-y-6 px-4 sm:px-6 lg:px-8">
             @if (session('error'))
                 <x-ui.alert variant="danger">
                     {{ session('error') }}

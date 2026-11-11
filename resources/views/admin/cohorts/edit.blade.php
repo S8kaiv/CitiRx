@@ -23,7 +23,7 @@
     </x-slot>
 
     <div class="py-6 font-sans text-slate-900 antialiased">
-        <div class="mx-auto max-w-2xl space-y-5 px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-2xl space-y-6 px-4 sm:px-6 lg:px-8">
 
             @if ($cohort->archived_at)
                 <div role="alert" class="rounded-2xl border-2 border-b-4 border-amber-300 bg-amber-50 p-4 font-display text-sm font-bold text-amber-800 shadow-2xs">

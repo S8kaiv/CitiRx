@@ -23,7 +23,7 @@
     </x-slot>
 
     <div class="py-6 font-sans text-slate-900 antialiased">
-        <div class="mx-auto max-w-4xl space-y-5 px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-4xl space-y-6 px-4 sm:px-6 lg:px-8">
 
             <form method="POST" action="{{ route('admin.questions.update', ['question' => $question->question_id]) }}"
                 class="space-y-6 rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 shadow-sm">

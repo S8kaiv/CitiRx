@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet" />
 
+    <x-ui.comfort-bootstrap />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -631,7 +632,7 @@
 
                     <div
                         x-data
-                        class="admin-mobile-link text-ink-muted"
+                        class="app-mobile-more min-w-0"
                     >
                         <button
                             type="button"
@@ -652,7 +653,7 @@
                             class="admin-mobile-dialog"
                             aria-labelledby="admin-mobile-menu-title"
                         >
-                            <div class="sticky top-0 flex items-center justify-between gap-4 border-b border-slate-200 bg-surface px-5 py-4">
+                            <div class="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-slate-200 bg-surface px-5 py-4">
                                 <div>
                                     <h2
                                         id="admin-mobile-menu-title"
@@ -771,7 +772,94 @@
                 @endif
 
                 {{-- Profile --}}
-                <x-admin.mobile-link :href="route('profile.edit')" label="Profile" icon="profile" :active="request()->routeIs('profile.*')"/>
+                @if ($authUser?->role === 'student')
+                    <div
+                        x-data="{ menuOpen: false }"
+                        class="app-mobile-more min-w-0"
+                    >
+                        <button
+                            type="button"
+                            class="admin-mobile-link text-ink-muted"
+                            aria-haspopup="dialog"
+                            aria-controls="student-mobile-menu"
+                            x-bind:aria-expanded="menuOpen ? 'true' : 'false'"
+                            x-on:click="
+                                $refs.studentMenu.showModal();
+                                menuOpen = true;
+                            "
+                        >
+                            <x-admin.icon name="menu" class="h-5 w-5" />
+                            <span>More</span>
+                        </button>
+
+                        <dialog
+                            id="student-mobile-menu"
+                            x-ref="studentMenu"
+                            x-on:close="menuOpen = false"
+                            class="admin-mobile-dialog"
+                            aria-labelledby="student-mobile-menu-title"
+                        >
+                            <div class="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-line bg-surface px-5 py-4">
+                                <h2
+                                    id="student-mobile-menu-title"
+                                    class="font-display text-lg font-extrabold text-ink"
+                                >
+                                    More
+                                </h2>
+
+                                <form method="dialog">
+                                    <button
+                                        type="submit"
+                                        aria-label="Close student menu"
+                                        class="flex h-11 w-11 items-center justify-center rounded-xl text-ink-muted hover:bg-surface-2"
+                                    >
+                                        <x-admin.icon name="close" class="h-5 w-5" />
+                                    </button>
+                                </form>
+                            </div>
+
+                            <nav
+                                aria-label="Additional student navigation"
+                                class="grid gap-1 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]"
+                            >
+                                <x-admin.nav-link
+                                    :href="route('pearls.index')"
+                                    label="Micro Pearls"
+                                    icon="pearls"
+                                    :active="request()->routeIs('pearls.*')"
+                                />
+
+                                <x-admin.nav-link
+                                    :href="route('mock-board.intro')"
+                                    label="Mock Board"
+                                    icon="mock-board"
+                                    :active="request()->routeIs('mock-board.*')"
+                                />
+
+                                <x-admin.nav-link
+                                    :href="route('readiness.show')"
+                                    label="Readiness"
+                                    icon="readiness"
+                                    :active="request()->routeIs('readiness.*')"
+                                />
+
+                                <x-admin.nav-link
+                                    :href="route('profile.edit')"
+                                    label="Profile"
+                                    icon="profile"
+                                    :active="request()->routeIs('profile.*')"
+                                />
+                            </nav>
+                        </dialog>
+                    </div>
+                @else
+                    <x-admin.mobile-link
+                        :href="route('profile.edit')"
+                        label="Profile"
+                        icon="profile"
+                        :active="request()->routeIs('profile.*')"
+                    />
+                @endif
             </nav>
         @endif
 
@@ -779,7 +867,7 @@
         <div class="flex min-w-0 flex-1 flex-col {{ !$isFocusMode ? 'app-content-shell md:pl-64' : '' }}">
             @isset($header)
                 <header class="admin-topbar sticky top-0 z-20 border-b bg-surface">
-                    <div class="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+                    <div class="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
                 </header>

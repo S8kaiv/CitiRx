@@ -7,20 +7,11 @@
             >
                 ← Micro Pearls
             </a>
-
-            <h1 class="mt-2 font-display text-2xl font-extrabold text-slate-900">
-                {{ $pearl->title }}
-            </h1>
-
-            <p class="mt-1 text-sm text-muted-ink">
-                {{ $pearl->competency->competency_code }}
-                · {{ $pearl->competency->title }}
-                · about {{ $pearl->estimated_read_seconds }} seconds
-            </p>
+            <x-ui.page-header :title="$pearl->title" :description="$pearl->competency->competency_code .' · '.$pearl->competency->title .' · about '.$pearl->estimated_read_seconds . ' seconds' " />
         </div>
     </x-slot>
 
-    <div class="py-8">
+    <div class="pt-6 pb-8">
         <div class="mx-auto max-w-4xl space-y-6 px-4 sm:px-6 lg:px-8">
 
             <section class="rounded-3xl border-2 border-b-4 border-primary/30 bg-primary-tint/50 p-6">

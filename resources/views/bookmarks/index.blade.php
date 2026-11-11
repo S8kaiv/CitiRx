@@ -1,24 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div>
-                <h2 class="font-display text-xl font-bold text-slate-900 leading-tight">
-                    {{ __('Bookmarks') }}
-                </h2>
-                <p class="text-xs font-semibold uppercase tracking-wider text-muted-ink">
-                    Personal Question Study Notebook
-                </p>
-            </div>
-
-            <a href="{{ route('dashboard') }}"
-               class="font-display text-xs font-bold text-muted-ink hover:text-primary transition">
-                Return to Dashboard
-            </a>
-        </div>
+        <x-ui.page-header title=" {{ __('Bookmarks') }} " description="Personal Question Study Notebook">
+            <x-slot:actions>
+                <a href="{{ route('dashboard') }}" class="inline-flex min-h-11 items-center rounded-lg px-2 font-display text-xs font-bold text-ink-muted transition hover:text-primary">
+                    Return to Dashboard
+                </a>
+            </x-slot:actions>
+        </x-ui.page-header>
     </x-slot>
 
     <div class="pt-6 pb-16 font-sans text-slate-900 antialiased">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-6">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             {{-- Status Notification Banner --}}
             @if (session('status'))
@@ -126,7 +118,7 @@
 
                                                 <button type="submit"
                                                         title="Remove from bookmarks"
-                                                        class="flex items-center gap-1 rounded-xl border border-weak/30 bg-weak-tint/50 px-2.5 py-1 font-display text-xs font-bold text-weak-ink hover:bg-weak-tint transition">
+                                                        class="inline-flex min-h-11 items-center justify-center gap-1 rounded-xl border border-weak/30 bg-weak-tint/50 px-2.5 py-1 font-display text-xs font-bold text-weak-ink transition hover:bg-weak-tint">
                                                     <span>✕</span>
                                                     <span>Remove</span>
                                                 </button>

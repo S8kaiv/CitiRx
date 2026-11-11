@@ -1,25 +1,17 @@
 <x-app-layout>
     {{-- Header --}}
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="font-display text-xl font-bold leading-tight text-ink">
-                    {{ __('Diagnostic Results') }}
-                </h1>
-                <p class="font-display text-[10px] font-bold uppercase tracking-wider text-ink-muted">
-                    PhLE Baseline Mastery Calibration
-                </p>
-            </div>
-
-            <a href="{{ route('dashboard') }}"
-                class="font-display text-xs font-bold text-ink-muted transition hover:text-primary">
-                Exit to Dashboard
-            </a>
-        </div>
+        <x-ui.page-header title=" {{ __('Diagnostic Results') }} " description="PhLE Baseline Mastery Calibration">
+            <x-slot:actions>
+                <a href="{{ route('dashboard') }}" class="inline-flex min-h-11 items-center rounded-lg px-2 font-display text-xs font-bold text-ink-muted transition hover:text-primary">
+                    Exit to Dashboard
+                </a>
+            </x-slot:actions>
+        </x-ui.page-header>
     </x-slot>
 
     {{-- Main --}}
-    <div class="py-8 sm:py-10 font-sans antialiased text-ink">
+    <div class="pt-6 pb-8 sm:pb-10 font-sans antialiased text-ink">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             {{-- Level Up Notification Banner --}}
             <x-level-up-alert />

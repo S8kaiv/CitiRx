@@ -1,20 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="font-display text-xl font-black leading-tight text-ink">
-                    {{ __('Practice Setup') }}
-                </h1>
-                <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-ink-muted">
-                    Adaptive Bayesian Knowledge Tracing
-                </p>
-            </div>
-
-        </div>
+        <x-ui.page-header title=" {{ __('Practice Setup') }} " description="Adaptive Bayesian Knowledge Tracing" />
     </x-slot>
 
-    <div class="pt-8 pb-16 font-sans antialiased text-ink">
-        <div class="max-w-xl px-4 mx-auto space-y-6 sm:px-6">
+    <div class="pt-6 pb-16 font-sans antialiased text-ink">
+        <div class="max-w-xl px-4 mx-auto space-y-6 sm:px-6 lg:px-8">
 
             {{-- Flash Alert Messages --}}
             @if (session('status'))

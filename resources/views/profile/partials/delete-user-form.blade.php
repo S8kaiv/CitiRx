@@ -31,6 +31,8 @@
     <x-modal
         name="confirm-user-deletion"
         :show="$errors->userDeletion->isNotEmpty()"
+        labelledby="confirm-user-deletion-title"
+        describedby="confirm-user-deletion-description"
         focusable
     >
         <form
@@ -41,11 +43,11 @@
             @csrf
             @method('DELETE')
 
-            <h2 class="font-display text-lg font-black text-slate-900">
+            <h2 id="confirm-user-deletion-title" class="font-display text-lg font-black text-slate-900">
                 {{ __('Are you sure you want to deactivate your account?') }}
             </h2>
 
-            <p class="text-sm leading-relaxed text-muted-ink">
+            <p id="confirm-user-deletion-description" class="text-sm leading-relaxed text-muted-ink">
                 {{ __('You will be signed out and will no longer be able to access this account. Enter your password to confirm the deactivation request.') }}
             </p>
 
@@ -75,7 +77,7 @@
             <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button
                     type="button"
-                    x-on:click="$dispatch('close')"
+                    x-on:click="$dispatch('close-modal', 'confirm-user-deletion'')"
                     class="btn-press inline-flex items-center justify-center rounded-xl border-2 border-b-4 border-slate-200 bg-white px-5 py-2.5 font-display text-xs font-black uppercase tracking-wider text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                     style="--lip: #cbd5e1;"
                 >

@@ -24,7 +24,7 @@
     @if (session('status'))
         <div
             role="status"
-            class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800"
+            class="mb-5 rounded-xl border border-success-strong/30 bg-success-tint p-4 text-sm font-semibold text-success-ink"
         >
             {{ session('status') }}
         </div>
@@ -91,7 +91,7 @@
 
             <a
                 href="{{ route('register') }}"
-                class="font-bold text-primary underline-offset-4 hover:text-primary-lip hover:underline"
+                class="font-bold text-primary-ink underline-offset-4 hover:text-primary-ink hover:underline"
             >
                 {{ __('Create an account') }}
             </a>

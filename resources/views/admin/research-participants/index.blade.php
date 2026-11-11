@@ -17,7 +17,7 @@
         </x-admin.page-header>
     </x-slot>
 
-    <div class="py-8">
+    <div class="pt-6 pb-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             <section class="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
                 <h2 class="font-black text-slate-900">

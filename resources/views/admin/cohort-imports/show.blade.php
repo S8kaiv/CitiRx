@@ -17,8 +17,8 @@
         </x-admin.page-header>
     </x-slot>
 
-    <div class="py-8">
-        <div class="mx-auto max-w-6xl space-y-6 px-4">
+    <div class="pt-6 pb-8">
+        <div class="mx-auto max-w-6xl space-y-6 px-4 sm:px-6 lg:px-8">
 
             <section class="rounded-3xl border-2 border-slate-200 bg-white p-6">
                 <dl class="grid gap-4 sm:grid-cols-4">

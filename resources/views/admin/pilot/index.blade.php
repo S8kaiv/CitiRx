@@ -17,8 +17,8 @@
         </x-admin.page-header>
     </x-slot>
 
-    <div class="admin-surface py-6 sm:py-8">
-        <div class="mx-auto max-w-7xl space-y-5 px-4 sm:space-y-6 sm:px-6 lg:px-8">
+    <div class="admin-surface pt-6 pb-6 sm:pb-8">
+        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             @if ($errors->any())
                 <div
                     role="alert"

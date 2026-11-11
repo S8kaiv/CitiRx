@@ -26,7 +26,7 @@
         ];
     @endphp
 
-    <div class="py-8">
+    <div class="pt-6 pb-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             <section class="flex flex-wrap items-center justify-between gap-4 rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-sm">
                 <div>
