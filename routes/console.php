@@ -23,3 +23,9 @@ Schedule::command('system:heartbeat')
 Schedule::command('research:prune-imports')
     ->everyFifteenMinutes()
     ->withoutOverlapping(10);
+
+Schedule::command(
+    'content:prune-pearl-imports',
+)
+    ->everyFifteenMinutes()
+    ->withoutOverlapping(10);

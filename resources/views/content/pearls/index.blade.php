@@ -5,9 +5,18 @@
             description="Create, review, publish, and retire governed learning content."
         >
             <x-slot:actions>
-                <x-ui.button :href="route('content.pearls.create')">
-                    Create Draft
-                </x-ui.button>
+                <div class="flex flex-wrap gap-2">
+                    <x-ui.button
+                        variant="secondary"
+                        :href="route('content.pearls.imports.create')"
+                    >
+                        Import CSV
+                    </x-ui.button>
+
+                    <x-ui.button :href="route('content.pearls.create')">
+                        Create Draft
+                    </x-ui.button>
+                </div>
             </x-slot:actions>
         </x-ui.page-header>
     </x-slot>

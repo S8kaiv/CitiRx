@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\BookmarkController;
+use App\Http\Controllers\Content\MicroPearlImportController;
 use App\Http\Controllers\Content\MicroPearlManagementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiagnosticController;
@@ -390,6 +391,60 @@ Route::middleware([
                 'store',
             ],
         )->name('store');
+
+        Route::get(
+            '/imports/create',
+            [
+                MicroPearlImportController::class,
+                'create',
+            ],
+        )->name('imports.create');
+
+        Route::get(
+            '/imports/template',
+            [
+                MicroPearlImportController::class,
+                'template',
+            ],
+        )->name('imports.template');
+
+        Route::post(
+            '/imports/preview',
+            [
+                MicroPearlImportController::class,
+                'preview',
+            ],
+        )->name('imports.preview');
+
+        Route::get(
+            '/imports/{import}',
+            [
+                MicroPearlImportController::class,
+                'show',
+            ],
+        )
+            ->whereUuid('import')
+            ->name('imports.show');
+
+        Route::post(
+            '/imports/{import}/commit',
+            [
+                MicroPearlImportController::class,
+                'commit',
+            ],
+        )
+            ->whereUuid('import')
+            ->name('imports.commit');
+
+        Route::delete(
+            '/imports/{import}',
+            [
+                MicroPearlImportController::class,
+                'destroy',
+            ],
+        )
+            ->whereUuid('import')
+            ->name('imports.destroy');
 
         Route::get(
             '/{pearl:pearl_id}/edit',
