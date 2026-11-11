@@ -36,4 +36,11 @@ return [
         ),
 
     ],
+
+    'content' => [
+        'pearl_import_preview_minutes' => (int) env(
+            'CITIRX_PEARL_IMPORT_PREVIEW_MINUTES',
+            30,
+        ),
+    ],
 ];
