@@ -20,7 +20,7 @@
 
         <meta
             name="color-scheme"
-            content="light"
+            content="light dark"
         >
 
         <title>{{ config('app.name', 'CitiRx') }}</title>
@@ -35,13 +35,15 @@
             rel="stylesheet"
         >
 
+        <x-ui.comfort-bootstrap />
+
         @vite([
             'resources/css/app.css',
             'resources/js/app.js',
         ])
     </head>
 
-    <body class="bg-canvas font-sans text-slate-900 antialiased">
+    <body x-data="publicComfort" class="public-pages bg-canvas font-sans text-ink antialiased">
         @if ($attributes->has('fullscreen'))
             {{ $slot }}
         @else

@@ -1,17 +1,7 @@
 <x-app-layout>
     {{-- Header --}}
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="font-display text-xl font-black leading-tight text-slate-900">
-                    {{ __('Rx Vault') }}
-                </h1>
-                <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
-                    Remediation & Spaced Recovery Hub
-                </p>
-            </div>
-
-        </div>
+        <x-ui.page-header title=" {{ __('Rx Vault') }} " description="Remediation & Spaced Recovery Hub" />
     </x-slot>
 
     @php
@@ -19,8 +9,8 @@
     @endphp
 
     {{-- Main Container --}}
-    <div class="py-6 sm:py-8 font-sans text-slate-900 antialiased">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
+    <div class="pt-6 pb-6 sm:pb-8 font-sans text-slate-900 antialiased">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             {{-- Status & Error Alerts --}}
             @if (session('status'))

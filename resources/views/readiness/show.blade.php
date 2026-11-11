@@ -1,16 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="font-display text-xl font-black text-slate-900 leading-tight">
-                    {{ __('Board Readiness Report') }}
-                </h1>
-                <p class="text-xs font-semibold uppercase tracking-wider text-muted-ink">
-                    PRC Table of Specifications (TOS) Telemetry
-                </p>
-            </div>
-
-        </div>
+        <x-ui.page-header title=" {{ __('Board Readiness Report') }} " description="PRC Table of Specifications (TOS) Telemetry" />
     </x-slot>
 
     @php
@@ -68,7 +58,7 @@
     @endphp
 
     <div class="pt-6 pb-16 font-sans text-slate-900 antialiased">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-6">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             {{-- TOP HERO CARD: READINESS DIAL & TELEMETRY --}}
             <div

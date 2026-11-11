@@ -1,14 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <h1 class="font-display text-xl font-black leading-tight text-ink">
-                Research Post-Test
-            </h1>
-
-            <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-ink-muted">
-                Mock Board Examination · Form B
-            </p>
-        </div>
+        <x-ui.page-header title="Research Post-Test" description="Mock Board Examination · Form B" />
     </x-slot>
 
     @php
@@ -26,7 +18,7 @@
         );
     @endphp
 
-    <div class="py-8 sm:py-12">
+    <div class="pt-6 pb-8 sm:pb-12">
         <div class="mx-auto max-w-6xl space-y-6 px-4 sm:px-6 lg:px-8">
 
             @if (session('error'))

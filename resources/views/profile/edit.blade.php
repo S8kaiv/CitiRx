@@ -1,15 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div>
-                <h2 class="font-display text-xl font-black leading-tight text-ink">
-                    {{ __('Account Profile') }}
-                </h2>
-                <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-ink-muted">
-                    Manage Identity & Statistics
-                </p>
-            </div>
-        </div>
+        <x-ui.page-header title="{{ __('Account Profile') }}" description="Manage Identity & Statistics" />
     </x-slot>
 
     @php
@@ -111,7 +102,7 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
     <div class="pt-6 pb-20 font-sans text-ink antialiased" x-data="{
         activeTab: @js($errors->any() || session('status') ? 'settings' : 'overview')
     }">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             {{-- 1. STUDENT IDENTITY CREST WITH DYNAMIC TIER AVATAR --}}
             <div
@@ -188,23 +179,29 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                             Statistics
                         </h3>
 
-                        {{-- 2x2 Grid (Forced 2 columns even on mobile devices) --}}
-                        <div class="grid grid-cols-2 gap-4">
+                        {{-- Statistics: one column on phones, two from sm upward --}}
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
                             {{-- Card 1: Streak --}}
                             <div
-                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-4 sm:p-5 shadow-sm">
+                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-4 sm:p-5 shadow-sm"
+                            >
                                 <div
-                                    class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-3 border-amber-300 bg-gold-tint text-lg sm:text-xl shadow-2xs">
+                                    class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-3 border-amber-300 bg-gold-tint text-lg sm:text-xl shadow-2xs"
+                                >
                                     🔥
                                 </div>
-                                <div class="min-w-0">
+
+                                <div class="min-w-0 flex-1">
                                     <span
-                                        class="font-display text-xl sm:text-2xl font-black text-ink leading-none block truncate">
+                                        class="block break-words font-display text-xl sm:text-2xl font-black leading-none text-ink"
+                                    >
                                         {{ $streak }}
                                     </span>
+
                                     <p
-                                        class="font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-ink-muted mt-0.5 truncate">
+                                        class="mt-0.5 whitespace-normal font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-ink-muted"
+                                    >
                                         Day Streak
                                     </p>
                                 </div>
@@ -212,18 +209,24 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
 
                             {{-- Card 2: Total XP --}}
                             <div
-                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-4 sm:p-5 shadow-sm">
+                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-4 sm:p-5 shadow-sm"
+                            >
                                 <div
-                                    class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-3 border-amber-300 bg-gold-tint text-lg sm:text-xl shadow-2xs">
+                                    class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-3 border-amber-300 bg-gold-tint text-lg sm:text-xl shadow-2xs"
+                                >
                                     ⚡
                                 </div>
-                                <div class="min-w-0">
+
+                                <div class="min-w-0 flex-1">
                                     <span
-                                        class="font-display text-xl sm:text-2xl font-black text-ink leading-none block truncate">
+                                        class="block break-words font-display text-xl sm:text-2xl font-black leading-none text-ink"
+                                    >
                                         {{ number_format($xp) }}
                                     </span>
+
                                     <p
-                                        class="font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-ink-muted mt-0.5 truncate">
+                                        class="mt-0.5 whitespace-normal font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-ink-muted"
+                                    >
                                         Total XP
                                     </p>
                                 </div>
@@ -231,18 +234,24 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
 
                             {{-- Card 3: Current Tier --}}
                             <div
-                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-4 sm:p-5 shadow-sm">
+                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-4 sm:p-5 shadow-sm"
+                            >
                                 <div
-                                    class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-3 border-primary/30 bg-primary-tint text-lg sm:text-xl shadow-2xs">
+                                    class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-3 border-primary/30 bg-primary-tint text-lg sm:text-xl shadow-2xs"
+                                >
                                     🛡️
                                 </div>
-                                <div class="min-w-0">
+
+                                <div class="min-w-0 flex-1">
                                     <span
-                                        class="font-display text-lg sm:text-2xl font-black text-ink leading-none block truncate">
+                                        class="block break-words font-display text-lg sm:text-2xl font-black leading-none text-ink"
+                                    >
                                         {{ $tierDisplayName }}
                                     </span>
+
                                     <p
-                                        class="font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-ink-muted mt-0.5 truncate">
+                                        class="mt-0.5 whitespace-normal font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-ink-muted"
+                                    >
                                         Current Tier
                                     </p>
                                 </div>
@@ -250,18 +259,24 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
 
                             {{-- Card 4: Badges Earned --}}
                             <div
-                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-4 sm:p-5 shadow-sm">
+                                class="flex items-center gap-3 sm:gap-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-4 sm:p-5 shadow-sm"
+                            >
                                 <div
-                                    class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-3 border-indigo-300 bg-indigo-50 text-lg sm:text-xl shadow-2xs">
+                                    class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-3 border-indigo-300 bg-indigo-50 text-lg sm:text-xl shadow-2xs"
+                                >
                                     🏆
                                 </div>
-                                <div class="min-w-0">
+
+                                <div class="min-w-0 flex-1">
                                     <span
-                                        class="font-display text-xl sm:text-2xl font-black text-ink leading-none block truncate">
-                                        {{ $badgesCount}}
+                                        class="block break-words font-display text-xl sm:text-2xl font-black leading-none text-ink"
+                                    >
+                                        {{ $badgesCount }}
                                     </span>
+
                                     <p
-                                        class="font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-ink-muted mt-0.5 truncate">
+                                        class="mt-0.5 whitespace-normal font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-ink-muted"
+                                    >
                                         Badges Unlocked
                                     </p>
                                 </div>

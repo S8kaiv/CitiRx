@@ -1,19 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between gap-2">
-            <div>
-                {{-- Responsive text size so it stays compact on mobile --}}
-                <h2 class="font-display text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
-                    <span class="block sm:hidden">Dashboard</span>
-                    <span class="hidden sm:block">Student Dashboard</span>
-                </h2>
-                <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
-                    PhLE Adaptive Review Engine
-                </p>
-            </div>
-
-            {{-- Compact badges with smaller mobile padding to guarantee 1-row fit --}}
-            <div class="flex items-center gap-1.5 shrink-0">
+        <x-ui.page-header description="PhLE Adaptive Review Engine">
+            <x-slot:title>
+                <span class="block sm:hidden">Dashboard</span>
+                <span class="hidden sm:block">Student Dashboard</span>
+            </x-slot:title>
+            <x-slot:actions>
                 @php
                     $streak = (int) ($user->streak_count ?? 0);
                     $xp = (int) ($user->total_xp ?? 0);
@@ -34,8 +26,8 @@
                     <span class="text-xs sm:text-sm font-black">{{ number_format($xp) }}</span>
                     <span class="text-[9px] tracking-wider opacity-80 hidden xs:inline">XP</span>
                 </div>
-            </div>
-        </div>
+            </x-slot:actions>
+        </x-ui.page-header>
     </x-slot>
 
     @php

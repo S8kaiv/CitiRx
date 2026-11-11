@@ -4,7 +4,7 @@
 ])
 
 <div {{ $attributes->class('ui-page-header') }}>
-    <div class="min-w-0">
+    <div class="ui-page-header-text">
         <h1 class="ui-page-title">
             {{ $title }}
         </h1>
@@ -17,7 +17,7 @@
     </div>
 
     @isset($actions)
-        <div class="flex shrink-0 flex-wrap items-center gap-2">
+        <div class="ui-page-header-actions">
             {{ $actions }}
         </div>
     @endisset

@@ -1,15 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="font-display text-xl font-black leading-tight text-slate-900">
-                    {{ __('Level Progression') }}
-                </h1>
-                <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
-                    Experience & Tier Milestones
-                </p>
-            </div>
-        </div>
+        <x-ui.page-header title="Level Progression" description="Experience & Tier Milestone" />
     </x-slot>
 
     @php
@@ -26,7 +17,7 @@
     @endphp
 
     <div class="pt-6 pb-16 font-sans antialiased text-slate-900">
-        <div class="max-w-3xl px-4 mx-auto space-y-8 sm:px-6">
+        <div class="max-w-3xl px-4 mx-auto space-y-8 sm:px-6 lg:px-8">
 
             {{-- ========================================= --}}
             {{-- 1. CURRENT LEVEL HERO CARD (Chunky 2.5D)  --}}
@@ -45,8 +36,8 @@
                     <div class="flex-1">
                         {{-- Unified Tier Pill --}}
                         <div class="flex items-center justify-center sm:justify-start gap-2">
-                            <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100/70 px-2.5 py-0.5 font-display text-[11px] font-extrabold uppercase tracking-wider text-amber-900">
-                                <span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                            <span class="inline-flex items-center gap-1.5 rounded-full border border-warning-strong/40 bg-warning-tint px-2.5 py-0.5 font-display text-[11px] font-extrabold uppercase tracking-wider text-warning-ink">
+                                <span class="h-1.5 w-1.5 rounded-full bg-warning-strong animate-pulse"></span>
                                 {{ $currentLevel->tier->tier_name }} Tier
                             </span>
                             <span class="font-display text-xs font-bold text-muted-ink">• Active Rank</span>
@@ -59,11 +50,14 @@
                             </h3>
 
                             {{-- Tactile XP Chip --}}
-                            <div class="inline-flex items-center gap-1.5 rounded-xl border-2 border-b-3 border-amber-300/80 bg-amber-50 px-2.5 py-1 shadow-2xs">
-                                <span class="font-mono text-xs font-black text-amber-900">
+                            <div class="inline-flex items-center gap-1.5 rounded-xl border-2 border-warning-strong/40 bg-warning-tint px-2.5 py-1 shadow-2xs">
+                                <span class="font-mono text-xs font-black text-warning-ink">
                                     {{ number_format((int) $user->total_xp) }}
                                 </span>
-                                <span class="font-display text-[10px] font-extrabold uppercase text-amber-700/80">XP</span>
+
+                                <span class="font-display text-[10px] font-extrabold uppercase text-warning-ink">
+                                    XP
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -97,7 +91,7 @@
                         </div>
                     </div>
                 @else
-                    <div class="mt-6 inline-flex items-center gap-2 rounded-2xl border-2 border-b-4 border-strong/40 bg-strong-tint/60 px-4 py-2 font-display text-xs font-bold text-strong-ink shadow-xs">
+                    <div class="mt-6 inline-flex items-center gap-2 rounded-2xl border-2 border-b-4 border-success-strong/40 bg-success-tint px-4 py-2 font-display text-xs font-bold text-success-ink shadow-xs">
                         <span>👑</span>
                         <span>Maximum level reached! Continue drilling to sharpen your PRC TOS readiness.</span>
                     </div>
@@ -169,8 +163,7 @@
                                             <span class="font-display text-base font-black">🎯</span>
                                         </div>
                                     @elseif ($isReached)
-                                        <div style="--lip: #15803D;"
-                                             class="btn-press flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-strong/50 bg-strong text-white shadow-xs">
+                                        <div style="--lip: rgb(var(--color-success-strong));" class="btn-press flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-b-4 border-success-strong/50 bg-success-tint text-success-ink shadow-xs">
                                             <span class="font-display text-base font-black">✓</span>
                                         </div>
                                     @else
@@ -183,9 +176,9 @@
                                     {{-- Level Milestone Card --}}
                                     <div @class([
                                         'flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-2xl p-3.5 sm:p-4 transition-all',
-                                        'border-2 border-b-4 border-primary/40 bg-primary-tint/30 shadow-xs ring-1 ring-primary/20' => $isCurrent,
-                                        'border-2 border-b-4 border-strong/30 bg-strong-tint/20' => $isReached && !$isCurrent,
-                                        'border-2 border-b-4 border-slate-200 bg-slate-50/50 opacity-75' => !$isReached,
+                                        'border-2 border-b-4 border-primary/40 bg-primary-tint shadow-xs ring-1 ring-primary/20' => $isCurrent,
+                                        'border-2 border-b-4 border-success-strong/40 bg-success-tint' => $isReached && !$isCurrent,
+                                        'border-2 border-b-4 border-line bg-surface' => !$isReached,
                                     ])>
                                         <div>
                                             <div class="flex flex-wrap items-center gap-2">
@@ -198,7 +191,7 @@
                                                         Active Standing
                                                     </span>
                                                 @elseif ($isReached)
-                                                    <span class="font-display text-[11px] font-bold text-strong-ink">
+                                                    <span class="font-display text-[11px] font-bold text-success-ink">
                                                         Unlocked
                                                     </span>
                                                 @endif
@@ -213,9 +206,9 @@
                                         <div class="self-start sm:self-auto">
                                             <span @class([
                                                 'inline-flex items-center rounded-xl border px-2.5 py-1 font-display text-xs font-extrabold shadow-2xs',
-                                                'border-primary/30 bg-white text-primary' => $isCurrent,
-                                                'border-strong/30 bg-white text-strong-ink' => $isReached && !$isCurrent,
-                                                'border-slate-200 bg-white/70 text-slate-600' => !$isReached,
+                                                'border-primary/40 bg-surface text-primary-ink' => $isCurrent,
+                                                'border-success-strong/40 bg-surface text-success-ink' => $isReached && !$isCurrent,
+                                                'border-line-strong bg-surface text-ink-muted' => !$isReached,
                                             ])>
                                                 {{ number_format((int) $level->min_xp) }} XP
                                             </span>

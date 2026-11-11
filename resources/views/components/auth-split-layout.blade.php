@@ -9,37 +9,17 @@
 
 <x-guest-layout fullscreen>
     <div class="auth-screen grid bg-canvas lg:grid-cols-[0.8fr_1fr]">
-        <aside
-            class="relative hidden overflow-hidden bg-primary p-8 text-white lg:flex lg:flex-col xl:p-12"
-        >
-            <div
-                class="pointer-events-none absolute inset-0"
-                aria-hidden="true"
-            >
-                <div
-                    class="capsule absolute -top-4 right-16 h-10 w-28 rounded-full"
-                    style="--r: -28deg; --capsule-start: #f5a623;"
-                ></div>
+        <aside class="auth-brand-panel relative hidden overflow-hidden p-8 text-white lg:flex lg:flex-col xl:p-12">
+            <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+                <div class="capsule absolute -top-4 right-16 h-10 w-28 rounded-full" style="--r: -28deg; --capsule-start: #f5a623;"></div>
 
-                <div
-                    class="capsule absolute -right-6 top-1/3 h-9 w-24 rounded-full"
-                    style="--r: 35deg; --capsule-start: #22c55e;"
-                ></div>
+                <div class="capsule absolute -right-6 top-1/3 h-9 w-24 rounded-full" style="--r: 35deg; --capsule-start: #22c55e;"></div>
 
-                <div
-                    class="capsule absolute -left-6 bottom-24 h-10 w-28 rounded-full"
-                    style="--r: 20deg; --capsule-start: #f0524f;"
-                ></div>
+                <div class="capsule absolute -left-6 bottom-24 h-10 w-28 rounded-full" style="--r: 20deg; --capsule-start: #f0524f;"></div>
             </div>
 
-            <a
-                href="{{ route('login') }}"
-                class="relative flex w-fit items-center gap-3 rounded-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
-            >
-                <span
-                    class="flex h-12 w-12 -rotate-6 items-center justify-center rounded-2xl bg-white font-display text-xl font-black text-primary shadow-lg"
-                    aria-hidden="true"
-                >
+            <a href="{{ route('login') }}" class="relative flex w-fit items-center gap-3 rounded-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">
+                <span class="flex h-12 w-12 -rotate-6 items-center justify-center auth-brand-mark rounded-2xl font-display text-xl font-black shadow-lg" aria-hidden="true">
                     Rx
                 </span>
 
@@ -48,7 +28,7 @@
                         CitiRx
                     </span>
 
-                    <span class="mt-1 block text-xs font-semibold text-primary-tint">
+                    <span class="mt-1 block text-xs font-semibold text-white/90">
                         PhLE adaptive preparation
                     </span>
                 </span>
@@ -59,7 +39,7 @@
                     {{ $headline }}
                 </h2>
 
-                <p class="mt-4 text-sm leading-relaxed text-primary-tint xl:text-base">
+                <p class="mt-4 text-sm leading-relaxed text-white/90 xl:text-base">
                     {{ $description }}
                 </p>
 
@@ -67,7 +47,7 @@
                     <ol class="mt-8 space-y-3">
                         @foreach ($items as $item)
                             <li class="flex items-start gap-4 rounded-2xl bg-white/10 p-4 ring-1 ring-white/15">
-                                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white font-display text-sm font-black text-primary">
+                                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full auth-brand-mark font-display text-sm font-black">
                                     {{ $loop->iteration }}
                                 </span>
 
@@ -76,7 +56,7 @@
                                         {{ $item['title'] }}
                                     </span>
 
-                                    <span class="mt-1 block text-xs leading-relaxed text-primary-tint">
+                                    <span class="mt-1 block text-xs leading-relaxed text-white/90">
                                         {{ $item['description'] }}
                                     </span>
                                 </span>
@@ -128,7 +108,7 @@
                                         {{ $item['title'] }}
                                     </span>
 
-                                    <span class="mt-1 block text-xs leading-relaxed text-primary-tint">
+                                    <span class="mt-1 block text-xs leading-relaxed text-white/90">
                                         {{ $item['description'] }}
                                     </span>
                                 </span>
@@ -138,12 +118,15 @@
                 @endif
             </div>
 
-            <p class="relative text-xs font-semibold text-primary-tint">
+            <p class="relative text-xs font-semibold text-white/90">
                 Built for future pharmacists.
             </p>
         </aside>
 
-        <main class="flex items-center justify-center bg-canvas px-4 py-10 sm:px-6 lg:bg-white lg:px-12 xl:px-16">
+        <main class="relative flex min-w-0 items-center justify-center bg-surface px-4 pb-10 pt-24 sm:px-6 lg:px-12 xl:px-16">
+            <div class="absolute right-4 top-4 sm:right-6 lg:right-12 xl:right-16">
+                <x-ui.theme-toggle />
+            </div>
             <div class="w-full max-w-md">
                 <a
                     href="{{ route('login') }}"
@@ -167,7 +150,7 @@
                     </span>
                 </a>
 
-                <section class="rounded-2xl bg-white p-6 shadow-xl shadow-slate-200/70 sm:p-8 lg:rounded-none lg:p-0 lg:shadow-none">
+                <section class="rounded-2xl bg-surface p-6 shadow-xl shadow-slate-200/70 sm:p-8 lg:rounded-none lg:p-0 lg:shadow-none">
                     <header class="mb-7">
                         <h1 class="font-display text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
                             {{ $title }}

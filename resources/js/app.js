@@ -390,4 +390,41 @@ window.addEventListener("pageshow", (event) => {
     }
 });
 
+// Public pages share the existing comfort preference without changing cosmetic themes.
+Alpine.data('publicComfort', () => ({
+    comfortMode: normaliseComfortMode(readStoredValue(COMFORT_STORAGE_KEY)),
+    resolvedComfort: document.documentElement.dataset.comfort || 'light',
+    comfortQuery: null,
+    comfortHandler: null,
+    storageHandler: null,
+    syncComfort() {
+        this.resolvedComfort = applyDocumentComfort(this.comfortMode);
+        document.documentElement.style.colorScheme = this.resolvedComfort;
+    },
+    toggleComfort() {
+        this.comfortMode = this.resolvedComfort === 'dark' ? 'light' : 'dark';
+        storeValue(COMFORT_STORAGE_KEY, this.comfortMode);
+        this.syncComfort();
+    },
+    init() {
+        this.syncComfort();
+        this.comfortQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        this.comfortHandler = () => {
+            if (this.comfortMode === 'auto') this.syncComfort();
+        };
+        this.storageHandler = (event) => {
+            if (event.key === COMFORT_STORAGE_KEY || event.key === null) {
+                this.comfortMode = normaliseComfortMode(readStoredValue(COMFORT_STORAGE_KEY));
+                this.syncComfort();
+            }
+        };
+        this.comfortQuery.addEventListener('change', this.comfortHandler);
+        window.addEventListener('storage', this.storageHandler);
+    },
+    destroy() {
+        this.comfortQuery?.removeEventListener('change', this.comfortHandler);
+        window.removeEventListener('storage', this.storageHandler);
+    },
+}));
+
 Alpine.start();

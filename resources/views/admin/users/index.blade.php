@@ -18,78 +18,178 @@
         </x-admin.page-header>
     </x-slot>
 
-    <div class="py-8">
+    <div class="pt-6 pb-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             <form
                 method="GET"
                 class="grid gap-3 rounded-3xl border-2 border-slate-200 bg-white p-5 md:grid-cols-3"
             >
-                <input
-                    name="q"
-                    value="{{ $filters['q'] }}"
-                    placeholder="Name, email, or student ID"
-                    class="rounded-xl border-slate-300"
-                >
-
-                <select name="role" class="rounded-xl border-slate-300">
-                    <option value="">All roles</option>
-                    @foreach (['student', 'faculty', 'admin'] as $role)
-                        <option value="{{ $role }}" @selected($filters['role'] === $role)>
-                            {{ ucfirst($role) }}
-                        </option>
-                    @endforeach
-                </select>
-
-                <select name="cohort_id" class="rounded-xl border-slate-300">
-                    <option value="">All cohorts</option>
-                    @foreach ($cohorts as $cohort)
-                        <option value="{{ $cohort->cohort_id }}" @selected($filters['cohort_id'] === $cohort->cohort_id)>
-                            {{ $cohort->cohort_name }} — {{ $cohort->academic_year }}
-                            {{ $cohort->archived_at ? '(Archived)' : '' }}
-                        </option>
-                    @endforeach
-                </select>
-
-                <select name="verification" class="rounded-xl border-slate-300">
-                    <option value="">Any email status</option>
-                    <option value="verified" @selected($filters['verification'] === 'verified')>
-                        Verified
-                    </option>
-                    <option value="unverified" @selected($filters['verification'] === 'unverified')>
-                        Unverified
-                    </option>
-                </select>
-
-                <select name="status" class="rounded-xl border-slate-300">
-                    <option value="active" @selected($filters['status'] === 'active')>
-                        Active
-                    </option>
-                    <option value="deleted" @selected($filters['status'] === 'deleted')>
-                        Deleted
-                    </option>
-                    <option value="all" @selected($filters['status'] === 'all')>
-                        All
-                    </option>
-                </select>
-
-                <label class="flex items-center gap-2 text-sm text-slate-700">
-                    <input
-                        type="checkbox"
-                        name="no_cohort"
-                        value="1"
-                        @checked($filters['no_cohort'])
+                <div class="min-w-0 space-y-1.5">
+                    <label
+                        for="users-search"
+                        class="block text-sm font-bold text-ink"
                     >
-                    Without cohort
-                </label>
+                        Search users
+                    </label>
 
-                <div class="flex gap-2 md:col-span-3">
-                    <button class="rounded-xl bg-primary px-4 py-2 font-bold text-white">
+                    <input
+                        id="users-search"
+                        type="text"
+                        name="q"
+                        value="{{ $filters['q'] }}"
+                        placeholder="Name, email, or student ID"
+                        class="min-h-[var(--control-h)] w-full rounded-xl border-slate-300"
+                    >
+                </div>
+
+                <div class="min-w-0 space-y-1.5">
+                    <label
+                        for="users-role"
+                        class="block text-sm font-bold text-ink"
+                    >
+                        Role
+                    </label>
+
+                    <select
+                        id="users-role"
+                        name="role"
+                        class="min-h-[var(--control-h)] w-full rounded-xl border-slate-300"
+                    >
+                        <option value="">All roles</option>
+
+                        @foreach (['student', 'faculty', 'admin'] as $role)
+                            <option
+                                value="{{ $role }}"
+                                @selected($filters['role'] === $role)
+                            >
+                                {{ ucfirst($role) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="min-w-0 space-y-1.5">
+                    <label
+                        for="users-cohort"
+                        class="block text-sm font-bold text-ink"
+                    >
+                        Cohort
+                    </label>
+
+                    <select
+                        id="users-cohort"
+                        name="cohort_id"
+                        class="min-h-[var(--control-h)] w-full rounded-xl border-slate-300"
+                    >
+                        <option value="">All cohorts</option>
+
+                        @foreach ($cohorts as $cohort)
+                            <option
+                                value="{{ $cohort->cohort_id }}"
+                                @selected(
+                                    $filters['cohort_id'] === $cohort->cohort_id
+                                )
+                            >
+                                {{ $cohort->cohort_name }} — {{ $cohort->academic_year }}
+                                {{ $cohort->archived_at ? '(Archived)' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="min-w-0 space-y-1.5">
+                    <label
+                        for="users-verification"
+                        class="block text-sm font-bold text-ink"
+                    >
+                        Email status
+                    </label>
+
+                    <select
+                        id="users-verification"
+                        name="verification"
+                        class="min-h-[var(--control-h)] w-full rounded-xl border-slate-300"
+                    >
+                        <option value="">Any email status</option>
+
+                        <option
+                            value="verified"
+                            @selected($filters['verification'] === 'verified')
+                        >
+                            Verified
+                        </option>
+
+                        <option
+                            value="unverified"
+                            @selected($filters['verification'] === 'unverified')
+                        >
+                            Unverified
+                        </option>
+                    </select>
+                </div>
+
+                <div class="min-w-0 space-y-1.5">
+                    <label
+                        for="users-status"
+                        class="block text-sm font-bold text-ink"
+                    >
+                        Account status
+                    </label>
+
+                    <select
+                        id="users-status"
+                        name="status"
+                        class="min-h-[var(--control-h)] w-full rounded-xl border-slate-300"
+                    >
+                        <option
+                            value="active"
+                            @selected($filters['status'] === 'active')
+                        >
+                            Active
+                        </option>
+
+                        <option
+                            value="deleted"
+                            @selected($filters['status'] === 'deleted')
+                        >
+                            Deleted
+                        </option>
+
+                        <option
+                            value="all"
+                            @selected($filters['status'] === 'all')
+                        >
+                            All
+                        </option>
+                    </select>
+                </div>
+
+                <div class="flex items-end">
+                    <label
+                        class="flex min-h-[var(--control-h)] cursor-pointer items-center gap-2 text-sm text-slate-700"
+                    >
+                        <input
+                            type="checkbox"
+                            name="no_cohort"
+                            value="1"
+                            @checked($filters['no_cohort'])
+                        >
+
+                        <span>Without cohort</span>
+                    </label>
+                </div>
+
+                <div class="flex flex-wrap gap-2 md:col-span-3">
+                    <button
+                        type="submit"
+                        class="inline-flex min-h-[var(--control-h)] items-center justify-center rounded-xl bg-primary px-4 py-2 font-bold text-white"
+                    >
                         Apply Filters
                     </button>
 
                     <a
                         href="{{ route('admin.users.index') }}"
-                        class="rounded-xl border-2 border-slate-200 px-4 py-2 font-bold text-slate-700"
+                        class="inline-flex min-h-[var(--control-h)] items-center justify-center rounded-xl border-2 border-slate-200 px-4 py-2 font-bold text-slate-700"
                     >
                         Reset
                     </a>
@@ -137,7 +237,7 @@
                                 <td class="p-4 text-right">
                                     <a
                                         href="{{ route('admin.users.edit', ['userId' => $managedUser->user_id]) }}"
-                                        class="font-bold text-primary"
+                                        class="inline-flex min-h-11 items-center justify-center rounded-lg px-2 font-bold text-primary"
                                     >
                                         Manage
                                     </a>

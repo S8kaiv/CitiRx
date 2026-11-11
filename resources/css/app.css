@@ -246,6 +246,7 @@
     html {
         min-height: 100%;
         background: rgb(var(--color-canvas));
+        scrollbar-gutter: stable;
     }
 
     body {
@@ -1223,25 +1224,40 @@ body.theme-solar .solar-scene {
 
 @media (max-width: 767px) {
     .app-content-shell {
-        padding-bottom:
-            calc(
-                5rem
-                + env(safe-area-inset-bottom)
-            );
+        padding-bottom: calc(
+            5rem + env(safe-area-inset-bottom)
+        );
     }
 
-    /*
-     * Students have six primary destinations.
-     * Let all six share the available width while
-     * retaining a minimum 48px touch target.
-     */
-    body[data-surface="student"]
-        .app-mobile-nav
-        .admin-mobile-link {
+    body:is(
+        [data-surface="student"],
+        [data-surface="admin"]
+    ) .app-mobile-nav > :is(
+        .admin-mobile-link,
+        .app-mobile-more
+    ) {
         min-width: 3rem;
         flex: 1 1 0%;
+    }
+
+    body:is(
+        [data-surface="student"],
+        [data-surface="admin"]
+    ) .app-mobile-nav > .admin-mobile-link,
+    body:is(
+        [data-surface="student"],
+        [data-surface="admin"]
+    ) .app-mobile-more > .admin-mobile-link {
         padding-right: 0.25rem;
         padding-left: 0.25rem;
+    }
+
+    body:is(
+        [data-surface="student"],
+        [data-surface="admin"]
+    ) .app-mobile-more > .admin-mobile-link {
+        width: 100%;
+        min-width: 0;
     }
 }
 
@@ -1283,7 +1299,7 @@ body.theme-solar .solar-scene {
     border: 1px solid rgb(var(--admin-border));
     border-radius: 1rem;
     background: rgb(var(--admin-surface));
-    padding: 1.25rem;
+    padding: var(--space-card);
     box-shadow: 0 12px 30px rgb(15 23 42 / 0.055);
 }
 
@@ -1365,14 +1381,9 @@ body.theme-solar .solar-scene {
     min-height: 2.75rem;
 }
 
-.role-admin main :is(
-    button,
-    a
-):focus-visible {
-    outline: none;
-    box-shadow:
-        0 0 0 4px
-        rgb(var(--color-primary-default) / 0.22);
+.role-admin main :is(button, a):focus-visible {
+    outline: 3px solid rgb(var(--color-primary-ink));
+    outline-offset: 3px;
 }
 
 .role-admin main :is(
@@ -1455,12 +1466,6 @@ body.theme-solar .solar-scene {
 
     to {
         background: rgb(15 23 42 / 0.48);
-    }
-}
-
-@media (min-width: 640px) {
-    .admin-panel {
-        padding: 1.5rem;
     }
 }
 
@@ -1696,29 +1701,67 @@ body.theme-solar .solar-scene {
 
     .ui-page-header {
         display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        min-width: 0;
+    }
+
+    .ui-page-header-text {
+        min-width: 0;
     }
 
     .ui-page-title {
-        color:
-            rgb(var(--color-ink));
+        margin: 0;
+        color: rgb(var(--color-ink));
         font-family: theme("fontFamily.display");
-        font-size: 1.5rem;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        line-height: 1.2;
+        font-size: 1.25rem;
+        font-weight: 900;
+        line-height: 1.25;
+        letter-spacing: -0.025em;
+        overflow-wrap: anywhere;
     }
 
     .ui-page-description {
-        margin-top: 0.375rem;
+        margin: 0.25rem 0 0;
         max-width: 70ch;
-        color:
-            rgb(var(--color-ink-muted));
+        color: rgb(var(--color-ink-muted));
+        font-family: theme("fontFamily.sans");
         font-size: 0.875rem;
-        line-height: 1.55;
+        font-weight: 400;
+        line-height: 1.5;
+        letter-spacing: normal;
+        text-transform: none;
+        overflow-wrap: anywhere;
+    }
+
+    .ui-page-header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    @media (min-width: 640px) {
+        .ui-page-header {
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            column-gap: 1.5rem;
+            row-gap: 0.75rem;
+        }
+
+        .ui-page-header-text {
+            flex: 1 1 20rem;
+        }
+
+        .ui-page-header-actions {
+            flex:0 1 auto;
+            margin-left: auto
+        }
     }
 
     .ui-badge {
@@ -2650,4 +2693,93 @@ html:not([data-comfort])
             transform: none;
         }
     }
+}
+
+/* Public pages use semantic colors rather than the authenticated legacy overrides. */
+html[data-comfort="dark"] body.public-pages {
+    --color-primary-tint: 46 34 82;
+    --color-primary-ink: 196 181 253;
+}
+
+.auth-brand-mark {
+    background-color: white;
+    color: rgb(var(--color-primary-lip));
+}
+
+html[data-comfort="dark"] .landing-page {
+    --gold-tint: #452A0D;
+    --gold-ink: #FDE68A;
+    --teal-tint: #083C3B;
+    --teal-ink: #99F6E4;
+}
+
+.public-pages .auth-screen input::placeholder {
+    color: rgb(var(--color-ink-muted));
+    opacity: 1;
+}
+
+.public-pages .public-theme-toggle:focus-visible {
+    outline-color: rgb(var(--color-primary-ink));
+}
+
+/* Keep the original purple sidebar in light mode. */
+.auth-brand-panel {
+    background-color: rgb(var(--color-primary-strong));
+}
+
+/* Use the existing deep purple public-page tint in dark mode. */
+html[data-comfort="dark"] .public-pages .auth-brand-panel {
+    background-color: rgb(var(--color-canvas));
+}
+
+/* Light mode: preserve the existing purple card and white button. */
+.landing-final-cta {
+    background-color: rgb(var(--color-primary-lip));
+}
+
+.landing-final-cta-button {
+    background-color: #fff;
+    color: rgb(var(--color-primary-lip));
+}
+
+.landing-final-cta-button:hover {
+    background-color: #f1edff;
+}
+
+/* Dark mode: subdued card, prominent purple action. */
+html[data-comfort="dark"] .landing-page .landing-final-cta {
+    background-color: rgb(var(--color-primary-tint));
+}
+
+html[data-comfort="dark"] .landing-page .landing-final-cta-button {
+    background-color: rgb(var(--color-primary-strong));
+    color: #fff;
+}
+
+html[data-comfort="dark"] .landing-page .landing-final-cta-button:hover {
+    background-color: rgb(var(--color-primary-lip));
+}
+
+/* Preserve invalid-field indicators over legacy dark-mode rules. */
+html[data-comfort="dark"] body
+    :is(input, textarea, select)[aria-invalid="true"] {
+    border-color: rgb(var(--color-danger-strong)) !important;
+}
+
+/* Consistent interaction area for research workflow actions. */
+.research-workflow-button {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.research-workflow-button:focus-visible {
+    outline: 3px solid rgb(var(--color-primary-ink));
+    outline-offset: 3px;
+}
+
+/* Keep newly visible labels readable in dark mode. */
+html[data-comfort="dark"] .research-workflow-form {
+    background-color: rgb(var(--color-surface-2));
 }

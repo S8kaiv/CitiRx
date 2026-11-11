@@ -1,31 +1,13 @@
 <x-app-layout>
     {{-- Header --}}
     <x-slot name="header">
-        <div class="flex items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <a href="{{ route('dashboard') }}"
-                   title="Exit Diagnostic"
-                   class="flex h-10 w-10 items-center justify-center rounded-2xl border-2 border-b-4 border-line bg-surface text-ink-muted shadow-xs transition hover:border-line-strong hover:bg-surface-2 hover:text-ink active:translate-y-0.5 active:border-b-2">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+        <x-ui.page-header title=" {{ __('Diagnostic Test') }} " description="Baseline TOS Calibration">
+            <x-slot:actions>
+                <a href="{{ route('dashboard') }}" class="inline-flex min-h-11 items-center rounded-lg px-2 font-display text-xs font-bold text-ink-muted transition hover:text-primary">
+                    Exit Diagnostic
                 </a>
-
-                <div>
-                    <h1 class="font-display text-lg sm:text-xl font-black leading-tight text-ink">
-                        {{ __('Diagnostic Test') }}
-                    </h1>
-                    <p class="font-display text-[10px] font-bold uppercase tracking-wider text-ink-muted">
-                        Baseline TOS Calibration
-                    </p>
-                </div>
-            </div>
-
-            <a href="{{ route('dashboard') }}"
-               class="font-display text-xs font-bold text-ink-muted transition hover:text-primary">
-                Exit
-            </a>
-        </div>
+            </x-slot:actions>
+        </x-ui.page-header>
     </x-slot>
 
     @php
@@ -54,11 +36,11 @@
 
     {{-- Main --}}
     <div
-        class="ui-assessment-stage py-6 sm:py-8 font-sans antialiased text-ink"
+        class="ui-assessment-stage pt-6 font-sans antialiased text-ink"
         x-data="diagnosticForm()"
         x-init="initialize()"
     >
-        <div class="max-w-2xl mx-auto px-4 sm:px-6 space-y-5">
+        <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
 
             {{-- Error Alerts --}}
             @if (session('error'))

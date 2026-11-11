@@ -1,20 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="font-display text-xl font-black text-ink leading-tight">
-                    {{ __('Practice Summary') }}
-                </h1>
-                <p class="text-xs font-semibold uppercase tracking-wider text-ink-muted">
-                    Session Mastery & Performance
-                </p>
-            </div>
-
-            <a href="{{ route('dashboard') }}"
-                class="font-display text-xs font-bold text-ink-muted hover:text-primary transition">
-                Return to Dashboard
-            </a>
-        </div>
+        <x-ui.page-header title=" {{ __('Practice Summary') }} " description="Session Mastery & Performance">
+            <x-slot:actions>
+                <a href="{{ route('dashboard') }}" class="inline-flex min-h-11 items-center rounded-lg px-2 font-display text-xs font-bold text-ink-muted transition hover:text-primary">
+                    Exit to Dashboard
+                </a>
+            </x-slot:actions>
+        </x-ui.page-header>
     </x-slot>
 
     @php
@@ -49,7 +41,7 @@
     @endphp
 
     <div class="pt-6 pb-12 font-sans text-ink antialiased">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-4">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
             {{-- Level Up Notification Banner --}}
             <x-level-up-alert />
 

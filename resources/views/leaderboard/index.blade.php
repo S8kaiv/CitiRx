@@ -1,18 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <h1 class="font-display text-xl font-black leading-tight text-ink">
-                Leaderboard
-            </h1>
-
-            <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
-                Informational XP rankings within your cohort.
-            </p>
-        </div>
+        <x-ui.page-header title="Leaderboard" description="Informational XP rankings within your cohort." />
     </x-slot>
 
-    <div class="py-8">
-        <div class="mx-auto max-w-4xl space-y-5 px-4 sm:px-6 lg:px-8">
+    <div class="pt-6 pb-8">
+        <div class="mx-auto max-w-4xl space-y-6 px-4 sm:px-6 lg:px-8">
 
             @if ($cohort === null)
                 <section
@@ -259,7 +251,7 @@
                 <div class="text-center">
                     <a
                         href="{{ route('dashboard') }}"
-                        class="inline-flex rounded-2xl border-2 border-line bg-surface px-5 py-3 font-display text-sm font-bold text-ink transition hover:bg-surface-2focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                        class="inline-flex rounded-2xl border-2 border-line bg-surface px-5 py-3 font-display text-sm font-bold text-ink transition hover:bg-surface-2 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
                     >
                         Back to Dashboard
                     </a>

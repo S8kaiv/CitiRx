@@ -25,7 +25,7 @@
         </x-admin.page-header>
     </x-slot>
 
-    <div class="py-8">
+    <div class="pt-6 pb-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             <section class="rounded-3xl border-2 border-primary/20 bg-primary-tint/40 p-5">
                 <h3 class="font-display text-base font-extrabold text-slate-900">
@@ -130,91 +130,159 @@
                                                         </summary>
 
                                                         <div class="mt-3 w-80 space-y-4">
-                                                            <form method="POST"
+                                                            {{-- Copy an existing version --}}
+                                                            <form
+                                                                method="POST"
                                                                 action="{{ route('admin.research-forms.versions.copy', $version) }}"
-                                                                class="space-y-2 rounded-xl bg-slate-50 p-3">
+                                                                class="research-workflow-form space-y-3 rounded-xl bg-slate-50 p-3"
+                                                            >
                                                                 @csrf
 
-                                                                <input type="hidden" name="expected_lock_version"
-                                                                    value="{{ $version->lock_version }}">
+                                                                <input
+                                                                    type="hidden"
+                                                                    name="expected_lock_version"
+                                                                    value="{{ $version->lock_version }}"
+                                                                >
 
-                                                                <input name="version_code" required
-                                                                    placeholder="{{ $form }}_v{{ $version->version_number + 1 }}"
-                                                                    class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary">
+                                                                <x-ui.field
+                                                                    :id="'copy-version-'.$version->getKey()"
+                                                                    name="version_code"
+                                                                    label="New version code"
+                                                                    :placeholder="$form.'_v'.($version->version_number + 1)"
+                                                                    required
+                                                                />
 
-                                                                <textarea name="reason" required minlength="10" maxlength="500" rows="2"
-                                                                    placeholder="Reason for creating a new version"
-                                                                    class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary"></textarea>
+                                                                <x-ui.field
+                                                                    :id="'copy-reason-'.$version->getKey()"
+                                                                    name="reason"
+                                                                    type="textarea"
+                                                                    label="Reason for creating a new version"
+                                                                    :rows="2"
+                                                                    minlength="10"
+                                                                    maxlength="500"
+                                                                    required
+                                                                />
 
-                                                                <button type="submit"
-                                                                    class="rounded-xl bg-primary px-3 py-2 text-xs font-bold text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
+                                                                <button
+                                                                    type="submit"
+                                                                    class="research-workflow-button rounded-xl bg-primary px-3 py-2 text-xs font-bold text-white"
+                                                                >
                                                                     Copy to Draft
                                                                 </button>
                                                             </form>
 
+                                                            {{-- Submit a draft for review --}}
                                                             @if ($version->status === 'draft')
-                                                                <form method="POST"
+                                                                <form
+                                                                    method="POST"
                                                                     action="{{ route('admin.research-forms.versions.submit-review', $version) }}"
-                                                                    class="space-y-2 rounded-xl bg-blue-50 p-3">
+                                                                    class="research-workflow-form space-y-3 rounded-xl bg-blue-50 p-3"
+                                                                >
                                                                     @csrf
                                                                     @method('PATCH')
 
-                                                                    <input type="hidden" name="expected_lock_version"
-                                                                        value="{{ $version->lock_version }}">
+                                                                    <input
+                                                                        type="hidden"
+                                                                        name="expected_lock_version"
+                                                                        value="{{ $version->lock_version }}"
+                                                                    >
 
-                                                                    <textarea name="reason" required minlength="10" maxlength="500" rows="2"
-                                                                        placeholder="Why this version is ready for review"
-                                                                        class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary"></textarea>
+                                                                    <x-ui.field
+                                                                        :id="'review-reason-'.$version->getKey()"
+                                                                        name="reason"
+                                                                        type="textarea"
+                                                                        label="Why this version is ready for review"
+                                                                        :rows="2"
+                                                                        minlength="10"
+                                                                        maxlength="500"
+                                                                        required
+                                                                    />
 
-                                                                    <button type="submit"
-                                                                        class="rounded-xl bg-blue-700 px-3 py-2 text-xs font-bold text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300">
+                                                                    <button
+                                                                        type="submit"
+                                                                        class="research-workflow-button rounded-xl bg-blue-700 px-3 py-2 text-xs font-bold text-white"
+                                                                    >
                                                                         Submit for Review
                                                                     </button>
                                                                 </form>
                                                             @endif
 
+                                                            {{-- Confirm review validation --}}
                                                             @if ($version->status === 'in_review')
-                                                                <form method="POST"
+                                                                <form
+                                                                    method="POST"
                                                                     action="{{ route('admin.research-forms.versions.validate', $version) }}"
-                                                                    class="space-y-2 rounded-xl bg-violet-50 p-3">
+                                                                    class="research-workflow-form space-y-3 rounded-xl bg-violet-50 p-3"
+                                                                >
                                                                     @csrf
                                                                     @method('PATCH')
 
-                                                                    <input type="hidden" name="expected_lock_version"
-                                                                        value="{{ $version->lock_version }}">
+                                                                    <input
+                                                                        type="hidden"
+                                                                        name="expected_lock_version"
+                                                                        value="{{ $version->lock_version }}"
+                                                                    >
 
-                                                                    <textarea name="reason" required minlength="10" maxlength="500" rows="2"
-                                                                        placeholder="Validation completion evidence"
-                                                                        class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary"></textarea>
+                                                                    <x-ui.field
+                                                                        :id="'validation-reason-'.$version->getKey()"
+                                                                        name="reason"
+                                                                        type="textarea"
+                                                                        label="Validation completion evidence"
+                                                                        :rows="2"
+                                                                        minlength="10"
+                                                                        maxlength="500"
+                                                                        required
+                                                                    />
 
-                                                                    <button type="submit"
-                                                                        class="rounded-xl bg-violet-700 px-3 py-2 text-xs font-bold text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300">
+                                                                    <button
+                                                                        type="submit"
+                                                                        class="research-workflow-button rounded-xl bg-violet-700 px-3 py-2 text-xs font-bold text-white"
+                                                                    >
                                                                         Confirm Validation
                                                                     </button>
                                                                 </form>
                                                             @endif
 
-                                                            @if ($version->status === 'validated' && !$version->is_active)
-                                                                <form method="POST"
+                                                            {{-- Publish a validated version --}}
+                                                            @if ($version->status === 'validated')
+                                                                <form
+                                                                    method="POST"
                                                                     action="{{ route('admin.research-forms.versions.publish', $version) }}"
-                                                                    class="space-y-2 rounded-xl bg-amber-50 p-3">
+                                                                    class="research-workflow-form space-y-3 rounded-xl bg-amber-50 p-3"
+                                                                >
                                                                     @csrf
                                                                     @method('PATCH')
 
-                                                                    <input type="hidden" name="expected_lock_version"
-                                                                        value="{{ $version->lock_version }}">
+                                                                    <input
+                                                                        type="hidden"
+                                                                        name="expected_lock_version"
+                                                                        value="{{ $version->lock_version }}"
+                                                                    >
 
-                                                                    <textarea name="reason" required minlength="10" maxlength="500" rows="2"
-                                                                        placeholder="Reason for publishing this official version"
-                                                                        class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary"></textarea>
+                                                                    <x-ui.field
+                                                                        :id="'publish-reason-'.$version->getKey()"
+                                                                        name="reason"
+                                                                        type="textarea"
+                                                                        label="Reason for publishing this official version"
+                                                                        :rows="2"
+                                                                        minlength="10"
+                                                                        maxlength="500"
+                                                                        required
+                                                                    />
 
-                                                                    <input type="password" name="password" required
+                                                                    <x-ui.field
+                                                                        :id="'publish-password-'.$version->getKey()"
+                                                                        name="password"
+                                                                        type="password"
+                                                                        label="Current administrator password"
                                                                         autocomplete="current-password"
-                                                                        placeholder="Current admin password"
-                                                                        class="w-full rounded-xl border-slate-300 text-sm focus:border-primary focus:ring-primary">
+                                                                        required
+                                                                    />
 
-                                                                    <button type="submit"
-                                                                        class="rounded-xl bg-amber-600 px-3 py-2 text-xs font-bold text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300">
+                                                                    <button
+                                                                        type="submit"
+                                                                        class="research-workflow-button rounded-xl bg-amber-700 px-3 py-2 text-xs font-bold text-white"
+                                                                    >
                                                                         Publish Version
                                                                     </button>
                                                                 </form>

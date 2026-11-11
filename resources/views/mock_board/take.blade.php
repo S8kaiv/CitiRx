@@ -1,14 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <h1 class="font-display text-xl font-black leading-tight text-ink">
-                Research Post-Test
-            </h1>
-
-            <p class="mt-1 font-display text-[11px] font-bold uppercase tracking-wider text-ink-muted">
-                Form B · Timed Assessment
-            </p>
-        </div>
+        <x-ui.page-header title="Research Post-Test" description="Form B · Timed Assessment" />
     </x-slot>
 
     @php
@@ -59,11 +51,11 @@
     @endphp
 
     <div
-        class="ui-assessment-stage py-5 sm:py-8"
+        class="ui-assessment-stage pt-6"
         x-data="mockBoardExam()"
         x-cloak
     >
-        <div class="mx-auto max-w-4xl space-y-5 px-4 sm:px-6">
+        <div class="mx-auto max-w-4xl space-y-5 px-4 sm:px-6 lg:px-8">
 
             @if (session('error'))
                 <div

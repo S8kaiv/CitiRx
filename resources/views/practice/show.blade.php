@@ -1,22 +1,19 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            @php
-                $practiceTitle = match ($session->practice_mode ?? 'adaptive') {
-                    'mistakes' => 'Mistake Drill',
-                    'bookmarks' => 'Bookmark Drill',
-                    default => 'Practice Session',
-                };
-            @endphp
-            <h1 class="font-display text-xl font-black leading-tight text-ink">
-                {{ $practiceTitle }}
-            </h1>
-
-            <a href="{{ route('dashboard') }}"
-                class="font-display text-xs font-bold text-ink-muted transition hover:text-primary">
-                Exit to Dashboard
-            </a>
-        </div>
+        @php
+            $practiceTitle = match ($session->practice_mode ?? 'adaptive') {
+                'mistakes' => 'Mistake Drill',
+                'bookmarks' => 'Bookmark Drill',
+                default => 'Practice Session',
+            };
+        @endphp
+        <x-ui.page-header :title="$practiceTitle">
+            <x-slot:actions>
+                <a href="{{ route('dashboard') }}" class="inline-flex min-h-11 items-center rounded-lg px-2 font-display text-xs font-bold text-ink-muted transition hover:text-primary">
+                    Exit to Dashboard
+                </a>
+            </x-slot:actions>
+        </x-ui.page-header>
     </x-slot>
 
     @php
@@ -27,9 +24,9 @@
         $progress = $session->target_length > 0 ? min(100, ($session->total_items / $session->target_length) * 100) : 0;
     @endphp
 
-    {{-- Compact Outer Container (py-3 sm:py-5) --}}
-    <div class="ui-assessment-stage py-3 sm:py-5 font-sans antialiased text-ink">
-        <div class="max-w-2xl px-4 mx-auto sm:px-6">
+    {{-- Compact Outer Container (pt-6) --}}
+    <div class="ui-assessment-stage pt-6 font-sans antialiased text-ink">
+        <div class="max-w-2xl px-4 mx-auto sm:px-6 lg:px-8">
             {{-- Level Up Notification Banner --}}
             <x-level-up-alert />
 

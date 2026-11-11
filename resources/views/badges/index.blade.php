@@ -1,15 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="font-display text-xl font-black text-slate-900 leading-tight">
-                    {{ __('Achievements & Badges') }}
-                </h1>
-                <p class="hidden sm:block text-xs font-semibold uppercase tracking-wider text-muted-ink">
-                    Milestones, Streaks & Special Honors
-                </p>
-            </div>
-        </div>
+        <x-ui.page-header title="Achievements & Badges" description="Milestones, Streaks & Special Honors" />
     </x-slot>
 
     @php
@@ -19,7 +10,7 @@
     @endphp
 
     <div class="pt-6 pb-16 font-sans text-slate-900 antialiased">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-6">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             {{-- TOP HERO CARD: TROPHY SHOWCASE & PROGRESSION --}}
             <div class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-white p-6 sm:p-8 shadow-sm">
