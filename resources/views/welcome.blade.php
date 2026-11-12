@@ -43,351 +43,138 @@
         ],
     ];
 @endphp
+
 <x-guest-layout fullscreen>
-    <style>
-        .landing-page {
-            --primary: #6D4AFF;
-            --primary-lip: #4A2FC4;
-            --primary-tint: rgb(var(--color-primary-tint));
-            --gold: #F5A623;
-            --gold-tint: #FDF1DC;
-            --gold-ink: #7A4B06;
-            --teal: #0EA5A4;
-            --teal-tint: #E4FBF6;
-            --teal-ink: #0B5C52;
-            --success: #22C55E;
-            --error: #F0524F;
-            --muted: rgb(var(--color-ink-muted));
-            --muted-line: rgb(var(--color-line));
-            --canvas: #F8FAFC;
-        }
-
-        /* Initial Page Refresh Fade-In */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(6px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        @keyframes pill-float {
-
-            0%,
-            100% {
-                transform: translate3d(0, 0, 0) rotate(var(--r));
-            }
-
-            50% {
-                transform: translate3d(0, -14px, 0) rotate(calc(var(--r) + 6deg));
-            }
-        }
-
-        .pill {
-            animation: pill-float var(--duration, 8s) ease-in-out infinite;
-        }
-
-        .pill:nth-child(2) {
-            animation-delay: -1.5s;
-        }
-
-        .pill:nth-child(3) {
-            animation-delay: -3s;
-        }
-
-        .pill:nth-child(4) {
-            animation-delay: -4.5s;
-        }
-
-        .pill:nth-child(5) {
-            animation-delay: -2s;
-        }
-
-        .pill:nth-child(6) {
-            animation-delay: -5.5s;
-        }
-
-        .pill:nth-child(7) {
-            animation-delay: -0.75s;
-        }
-
-        .pill:nth-child(8) {
-            animation-delay: -6.5s;
-        }
-
-        .mascot-figure {
-            filter: none;
-        }
-
-        summary::-webkit-details-marker {
-            display: none;
-        }
-
-        details[open] .chev {
-            transform: rotate(180deg);
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .pill {
-                animation: none;
-            }
-
-            .animate-fade-in {
-                animation: none;
-            }
-        }
-    </style>
-
-    <div class="landing-page animate-fade-in bg-canvas font-sans text-ink antialiased">
-
-        {{-- =========================
-             NAV
-             ========================= --}}
-        <header class="welcome-header sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur">
-            <nav aria-label="Main" class="welcome-nav mx-auto max-w-6xl px-4 py-3 sm:px-6">
-
-                {{-- Brand --}}
-                <a href="{{ url('/') }}" class="welcome-nav-brand flex w-fit items-center gap-3 rounded-xl">
-                    <span aria-hidden="true" class="flex h-12 w-12 shrink-0 -rotate-6 items-center justify-center rounded-2xl bg-[#4A2FC4] text-xl font-extrabold text-white shadow-lg">
-                        Rx
-                    </span>
-                    <span>
-                        <span class="block text-2xl font-extrabold leading-none text-ink">
-                            CitiRx
-                        </span>
-                        <span class="mt-1 block text-xs font-medium text-ink-muted">
-                            PHLE adaptive prep
-                        </span>
-                    </span>
+    <div class="rx-welcome">
+        <a class="rx-skip" href="#main-content">Skip to content</a>
+        <header class="rx-header">
+            <nav class="rx-wrap rx-nav" aria-label="Main navigation">
+                <a class="rx-brand" href="{{ url('/') }}" aria-label="CitiRx home">
+                    <span class="rx-mark" aria-hidden="true">Rx</span>
+                    CitiRx
                 </a>
-
-                {{-- Section links --}}
-                <ul class="welcome-nav-sections flex flex-wrap items-center justify-center gap-1 text-sm font-medium text-ink-muted sm:gap-3">
-                    <li>
-                        <a href="#how" class="inline-flex min-h-11 items-center rounded-lg px-2 underline-offset-4 transition-colors hover:text-primary-ink hover:underline">
-                        How it works
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#rewards" class="inline-flex min-h-11 items-center rounded-lg px-2 underline-offset-4 transition-colors hover:text-primary-ink hover:underline">
-                            Rewards
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#faq" class="inline-flex min-h-11 items-center rounded-lg px-2 underline-offset-4 transition-colors hover:text-primary-ink hover:underline">
-                            FAQ
-                        </a>
-                    </li>
-                </ul>
-
-                {{-- Account actions --}}
-                <div class="welcome-nav-actions flex flex-wrap items-center gap-2 sm:gap-3">
+                <div class="rx-links">
+                    <a href="#how">How it works</a>
+                    <a href="#rewards">Rewards</a>
+                    <a href="#faq">FAQ</a>
+                </div>
+                <div class="rx-account">
                     @if (Route::has('login'))
-                        <a href="{{ route('login') }}" class="inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary-ink underline-offset-4 hover:underline">
-                            Log in
-                        </a>
+                        <a href="{{ route('login') }}">Log in</a>
                     @endif
-
-                    <a href="{{ Route::has('register') ? route('register') : '#' }}" class="btn-press inline-flex min-h-11 items-center justify-center rounded-xl bg-[#4A2FC4] px-4 text-sm font-bold text-white shadow-md transition-colors hover:bg-primary">
-                        Get started
-                    </a>
-
+                    <span class="rx-header-cta">
+                        <a class="rx-button rx-secondary" href="{{ route('register') }}">Get started</a>
+                    </span>
                     <x-ui.theme-toggle />
                 </div>
             </nav>
         </header>
 
-        <main class="relative overflow-hidden">
-
-            {{-- Decorative pills, scattered across the whole page --}}
-            <div class="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
-                <div class="pill absolute left-[8%] top-[1%] h-6 w-14 rounded-full shadow-md"
-                    style="--r:-15deg; --duration:8s; background:linear-gradient(90deg,#22c55e 0 50%,#fff 50% 100%);">
-                </div>
-
-                <div class="pill absolute right-[21%] top-[27%] h-6 w-14 rounded-full shadow-md"
-                    style="--r:20deg; --duration:9s; background:linear-gradient(90deg,#F0524F 0 50%,#fff 50% 100%);">
-                </div>
-
-                <div class="pill absolute left-[5%] top-[19%] h-6 w-14 rounded-full shadow-md"
-                    style="--r:35deg; --duration:10s; background:linear-gradient(90deg,#0EA5A4 0 50%,#fff 50% 100%);">
-                </div>
-
-                <div class="pill absolute left-[93%] top-[8%] h-6 w-14 rounded-full shadow-md"
-                    style="--r:-30deg; --duration:7.5s; background:linear-gradient(90deg,#6D4AFF 0 50%,#fff 50% 100%);">
-                </div>
-
-                <div class="pill absolute left-[2%] top-[35%] h-6 w-14 rounded-full shadow-md"
-                    style="--r:-20deg; --duration:9.5s; background:linear-gradient(90deg,#ec4899 0 50%,#fff 50% 100%);">
-                </div>
-
-                <div class="pill absolute right-[6%] top-[44%] h-6 w-14 rounded-full shadow-md"
-                    style="--r:20deg; --duration:8.5s; background:linear-gradient(90deg,#0EA5A4 0 50%,#fff 50% 100%);">
-                </div>
-
-                <div class="pill absolute left-[6%] top-[57%] h-6 w-14 rounded-full shadow-md"
-                    style="--r:25deg; --duration:11s; background:linear-gradient(90deg,#ec4899 0 50%,#fff 50% 100%);">
-                </div>
-
-                <div class="pill absolute left-[13%] top-[75%] h-6 w-14 rounded-full shadow-md"
-                    style="--r:-25deg; --duration:9s; background:linear-gradient(90deg,#f97316 0 50%,#fff 50% 100%);">
-                </div>
-
-                <div class="pill absolute right-[9%] top-[79%] h-6 w-14 rounded-full shadow-md"
-                    style="--r:-15deg; --duration:7s; background:linear-gradient(90deg,#22c55e 0 50%,#fff 50% 100%);">
-                </div>
-            </div>
-
-            {{-- =========================
-                 HERO
-                 ========================= --}}
-            <section class="relative z-10 mx-auto max-w-6xl px-4 pt-6 sm:px-6 sm:pt-12" aria-labelledby="welcome-hero-title">
-                <div class="grid items-center rounded-[1.75rem] bg-[var(--primary-tint)] p-6 sm:p-8 md:grid-cols-5 md:gap-8 md:px-12 md:py-10">
-                    <div class="min-w-0 md:col-span-3">
-                        <h1 id="welcome-hero-title" class="font-display text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl md:text-5xl">
-                                Review for the <span class="text-warning-ink">PHLE</span>
-                                with practice that adapts to you
-                        </h1>
-                        <p class="mt-4 max-w-xl text-base leading-relaxed text-ink-muted md:text-lg">
-                            Start with a diagnostic, follow a review path built from your results, and watch your readiness grow.
-                        </p>
-                        <div class="mt-6 md:mt-7">
-                            <a href="{{ Route::has('register') ? route('register') : '#' }}"
-                                class="btn-press inline-flex min-h-12 w-full items-center justify-center rounded-2xl bg-primary px-7 py-3 font-display text-base font-bold text-white shadow-md transition-colors hover:bg-primary-lip focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 sm:w-auto">
-                                Get Started
-                            </a>
-                        </div>
-                        @if (Route::has('login'))
-                            <p class="mt-3 text-sm leading-relaxed text-ink-muted">
-                                Already reviewing?
-                                <a href="{{ route('login') }}" class="inline-flex min-h-11 items-center rounded-md px-1 font-semibold text-primary-ink underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-                                    Log in
-                                </a>
-                            </p>
-                        @endif
+        <main id="main-content" tabindex="-1">
+            <section class="rx-wrap rx-hero" aria-labelledby="hero-title">
+                <div class="rx-hero-copy">
+                    <h1 id="hero-title">
+                        Review for the <span>PHLE</span> with practice that adapts to you
+                    </h1>
+                    <p class="rx-intro">Start with a diagnostic, follow a review path built from your results, and watch your readiness grow.</p>
+                    <div class="rx-actions">
+                        <a class="rx-button" href="{{ route('register') }}">Get started <span aria-hidden="true">→</span>
+                        </a>
+                        <a class="rx-button rx-secondary" href="#how">See how it works</a>
                     </div>
-                    <div class="hidden justify-center md:col-span-2 md:flex">
-                        <img src="{{ asset('image/pill-mascot.png') }}" alt="Cheerful purple CitiRx pill mascot waving hello" width="2000" height="2000" decoding="async" class="h-64 w-auto max-w-full object-contain lg:h-72 xl:h-96">
-                    </div>
+                    <p class="rx-note">Already reviewing with us? <a href="{{ route('login') }}">Pick up where you left off</a>
+                    </p>
+                </div>
+                <div class="rx-art">
+                    <div class="rx-art-back" aria-hidden="true"></div>
+                    <img
+                        class="rx-mascot"
+                        src="{{ asset('image/pill-mascot.png') }}"
+                        alt="CitiRx’s smiling pill mascot welcomes you"
+                        width="420"
+                        height="420"
+                        fetchpriority="high"
+                    >
+                    <span class="rx-bubble">A little practice. A step forward.</span>
+                    <span class="rx-art-label">Your next chapter starts here.</span>
                 </div>
             </section>
 
-            {{-- =========================
-                 HOW IT WORKS
-                 ========================= --}}
-            <section id="how" class=" relative z-10 mx-auto max-w-6xl px-4 py-16 sm:px-6"
-                aria-labelledby="how-h">
-                <h2 id="how-h" class="font-display text-3xl font-bold">Four steps from diagnostic to exam-ready</h2>
-                <ol class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    @foreach ($steps as $i => [$title, $text])
-                        <li class=" rounded-2xl border border-[var(--muted-line)] bg-surface p-5">
-                            <span
-                                class="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)] font-display text-sm font-bold text-white">{{ $i + 1 }}</span>
-                            <h3 class="mt-4 font-display text-lg font-bold">{{ $title }}</h3>
-                            <p class="mt-1 text-sm text-[var(--muted)]">{{ $text }}</p>
-                        </li>
-                    @endforeach
-                </ol>
-            </section>
-
-            {{-- =========================
-                 REWARDS
-                 ========================= --}}
-            <section id="rewards" class=" relative z-10 mx-auto max-w-6xl px-4 pb-16 sm:px-6"
-                aria-labelledby="rew-h">
-                <div class="rounded-[1.75rem] border border-[var(--muted-line)] bg-surface p-6 sm:p-10">
-                    <h2 id="rew-h" class="font-display text-3xl font-bold">Make reviewing a habit</h2>
-                    <p class="mt-2 max-w-xl text-[var(--muted)]">Earn XP, build your review streak, and progress from
-                        Beginner to Expert through continued practice.</p>
-                    <dl class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                        @foreach ($rewards as [$v, $l])
-                            <div class="rounded-2xl p-4 text-center" style="background: var(--gold-tint);">
-                                <dt class="order-2 text-sm" style="color: var(--gold-ink);">{{ $l }}</dt>
-                                <dd class="font-display text-2xl font-bold" style="color: var(--gold-ink);">
-                                    {{ $v }}</dd>
-                            </div>
-                        @endforeach
-                    </dl>
-                    <ul class="mt-6 flex flex-wrap gap-2">
-                        @foreach ($badges as $b)
-                            <li class="rounded-full border bg-surface px-3.5 py-1.5 font-display text-sm font-semibold"
-                                style="border-color: var(--gold); color: var(--gold-ink);">{{ $b }}</li>
+            <section class="rx-domains" aria-label="PHLE coverage">
+                <div class="rx-wrap">
+                    <p class="rx-domains-title">Built around the PhLE domains</p>
+                    <ul class="rx-domain-list">
+                        @foreach ($domains as $domain)
+                            <li>{{ $domain }}</li>
                         @endforeach
                     </ul>
                 </div>
             </section>
 
-            {{-- =========================
-                 DOMAINS + FAQ
-                 ========================= --}}
-            <section class=" relative z-10 mx-auto max-w-6xl px-4 pb-16 sm:px-6"
-                aria-labelledby="cov-h">
-                <h2 id="cov-h" class="font-display text-3xl font-bold">Built around the PhLE domains</h2>
-                <ul class="mt-5 flex flex-wrap gap-2">
-                    @foreach ($domains as $d)
-                        <li class="rounded-full px-4 py-2 font-display text-sm font-semibold"
-                            style="background: var(--teal-tint); color: var(--teal-ink);">{{ $d }}</li>
+            <section class="rx-wrap rx-section" id="how" aria-labelledby="how-title">
+                <h2 id="how-title">A clearer path through your review.</h2>
+                <p class="rx-section-intro">Know where you stand. Focus your effort. Build your confidence one practice session at a time.</p>
+                <ol class="rx-steps">
+                    @foreach ($steps as $i => [$title, $text])
+                        <li>
+                            <span class="rx-step-num">{{ $i + 1 }}</span>
+                            <h3>{{ $title }}</h3>
+                            <p>{{ $text }}</p>
+                        </li>
                     @endforeach
-                </ul>
+                </ol>
+            </section>
 
-                <div id="faq" class="mx-auto mt-12 max-w-3xl">
-                    <h2 class="font-display text-3xl font-bold">Frequently asked questions</h2>
-                    <div
-                        class="mt-5 divide-y divide-[var(--muted-line)] rounded-2xl border border-[var(--muted-line)] bg-surface">
-                        @foreach ($faqs as [$q, $a])
-                            <details class="group px-5 py-4">
-                                <summary
-                                    class="flex cursor-pointer list-none items-center justify-between gap-4 font-medium">
-                                    {{ $q }}
-                                    <svg class="chev h-5 w-5 shrink-0 text-[var(--muted)] transition-transform"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                    </svg>
-                                </summary>
-                                <p class="mt-2 text-sm text-[var(--muted)]">{{ $a }}</p>
-                            </details>
-                        @endforeach
+            <section class="rx-wrap" id="rewards" aria-labelledby="rewards-title">
+                <div class="rx-rewards">
+                    <div>
+                        <h2 id="rewards-title">Small steps.<br>A habit worth keeping.</h2>
+                        <p>Earn XP, build your review streak, and progress from Beginner to Expert through continued practice.</p>
+                        <ul class="rx-badges" aria-label="Milestone badges">
+                            @foreach ($badges as $badge)
+                                <li>{{ $badge }}</li>
+                            @endforeach
+                        </ul>
                     </div>
+                    <dl>
+                        @foreach ($rewards as [$value, $label])
+                            <div>
+                                <dt>{{ $value }}</dt>
+                                <dd>{{ $label }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
                 </div>
             </section>
 
-            {{-- =========================
-                 FINAL CTA
-                 ========================= --}}
-            <section class="relative z-10 mx-auto max-w-6xl px-4 pb-16 sm:px-6">
-                <div class="landing-final-cta rounded-[1.75rem] px-6 py-12 text-center sm:px-12">
-                    <h2 class="font-display text-3xl font-bold text-white sm:text-4xl">Your PhLE preparation starts
-                        here</h2>
-                    <p class="mx-auto mt-2 max-w-md text-white/90">Take the diagnostic, see where you stand, and start
-                        closing the gaps today.</p>
-                    <a href="{{ Route::has('register') ? route('register') : '#' }}"
-                        class="landing-final-cta-button btn-press mt-7 inline-flex min-h-12 items-center justify-center rounded-2xl px-7 py-3.5 font-display text-lg font-bold shadow-md">
-                        Start free diagnostic
-                    </a>
+            <section class="rx-wrap rx-section rx-faq" id="faq" aria-labelledby="faq-title">
+                <div>
+                    <h2 id="faq-title">Before you jump in.</h2>
+                    <p class="rx-section-intro">A few things to know about your review companion.</p>
+                </div>
+                <div>
+                    @foreach ($faqs as [$question, $answer])
+                        <details>
+                            <summary>{{ $question }}</summary>
+                            <p>{{ $answer }}</p>
+                        </details>
+                    @endforeach
                 </div>
             </section>
+
+            <section class="rx-wrap rx-final" aria-labelledby="final-title">
+                <h2 id="final-title">Your PhLE preparation starts here.</h2>
+                <p>Take the diagnostic, see where you stand, and start closing the gaps today.</p>
+                <a class="rx-button" href="{{ route('register') }}">Let’s get started <span aria-hidden="true">→</span>
+                </a>
+            </section>
+
         </main>
 
-        {{-- =========================
-             FOOTER
-             ========================= --}}
-        <footer class="relative z-10 border-t border-[var(--muted-line)] bg-surface">
-            <div
-                class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-[var(--muted)] sm:flex-row sm:px-6">
-                <span class="font-display text-lg font-bold text-ink">CitiRx</span>
-                <p>&copy; {{ date('Y') }} CitiRx. Built for pharmacy learners.</p>
-            </div>
+        <footer class="rx-wrap rx-footer">
+            <strong>CitiRx</strong>
+            <p>&copy; {{ date('Y') }} CitiRx. Built for pharmacy learners.</p>
+            <a href="#hero-title">Back to top ↑</a>
         </footer>
     </div>
-
 </x-guest-layout>

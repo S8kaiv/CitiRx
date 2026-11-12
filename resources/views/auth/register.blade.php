@@ -1,25 +1,9 @@
-<x-auth-split-layout
-    :title="__('Create an account')"
-    :subtitle="__('Sign up to begin your personalized board review.')"
-    :headline="__('Start your journey toward becoming a registered pharmacist.')"
-    :description="__('Use adaptive practice to focus on weaker topics and build confidence across the PhLE domains.')"
-    :items="[
-        [
-            'icon' => 'target',
-            'title' => __('Adaptive practice'),
-            'description' => __('Focus your review using current mastery estimates.'),
-        ],
-        [
-            'icon' => 'chart',
-            'title' => __('Progress analytics'),
-            'description' => __('Track readiness and competency development.'),
-        ],
-        [
-            'icon' => 'book',
-            'title' => __('Reviewed learning content'),
-            'description' => __('Study questions and lessons organized by PhLE domain.'),
-        ],
-    ]"
+<x-rx-auth-layout
+    title="Make room for your next chapter."
+    subtitle="Create your CitiRx account and start your personalized PhLE review."
+    headline="Big goals. Small steps. Your pace."
+    description="Start with a diagnostic, focus on the topics that need you, and build a review habit that lasts."
+    bubble="Let’s take the first step."
 >
     @php
         $visibleFields = [
@@ -37,7 +21,7 @@
 
     @if ($otherErrors->isNotEmpty())
         <div
-            role="alert"
+            role="alert" data-auth-alert
             class="mb-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-800"
         >
             <ul class="list-disc space-y-1 pl-5">
@@ -51,7 +35,7 @@
     <form
         method="POST"
         action="{{ route('register') }}"
-        class="space-y-5"
+        class="rx-auth-form space-y-5"
         x-data="{ busy: false }"
         x-on:submit="busy = true"
         x-on:pageshow.window="busy = false"
@@ -111,6 +95,8 @@
             :toggle="true"
             required
             autocomplete="new-password"
+            :hint="__('Use at least 8 characters.')"
+            minlength="8"
             :placeholder="__('Create a password')"
         />
 
@@ -131,7 +117,7 @@
         />
     </form>
 
-    <p class="mt-8 text-center text-sm text-slate-600">
+    <p class="rx-auth-switch mt-8 text-center text-sm text-slate-600">
         {{ __('Already have an account?') }}
 
         <a
@@ -141,4 +127,4 @@
             {{ __('Sign in') }}
         </a>
     </p>
-</x-auth-split-layout>
+</x-rx-auth-layout>

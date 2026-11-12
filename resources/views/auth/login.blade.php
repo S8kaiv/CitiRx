@@ -1,29 +1,13 @@
-<x-auth-split-layout
-    :title="__('Welcome back')"
-    :subtitle="__('Sign in to continue your pharmacy board review.')"
-    :headline="__('Build a smarter path toward PhLE readiness.')"
-    :description="__('Continue your diagnostic, targeted practice, progress tracking, and competency review.')"
-    :items="[
-        [
-            'icon' => 'target',
-            'title' => __('Targeted practice'),
-            'description' => __('Focus on competencies that need more work.'),
-        ],
-        [
-            'icon' => 'chart',
-            'title' => __('Readiness tracking'),
-            'description' => __('See how your competency mastery changes over time.'),
-        ],
-        [
-            'icon' => 'book',
-            'title' => __('Structured PhLE review'),
-            'description' => __('Review content organized around the official domains.'),
-        ],
-    ]"
+<x-rx-auth-layout
+    title="Welcome back."
+    subtitle="Your next step is waiting."
+    headline="A little practice today. More confidence tomorrow."
+    description="Pick up your review with targeted practice and a clearer view of your progress."
+    bubble="Ready when you are."
 >
     @if (session('status'))
         <div
-            role="status"
+            role="status" aria-live="polite"
             class="mb-5 rounded-xl border border-success-strong/30 bg-success-tint p-4 text-sm font-semibold text-success-ink"
         >
             {{ session('status') }}
@@ -33,7 +17,7 @@
     <form
         method="POST"
         action="{{ route('login') }}"
-        class="space-y-5"
+        class="rx-auth-form space-y-5"
         x-data="{ busy: false }"
         x-on:submit="busy = true"
         x-on:pageshow.window="busy = false"
@@ -86,7 +70,7 @@
     </form>
 
     @if (Route::has('register'))
-        <p class="mt-8 text-center text-sm text-slate-600">
+        <p class="rx-auth-switch mt-8 text-center text-sm text-slate-600">
             {{ __('New to CitiRx?') }}
 
             <a
@@ -97,4 +81,4 @@
             </a>
         </p>
     @endif
-</x-auth-split-layout>
+</x-rx-auth-layout>
