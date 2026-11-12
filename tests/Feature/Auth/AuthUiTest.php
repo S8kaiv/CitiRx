@@ -6,7 +6,7 @@ it('renders the public authentication pages', function (string $routeName) {
     $this
         ->get(route($routeName))
         ->assertOk()
-        ->assertSee('auth-screen', false);
+        ->assertSee('class="rx-auth"', false);
 })->with([
     'login' => 'login',
     'registration' => 'register',

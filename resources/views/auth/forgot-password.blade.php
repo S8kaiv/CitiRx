@@ -1,27 +1,13 @@
-<x-auth-split-layout
-    :title="__('Reset your password')"
-    :subtitle="__('Enter your email and CitiRx will send you a password-reset link.')"
-    :headline="__('Locked out? You will be back shortly.')"
-    :description="__('Your learning progress remains connected to your account while you reset its password.')"
-    :ordered="true"
-    :items="[
-        [
-            'title' => __('Enter your email'),
-            'description' => __('Use the address registered with CitiRx.'),
-        ],
-        [
-            'title' => __('Open the reset link'),
-            'description' => __('Check your inbox and follow the secure link.'),
-        ],
-        [
-            'title' => __('Choose a new password'),
-            'description' => __('Return to CitiRx and continue reviewing.'),
-        ],
-    ]"
+<x-rx-auth-layout
+    title="Let’s get you back in."
+    subtitle="Enter your registered email and we’ll send you a password-reset link."
+    headline="A fresh start, without starting over."
+    description="Your learning progress stays connected to your account while you reset your password."
+    bubble="We’ve got your back."
 >
     @if (session('status'))
         <div
-            role="status"
+            role="status" aria-live="polite"
             class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800"
         >
             {{ session('status') }}
@@ -31,7 +17,7 @@
     <form
         method="POST"
         action="{{ route('password.email') }}"
-        class="space-y-5"
+        class="rx-auth-form space-y-5"
         x-data="{ busy: false }"
         x-on:submit="busy = true"
         x-on:pageshow.window="busy = false"
@@ -56,7 +42,7 @@
         />
     </form>
 
-    <p class="mt-8 text-center text-sm text-slate-600">
+    <p class="rx-auth-switch mt-8 text-center text-sm text-slate-600">
         {{ __('Remembered your password?') }}
 
         <a
@@ -66,4 +52,4 @@
             {{ __('Back to sign in') }}
         </a>
     </p>
-</x-auth-split-layout>
+</x-rx-auth-layout>
