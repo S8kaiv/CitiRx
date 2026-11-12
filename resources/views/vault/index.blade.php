@@ -113,7 +113,7 @@
             </div>
 
             {{-- Server-side Vault Navigation Tabs --}}
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-3">
                 {{-- Mistakes tab --}}
                 <a href="{{ route('vault.index', ['tab' => 'mistakes']) }}" @class([
                     'btn-press inline-flex items-center gap-2 rounded-2xl border-2 border-b-4 px-4 py-2.5 font-display text-xs font-black uppercase tracking-wider transition-all sm:px-5',

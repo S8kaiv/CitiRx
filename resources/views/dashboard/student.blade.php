@@ -1,9 +1,9 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-ui.page-header description="PhLE Adaptive Review Engine">
+        <x-ui.page-header class="rx-student-dashboard-header" description="PhLE Adaptive Review Engine">
             <x-slot:title>
-                <span class="block sm:hidden">Dashboard</span>
-                <span class="hidden sm:block">Student Dashboard</span>
+                <span class="block lg:hidden">Dashboard</span>
+                <span class="hidden lg:block">Student Dashboard</span>
             </x-slot:title>
             <x-slot:actions>
                 @php
@@ -79,9 +79,9 @@
                 class="flex items-center justify-between rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
                 <div class="flex items-center gap-4">
                     <div>
-                        <h1 class="font-display text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
+                        <h2 class="font-display text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
                             Welcome back, {{ method_exists($user, 'fullName') ? $user->fullName() : $user->name }}!
-                        </h1>
+                        </h2>
                         <p class="text-xs font-medium text-muted-ink mt-0.5">
                             @if ($user->cohort)
                                 <span class="font-semibold text-slate-800">{{ $user->cohort->cohort_name }}</span> ·
@@ -153,7 +153,7 @@
                                 </a>
 
                                 <a href="{{ route('readiness.show') }}"
-                                    class="font-display text-sm font-bold text-primary transition hover:underline">
+                                    class="rx-student-report-link font-display text-sm font-bold text-primary transition hover:underline">
                                     Readiness Report →
                                 </a>
                             </div>
@@ -317,7 +317,7 @@
 
                             <div class="mt-5 border-t border-slate-100 pt-4">
                                 <a href="{{ route('readiness.show') }}"
-                                    class="font-display text-xs font-bold text-primary hover:underline">
+                                    class="rx-student-report-link font-display text-xs font-bold text-primary hover:underline">
                                     Detailed Statistics Breakdown →
                                 </a>
                             </div>

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
             title="Research Participants"
@@ -103,7 +103,7 @@
                     </option>
                 </select>
 
-                <div class="flex gap-2 md:col-span-4">
+                <div class="rx-admin-actions flex flex-wrap gap-2 md:col-span-4">
                     <button class="rounded-xl bg-primary px-4 py-2 font-bold text-white">
                         Apply Filters
                     </button>
@@ -118,6 +118,7 @@
             </form>
 
             <div class="overflow-x-auto rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
+                <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                 <table class="min-w-full divide-y divide-slate-200 text-sm">
                     <thead class="bg-slate-50 text-left">
                         <tr>
@@ -189,6 +190,7 @@
                         @endforelse
                     </tbody>
                 </table>
+                    </div>
             </div>
 
             {{ $participants->links() }}

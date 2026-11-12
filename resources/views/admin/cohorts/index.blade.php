@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
             title="Cohorts"
@@ -21,6 +21,7 @@
             {{-- Desktop table --}}
             <div class="hidden overflow-hidden rounded-3xl border-2 border-b-4 border-slate-200 bg-white shadow-sm md:block">
                 <div class="overflow-x-auto">
+                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                     <table class="min-w-full divide-y divide-slate-200 text-sm">
                         <thead class="bg-slate-50">
                             <tr class="text-left text-xs font-extrabold uppercase tracking-wider text-muted-ink">
@@ -92,6 +93,7 @@
                             @endforelse
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
 

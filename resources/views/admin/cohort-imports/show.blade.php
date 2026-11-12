@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
             title="Confirm cohort assignments"
@@ -45,6 +45,7 @@
             </section>
 
             <div class="overflow-x-auto rounded-3xl border-2 border-slate-200 bg-white">
+                <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                 <table class="min-w-full divide-y divide-slate-200 text-sm">
                     <thead>
                         <tr class="text-left">
@@ -88,6 +89,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                    </div>
             </div>
 
             @if ($import->committed_at === null)

@@ -85,15 +85,16 @@
                 </div>
 
                 <div class="overflow-x-auto">
+                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                     <table class="min-w-[900px] w-full text-sm">
                         <thead class="bg-surface-2 text-left text-ink-muted">
                             <tr>
-                                <th class="px-4 py-3 font-bold sm:px-6">CSV row</th>
-                                <th class="px-4 py-3 font-bold">Competency</th>
-                                <th class="px-4 py-3 font-bold">Title</th>
-                                <th class="px-4 py-3 font-bold">Order</th>
-                                <th class="px-4 py-3 font-bold">Rights</th>
-                                <th class="px-4 py-3 font-bold">AI-assisted</th>
+                                <th scope="col" class="px-4 py-3 font-bold sm:px-6">CSV row</th>
+                                <th scope="col" class="px-4 py-3 font-bold">Competency</th>
+                                <th scope="col" class="px-4 py-3 font-bold">Title</th>
+                                <th scope="col" class="px-4 py-3 font-bold">Order</th>
+                                <th scope="col" class="px-4 py-3 font-bold">Rights</th>
+                                <th scope="col" class="px-4 py-3 font-bold">AI-assisted</th>
                             </tr>
                         </thead>
 
@@ -129,6 +130,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </x-ui.card>
 

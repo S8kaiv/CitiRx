@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
             title="Pilot controls"
@@ -161,6 +161,7 @@
                 </div>
 
                 <div class="overflow-x-auto">
+                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                     <table class="min-w-full divide-y divide-slate-200 text-sm">
                         <thead class="bg-slate-50">
                             <tr>
@@ -229,6 +230,7 @@
                             @endforelse
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </section>
 

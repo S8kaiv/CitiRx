@@ -130,6 +130,7 @@
 
             <x-ui.card :padded="false">
                 <div class="overflow-x-auto">
+                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                     <table class="min-w-[880px] w-full text-sm">
                         <thead class="bg-surface-2 text-left text-ink-muted">
                             <tr>
@@ -257,6 +258,7 @@
                             @endforelse
                         </tbody>
                     </table>
+                    </div>
                 </div>
 
                 @if ($pearls->hasPages())

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
             title="Users"
@@ -179,7 +179,7 @@
                     </label>
                 </div>
 
-                <div class="flex flex-wrap gap-2 md:col-span-3">
+                <div class="rx-admin-actions flex flex-wrap gap-2 md:col-span-3">
                     <button
                         type="submit"
                         class="inline-flex min-h-[var(--control-h)] items-center justify-center rounded-xl bg-primary px-4 py-2 font-bold text-white"
@@ -197,6 +197,7 @@
             </form>
 
             <div class="overflow-x-auto rounded-3xl border-2 border-slate-200 bg-white">
+                <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                 <table class="min-w-full divide-y divide-slate-200 text-sm">
                     <thead class="bg-slate-50 text-left">
                         <tr>
@@ -252,6 +253,7 @@
                         @endforelse
                     </tbody>
                 </table>
+                    </div>
             </div>
 
             {{ $users->links() }}

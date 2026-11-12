@@ -19,30 +19,30 @@
 
         <div>
             <x-input-label for="first_name" :value="__('First Name')" class="block font-display text-xs font-bold uppercase tracking-wider text-slate-700" />
-            <x-text-input id="first_name" name="first_name" type="text" class="mt-1 block w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-primary focus:ring-0" :value="old('first_name', $user->first_name)"
+            <x-text-input id="first_name" name="first_name" :aria-invalid="$errors->has('first_name') ? 'true' : 'false'" :aria-describedby="$errors->has('first_name') ? 'first_name-error' : null" type="text" class="mt-1 block w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-primary focus:ring-0" :value="old('first_name', $user->first_name)"
                 required autofocus autocomplete="given-name" />
-            <x-input-error class="mt-2" :messages="$errors->get('first_name')" />
+            <x-input-error class="mt-2" id="first_name-error" :messages="$errors->get('first_name')" />
         </div>
 
         <div>
             <x-input-label for="middle_name" :value="__('Middle Name')" class="block font-display text-xs font-bold uppercase tracking-wider text-slate-700" />
-            <x-text-input id="middle_name" name="middle_name" type="text" class="mt-1 block w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-primary focus:ring-0" :value="old('middle_name', $user->middle_name)"
+            <x-text-input id="middle_name" name="middle_name" :aria-invalid="$errors->has('middle_name') ? 'true' : 'false'" :aria-describedby="$errors->has('middle_name') ? 'middle_name-error' : null" type="text" class="mt-1 block w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-primary focus:ring-0" :value="old('middle_name', $user->middle_name)"
                 autocomplete="additional-name" />
-            <x-input-error class="mt-2" :messages="$errors->get('middle_name')" />
+            <x-input-error class="mt-2" id="middle_name-error" :messages="$errors->get('middle_name')" />
         </div>
 
         <div>
             <x-input-label for="last_name" :value="__('Last Name')" class="block font-display text-xs font-bold uppercase tracking-wider text-slate-700" />
-            <x-text-input id="last_name" name="last_name" type="text" class="mt-1 block w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-primary focus:ring-0" :value="old('last_name', $user->last_name)"
+            <x-text-input id="last_name" name="last_name" :aria-invalid="$errors->has('last_name') ? 'true' : 'false'" :aria-describedby="$errors->has('last_name') ? 'last_name-error' : null" type="text" class="mt-1 block w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-primary focus:ring-0" :value="old('last_name', $user->last_name)"
                 required autocomplete="family-name" />
-            <x-input-error class="mt-2" :messages="$errors->get('last_name')" />
+            <x-input-error class="mt-2" id="last_name-error" :messages="$errors->get('last_name')" />
         </div>
 
         <div>
             <x-input-label for="email" :value="__('Email')" class="block font-display text-xs font-bold uppercase tracking-wider text-slate-700" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-primary focus:ring-0" :value="old('email', $user->email)"
+            <x-text-input id="email" name="email" :aria-invalid="$errors->has('email') ? 'true' : 'false'" :aria-describedby="$errors->has('email') ? 'email-error' : null" type="email" class="mt-1 block w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-primary focus:ring-0" :value="old('email', $user->email)"
                 required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
+            <x-input-error class="mt-2" id="email-error" :messages="$errors->get('email')" />
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail())
                 <div>

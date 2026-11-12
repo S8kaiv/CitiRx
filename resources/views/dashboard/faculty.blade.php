@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-ui.page-header
+        <x-faculty.page-header
             title="Faculty Dashboard"
             :description="$cohort
                 ? $cohort->cohort_name.' · AY '.$cohort->academic_year
@@ -16,11 +16,11 @@
                     </x-ui.button>
                 </x-slot:actions>
             @endif
-        </x-ui.page-header>
+        </x-faculty.page-header>
     </x-slot>
 
-    <div class="pt-6 pb-6 sm:pb-8">
-        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+    <div>
+        <div class="rx-faculty-workspace mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             @if (session('status'))
                 <x-ui.alert variant="success">
                     {{ session('status') }}
@@ -45,61 +45,91 @@
                     </p>
                 </x-ui.card>
             @else
-                <section
-                    aria-label="Cohort summary"
-                    class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
-                >
-                    <x-ui.card>
-                        <p class="text-xs font-bold uppercase tracking-wide text-ink-muted">
-                            Active Students
-                        </p>
-
-                        <p class="mt-2 font-display text-3xl font-black tabular-nums text-ink">
-                            {{ $summary['total_students'] }}
-                        </p>
-                    </x-ui.card>
-
-                    <x-ui.card>
-                        <p class="text-xs font-bold uppercase tracking-wide text-ink-muted">
-                            Diagnostic Complete
-                        </p>
-
-                        <p class="mt-2 font-display text-3xl font-black tabular-nums text-ink">
-                            {{ $summary['diagnostic_completed'] }}
-                        </p>
-
-                        <p class="mt-1 text-xs text-ink-muted">
-                            {{ number_format($summary['diagnostic_completion_pct'], 1) }}%
-                            of the cohort
-                        </p>
-                    </x-ui.card>
-
-                    <x-ui.card class="border-primary/25 bg-primary-tint">
-                        <p class="text-xs font-bold uppercase tracking-wide text-primary-ink">
-                            Average Readiness
-                        </p>
-
-                        <p class="mt-2 font-display text-3xl font-black tabular-nums text-primary-ink">
-                            {{ $summary['avg_readiness'] !== null
-                                ? number_format($summary['avg_readiness'], 2).'%'
-                                : '—' }}
-                        </p>
-                    </x-ui.card>
-
-                    <x-ui.card class="border-warning-strong/30 bg-warning-tint">
-                        <p class="text-xs font-bold uppercase tracking-wide text-warning-ink">
-                            Open Interventions
-                        </p>
-
-                        <p class="mt-2 font-display text-3xl font-black tabular-nums text-warning-ink">
-                            {{ $interventionCounts['open'] }}
-                        </p>
-
-                        <p class="mt-1 text-xs text-warning-ink/80">
-                            {{ $interventionCounts['completed'] }} completed
-                        </p>
-                    </x-ui.card>
+                <section class="rx-faculty-intro" aria-labelledby="faculty-intro-title">
+                    <div>
+                        <h2 id="faculty-intro-title">A clearer path for every student.</h2>
+                        <p>Review your cohort’s progress and turn readiness insights into focused support.</p>
+                        <x-ui.button href="#assign-intervention">Assign Intervention</x-ui.button>
+                    </div>
+                    <img src="{{ asset('image/pill-mascot-admin.webp') }}" alt="" width="112" height="112" decoding="async">
                 </section>
+                <dl class="rx-faculty-summary" aria-label="Cohort summary">
+                    <div><dt>Active Students</dt><dd>{{ $summary['total_students'] }}</dd></div>
+                    <div><dt>Diagnostic Complete</dt><dd>{{ $summary['diagnostic_completed'] }}</dd><p>{{ number_format($summary['diagnostic_completion_pct'], 1) }}% of the cohort</p></div>
+                    <div><dt>Average Readiness</dt><dd>{{ $summary['avg_readiness'] !== null ? number_format($summary['avg_readiness'], 2).'%' : '—' }}</dd></div>
+                    <div><dt>Open Interventions</dt><dd>{{ $interventionCounts['open'] }}</dd><p>{{ $interventionCounts['completed'] }} completed</p></div>
+                </dl>
+
+                @if ($supportStudents->isNotEmpty())
+                    <x-ui.card class="rx-faculty-support">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <h2 class="font-display text-lg font-extrabold text-warning-ink">
+                                    Students Needing Support
+                                </h2>
+
+                                <p class="mt-1 text-sm text-warning-ink/80">
+                                    Students with a pending diagnostic or an at-risk readiness estimate.
+                                </p>
+                            </div>
+
+                            <x-ui.badge variant="warning">
+                                Up to 20 students
+                            </x-ui.badge>
+                        </div>
+
+                        <p class="mt-3 text-xs text-ink-muted sm:hidden">Swipe across for diagnostic and readiness details.</p>
+                        <div class="-mx-4 mt-4 overflow-x-auto px-4 sm:-mx-6 sm:px-6" role="region" aria-label="Students needing support" tabindex="0">
+                            <table class="min-w-[680px] w-full text-sm">
+                                <thead class="border-b border-warning-strong/30 text-left text-warning-ink">
+                                    <tr>
+                                        <th scope="col" class="px-3 py-3 font-bold">Student</th>
+                                        <th scope="col" class="px-3 py-3 font-bold">Student ID</th>
+                                        <th scope="col" class="px-3 py-3 font-bold">Diagnostic</th>
+                                        <th scope="col" class="px-3 py-3 text-right font-bold">Readiness</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody class="divide-y divide-warning-strong/20">
+                                    @foreach ($supportStudents as $student)
+                                        <tr>
+                                            <td class="px-3 py-3 font-semibold text-ink">
+                                                <span class="block">{{ $student['name'] }}</span>
+                                                <a href="#assign-intervention" class="mt-1 inline-flex min-h-11 items-center text-xs font-bold text-primary-ink"
+                                                    x-data x-on:click="document.getElementById('target_user_id').value = @js($student['user_id']); document.getElementById('target_user_id').focus({ preventScroll: true })">Assign support</a>
+                                            </td>
+
+                                            <td class="px-3 py-3 text-ink-muted">
+                                                {{ $student['student_id'] ?? '—' }}
+                                            </td>
+
+                                            <td class="px-3 py-3">
+                                                <x-ui.badge
+                                                    :variant="$student['is_diagnostic_completed']
+                                                        ? 'success'
+                                                        : 'warning'"
+                                                >
+                                                    {{ $student['is_diagnostic_completed']
+                                                        ? 'Complete'
+                                                        : 'Pending' }}
+                                                </x-ui.badge>
+                                            </td>
+
+                                            <td class="px-3 py-3 text-right font-semibold tabular-nums text-ink">
+                                                {{ $student['predicted_readiness_pct'] !== null
+                                                    ? number_format(
+                                                        $student['predicted_readiness_pct'],
+                                                        2,
+                                                    ).'%'
+                                                    : '—' }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </x-ui.card>
+                @endif
 
                 <section class="grid gap-6 lg:grid-cols-2">
                     <x-ui.card>
@@ -197,7 +227,7 @@
 
                         <div class="mt-4 space-y-3">
                             @foreach ($domainMastery as $domain)
-                                <div class="flex items-center justify-between gap-4 rounded-2xl bg-surface-2 p-3 sm:p-4">
+                                <div class="rx-faculty-domain-row flex items-center justify-between gap-4 p-3 sm:p-4">
                                     <div class="min-w-0">
                                         <p class="text-sm font-bold text-ink">
                                             Domain {{ $domain['domain_number'] }}
@@ -229,75 +259,7 @@
                     </x-ui.card>
                 </section>
 
-                @if ($supportStudents->isNotEmpty())
-                    <x-ui.card class="border-warning-strong/30 bg-warning-tint">
-                        <div class="flex flex-wrap items-center justify-between gap-3">
-                            <div>
-                                <h2 class="font-display text-lg font-extrabold text-warning-ink">
-                                    Students Needing Support
-                                </h2>
-
-                                <p class="mt-1 text-sm text-warning-ink/80">
-                                    Students with a pending diagnostic or an at-risk readiness estimate.
-                                </p>
-                            </div>
-
-                            <x-ui.badge variant="warning">
-                                Up to 20 students
-                            </x-ui.badge>
-                        </div>
-
-                        <div class="-mx-4 mt-4 overflow-x-auto px-4 sm:-mx-6 sm:px-6">
-                            <table class="min-w-[680px] w-full text-sm">
-                                <thead class="border-b border-warning-strong/30 text-left text-warning-ink">
-                                    <tr>
-                                        <th scope="col" class="px-3 py-3 font-bold">Student</th>
-                                        <th scope="col" class="px-3 py-3 font-bold">Student ID</th>
-                                        <th scope="col" class="px-3 py-3 font-bold">Diagnostic</th>
-                                        <th scope="col" class="px-3 py-3 text-right font-bold">Readiness</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody class="divide-y divide-warning-strong/20">
-                                    @foreach ($supportStudents as $student)
-                                        <tr>
-                                            <td class="px-3 py-3 font-semibold text-ink">
-                                                {{ $student['name'] }}
-                                            </td>
-
-                                            <td class="px-3 py-3 text-ink-muted">
-                                                {{ $student['student_id'] ?? '—' }}
-                                            </td>
-
-                                            <td class="px-3 py-3">
-                                                <x-ui.badge
-                                                    :variant="$student['is_diagnostic_completed']
-                                                        ? 'success'
-                                                        : 'warning'"
-                                                >
-                                                    {{ $student['is_diagnostic_completed']
-                                                        ? 'Complete'
-                                                        : 'Pending' }}
-                                                </x-ui.badge>
-                                            </td>
-
-                                            <td class="px-3 py-3 text-right font-semibold tabular-nums text-ink">
-                                                {{ $student['predicted_readiness_pct'] !== null
-                                                    ? number_format(
-                                                        $student['predicted_readiness_pct'],
-                                                        2,
-                                                    ).'%'
-                                                    : '—' }}
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </x-ui.card>
-                @endif
-
-                <x-ui.card>
+                <x-ui.card id="assign-intervention">
                     <div>
                         <h2 class="font-display text-lg font-extrabold text-ink">
                             Assign Intervention
@@ -317,6 +279,7 @@
                     <form
                         method="POST"
                         action="{{ route('faculty.interventions.store') }}"
+                        x-data="{ selectedDomain: @js((string) old('domain_id', '')) }"
                         class="mt-5 space-y-5"
                     >
                         @csrf
@@ -372,6 +335,8 @@
                         <div class="grid gap-5 md:grid-cols-2">
                             <x-ui.field
                                 name="domain_id"
+                                x-model="selectedDomain"
+                                x-on:change="document.getElementById('competency_id').value = ''"
                                 label="Domain"
                                 type="select"
                                 required
@@ -403,6 +368,7 @@
                                 @foreach ($formOptions as $domain)
                                     <optgroup
                                         label="Domain {{ $domain->domain_number }} — {{ $domain->domain_name }}"
+                                        x-bind:disabled="selectedDomain !== @js((string) $domain->domain_id)"
                                     >
                                         @foreach ($domain->competencies as $competency)
                                             <option
@@ -483,7 +449,7 @@
                         </p>
                     </div>
 
-                    <div class="overflow-x-auto">
+                    <div class="overflow-x-auto" role="region" aria-label="Student roster" tabindex="0">
                         <table class="min-w-[680px] w-full text-sm">
                             <thead class="bg-surface-2 text-left text-ink-muted">
                                 <tr>

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
             title="Question bank"
@@ -76,7 +76,7 @@
                     </select>
                 </div>
 
-                <div class="flex items-end gap-2">
+                <div class="rx-admin-actions flex flex-wrap items-end gap-2">
                     <button type="submit" style="--lip: rgb(var(--color-primary-lip));"
                         class="btn-press flex-1 rounded-xl bg-primary px-4 py-2.5 font-display text-sm font-bold text-white shadow-md">
                         Filter
@@ -91,6 +91,7 @@
 
             <div class="overflow-hidden rounded-3xl border-2 border-b-4 border-slate-200 bg-white shadow-sm">
                 <div class="overflow-x-auto">
+                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                     <table class="min-w-full text-left text-sm">
                         <thead class="bg-slate-50 text-xs font-extrabold uppercase tracking-wider text-muted-ink">
                             <tr>
@@ -205,6 +206,7 @@
                             @endforelse
                         </tbody>
                     </table>
+                    </div>
                 </div>
 
                 <div class="border-t border-slate-100 px-5 py-4">

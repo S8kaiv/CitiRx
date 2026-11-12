@@ -100,7 +100,7 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
 
     {{-- Alpine State: activeTab controls switching, activeTheme tracks the color state --}}
     <div class="pt-6 pb-20 font-sans text-ink antialiased" x-data="{
-        activeTab: @js($errors->any() || session('status') ? 'settings' : 'overview')
+        activeTab: @js(collect($errors->getBags())->contains(fn($bag) => $bag->any()) || session('status') ? 'settings' : 'overview')
     }">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
@@ -299,6 +299,11 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                                             displayScore: '0.0',
                                             circumference: {{ $dashCircumference }}
                                         }" x-init="$nextTick(() => {
+                                            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                                                displayScore = target.toFixed(1);
+                                                $refs.ring?.setAttribute('stroke-dashoffset', circumference * (1 - target / 100));
+                                                return;
+                                            }
                                             let start = performance.now();
                                             let duration = 1200;
                                             let animate = (now) => {
@@ -347,7 +352,7 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
 
                                 <div class="mt-5 border-t-2 border-slate-100 pt-4">
                                     <a href="{{ route('readiness.show') }}"
-                                        class="font-display text-xs font-bold text-primary hover:underline">
+                                        class="rx-student-report-link font-display text-xs font-bold text-primary hover:underline">
                                         Detailed Statistics Breakdown →
                                     </a>
                                 </div>
@@ -360,8 +365,7 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                 <div class="pt-6 flex justify-center">
                     <form method="POST" action="{{ route('logout') }}" class="w-full sm:w-auto">
                         @csrf
-                        <button type="submit" style="--lip: #E11D48;"
-                            class="btn-press w-full sm:w-80 rounded-2xl border-2 border-b-4 border-rose-300 bg-rose-500 py-3.5 text-center font-display text-sm font-black tracking-wider text-white shadow-md transition hover:bg-rose-600">
+                        <button type="submit" class="rx-logout-button">
                             Log Out
                         </button>
                     </form>

@@ -244,7 +244,7 @@
 
                 <div>
                     <a href="{{ route('readiness.show') }}"
-                        class="font-display text-xs font-bold text-primary transition hover:underline">
+                        class="rx-student-report-link font-display text-xs font-bold text-primary transition hover:underline">
                         View Full Breakdown Report →
                     </a>
                 </div>

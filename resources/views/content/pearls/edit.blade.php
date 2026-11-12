@@ -92,6 +92,7 @@
 
                         <x-ui.field
                             name="reason"
+                            id="submit-review-reason"
                             label="Submission reason"
                             type="textarea"
                             :rows="3"
@@ -140,6 +141,7 @@
 
                             <x-ui.field
                                 name="reason"
+                                id="return-draft-reason"
                                 label="Required corrections"
                                 type="textarea"
                                 :rows="5"
@@ -189,6 +191,7 @@
 
                             <x-ui.field
                                 name="reason"
+                                id="publish-reason"
                                 label="Approval reason"
                                 type="textarea"
                                 :rows="4"
@@ -241,6 +244,7 @@
 
                         <x-ui.field
                             name="reason"
+                            id="retire-reason"
                             label="Retirement reason"
                             type="textarea"
                             :rows="4"

@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-ui.page-header
+        <x-faculty.page-header
             title="Intervention History"
             description="Review and complete the interventions you assigned to your cohort."
         >
@@ -12,11 +12,11 @@
                     Back to Faculty Dashboard
                 </x-ui.button>
             </x-slot:actions>
-        </x-ui.page-header>
+        </x-faculty.page-header>
     </x-slot>
 
-    <div class="pt-6 pb-6 sm:pb-8">
-        <div class="mx-auto max-w-5xl space-y-6 px-4 sm:px-6 lg:px-8">
+    <div>
+        <div class="rx-faculty-workspace mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             @if (session('status'))
                 <x-ui.alert variant="success">
                     {{ session('status') }}
@@ -24,7 +24,7 @@
             @endif
 
             @forelse ($interventions as $intervention)
-                <x-ui.card>
+                <x-ui.card class="rx-faculty-intervention">
                     <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                         <div class="min-w-0 flex-1">
                             <div class="flex flex-wrap items-center gap-2">
@@ -70,7 +70,7 @@
                             </p>
 
                             @if ($intervention->custom_message)
-                                <div class="mt-4 rounded-2xl bg-surface-2 p-4">
+                                <div class="rx-faculty-note">
                                     <p class="whitespace-pre-line text-sm leading-relaxed text-ink">
                                         {{ $intervention->custom_message }}
                                     </p>

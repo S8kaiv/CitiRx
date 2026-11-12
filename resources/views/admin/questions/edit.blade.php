@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
             title="Edit question"
@@ -159,7 +159,7 @@
                     @enderror
                 </div>
 
-                <div class="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-5">
+                <div class="rx-admin-actions flex flex-wrap items-center gap-3 border-t border-slate-100 pt-5">
                     <button type="submit" style="--lip: rgb(var(--color-primary-lip));"
                         class="btn-press rounded-2xl bg-primary px-6 py-3 font-display text-sm font-bold text-white shadow-md">
                         Save and Record Audit

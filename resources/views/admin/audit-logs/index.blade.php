@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
             title="Audit history"
@@ -92,7 +92,7 @@
                     >
                 </label>
 
-                <div class="flex flex-wrap gap-2 md:col-span-3">
+                <div class="rx-admin-actions flex flex-wrap gap-2 md:col-span-3">
                     <button class="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white">
                         Apply filters
                     </button>
@@ -111,6 +111,7 @@
             </p>
 
             <div class="overflow-x-auto rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
+                <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                 <table class="min-w-full divide-y divide-slate-200 text-sm">
                     <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
                         <tr>
@@ -200,6 +201,7 @@
                         @endforelse
                     </tbody>
                 </table>
+                    </div>
             </div>
 
             {{ $logs->links() }}
