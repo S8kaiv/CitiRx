@@ -4,6 +4,7 @@
     </h3>
 
     <div class="mt-4 overflow-x-auto">
+        <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="w-full min-w-[38rem] text-sm">
             <thead>
                 <tr
@@ -52,5 +53,6 @@
                 @endforeach
             </tbody>
         </table>
+                    </div>
     </div>
 </section>

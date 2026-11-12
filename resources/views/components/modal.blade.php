@@ -20,26 +20,29 @@
 @endphp
 
 <dialog
+    id="{{ $name }}-dialog"
     x-data="{
+        dialogId: @js($name.'-dialog'),
+        element() { return document.getElementById(this.dialogId) },
         previouslyFocused: null,
         pageWasLocked: false,
         ownsScrollLock: false,
 
         openDialog() {
-            if (this.$el.open) return;
+            if (this.element()?.open) return;
 
             this.previouslyFocused = document.activeElement;
             this.pageWasLocked =
                 document.body.classList.contains('overflow-y-hidden');
 
-            this.$el.showModal();
+            this.element().showModal();
 
             document.body.classList.add('overflow-y-hidden');
             this.ownsScrollLock = true;
 
             if (@js($focusable)) {
-                this.$nextTick(() => {
-                    const target = this.$el.querySelector(
+                queueMicrotask(() => {
+                    const target = this.element().querySelector(
                         '[aria-invalid=true], [autofocus], input:not([type=hidden]), textarea, select, button, a[href]'
                     );
 
@@ -49,8 +52,8 @@
         },
 
         closeDialog() {
-            if (this.$el.open) {
-                this.$el.close();
+            if (this.element()?.open) {
+                this.element().close();
             }
         },
 
@@ -68,7 +71,7 @@
             const target = this.previouslyFocused;
             this.previouslyFocused = null;
 
-            this.$nextTick(() => {
+            queueMicrotask(() => {
                 if (target?.isConnected) {
                     target.focus();
                 }
@@ -76,14 +79,14 @@
         },
 
         destroy() {
-            if (this.$el.open) {
-                this.$el.close();
+            if (this.element()?.open) {
+                this.element().close();
             }
 
             this.releaseScrollLock();
         }
     }"
-    x-init="if (@js($show)) $nextTick(() => openDialog())"
+    x-init="if (@js($show)) queueMicrotask(() => openDialog())"
     x-on:open-modal.window="
         if ($event.detail === @js($name)) openDialog()
     "

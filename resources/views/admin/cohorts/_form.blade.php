@@ -54,7 +54,7 @@
         hint="Optional. This is the expected licensure examination date."
     />
 
-    <div class="flex flex-wrap gap-3 border-t border-line pt-5">
+    <div class="rx-admin-actions flex flex-wrap gap-3 border-t border-line pt-5">
         <x-ui.button type="submit">
             {{ $submitLabel }}
         </x-ui.button>

@@ -389,25 +389,23 @@
 
         </div>
 
-        <div
-            x-show="submitDialogOpen"
-            x-transition.opacity
+        <dialog
+            id="mock-submit-dialog"
+            x-on:click.self="if (!submitting) submitDialogOpen = false"
+            x-effect="submitDialogOpen ? document.getElementById('mock-submit-dialog').showModal() : document.getElementById('mock-submit-dialog').close()"
+            x-on:cancel.prevent="if (!submitting) submitDialogOpen = false"
+            x-on:close="submitDialogOpen = false"
             @keydown.escape.window="
                 if (!submitting) {
                     submitDialogOpen = false;
                 }
             "
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+            class="m-auto"
             role="dialog"
             aria-modal="true"
             aria-labelledby="submit-dialog-title"
         >
             <div
-                @click.outside="
-                    if (!submitting) {
-                        submitDialogOpen = false;
-                    }
-                "
                 class="w-full max-w-md rounded-3xl border-2 border-b-4 border-line bg-surface p-6 shadow-xl sm:p-7"
             >
                 <h2
@@ -481,7 +479,7 @@
                     </form>
                 </div>
             </div>
-        </div>
+        </dialog>
     </div>
 
     <script>
@@ -784,7 +782,7 @@
 
                     window.scrollTo({
                         top: 0,
-                        behavior: 'smooth',
+                        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
                     });
                 },
 

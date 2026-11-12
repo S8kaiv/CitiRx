@@ -117,23 +117,23 @@
                     </p>
                 </div>
 
-                <div class="mt-6 overflow-x-auto">
+                <div class="mt-6 overflow-x-auto" role="region" aria-label="Post-test results by domain" tabindex="0">
                     <table class="min-w-full border-separate border-spacing-y-2">
                         <thead>
                             <tr class="text-left">
-                                <th class="px-4 py-2 font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
+                                <th scope="col" class="px-4 py-2 font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
                                     Subject
                                 </th>
 
-                                <th class="px-4 py-2 text-center font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
+                                <th scope="col" class="px-4 py-2 text-center font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
                                     Answered
                                 </th>
 
-                                <th class="px-4 py-2 text-center font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
+                                <th scope="col" class="px-4 py-2 text-center font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
                                     Correct
                                 </th>
 
-                                <th class="px-4 py-2 text-center font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
+                                <th scope="col" class="px-4 py-2 text-center font-display text-[10px] font-black uppercase tracking-wider text-ink-muted">
                                     Score
                                 </th>
                             </tr>

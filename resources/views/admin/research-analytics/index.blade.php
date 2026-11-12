@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
             title="Research analytics"
@@ -68,6 +68,7 @@
             <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h3 class="font-display text-lg font-extrabold text-slate-900">1. Sample funnel</h3>
                 <div class="mt-4 overflow-x-auto">
+                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                     <table class="w-full min-w-[34rem] text-sm">
                         <tbody class="divide-y divide-slate-100">
                             @foreach ([
@@ -121,6 +122,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </section>
 
@@ -139,6 +141,7 @@
                     4. Per-domain primary analysis
                 </h3>
                 <div class="mt-4 overflow-x-auto">
+                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                     <table class="w-full min-w-[64rem] text-sm">
                         <thead>
                             <tr
@@ -189,6 +192,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
                 </div>
                 <p class="mt-3 text-xs text-slate-500">
                     Bonferroni-adjusted p-values control the family-wise error rate across the reported domains.
@@ -200,6 +204,7 @@
                     5. Readiness prediction accuracy
                 </h3>
                 <div class="mt-4 overflow-x-auto">
+                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                     <table class="w-full min-w-[36rem] text-sm">
                         <thead>
                             <tr
@@ -231,6 +236,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
                 </div>
                 <p class="mt-3 text-xs text-slate-500">
                     Error = readiness snapshot at post-test start minus actual fixed-denominator post-test percentage.
@@ -253,6 +259,7 @@
                     <h3 class="font-display text-lg font-extrabold text-slate-900">
                         8. Submission breakdown
                     </h3>
+                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                     <table class="mt-4 w-full text-sm">
                         <tbody class="divide-y divide-slate-100">
                             @foreach ([
@@ -270,6 +277,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
                 </div>
 
                 <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -291,6 +299,7 @@
                     9. Cohort summaries
                 </h3>
                 <div class="mt-4 overflow-x-auto">
+                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                     <table class="w-full min-w-[58rem] text-sm">
                         <thead>
                             <tr
@@ -329,6 +338,7 @@
                             @endforelse
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </section>
         </div>

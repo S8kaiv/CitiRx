@@ -16,7 +16,7 @@
     };
 @endphp
 
-<div class="min-w-0 px-5 py-4">
+<div class="rx-admin-metric min-w-0 px-5 py-4">
     <dt
         class="text-xs font-bold uppercase tracking-[0.08em]
             text-ink-muted"

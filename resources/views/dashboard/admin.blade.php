@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
         title="Admin Dashboard"
@@ -22,6 +22,22 @@
             </x-slot:actions>
         </x-admin.page-header>
     </x-slot>
+
+    <section class="rx-admin-welcome" aria-labelledby="admin-welcome-title">
+        <div>
+            <h2 id="admin-welcome-title">Keep the learning moving.</h2>
+            <p>Your workspace for people, review content, and research readiness.</p>
+            <a href="{{ route('admin.users.index') }}" class="rx-admin-welcome-link">
+                Manage accounts <span aria-hidden="true">&rarr;</span>
+            </a>
+        </div>
+        <picture>
+            <source media="(min-width: 640px)" type="image/webp"
+                srcset="{{ asset('image/pill-mascot-admin.webp') }}">
+            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                alt="CitiRx’s welcoming pill mascot" width="220" height="220" decoding="async">
+        </picture>
+    </section>
 
     @php
         $withoutCohort =
@@ -144,7 +160,7 @@
                             <li>
                                 <a
                                     href="{{ $item['route'] }}"
-                                    class="group flex min-h-16 items-center gap-4 px-5 py-3 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-primary/25"
+                                    class="rx-admin-attention-link group flex min-h-16 items-center gap-4 px-5 py-3 transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-primary/25"
                                 >
                                     <span
                                         class="flex h-9 min-w-9 items-center justify-center rounded-full px-2 font-display text-sm font-extrabold tabular-nums {{ $item['tone'] }}"

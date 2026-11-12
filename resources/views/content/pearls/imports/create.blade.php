@@ -135,26 +135,27 @@
                 </div>
 
                 <div class="overflow-x-auto">
+                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                     <table class="min-w-[760px] w-full text-sm">
                         <thead class="bg-surface-2 text-left text-ink-muted">
                             <tr>
-                                <th class="px-4 py-3 font-bold sm:px-6">
+                                <th scope="col" class="px-4 py-3 font-bold sm:px-6">
                                     File
                                 </th>
 
-                                <th class="px-4 py-3 font-bold">
+                                <th scope="col" class="px-4 py-3 font-bold">
                                     Status
                                 </th>
 
-                                <th class="px-4 py-3 font-bold">
+                                <th scope="col" class="px-4 py-3 font-bold">
                                     Rows
                                 </th>
 
-                                <th class="px-4 py-3 font-bold">
+                                <th scope="col" class="px-4 py-3 font-bold">
                                     Expires
                                 </th>
 
-                                <th class="px-4 py-3 text-right font-bold sm:px-6">
+                                <th scope="col" class="px-4 py-3 text-right font-bold sm:px-6">
                                     Action
                                 </th>
                             </tr>
@@ -214,6 +215,7 @@
                             @endforelse
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </x-ui.card>
         </div>

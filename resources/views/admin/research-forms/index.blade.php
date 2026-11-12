@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
             title="Research Form Readiness"
@@ -87,6 +87,7 @@
                             </div>
 
                             <div class="overflow-x-auto">
+                                <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                                 <table class="min-w-full text-left text-sm">
                                     <thead class="border-b border-slate-200 text-xs uppercase text-slate-500">
                                         <tr>
@@ -294,6 +295,7 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                    </div>
                             </div>
                         </div>
                     @endforeach
@@ -453,6 +455,7 @@
                                 </h4>
 
                                 <div class="mt-3 overflow-x-auto">
+                                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                                     <table class="min-w-full text-left text-sm">
                                         <thead class="text-xs uppercase text-slate-500">
                                             <tr>
@@ -487,6 +490,7 @@
                                             @endforeach
                                         </tbody>
                                     </table>
+                    </div>
                                 </div>
                             </section>
 
@@ -496,6 +500,7 @@
                                 </h4>
 
                                 <div class="mt-3 overflow-x-auto">
+                                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                                     <table class="min-w-full text-left text-sm">
                                         <thead class="text-xs uppercase text-slate-500">
                                             <tr>
@@ -534,6 +539,7 @@
                                             @endforeach
                                         </tbody>
                                     </table>
+                    </div>
                                 </div>
                             </section>
 

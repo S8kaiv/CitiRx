@@ -1,14 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <a
-                href="{{ route('pearls.index') }}"
-                class="font-display text-xs font-bold uppercase tracking-wider text-primary"
-            >
-                ← Micro Pearls
-            </a>
-            <x-ui.page-header :title="$pearl->title" :description="$pearl->competency->competency_code .' · '.$pearl->competency->title .' · about '.$pearl->estimated_read_seconds . ' seconds' " />
-        </div>
+        <x-ui.page-header :title="$pearl->title" :description="$pearl->competency->competency_code .' · '.$pearl->competency->title .' · about '.$pearl->estimated_read_seconds . ' seconds'">
+            <x-slot:actions>
+                <x-ui.button variant="secondary" :href="route('pearls.index')">Back to Micro Pearls</x-ui.button>
+            </x-slot:actions>
+        </x-ui.page-header>
     </x-slot>
 
     <div class="pt-6 pb-8">
@@ -21,7 +17,7 @@
                     </span>
 
                     @if ($pearl->is_ai_generated)
-                        <span class="rounded-full bg-sky-100 px-3 py-1 font-display text-xs font-bold text-sky-800">
+                        <span class="rounded-full bg-info-tint px-3 py-1 font-display text-xs font-bold text-info-ink">
                             AI-assisted and human-reviewed
                         </span>
                     @endif
@@ -62,14 +58,14 @@
             </section>
 
             @if (filled($pearl->key_points))
-                <section class="rounded-3xl border-2 border-b-4 border-emerald-200 bg-emerald-50 p-6">
-                    <h2 class="font-display text-lg font-extrabold text-emerald-900">
+                <section class="rounded-3xl border-2 border-b-4 border-success-strong/30 bg-success-tint p-6">
+                    <h2 class="font-display text-lg font-extrabold text-success-ink">
                         Key Points
                     </h2>
 
                     <ul class="mt-4 space-y-3">
                         @foreach ($pearl->key_points as $point)
-                            <li class="flex gap-3 text-sm leading-6 text-emerald-900">
+                            <li class="flex gap-3 text-sm leading-6 text-success-ink">
                                 <span aria-hidden="true">💡</span>
                                 <span>{{ $point }}</span>
                             </li>
@@ -79,14 +75,14 @@
             @endif
 
             @if (filled($pearl->common_pitfalls))
-                <section class="rounded-3xl border-2 border-b-4 border-amber-200 bg-amber-50 p-6">
-                    <h2 class="font-display text-lg font-extrabold text-amber-900">
+                <section class="rounded-3xl border-2 border-b-4 border-warning-strong/30 bg-warning-tint p-6">
+                    <h2 class="font-display text-lg font-extrabold text-warning-ink">
                         Common Pitfalls
                     </h2>
 
                     <ul class="mt-4 space-y-3">
                         @foreach ($pearl->common_pitfalls as $pitfall)
-                            <li class="flex gap-3 text-sm leading-6 text-amber-900">
+                            <li class="flex gap-3 text-sm leading-6 text-warning-ink">
                                 <span aria-hidden="true">⚠</span>
                                 <span>{{ $pitfall }}</span>
                             </li>
@@ -144,7 +140,7 @@
                     @endforeach
                 </ul>
 
-                <p class="mt-4 text-xs text-muted-ink">
+                <p class="mt-4 text-xs text-ink-muted">
                     Content version {{ $pearl->content_version }}.
                     Reviewed {{ $pearl->reviewed_at?->format('F j, Y') }}.
                 </p>

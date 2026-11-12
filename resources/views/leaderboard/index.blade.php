@@ -140,7 +140,7 @@
                             </h3>
                         </div>
 
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto" role="region" aria-label="Cohort leaderboard" tabindex="0">
                             <table class="min-w-full text-sm">
                                 <caption class="sr-only">
                                     Students ranked by total XP within

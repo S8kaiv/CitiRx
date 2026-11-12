@@ -271,9 +271,11 @@
                                 </span>
 
                                 <span class="mt-1 block text-[10px] font-extrabold uppercase tracking-[0.1em] text-ink-muted">
-                                    {{ $authUser?->role === 'admin'
-                                        ? 'Admin Center'
-                                        : 'PHLE Adaptive Prep' }}
+                                    {{ match ($authUser?->role) {
+                                        'admin' => 'Admin Center',
+                                        'faculty' => 'Faculty Workspace',
+                                        default => 'PHLE Adaptive Prep',
+                                    } }}
                                 </span>
                             </span>
                         </a>
@@ -491,7 +493,7 @@
                                 </div>
 
                                 <span
-                                    class="absolute -bottom-1 -right-1 flex h-4 min-w-4
+                                    class="profile-level-badge absolute -bottom-1 -right-1 flex h-4 min-w-4
                                         items-center justify-center rounded-full px-1
                                         font-mono text-[9px] font-black shadow-xs
                                         ring-2 ring-white {{ $levelBadgeBg }}"

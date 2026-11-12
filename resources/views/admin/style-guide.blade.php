@@ -1,6 +1,6 @@
 <x-app-layout surface="admin">
     <x-slot name="header">
-        <x-ui.page-header
+        <x-admin.page-header
             title="Interface style guide"
             description="Internal verification of shared states, surfaces, themes, and comfort modes."
         />

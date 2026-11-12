@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
             :title="$cohort->cohort_name"
@@ -195,6 +195,7 @@
                         <h3 class="font-display text-lg font-black text-slate-900">Enrolled Students</h3>
 
                         <div class="mt-4 overflow-x-auto">
+                            <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                             <table class="min-w-full divide-y divide-slate-200 text-sm">
                                 <thead>
                                     <tr class="text-left text-xs font-extrabold uppercase tracking-wider text-muted-ink">
@@ -228,6 +229,7 @@
                                     @endforelse
                                 </tbody>
                             </table>
+                    </div>
                         </div>
 
                         <div class="mt-4">{{ $students->links() }}</div>
@@ -235,7 +237,7 @@
 
                     {{-- Audit history --}}
                     <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-                        <div class="flex items-center justify-between gap-3">
+                        <div class="rx-admin-actions flex flex-wrap items-center justify-between gap-3">
                             <h3 class="font-display text-lg font-black text-slate-900">Recent Changes</h3>
 
                             <a href="{{ route('admin.audit-logs.index', ['target_type' => \App\Models\Cohort::class]) }}"

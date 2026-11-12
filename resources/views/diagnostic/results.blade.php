@@ -110,15 +110,15 @@
                     </span>
                 </div>
 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto" role="region" aria-label="Diagnostic results by domain" tabindex="0">
                     <table class="w-full text-left font-sans text-sm">
                         <thead>
                             <tr
                                 class="border-b-2 border-line font-display text-[11px] font-bold uppercase tracking-wider text-ink-muted">
-                                <th class="pb-3 pr-4">Subject</th>
-                                <th class="pb-3 px-4 text-center">Score</th>
-                                <th class="pb-3 px-4 text-right">Accuracy</th>
-                                <th class="pb-3 pl-4 text-right w-36 hidden sm:table-cell">Distribution</th>
+                                <th scope="col" class="pb-3 pr-4">Subject</th>
+                                <th scope="col" class="pb-3 px-4 text-center">Score</th>
+                                <th scope="col" class="pb-3 px-4 text-right">Accuracy</th>
+                                <th scope="col" class="pb-3 pl-4 text-right w-36 hidden sm:table-cell">Distribution</th>
                             </tr>
                         </thead>
 

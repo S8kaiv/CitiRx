@@ -88,7 +88,7 @@
                         Clear
                     </a>
 
-                    <span class="ml-auto text-sm font-semibold text-muted-ink">
+                    <span class="ml-auto text-sm font-semibold text-ink-muted">
                         {{ $pearls->total() }}
                         {{ \Illuminate\Support\Str::plural('pearl', $pearls->total()) }}
                     </span>
@@ -97,15 +97,15 @@
 
             @if ($pearls->isEmpty())
                 <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-10 text-center">
-                    <div class="text-5xl" aria-hidden="true">
-                        📖
+                    <div class="flex justify-center text-primary-ink" aria-hidden="true">
+                        <x-admin.icon name="pearls" class="h-10 w-10" />
                     </div>
 
                     <h2 class="mt-4 font-display text-xl font-extrabold text-slate-900">
                         No published pearls found
                     </h2>
 
-                    <p class="mx-auto mt-2 max-w-lg text-sm text-muted-ink">
+                    <p class="mx-auto mt-2 max-w-lg text-sm text-ink-muted">
                         Try clearing the filters. If the library is still empty,
                         its lessons may still be awaiting content review.
                     </p>
@@ -120,12 +120,12 @@
                                     {{ $pearl->competency->competency_code }}
                                 </span>
 
-                                <span class="text-muted-ink">
+                                <span class="text-ink-muted">
                                     Domain {{ $pearl->competency->domain->domain_number }}
                                 </span>
 
                                 @if ($pearl->is_ai_generated)
-                                    <span class="rounded-full bg-sky-50 px-3 py-1 font-display font-bold text-sky-700">
+                                    <span class="rounded-full bg-info-tint px-3 py-1 font-display font-bold text-info-ink">
                                         AI-assisted · reviewed
                                     </span>
                                 @endif
@@ -135,7 +135,7 @@
                                 {{ $pearl->title }}
                             </h2>
 
-                            <p class="mt-2 text-xs font-semibold text-muted-ink">
+                            <p class="mt-2 text-xs font-semibold text-ink-muted">
                                 {{ $pearl->competency->title }}
                                 · about {{ $pearl->estimated_read_seconds }} seconds
                             </p>
@@ -159,7 +159,7 @@
 
             <div class="text-center">
                 <a href="{{ route('dashboard') }}"
-                    class="font-display text-sm font-bold text-primary hover:text-primary-dark">
+                    class="inline-flex min-h-11 items-center font-display text-sm font-bold text-primary-ink hover:underline">
                     Back to Dashboard
                 </a>
             </div>

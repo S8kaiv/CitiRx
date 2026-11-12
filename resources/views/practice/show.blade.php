@@ -41,7 +41,7 @@
 
             @if (session('error'))
                 <div role="alert"
-                    class="p-3 mb-3 text-xs font-medium border-2 border-b-4 rounded-xl border-danger-strong/40 bg-danger-tinttext-danger-ink animate-pop">
+                    class="p-3 mb-3 text-xs font-medium border-2 border-b-4 rounded-xl border-danger-strong/40 bg-danger-tint text-danger-ink animate-pop">
                     {{ session('error') }}
                 </div>
             @endif
@@ -55,7 +55,7 @@
 
                     <span
                         class="inline-flex items-center gap-1.5 rounded-full bg-success-tint px-2 py-0.5 text-xs text-success-ink shadow-xs">
-                        <span class="h-1.5 w-1.5 rounded-full bg-success-stronganimate-pulse"></span>
+                        <span class="h-1.5 w-1.5 rounded-full bg-success-strong animate-pulse"></span>
                         {{ $session->correct_items }} Correct
                     </span>
                 </div>

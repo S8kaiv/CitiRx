@@ -29,7 +29,7 @@
                     {{ $label }}
                 </div>
 
-                <div class="mt-1 font-mono text-xl font-bold text-ink">
+                <div class="rx-admin-stat-value mt-1 font-mono text-xl font-bold text-ink">
                     {{ $value }}
                 </div>
             </div>
