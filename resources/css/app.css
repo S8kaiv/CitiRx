@@ -2585,19 +2585,647 @@ html[data-comfort="dark"] .research-workflow-form {
     }
 }
 
-/* Allow for the stacked header on small phones. */
-.landing-page :is(#how, #rewards, #faq) {
-    scroll-margin-top: 12rem;
+/* Fallback values until the header's actual height is measured. */
+.landing-page {
+    --welcome-header-height: 11.5rem;
 }
 
 @media (min-width: 640px) {
-    .landing-page :is(#how, #rewards, #faq) {
-        scroll-margin-top: 9rem;
+    .landing-page {
+        --welcome-header-height: 8rem;
     }
 }
 
 @media (min-width: 1024px) {
-    .landing-page :is(#how, #rewards, #faq) {
-        scroll-margin-top: 6rem;
+    .landing-page {
+        --welcome-header-height: 4.625rem;
     }
 }
+
+/*
+ * Give the hero the available first viewport.
+ * Content can still make it taller on small screens or at high zoom.
+ */
+.landing-hero {
+    box-sizing: border-box;
+    display: grid;
+    align-items: center;
+
+    min-height: calc(100vh - var(--welcome-header-height));
+    min-height: calc(100svh - var(--welcome-header-height));
+
+    padding-block: clamp(2rem, 6vh, 4rem);
+}
+
+/* Consistent section boundaries and breathing room. */
+.landing-section {
+    padding-block: clamp(3rem, 6vw, 5rem);
+    border-top: 1px solid rgb(var(--color-line));
+}
+
+/* Anchor targets align directly beneath the sticky header. */
+.landing-page :is(#how, #rewards, #faq) {
+    scroll-margin-top:
+        calc(var(--welcome-header-height) + 1rem);
+}
+
+.landing-section-final {
+    padding-bottom: clamp(4rem, 8vw, 6rem);
+}
+
+/*
+ * Decorations settle once, then remain still.
+ * Text, navigation, and buttons are immediately available.
+ */
+.landing-page .landing-hero .pill {
+    animation: none;
+    transform: rotate(var(--r, 0deg));
+}
+
+@keyframes welcome-pill-settle {
+    from {
+        opacity: 0.6;
+        transform:
+            translateY(10px)
+            rotate(var(--r, 0deg));
+    }
+
+    to {
+        opacity: 1;
+        transform:
+            translateY(0)
+            rotate(var(--r, 0deg));
+    }
+}
+
+@keyframes welcome-mascot-settle {
+    from {
+        transform: translateY(8px) rotate(-2deg);
+    }
+
+    to {
+        transform: translateY(0) rotate(0deg);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .landing-page .landing-hero .pill {
+        animation:
+            welcome-pill-settle
+            1100ms
+            cubic-bezier(0.16, 1, 0.3, 1)
+            both;
+    }
+
+    .landing-page .landing-hero .pill:nth-child(2) {
+        animation-delay: 70ms;
+    }
+
+    .landing-page .landing-hero .pill:nth-child(3) {
+        animation-delay: 140ms;
+    }
+}
+
+@media
+    (prefers-reduced-motion: no-preference)
+    and (min-width: 768px) {
+    .landing-page .welcome-mascot {
+        animation:
+            welcome-mascot-settle
+            650ms
+            cubic-bezier(0.16, 1, 0.3, 1)
+            both;
+    }
+}
+
+/* CitiRx welcome page. Scoped to .rx-welcome. */
+
+.rx-welcome {
+    --bg: #faf9f6;
+    --surface: #fff;
+    --ink: #29243d;
+    --muted: #655f75;
+    --line: #e5e1ec;
+    --tint: #eee9ff;
+    --purple: #6840de;
+    --lip: #432698;
+    --gold: #fff0ce;
+    --gold-ink: #73500e;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Figtree,ui-rounded,system-ui,sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+html[data-comfort="dark"] .rx-welcome {
+    --bg: #171522;
+    --surface: #211e30;
+    --ink: #f2edf9;
+    --muted: #bbb3cc;
+    --line: #40394f;
+    --tint: #2d2445;
+    --purple: #b7a0ff;
+    --lip: #775ac3;
+    --gold: #362d1c;
+    --gold-ink: #f5ce7c;
+}
+
+.rx-welcome * { box-sizing: border-box; }
+
+.rx-welcome a { color: inherit; text-decoration: none; }
+
+.rx-welcome ::selection { background: var(--purple); color: var(--bg); }
+
+.rx-welcome :is(a,button,summary):focus-visible { outline: 3px solid var(--purple); outline-offset: 5px; }
+
+.rx-welcome .rx-wrap { width: min(1120px,calc(100% - 48px)); margin-inline: auto; }
+
+.rx-welcome h1,.rx-welcome h2,.rx-welcome h3,.rx-welcome p { margin: 0; }
+
+.rx-welcome h1,.rx-welcome h2,.rx-welcome h3 {
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -.03em;
+    text-wrap: balance;
+}
+
+.rx-welcome h1 { font-size: clamp(2.7rem,4.6vw,4.25rem); max-width: 13ch; }
+
+.rx-welcome h1 span { color: var(--purple); }
+
+.rx-welcome h2 { font-size: clamp(1.9rem,3vw,2.7rem); }
+
+.rx-welcome h3 { font-size: 1.2rem; }
+
+.rx-welcome p { color: var(--muted); }
+
+.rx-welcome .rx-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    min-height: 50px;
+    padding: 10px 24px;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 15px;
+    background: var(--purple);
+    color: var(--bg);
+    box-shadow: 0 4px 0 var(--lip);
+    transition: transform .15s,box-shadow .15s,background .15s;
+}
+
+.rx-welcome .rx-button:hover { transform: translateY(-2px); }
+
+.rx-welcome .rx-button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--lip); }
+
+.rx-welcome .rx-secondary {
+    background: var(--surface);
+    border-color: var(--line);
+    color: var(--purple);
+    box-shadow: 0 4px 0 var(--line);
+}
+
+.rx-welcome .rx-header { border-bottom: 1px solid var(--line); background: var(--bg); }
+
+.rx-welcome .rx-nav { display: flex; align-items: center; gap: 28px; min-height: 92px; }
+
+.rx-welcome .rx-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.rx-welcome .rx-mark {
+    background: #6840de;
+    color: white;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    width: 43px;
+    height: 43px;
+    transform: rotate(-8deg);
+    font-size: 23px;
+    letter-spacing: -2px;
+    box-shadow: 0 3px 0 #432698;
+}
+
+.rx-welcome .rx-links {
+    display: flex;
+    gap: 28px;
+    margin-left: auto;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+}
+
+.rx-welcome .rx-links a:hover { color: var(--purple); }
+
+.rx-welcome .rx-account { display: flex; align-items: center; gap: 20px; font-weight: 800; font-size: 14px; }
+
+.rx-welcome .rx-skip {
+    position: fixed;
+    top: -100px;
+    left: 20px;
+    background: var(--surface);
+    z-index: 99;
+    padding: 12px;
+}
+
+.rx-welcome .rx-skip:focus { top: 12px; }
+
+.rx-welcome .rx-hero {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    align-items: center;
+    gap: 30px;
+    padding-block: 76px 70px;
+}
+
+.rx-welcome .rx-intro { max-width: 44ch; font-size: 18px; margin-top: 24px; }
+
+.rx-welcome .rx-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 30px; }
+
+.rx-welcome .rx-note { font-size: 13px; margin-top: 20px; }
+
+.rx-welcome .rx-note a {
+    color: var(--purple);
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.rx-welcome .rx-art { position: relative; display: grid; place-items: center; min-height: 430px; }
+
+.rx-welcome .rx-art-back {
+    position: absolute;
+    inset: 20px 15px;
+    background: var(--tint);
+    border-radius: 48% 48% 42% 44%;
+    transform: rotate(-8deg);
+}
+
+.rx-welcome .rx-mascot {
+    position: relative;
+    width: 84%;
+    height: 350px;
+    object-fit: contain;
+    filter: drop-shadow(0 20px 14px #24154918);
+}
+
+.rx-welcome .rx-bubble {
+    position: absolute;
+    top: 9px;
+    right: 0;
+    padding: 13px 20px;
+    border: 2px solid var(--line);
+    border-radius: 16px 16px 16px 3px;
+    background: var(--surface);
+    font-size: 16px;
+    font-weight: 800;
+    transform: rotate(4deg);
+}
+
+.rx-welcome .rx-art-label {
+    position: absolute;
+    bottom: 8px;
+    left: 12px;
+    background: var(--gold);
+    color: var(--gold-ink);
+    padding: 12px 20px;
+    border-radius: 14px;
+    transform: rotate(-4deg);
+    font-weight: 800;
+}
+
+.rx-welcome .rx-domains { border-block: 1px solid var(--line); padding-block: 24px; }
+
+.rx-welcome .rx-domains-title { font-size: 13px; font-weight: 800; color: var(--muted); margin-bottom: 12px; }
+
+.rx-welcome .rx-domain-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin: 0;
+    padding: 0;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.rx-welcome .rx-domain-list li { display: flex; align-items: center; gap: 8px; }
+
+.rx-welcome .rx-domain-list li:before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--purple);
+}
+
+.rx-welcome .rx-section { padding-block: 76px; scroll-margin-top: 24px; }
+
+.rx-welcome .rx-section-intro { margin-top: 16px; max-width: 55ch; }
+
+.rx-welcome .rx-steps {
+    list-style: none;
+    padding: 0;
+    margin: 38px 0 0;
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 28px;
+}
+
+.rx-welcome .rx-step-num {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    color: var(--purple);
+    font-weight: 800;
+    margin-bottom: 22px;
+}
+
+.rx-welcome .rx-steps p { font-size: 14px; margin-top: 12px; }
+
+.rx-welcome .rx-rewards {
+    background: var(--tint);
+    border-radius: 24px;
+    padding: 44px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 52px;
+}
+
+.rx-welcome .rx-rewards p { margin-top: 16px; }
+
+.rx-welcome .rx-rewards dl { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 0; }
+
+.rx-welcome .rx-rewards dt { color: var(--purple); font-size: 24px; font-weight: 800; line-height: 1.3; }
+
+.rx-welcome .rx-rewards dd { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+
+.rx-welcome .rx-badges {
+    list-style: none;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 0;
+    margin: 24px 0 0;
+}
+
+.rx-welcome .rx-badges li {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.rx-welcome .rx-faq { display: grid; grid-template-columns: .85fr 1.2fr; gap: 70px; }
+
+.rx-welcome details { border-bottom: 1px solid var(--line); }
+
+.rx-welcome summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    min-height: 68px;
+    padding-block: 18px;
+    font-weight: 700;
+    list-style: none;
+}
+
+.rx-welcome summary::-webkit-details-marker { display: none; }
+
+.rx-welcome summary:after { content: '+'; font-size: 24px; font-weight: 500; color: var(--purple); }
+
+.rx-welcome details[open] summary:after { content: '−'; }
+
+.rx-welcome details p { padding-bottom: 22px; font-size: 14px; }
+
+.rx-welcome .rx-final { text-align: center; border-top: 1px solid var(--line); padding-block: 64px 76px; }
+
+.rx-welcome .rx-final p { margin: 16px auto 26px; max-width: 50ch; }
+
+.rx-welcome .rx-footer {
+    border-top: 1px solid var(--line);
+    padding-block: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    font-size: 13px;
+}
+
+.rx-welcome .rx-footer strong { font-size: 20px; color: var(--purple); }
+
+@media (prefers-reduced-motion:no-preference) {
+    .rx-welcome .rx-mascot { animation: rx-hello .8s cubic-bezier(.16,1,.3,1); }
+
+    @keyframes rx-hello {
+        from { transform: translateY(20px) rotate(-7deg); }
+
+        to { transform: translateY(0) rotate(0); }
+    }
+}
+
+@media (max-width:900px) {
+    .rx-welcome .rx-links { display: none; }
+
+    .rx-welcome .rx-account { margin-left: auto; }
+
+    .rx-welcome .rx-hero { gap: 12px; padding-block: 48px; }
+
+    .rx-welcome .rx-art { min-height: 340px; }
+
+    .rx-welcome .rx-mascot { height: 280px; }
+
+    .rx-welcome .rx-steps { grid-template-columns: 1fr 1fr; }
+
+    .rx-welcome .rx-rewards { gap: 28px; padding: 30px; }
+
+    .rx-welcome .rx-faq { gap: 32px; }
+}
+
+@media (max-width:600px) {
+    .rx-welcome .rx-wrap { width: calc(100% - 36px); }
+
+    .rx-welcome .rx-nav { min-height: 78px; gap: 10px; }
+
+    .rx-welcome .rx-account { gap: 12px; }
+
+    .rx-welcome .rx-brand { font-size: 24px; }
+
+    .rx-welcome .rx-header-cta { display: none; }
+
+    .rx-welcome .rx-hero { grid-template-columns: 1fr; padding-block: 24px 40px; gap: 24px; }
+
+    .rx-welcome .rx-hero-copy { order: 2; text-align: center; }
+
+    .rx-welcome h1 { font-size: 2.65rem; max-width: 16ch; margin: auto; }
+
+    .rx-welcome .rx-intro { font-size: 16px; margin-top: 18px; }
+
+    .rx-welcome .rx-art { min-height: 240px; max-width: 340px; width: 100%; margin: auto; }
+
+    .rx-welcome .rx-art-back { inset: 12px 28px; }
+
+    .rx-welcome .rx-mascot { height: 220px; width: 74%; }
+
+    .rx-welcome .rx-bubble { font-size: 13px; right: 0; top: 0; padding: 8px 12px; }
+
+    .rx-welcome .rx-art-label { font-size: 12px; bottom: 0; padding: 8px 12px; }
+
+    .rx-welcome .rx-actions { flex-direction: column; margin-top: 24px; }
+
+    .rx-welcome .rx-section { padding-block: 48px; }
+
+    .rx-welcome .rx-steps { gap: 28px 20px; }
+
+    .rx-welcome .rx-step-num { margin-bottom: 16px; }
+
+    .rx-welcome .rx-rewards,.rx-welcome .rx-faq { grid-template-columns: 1fr; gap: 30px; }
+
+    .rx-welcome .rx-rewards { padding: 26px; }
+
+    .rx-welcome .rx-footer { flex-direction: column; text-align: center; }
+
+    .rx-welcome .rx-domain-list { gap: 10px 18px; font-size: 12px; }
+
+    .rx-welcome .rx-final { padding-block: 48px; }
+
+    .rx-welcome .rx-final .rx-button { width: 100%; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+    .rx-welcome * {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Responsive navigation and mobile corrections. */
+
+.rx-welcome { --rx-anchor-offset: 116px; }
+
+.rx-welcome .rx-header { position: sticky; top: 0; z-index: 50; padding-top: env(safe-area-inset-top,0px); }
+
+.rx-welcome :is(section[id],h1[id],main[id]) {
+    scroll-margin-top: calc(var(--rx-anchor-offset) + env(safe-area-inset-top,0px));
+}
+
+.rx-welcome .rx-nav { flex-wrap: wrap; }
+
+.rx-welcome .rx-brand { flex-shrink: 0; }
+
+.rx-welcome .rx-account>a { display: inline-flex; align-items: center; min-height: 44px; }
+
+.rx-welcome .rx-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+}
+
+.rx-welcome .rx-links a:hover { text-decoration: underline; text-underline-offset: 5px; }
+
+.rx-welcome :is(.rx-hero-copy,.rx-rewards>div,.rx-faq>div,.rx-steps>li) { min-width: 0; }
+
+.rx-welcome :is(h3,summary,.rx-domain-list li) { overflow-wrap: anywhere; }
+
+@media (max-width:900px) {
+    .rx-welcome { --rx-anchor-offset: 148px; }
+
+    .rx-welcome .rx-nav { column-gap: 16px; row-gap: 0; padding-block: 12px 4px; }
+
+    .rx-welcome .rx-links {
+        display: flex;
+        order: 3;
+        width: 100%;
+        margin-left: 0;
+        justify-content: center;
+        gap: clamp(16px,5vw,36px);
+        border-top: 1px solid var(--line);
+        margin-top: 12px;
+    }
+
+    .rx-welcome .rx-account { margin-left: auto; }
+}
+
+@media (max-width:600px) {
+    .rx-welcome .rx-nav { min-height: 0; }
+
+    .rx-welcome .rx-links { font-size: 13px; }
+
+    .rx-welcome .rx-account { gap: 10px; }
+
+    .rx-welcome .rx-hero { padding-top: 20px; }
+
+    .rx-welcome h1 { font-size: clamp(2rem,8.5vw,2.65rem); max-width: 18ch; line-height: 1.13; }
+
+    .rx-welcome .rx-intro { max-width: 38ch; margin-inline: auto; }
+
+    .rx-welcome .rx-art { min-height: 210px; }
+
+    .rx-welcome .rx-mascot { height: 195px; }
+
+    .rx-welcome .rx-bubble { font-size: 12px; max-width: 90%; text-align: center; }
+
+    .rx-welcome .rx-art-label { max-width: 92%; font-size: 12px; }
+
+    .rx-welcome .rx-actions .rx-button { width: 100%; }
+
+    .rx-welcome .rx-domain-list { display: grid; grid-template-columns: 1fr; gap: 10px; }
+
+    .rx-welcome .rx-rewards { padding: 24px; }
+
+    .rx-welcome .rx-rewards dl { gap: 24px 16px; }
+
+    .rx-welcome summary { font-size: 15px; line-height: 1.5; }
+
+    .rx-welcome summary:after { flex-shrink: 0; }
+
+    .rx-welcome .rx-footer { padding-bottom: calc(28px + env(safe-area-inset-bottom,0px)); }
+}
+
+@media (max-width:480px) {
+    .rx-welcome .rx-steps { grid-template-columns: 1fr; gap: 26px; }
+
+    .rx-welcome .rx-steps li {
+        display: grid;
+        grid-template-columns: 42px minmax(0,1fr);
+        column-gap: 16px;
+        align-items: start;
+    }
+
+    .rx-welcome .rx-step-num { grid-row: 1 / span 2; margin: 0; }
+
+    .rx-welcome .rx-steps h3 { font-size: 1.1rem; padding-top: 3px; line-height: 1.3; }
+
+    .rx-welcome .rx-steps p { grid-column: 2; margin-top: 8px; }
+}
+
+/* Keep domain dividers aligned with the shared content width. */
+
+.rx-welcome .rx-domains { border-block: 0; padding-block: 0; }
+
+.rx-welcome .rx-domains>.rx-wrap { border-block: 1px solid var(--line); padding-block: 24px; }
+
+/* Subtle separation beneath the sticky navigation. */
+
+.rx-welcome .rx-header { box-shadow: 0 5px 16px rgb(41 36 61 / .10); }
+
+html[data-comfort="dark"] .rx-welcome .rx-header { box-shadow: 0 5px 18px rgb(0 0 0 / .28); }
