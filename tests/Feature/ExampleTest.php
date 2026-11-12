@@ -13,7 +13,11 @@ it(
             ->get(route('welcome'))
             ->assertOk()
             ->assertViewIs('welcome')
-            ->assertSeeText('Prepare for the PHLE')
+            ->assertSeeTextInOrder([
+                'Review for the',
+                'PHLE',
+                'with practice that adapts to you',
+            ])
             ->assertSee(
                 'Quality Control/Quality Assurance'
             )
