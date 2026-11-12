@@ -123,14 +123,6 @@
             animation-delay: -6.5s;
         }
 
-        .btn-press {
-            transition: transform .08s ease, box-shadow .08s ease;
-        }
-
-        .btn-press:active {
-            transform: translateY(2px);
-        }
-
         .mascot-figure {
             filter: none;
         }
@@ -159,31 +151,52 @@
         {{-- =========================
              NAV
              ========================= --}}
-        <header class="sticky top-0 z-30 border-b border-[var(--muted-line)] bg-surface/95 backdrop-blur">
-            <nav class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6" aria-label="Main">
-                <a href="{{ url('/') }}" class="flex items-center gap-3">
-                    <div
-                        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#4A2FC4] text-white text-xl font-extrabold shadow-lg rotate-[-6deg]">
+        <header class="welcome-header sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur">
+            <nav aria-label="Main" class="welcome-nav mx-auto max-w-6xl px-4 py-3 sm:px-6">
+
+                {{-- Brand --}}
+                <a href="{{ url('/') }}" class="welcome-nav-brand flex w-fit items-center gap-3 rounded-xl">
+                    <span aria-hidden="true" class="flex h-12 w-12 shrink-0 -rotate-6 items-center justify-center rounded-2xl bg-[#4A2FC4] text-xl font-extrabold text-white shadow-lg">
                         Rx
-                    </div>
-                    <div>
-                        <p class="text-2xl font-extrabold leading-none text-ink">CitiRx</p>
-                        <p class="mt-1 text-xs font-medium text-[var(--muted)]">PHLE adaptive prep</p>
-                    </div>
+                    </span>
+                    <span>
+                        <span class="block text-2xl font-extrabold leading-none text-ink">
+                            CitiRx
+                        </span>
+                        <span class="mt-1 block text-xs font-medium text-ink-muted">
+                            PHLE adaptive prep
+                        </span>
+                    </span>
                 </a>
-                <ul class="hidden items-center gap-7 text-sm font-medium text-ink-muted md:flex">
-                    <li><a href="#how" class="hover:text-primary-ink">How it works</a></li>
-                    <li><a href="#rewards" class="hover:text-primary-ink">Rewards</a></li>
-                    <li><a href="#faq" class="hover:text-primary-ink">FAQ</a></li>
+
+                {{-- Section links --}}
+                <ul class="welcome-nav-sections flex flex-wrap items-center justify-center gap-1 text-sm font-medium text-ink-muted sm:gap-3">
+                    <li>
+                        <a href="#how" class="inline-flex min-h-11 items-center rounded-lg px-2 underline-offset-4 transition-colors hover:text-primary-ink hover:underline">
+                        How it works
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#rewards" class="inline-flex min-h-11 items-center rounded-lg px-2 underline-offset-4 transition-colors hover:text-primary-ink hover:underline">
+                            Rewards
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#faq" class="inline-flex min-h-11 items-center rounded-lg px-2 underline-offset-4 transition-colors hover:text-primary-ink hover:underline">
+                            FAQ
+                        </a>
+                    </li>
                 </ul>
-                <div class="ml-auto flex flex-wrap items-center gap-2 sm:gap-3">
+
+                {{-- Account actions --}}
+                <div class="welcome-nav-actions flex flex-wrap items-center gap-2 sm:gap-3">
                     @if (Route::has('login'))
-                        <a href="{{ route('login') }}" class="inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary-ink hover:underline">
+                        <a href="{{ route('login') }}" class="inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-primary-ink underline-offset-4 hover:underline">
                             Log in
                         </a>
                     @endif
 
-                    <a href="{{ Route::has('register') ? route('register') : '#' }}" class="btn-press inline-flex min-h-11 items-center justify-center rounded-xl bg-[#4A2FC4] px-4 text-sm font-bold text-white shadow-md">
+                    <a href="{{ Route::has('register') ? route('register') : '#' }}" class="btn-press inline-flex min-h-11 items-center justify-center rounded-xl bg-[#4A2FC4] px-4 text-sm font-bold text-white shadow-md transition-colors hover:bg-primary">
                         Get started
                     </a>
 
@@ -236,40 +249,33 @@
             {{-- =========================
                  HERO
                  ========================= --}}
-            <section class=" relative z-10 mx-auto max-w-6xl px-4 pt-8 sm:px-6 sm:pt-12">
-                <div
-                    class="grid items-center gap-8 rounded-[1.75rem] bg-[var(--primary-tint)] px-6 py-10 sm:px-12 md:grid-cols-5">
-                    <div class="md:col-span-3">
-                        <h1 class="font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-                            <span class="block">
-                                Prepare for the <span class="text-warning-ink">PHLE</span>
+            <section class="relative z-10 mx-auto max-w-6xl px-4 pt-6 sm:px-6 sm:pt-12" aria-labelledby="welcome-hero-title">
+                <div class="grid items-center rounded-[1.75rem] bg-[var(--primary-tint)] p-6 sm:p-8 md:grid-cols-5 md:gap-8 md:px-12 md:py-10">
+                    <div class="min-w-0 md:col-span-3">
+                        <h1 id="welcome-hero-title" class="font-display text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl md:text-5xl">
+                                Review for the <span class="text-warning-ink">PHLE</span>
                                 with practice that adapts to you
-                            </span>
                         </h1>
-                        <p class="mt-4 max-w-xl text-lg text-ink-muted">
-                            Take a diagnostic, receive a review path based on your
-                            competency estimates, and track how your readiness changes
-                            through continued practice.
+                        <p class="mt-4 max-w-xl text-base leading-relaxed text-ink-muted md:text-lg">
+                            Start with a diagnostic, follow a review path built from your results, and watch your readiness grow.
                         </p>
-                        <div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
+                        <div class="mt-6 md:mt-7">
                             <a href="{{ Route::has('register') ? route('register') : '#' }}"
-                                class="btn-press flex items-center justify-center rounded-2xl bg-primary px-7 py-3 font-display text-base font-bold text-white shadow-md hover:bg-primary-lip disabled:opacity-70 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25">
+                                class="btn-press inline-flex min-h-12 w-full items-center justify-center rounded-2xl bg-primary px-7 py-3 font-display text-base font-bold text-white shadow-md transition-colors hover:bg-primary-lip focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 sm:w-auto">
                                 Get Started
                             </a>
                         </div>
                         @if (Route::has('login'))
-                            <p class="mt-4 text-sm text-[var(--muted)]">
+                            <p class="mt-3 text-sm leading-relaxed text-ink-muted">
                                 Already reviewing?
-                                <a href="{{ route('login') }}"
-                                    class="font-semibold text-primary-ink hover:underline">Log in</a>
+                                <a href="{{ route('login') }}" class="inline-flex min-h-11 items-center rounded-md px-1 font-semibold text-primary-ink underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                                    Log in
+                                </a>
                             </p>
                         @endif
                     </div>
-                    <div class="flex justify-center md:col-span-2">
-                        <img src="{{ asset('image/pill-mascot.png') }}"
-                            alt="Cheerful purple CitiRx pill mascot waving hello" width="2000" height="2000"
-                            decoding="async" fetchpriority="high"
-                            class="h-32 w-auto object-contain sm:h-48 md:h-64 lg:h-72 xl:h-96">
+                    <div class="hidden justify-center md:col-span-2 md:flex">
+                        <img src="{{ asset('image/pill-mascot.png') }}" alt="Cheerful purple CitiRx pill mascot waving hello" width="2000" height="2000" decoding="async" class="h-64 w-auto max-w-full object-contain lg:h-72 xl:h-96">
                     </div>
                 </div>
             </section>
