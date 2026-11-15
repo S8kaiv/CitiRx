@@ -14,6 +14,7 @@ use Illuminate\View\View;
 use InvalidArgumentException;
 use LogicException;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MicroPearlImportController extends Controller
@@ -36,6 +37,18 @@ class MicroPearlImportController extends Controller
                     ->latest()
                     ->limit(20)
                     ->get(),
+            ],
+        );
+    }
+
+    public function workbook(): BinaryFileResponse
+    {
+        return response()->download(
+            resource_path('templates/micro-pearl-import-template.xlsx'),
+            'micro-pearl-import-template.xlsx',
+            [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Cache-Control' => 'no-store, private',
             ],
         );
     }

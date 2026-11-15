@@ -37,11 +37,6 @@ function pearlImportRow(
         'estimated_read_seconds' => '180',
         'order_index' => '1',
         'rights_status' => 'original',
-        'is_ai_generated' => '0',
-        'ai_enrichment_allowed' => '0',
-        'generation_provider' => '',
-        'generation_model' => '',
-        'prompt_version' => '',
     ], $overrides);
 }
 
@@ -113,6 +108,9 @@ it('redirects guests from the import page', function (): void {
     $this->get(
         route('content.pearls.imports.create'),
     )->assertRedirect(route('login'));
+
+    $this->get(route('content.pearls.imports.workbook'))
+        ->assertRedirect(route('login'));
 });
 
 it('blocks students from the import page', function (): void {
@@ -124,6 +122,9 @@ it('blocks students from the import page', function (): void {
         ->get(
             route('content.pearls.imports.create'),
         )
+        ->assertForbidden();
+
+    $this->get(route('content.pearls.imports.workbook'))
         ->assertForbidden();
 });
 
@@ -142,6 +143,7 @@ it('allows authorized editors to open the import page', function (
         ->assertSeeText(
             'Import Micro Pearl lessons',
         )
+        ->assertSeeText('Download Faculty Workbook')
         ->assertSeeText(
             'Download CSV Template',
         );
@@ -149,6 +151,28 @@ it('allows authorized editors to open the import page', function (
     'administrator' => 'admin',
     'faculty' => 'faculty',
 ]);
+
+it('downloads the formatted faculty workbook', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
+
+    $this->actingAs($faculty)
+        ->get(route('content.pearls.imports.workbook'))
+        ->assertOk()
+        ->assertDownload('micro-pearl-import-template.xlsx')
+        ->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+});
+
+it('downloads a template with only faculty lesson fields', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
+
+    $response = $this->actingAs($faculty)
+        ->get(route('content.pearls.imports.template'))
+        ->assertOk()
+        ->assertDownload('micro-pearl-import-template.csv');
+
+    expect(trim($response->streamedContent()))
+        ->toBe("\xEF\xBB\xBF".'competency_code,title,mnemonic_summary,lesson_content,learning_objectives,key_points,common_pitfalls,recall_prompts,source_references,estimated_read_seconds,order_index,rights_status');
+});
 
 it('creates a preview without creating lessons', function (): void {
     $faculty = User::factory()->create([
@@ -284,7 +308,7 @@ it('rejects duplicate CSV lessons', function (): void {
     )->toBe(0);
 });
 
-it('rejects AI lessons without generation metadata', function (): void {
+it('rejects the legacy CSV layout with AI columns', function (): void {
     $faculty = User::factory()->create([
         'role' => 'faculty',
     ]);
@@ -295,13 +319,13 @@ it('rejects AI lessons without generation metadata', function (): void {
                 'content.pearls.imports.preview',
             ),
             [
-                'csv' => pearlImportUpload([
-                    pearlImportRow([
-                        'is_ai_generated' => '1',
-                        'generation_provider' => '',
-                        'generation_model' => '',
-                        'prompt_version' => '',
-                    ]),
+                'csv' => pearlImportUpload([pearlImportRow()], [
+                    ...MicroPearlImportService::HEADERS,
+                    'is_ai_generated',
+                    'ai_enrichment_allowed',
+                    'generation_provider',
+                    'generation_model',
+                    'prompt_version',
                 ]),
             ],
         )
