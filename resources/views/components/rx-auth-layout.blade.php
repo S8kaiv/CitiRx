@@ -5,7 +5,7 @@
         <a class="rx-auth-skip" href="#auth-content">Skip to form</a>
         <header class="rx-auth-header">
             <a class="rx-auth-brand" href="{{ url('/') }}" aria-label="CitiRx home">
-                <span class="rx-auth-mark" aria-hidden="true">Rx</span>
+                <x-application-logo class="h-12 w-12" />
                 CitiRx
             </a>
             <div class="rx-auth-tools">
