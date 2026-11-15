@@ -22,8 +22,6 @@ class SaveMicroPearlRequest extends FormRequest
     {
         $pearl = $this->route('pearl');
 
-        $requiresGenerationMetadata = $this->boolean('is_ai_generated');
-
         $orderRule = Rule::unique(
             'micro_pearls',
             'order_index',
@@ -109,38 +107,11 @@ class SaveMicroPearlRequest extends FormRequest
                     MicroPearl::RIGHTS_PUBLIC_DOMAIN,
                 ]),
             ],
-            'is_ai_generated' => [
-                'required',
-                'boolean',
-            ],
-            'ai_enrichment_allowed' => [
-                'required',
-                'boolean',
-            ],
-            'generation_provider' => [
-                'nullable',
-                Rule::requiredIf(
-                    $requiresGenerationMetadata,
-                ),
-                'string',
-                'max:100',
-            ],
-            'generation_model' => [
-                'nullable',
-                Rule::requiredIf(
-                    $requiresGenerationMetadata,
-                ),
-                'string',
-                'max:100',
-            ],
-            'prompt_version' => [
-                'nullable',
-                Rule::requiredIf(
-                    $requiresGenerationMetadata,
-                ),
-                'string',
-                'max:100',
-            ],
+            'is_ai_generated' => ['missing'],
+            'ai_enrichment_allowed' => ['missing'],
+            'generation_provider' => ['missing'],
+            'generation_model' => ['missing'],
+            'prompt_version' => ['missing'],
             'edit_version' => [
                 $pearl instanceof MicroPearl
                     ? 'required'
@@ -162,12 +133,6 @@ class SaveMicroPearlRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'is_ai_generated' => $this->boolean(
-                'is_ai_generated',
-            ),
-            'ai_enrichment_allowed' => $this->boolean(
-                'ai_enrichment_allowed',
-            ),
             'reason' => trim(
                 (string) $this->input('reason'),
             ),

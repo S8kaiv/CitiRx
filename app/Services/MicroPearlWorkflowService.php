@@ -427,34 +427,6 @@ class MicroPearlWorkflowService
     private function normalizeContent(
         array $data,
     ): array {
-
-        $isAiGenerated = (bool) (
-            $data['is_ai_generated']
-            ?? false
-        );
-
-        if (
-            $isAiGenerated
-            && (
-                blank(
-                    $data['generation_provider']
-                        ?? null
-                )
-                || blank(
-                    $data['generation_model']
-                        ?? null
-                )
-                || blank(
-                    $data['prompt_version']
-                        ?? null
-                )
-            )
-        ) {
-            throw new InvalidArgumentException(
-                'AI-assisted content requires generation metadata.',
-            );
-        }
-
         return [
             'competency_id' => $data['competency_id'],
             'title' => trim($data['title']),
@@ -482,26 +454,6 @@ class MicroPearlWorkflowService
             'estimated_read_seconds' => (int) $data['estimated_read_seconds'],
             'order_index' => (int) $data['order_index'],
             'rights_status' => $data['rights_status'],
-            'is_ai_generated' => $isAiGenerated,
-            'ai_enrichment_allowed' => (bool) (
-                $data['ai_enrichment_allowed']
-                ?? false
-            ),
-            'generation_metadata' => $isAiGenerated
-                ? [
-                    'provider' => trim(
-                        (string) $data['generation_provider'],
-                    ),
-                    'model' => trim(
-                        (string) $data['generation_model'],
-                    ),
-                    'prompt_version' => trim(
-                        (string) $data['prompt_version'],
-                    ),
-                    'recorded_at' => now()
-                        ->toIso8601String(),
-                ]
-                : null,
         ];
     }
 

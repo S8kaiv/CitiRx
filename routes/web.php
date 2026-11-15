@@ -408,6 +408,14 @@ Route::middleware([
             ],
         )->name('imports.template');
 
+        Route::get(
+            '/imports/workbook',
+            [
+                MicroPearlImportController::class,
+                'workbook',
+            ],
+        )->name('imports.workbook');
+
         Route::post(
             '/imports/preview',
             [

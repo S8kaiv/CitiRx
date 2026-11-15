@@ -1,223 +1,169 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-ui.page-header
-            title="Import Micro Pearl lessons"
-            description="Upload a reviewed CSV, run a dry preview, and create private drafts."
-        >
-            <x-slot:actions>
-                <div class="flex flex-wrap gap-2">
+        <x-ui.page-header title="Import Micro Pearl lessons" />
+    </x-slot>
+
+    <div class="rx-pearl-import mx-auto max-w-6xl space-y-4 px-4 py-4 sm:px-6 lg:space-y-6 lg:py-8">
+        <x-ui.button variant="ghost" :href="route('content.pearls.index')">
+            Back to Pearls
+        </x-ui.button>
+
+        @if (session('status'))
+            <x-ui.alert variant="success">
+                {{ session('status') }}
+            </x-ui.alert>
+        @endif
+
+        @if ($errors->any())
+            <x-ui.alert variant="danger">
+                <p class="font-bold">The CSV could not be previewed.</p>
+                <ul class="mt-2 list-disc space-y-1 pl-5 [overflow-wrap:anywhere]">
+                    @foreach ($errors->all() as $message)
+                        <li>{{ $message }}</li>
+                    @endforeach
+                </ul>
+            </x-ui.alert>
+        @endif
+
+        <div class="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-5">
+            <x-ui.card class="min-w-0">
+                <form
+                    method="POST"
+                    action="{{ route('content.pearls.imports.preview') }}"
+                    enctype="multipart/form-data"
+                    class="space-y-4"
+                >
+                    @csrf
+
+                    <div>
+                        <h2 class="font-display text-base font-extrabold text-ink">Upload lessons</h2>
+                        <p class="mt-1 text-sm leading-relaxed text-ink-muted">
+                            Preview your CSV before importing the lessons as private drafts.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="csv" class="block text-sm font-bold text-ink">Micro Pearl CSV</label>
+                        <input
+                            id="csv"
+                            name="csv"
+                            type="file"
+                            accept=".csv,text/csv"
+                            aria-describedby="pearl-csv-help"
+                            aria-invalid="{{ $errors->has('csv') ? 'true' : 'false' }}"
+                            required
+                            class="ui-field-control mt-2 min-h-12 w-full min-w-0 max-w-full cursor-pointer p-2 text-base
+                                file:mr-2 file:min-h-11 file:cursor-pointer file:rounded-lg file:border-0
+                                file:bg-primary-tint file:px-3 file:font-bold file:text-primary-ink"
+                        >
+
+                        <p id="pearl-csv-help" class="mt-2 text-sm leading-relaxed text-ink-muted">
+                            CSV UTF-8 only. Up to 200 lessons and 2 MB.
+                        </p>
+                    </div>
+
+                    <x-ui.button type="submit" class="w-full sm:w-auto">
+                        Validate and Preview
+                    </x-ui.button>
+                </form>
+            </x-ui.card>
+
+            <x-ui.card class="min-w-0">
+                <h2 class="font-display text-base font-extrabold text-ink">Prepare a CSV</h2>
+
+                <p class="mt-2 text-sm leading-relaxed text-ink-muted">
+                    Follow the Faculty Guide in the workbook. Enter one lesson per row in the Lessons tab, then save that tab as CSV UTF-8 (Comma delimited).
+                </p>
+
+                <div class="mt-4 grid gap-2 sm:flex sm:flex-wrap lg:grid">
+                    <x-ui.button :href="route('content.pearls.imports.workbook')" class="w-full sm:w-auto lg:w-full">
+                        Download Faculty Workbook
+                    </x-ui.button>
+
                     <x-ui.button
                         variant="secondary"
                         :href="route('content.pearls.imports.template')"
+                        class="w-full sm:w-auto lg:w-full"
                     >
                         Download CSV Template
                     </x-ui.button>
-
-                    <x-ui.button
-                        variant="ghost"
-                        :href="route('content.pearls.index')"
-                    >
-                        Back to Pearls
-                    </x-ui.button>
                 </div>
-            </x-slot:actions>
-        </x-ui.page-header>
-    </x-slot>
 
-    <div class="pt-6 pb-6 sm:pb-8">
-        <div class="mx-auto max-w-6xl space-y-6 px-4 sm:px-6 lg:px-8">
-            @if (session('status'))
-                <x-ui.alert variant="success">
-                    {{ session('status') }}
-                </x-ui.alert>
-            @endif
+                <details class="mt-3 border-t border-line text-sm text-ink-muted">
+                    <summary class="min-h-11 cursor-pointer select-none py-3 font-bold text-ink">
+                        CSV formatting examples
+                    </summary>
 
-            @if ($errors->any())
-                <x-ui.alert variant="danger">
-                    <p class="font-bold">
-                        The CSV could not be previewed.
-                    </p>
-
-                    <ul class="mt-2 list-disc space-y-1 pl-5">
-                        @foreach ($errors->all() as $message)
-                            <li>{{ $message }}</li>
-                        @endforeach
-                    </ul>
-                </x-ui.alert>
-            @endif
-
-            <x-ui.alert variant="warning">
-                Imported lessons are always created as private drafts.
-                CSV uploads cannot approve, review, publish, retire, or
-                replace existing Micro Pearls.
-            </x-ui.alert>
-
-            <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
-                <x-ui.card>
-                    <form
-                        method="POST"
-                        action="{{ route('content.pearls.imports.preview') }}"
-                        enctype="multipart/form-data"
-                        class="space-y-5"
-                    >
-                        @csrf
-
-                        <div>
-                            <label
-                                for="csv"
-                                class="block text-sm font-bold text-ink"
-                            >
-                                Micro Pearl CSV
-                            </label>
-
-                            <input
-                                id="csv"
-                                name="csv"
-                                type="file"
-                                accept=".csv,text/csv"
-                                required
-                                class="mt-2 block min-h-12 w-full rounded-2xl
-                                    border border-line bg-surface px-4 py-3
-                                    text-sm text-ink file:mr-4 file:rounded-xl
-                                    file:border-0 file:bg-primary-tint
-                                    file:px-4 file:py-2 file:font-bold
-                                    file:text-primary-ink"
-                            >
-
-                            <p class="mt-2 text-sm text-ink-muted">
-                                UTF-8 CSV only. Maximum size: 2 MB.
-                                Maximum rows: 200.
-                            </p>
-                        </div>
-
-                        <x-ui.button type="submit">
-                            Validate and Preview
-                        </x-ui.button>
-                    </form>
-                </x-ui.card>
-
-                <x-ui.card>
-                    <h2 class="font-display text-base font-extrabold text-ink">
-                        List formatting
-                    </h2>
-
-                    <div class="mt-3 space-y-3 text-sm leading-relaxed text-ink-muted">
-                        <p>
-                            Separate objectives, key points, pitfalls,
-                            prompts, and references with:
-                        </p>
-
-                        <code class="block overflow-x-auto rounded-xl bg-surface-2 p-3 text-xs text-ink">
-                            First value || Second value
-                        </code>
-
-                        <p>
-                            Recall prompts must use:
-                        </p>
-
-                        <code class="block overflow-x-auto rounded-xl bg-surface-2 p-3 text-xs text-ink">
-                            Question | Answer || Question | Answer
-                        </code>
-
-                        <p>
-                            AI-generated rows require provider, model,
-                            and prompt-version metadata.
-                        </p>
+                    <div class="space-y-3 leading-relaxed">
+                        <p>Keep the headers in order. Use an existing competency code, an unused display order for that competency, and at least one source reference.</p>
+                        <p>Separate objectives, key points, pitfalls, prompts, and references with <code>||</code>.</p>
+                        <p>Write each recall prompt as <code>Question | Answer</code>. Separate multiple pairs with <code>||</code>.</p>
                     </div>
-                </x-ui.card>
+                </details>
+            </x-ui.card>
+        </div>
+
+        <x-ui.card :padded="false">
+            <div class="border-b border-line px-4 py-4 sm:px-6">
+                <h2 class="font-display text-base font-extrabold text-ink">Your recent imports</h2>
             </div>
 
-            <x-ui.card :padded="false">
-                <div class="border-b border-line px-4 py-4 sm:px-6">
-                    <h2 class="font-display text-base font-extrabold text-ink">
-                        Your recent imports
-                    </h2>
-                </div>
+            @if ($imports->isEmpty())
+                <p class="px-4 py-6 text-sm text-ink-muted sm:px-6">No Micro Pearl imports yet.</p>
+            @else
+                <ul class="divide-y divide-line" role="list">
+                    @foreach ($imports as $import)
+                        @php
+                            $variant = match ($import->status) {
+                                'committed' => 'success',
+                                'failed', 'expired' => 'danger',
+                                'cancelled' => 'neutral',
+                                default => 'warning',
+                            };
+                        @endphp
 
-                <div class="overflow-x-auto">
-                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
-                    <table class="min-w-[760px] w-full text-sm">
-                        <thead class="bg-surface-2 text-left text-ink-muted">
-                            <tr>
-                                <th scope="col" class="px-4 py-3 font-bold sm:px-6">
-                                    File
-                                </th>
+                        <li class="grid min-w-0 items-center gap-3 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_auto] lg:gap-5">
+                            <p class="min-w-0 text-sm font-semibold text-ink [overflow-wrap:anywhere]">
+                                {{ $import->original_filename }}
+                            </p>
 
-                                <th scope="col" class="px-4 py-3 font-bold">
-                                    Status
-                                </th>
-
-                                <th scope="col" class="px-4 py-3 font-bold">
-                                    Rows
-                                </th>
-
-                                <th scope="col" class="px-4 py-3 font-bold">
-                                    Expires
-                                </th>
-
-                                <th scope="col" class="px-4 py-3 text-right font-bold sm:px-6">
-                                    Action
-                                </th>
-                            </tr>
-                        </thead>
-
-                        <tbody class="divide-y divide-line">
-                            @forelse ($imports as $import)
-                                @php
-                                    $variant = match ($import->status) {
-                                        'committed' => 'success',
-                                        'failed', 'expired' => 'danger',
-                                        'cancelled' => 'neutral',
-                                        default => 'warning',
-                                    };
-                                @endphp
-
-                                <tr>
-                                    <td class="px-4 py-4 font-semibold text-ink sm:px-6">
-                                        {{ $import->original_filename }}
-                                    </td>
-
-                                    <td class="px-4 py-4">
+                            <dl class="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+                                <div class="min-w-0">
+                                    <dt class="text-ink-muted">Status</dt>
+                                    <dd class="mt-1">
                                         <x-ui.badge :variant="$variant">
                                             {{ str($import->status)->replace('_', ' ')->title() }}
                                         </x-ui.badge>
-                                    </td>
+                                    </dd>
+                                </div>
 
-                                    <td class="px-4 py-4 text-ink-muted">
-                                        {{ $import->row_count }}
-                                    </td>
+                                <div>
+                                    <dt class="text-ink-muted">Lessons</dt>
+                                    <dd class="mt-1 font-semibold text-ink">{{ $import->row_count }}</dd>
+                                </div>
 
-                                    <td class="px-4 py-4 text-ink-muted">
-                                        {{ $import->expires_at->format('M j, Y g:i A') }}
-                                    </td>
+                                <div class="col-span-2 sm:col-span-1">
+                                    <dt class="text-ink-muted">Preview expires</dt>
+                                    <dd class="mt-1 text-ink">
+                                        <time datetime="{{ $import->expires_at->toIso8601String() }}">
+                                            {{ $import->expires_at->format('M j, Y g:i A') }}
+                                        </time>
+                                    </dd>
+                                </div>
+                            </dl>
 
-                                    <td class="px-4 py-4 text-right sm:px-6">
-                                        <x-ui.button
-                                            variant="secondary"
-                                            :href="route(
-                                                'content.pearls.imports.show',
-                                                ['import' => $import],
-                                            )"
-                                        >
-                                            View
-                                        </x-ui.button>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td
-                                        colspan="5"
-                                        class="px-6 py-10 text-center text-ink-muted"
-                                    >
-                                        No Micro Pearl imports yet.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                    </div>
-                </div>
-            </x-ui.card>
-        </div>
+                            <x-ui.button
+                                variant="secondary"
+                                :href="route('content.pearls.imports.show', ['import' => $import])"
+                                :aria-label="'View import for '.$import->original_filename"
+                                class="w-full sm:w-auto sm:justify-self-start"
+                            >
+                                View import
+                            </x-ui.button>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </x-ui.card>
     </div>
 </x-app-layout>

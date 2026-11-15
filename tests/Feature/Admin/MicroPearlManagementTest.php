@@ -50,8 +50,6 @@ function pearlManagementPayload(array $overrides = []): array
         'estimated_read_seconds' => 120,
         'order_index' => $nextOrder,
         'rights_status' => MicroPearl::RIGHTS_ORIGINAL,
-        'is_ai_generated' => false,
-        'ai_enrichment_allowed' => false,
     ], $overrides);
 }
 
@@ -251,7 +249,7 @@ it('blocks review while copyright rights are pending', function (): void {
         ->toBe(MicroPearl::STATUS_DRAFT);
 });
 
-it('rejects AI content without generation metadata', function (): void {
+it('rejects AI fields on the manual authoring form', function (): void {
     $faculty = User::factory()->create([
         'role' => 'faculty',
     ]);
@@ -265,11 +263,7 @@ it('rejects AI content without generation metadata', function (): void {
         ->from(route('content.pearls.create'))
         ->post(route('content.pearls.store'), $payload)
         ->assertRedirect(route('content.pearls.create'))
-        ->assertSessionHasErrors([
-            'generation_provider',
-            'generation_model',
-            'prompt_version',
-        ]);
+        ->assertSessionHasErrors('is_ai_generated');
 
     $this->assertDatabaseMissing('micro_pearls', [
         'title' => 'Untracked AI Pearl',

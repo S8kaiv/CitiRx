@@ -4404,3 +4404,32 @@ html[data-comfort="dark"] body.role-student main :is(a, button):is(.bg-rose-500,
         overflow-wrap: anywhere;
     }
 }
+
+.rx-pearl-import {
+    --pearl-import-gutter: 1rem;
+    padding-left: max(var(--pearl-import-gutter), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--pearl-import-gutter), env(safe-area-inset-right, 0px));
+}
+
+@media (min-width: 640px) {
+    .rx-pearl-import {
+        --pearl-import-gutter: 1.5rem;
+    }
+}
+
+.rx-pearl-import :is(.ui-button, summary) {
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.rx-pearl-import .ui-button:not(.ui-button-primary):active {
+    filter: brightness(0.92);
+}
+
+@media (hover: none), (pointer: coarse) {
+    .role-faculty .rx-pearl-import .ui-button-primary:hover {
+        filter: none;
+    }
+}

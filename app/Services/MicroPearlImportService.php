@@ -34,11 +34,6 @@ class MicroPearlImportService
         'estimated_read_seconds',
         'order_index',
         'rights_status',
-        'is_ai_generated',
-        'ai_enrichment_allowed',
-        'generation_provider',
-        'generation_model',
-        'prompt_version',
     ];
 
     public function __construct(
@@ -524,36 +519,6 @@ class MicroPearlImportService
                         ]),
                     ],
 
-                    'is_ai_generated' => [
-                        'required',
-                        Rule::in(['0', '1']),
-                    ],
-
-                    'ai_enrichment_allowed' => [
-                        'required',
-                        Rule::in(['0', '1']),
-                    ],
-
-                    'generation_provider' => [
-                        'nullable',
-                        'required_if:is_ai_generated,1',
-                        'string',
-                        'max:100',
-                    ],
-
-                    'generation_model' => [
-                        'nullable',
-                        'required_if:is_ai_generated,1',
-                        'string',
-                        'max:100',
-                    ],
-
-                    'prompt_version' => [
-                        'nullable',
-                        'required_if:is_ai_generated,1',
-                        'string',
-                        'max:100',
-                    ],
                 ],
             );
 
@@ -675,9 +640,6 @@ class MicroPearlImportService
             $csvOrders[$orderKey] = true;
             $csvTitles[$titleKey] = true;
 
-            $isAiGenerated =
-                $values['is_ai_generated'] === '1';
-
             $rows[] = [
                 'preview' => [
                     'row_number' => $rowNumber,
@@ -690,7 +652,6 @@ class MicroPearlImportService
 
                     'rights_status' => $values['rights_status'],
 
-                    'is_ai_generated' => $isAiGenerated,
                 ],
 
                 'payload' => [
@@ -720,23 +681,6 @@ class MicroPearlImportService
 
                     'rights_status' => $values['rights_status'],
 
-                    'is_ai_generated' => $isAiGenerated,
-
-                    'ai_enrichment_allowed' => $values[
-                            'ai_enrichment_allowed'
-                        ] === '1',
-
-                    'generation_provider' => $values[
-                            'generation_provider'
-                        ] ?: null,
-
-                    'generation_model' => $values[
-                            'generation_model'
-                        ] ?: null,
-
-                    'prompt_version' => $values[
-                            'prompt_version'
-                        ] ?: null,
                 ],
             ];
         }
@@ -824,7 +768,7 @@ class MicroPearlImportService
             if ($header !== self::HEADERS) {
                 throw ValidationException::withMessages([
                     'csv' => [
-                        'The CSV header does not match the required Micro Pearl template.',
+                        'The CSV header does not match the required Micro Pearl template. Download the current template and re-upload your lessons.',
                     ],
                 ]);
             }

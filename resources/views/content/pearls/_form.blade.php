@@ -29,8 +29,6 @@
             )
             ->implode("\n"),
     );
-
-    $generationMetadata = $pearl?->generation_metadata ?? [];
 @endphp
 
 @if ($pearl)
@@ -185,7 +183,7 @@
             </h2>
 
             <p class="mt-1 text-sm text-ink-muted">
-                Record ownership, source rights, display order, and any AI assistance.
+                Record source rights, display order, and estimated reading time.
             </p>
         </div>
 
@@ -234,66 +232,6 @@
                     </option>
                 @endforeach
             </x-ui.field>
-
-            <div class="rounded-2xl border border-line bg-surface-2 p-4">
-                <p class="text-sm font-bold text-ink">
-                    AI disclosure
-                </p>
-
-                <div class="mt-3 space-y-3">
-                    <label class="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-semibold text-ink">
-                        <input
-                            type="checkbox"
-                            name="is_ai_generated"
-                            value="1"
-                            class="h-5 w-5 rounded border-line-strong text-primary focus:ring-primary"
-                            @checked(old(
-                                'is_ai_generated',
-                                $pearl?->is_ai_generated,
-                            ))
-                        >
-
-                        <span>AI-assisted content</span>
-                    </label>
-
-                    <label class="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-semibold text-ink">
-                        <input
-                            type="checkbox"
-                            name="ai_enrichment_allowed"
-                            value="1"
-                            class="h-5 w-5 rounded border-line-strong text-primary focus:ring-primary"
-                            @checked(old(
-                                'ai_enrichment_allowed',
-                                $pearl?->ai_enrichment_allowed,
-                            ))
-                        >
-
-                        <span>AI enrichment is authorized</span>
-                    </label>
-                </div>
-            </div>
-
-            @foreach ([
-                'generation_provider' => [
-                    'AI provider',
-                    data_get($generationMetadata, 'provider'),
-                ],
-                'generation_model' => [
-                    'AI model',
-                    data_get($generationMetadata, 'model'),
-                ],
-                'prompt_version' => [
-                    'Prompt version',
-                    data_get($generationMetadata, 'prompt_version'),
-                ],
-            ] as $name => [$label, $value])
-                <x-ui.field
-                    :name="$name"
-                    :label="$label"
-                    :value="$value"
-                    autocomplete="off"
-                />
-            @endforeach
 
             @if ($pearl)
                 <div class="md:col-span-2">
