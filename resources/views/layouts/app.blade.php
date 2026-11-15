@@ -9,6 +9,10 @@
 
     <title>{{ config('app.name', 'CitiRx') }} PhLE Review</title>
 
+    <link rel="icon" type="image/vnd.microsoft.icon" sizes="16x16 32x32 48x48 64x64 128x128 256x256" href="{{ asset('favicon.ico') }}?v=pill-1">
+    <link rel="icon" type="image/svg+xml" sizes="any" href="{{ asset('citirx-pill.svg') }}?v=pill-1">
+
+<link rel="icon" type="image/svg+xml" sizes="any" href="{{ asset('citirx-pill.svg') }}">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet" />
 
@@ -258,12 +262,7 @@
                             href="{{ route('dashboard') }}"
                             class="group flex items-center gap-3 rounded-2xl p-1 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
                         >
-                            <span
-                                class="flex h-12 w-12 -rotate-6 items-center justify-center rounded-2xl border-2 border-b-4 border-primary-lip bg-primary font-display text-xl font-black text-white shadow-sm transition-transform duration-150 group-hover:-rotate-3 group-active:translate-y-0.5"
-                                aria-hidden="true"
-                            >
-                                Rx
-                            </span>
+                            <x-application-logo class="h-12 w-12 transition-transform duration-150 group-active:translate-y-0.5" />
 
                             <span class="min-w-0">
                                 <span class="block font-display text-xl font-black leading-none tracking-[-0.02em] text-ink">

@@ -50,8 +50,8 @@
         <header class="rx-header">
             <nav class="rx-wrap rx-nav" aria-label="Main navigation">
                 <a class="rx-brand" href="{{ url('/') }}" aria-label="CitiRx home">
-                    <span class="rx-mark" aria-hidden="true">Rx</span>
-                    CitiRx
+                    <x-application-logo class="h-9 w-9 sm:h-12 sm:w-12" />
+                    <span>CitiRx</span>
                 </a>
                 <div class="rx-links">
                     <a href="#how">How it works</a>

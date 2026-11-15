@@ -25,6 +25,9 @@
 
         <title>{{ config('app.name', 'CitiRx') }}</title>
 
+    <link rel="icon" type="image/vnd.microsoft.icon" sizes="16x16 32x32 48x48 64x64 128x128 256x256" href="{{ asset('favicon.ico') }}?v=pill-1">
+    <link rel="icon" type="image/svg+xml" sizes="any" href="{{ asset('citirx-pill.svg') }}?v=pill-1">
+
         <link
             rel="preconnect"
             href="https://fonts.bunny.net"

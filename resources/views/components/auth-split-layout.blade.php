@@ -19,9 +19,7 @@
             </div>
 
             <a href="{{ route('login') }}" class="relative flex w-fit items-center gap-3 rounded-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">
-                <span class="flex h-12 w-12 -rotate-6 items-center justify-center auth-brand-mark rounded-2xl font-display text-xl font-black shadow-lg" aria-hidden="true">
-                    Rx
-                </span>
+                <x-application-logo class="h-12 w-12" />
 
                 <span>
                     <span class="block font-display text-2xl font-black leading-none">
@@ -132,12 +130,7 @@
                     href="{{ route('login') }}"
                     class="mb-8 flex w-fit items-center gap-3 rounded-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 lg:hidden"
                 >
-                    <span
-                        class="flex h-12 w-12 -rotate-6 items-center justify-center rounded-2xl bg-primary font-display text-xl font-black text-white shadow-lg"
-                        aria-hidden="true"
-                    >
-                        Rx
-                    </span>
+                    <x-application-logo class="h-12 w-12" />
 
                     <span>
                         <span class="block font-display text-2xl font-black leading-none text-slate-900">
