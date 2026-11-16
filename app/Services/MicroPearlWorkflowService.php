@@ -261,19 +261,26 @@ class MicroPearlWorkflowService
                 $expectedVersion,
             );
 
+            $isAdministrator = $reviewer->role === 'admin';
+            $isAuthor = $pearl->created_by !== null
+                && $pearl->created_by === $reviewer->user_id;
+
             if (
-                $pearl->content_status
-                !== MicroPearl::STATUS_IN_REVIEW
+                $pearl->content_status !== MicroPearl::STATUS_IN_REVIEW
+                && ! (
+                    $pearl->content_status === MicroPearl::STATUS_DRAFT
+                    && $isAdministrator
+                    && $isAuthor
+                )
             ) {
                 throw new LogicException(
-                    'Only a pearl awaiting review can be published.',
+                    'Only a Pearl awaiting review or an administrator-authored draft can be published.',
                 );
             }
 
             if (
-                $pearl->created_by !== null
-                && $pearl->created_by
-                === $reviewer->user_id
+                $isAuthor
+                && ! $isAdministrator
             ) {
                 throw new LogicException(
                     'The author cannot approve and publish their own Micro Pearl.',
@@ -286,7 +293,9 @@ class MicroPearlWorkflowService
                 $pearl,
                 $reviewer,
                 MicroPearl::STATUS_PUBLISHED,
-                'published',
+                $isAdministrator && $isAuthor
+                    ? 'admin_published'
+                    : 'published',
                 $reason,
                 [
                     'reviewed_by' => $reviewer->user_id,

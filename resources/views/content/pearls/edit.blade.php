@@ -69,7 +69,7 @@
                         </h2>
 
                         <p class="mt-1 text-sm leading-relaxed text-warning-ink/80">
-                            Submission locks draft editing until a different reviewer returns or approves the Pearl.
+                            Faculty drafts need approval from a different reviewer. Submission locks editing until the Pearl is returned or published.
                         </p>
                     </div>
 
@@ -104,6 +104,56 @@
                         </x-ui.button>
                     </form>
                 </x-ui.card>
+
+                @if (auth()->user()->role === 'admin' && $pearl->created_by === auth()->id())
+                    <x-ui.card class="border-success-strong/30 bg-success-tint">
+                        <div class="mb-5">
+                            <h2 class="font-display text-lg font-extrabold text-success-ink">
+                                Publish Your Pearl
+                            </h2>
+
+                            <p class="mt-1 text-sm text-success-ink/80">
+                                Administrators can publish their own completed drafts without a separate approval. Sources and rights are checked before publication. Confirm with your current password.
+                            </p>
+                        </div>
+
+                        <form
+                            method="POST"
+                            action="{{ route(
+                                'content.pearls.publish',
+                                ['pearl' => $pearl->pearl_id],
+                            ) }}"
+                            class="space-y-4"
+                        >
+                            @csrf
+                            @method('PATCH')
+
+                            <input
+                                type="hidden"
+                                name="edit_version"
+                                value="{{ $pearl->edit_version }}"
+                            >
+
+                            <x-ui.field
+                                name="published_at"
+                                label="Publication date (optional)"
+                                type="datetime-local"
+                            />
+
+                            <x-ui.field
+                                name="current_password"
+                                label="Current password"
+                                type="password"
+                                required
+                                autocomplete="current-password"
+                            />
+
+                            <x-ui.button type="submit">
+                                Publish Pearl
+                            </x-ui.button>
+                        </form>
+                    </x-ui.card>
+                @endif
             @elseif ($pearl->content_status === 'in_review')
                 <x-ui.alert variant="warning">
                     Review the lesson, sources, rights status, and learner-facing content before choosing an outcome.
@@ -154,14 +204,17 @@
                         </form>
                     </x-ui.card>
 
+                    @if (auth()->user()->role === 'admin' || $pearl->created_by !== auth()->id())
                     <x-ui.card class="border-success-strong/30 bg-success-tint">
                         <div class="mb-5">
                             <h2 class="font-display text-lg font-extrabold text-success-ink">
-                                Approve Publication
+                                {{ auth()->user()->role === 'admin' && $pearl->created_by === auth()->id()
+                                    ? 'Publish Your Pearl'
+                                    : 'Approve Publication' }}
                             </h2>
 
                             <p class="mt-1 text-sm text-success-ink/80">
-                                Confirm approval with your current password. Leave the date blank to publish immediately.
+                                Confirm with your current password. Leave the date blank to publish immediately.
                             </p>
                         </div>
 
@@ -197,10 +250,17 @@
                             />
 
                             <x-ui.button type="submit">
-                                Approve Publication
+                                {{ auth()->user()->role === 'admin' && $pearl->created_by === auth()->id()
+                                    ? 'Publish Pearl'
+                                    : 'Approve Publication' }}
                             </x-ui.button>
                         </form>
                     </x-ui.card>
+                    @else
+                        <x-ui.alert variant="info">
+                            Your Pearl is awaiting approval from another faculty member or an administrator.
+                        </x-ui.alert>
+                    @endif
                 </div>
             @elseif ($pearl->content_status === 'published')
                 <x-ui.card class="border-danger-strong/30 bg-danger-tint">
