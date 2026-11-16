@@ -167,8 +167,6 @@ class MicroPearlImportController extends Controller
                 expectedLockVersion: (int) $validated[
                     'expected_lock_version'
                 ],
-
-                reason: $validated['reason'],
             );
         } catch (
             InvalidArgumentException

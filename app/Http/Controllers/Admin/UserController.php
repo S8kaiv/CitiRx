@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AdminActionRequest;
 use App\Http\Requests\Admin\IndexUserRequest;
+use App\Http\Requests\Admin\RestoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserAssignmentRequest;
 use App\Models\AdminAuditLog;
 use App\Models\Cohort;
@@ -215,7 +216,7 @@ class UserController extends Controller
     }
 
     public function restore(
-        AdminActionRequest $request,
+        RestoreUserRequest $request,
         string $userId,
     ): RedirectResponse {
         $this->users->restore(

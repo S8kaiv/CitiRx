@@ -190,13 +190,18 @@
                         <input type="hidden" name="active" value="1">
                         <input type="hidden" name="edit_version" value="{{ $question->edit_version }}">
 
-                        <label for="change_reason" class="block text-xs font-extrabold uppercase tracking-wider text-muted-ink">
-                            Reason for reactivation
+                        <label for="reactivation_note" class="block text-xs font-extrabold uppercase tracking-wider text-muted-ink">
+                            Reactivation note (optional)
                         </label>
 
-                        <textarea id="change_reason" name="change_reason" rows="2" required minlength="5" maxlength="500"
+                        <textarea
+                            id="reactivation_note"
+                            name="change_reason"
+                            rows="2"
+                            maxlength="500"
                             class="w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary"
-                            placeholder="Explain why this draft question should return to the pool.">{{ old('change_reason') }}</textarea>
+                            placeholder="Add context if useful."
+                        >{{ old('change_reason') }}</textarea>
 
                         <button type="submit" style="--lip: #047857;"
                             class="btn-press rounded-2xl bg-emerald-600 px-6 py-3 font-display text-sm font-bold text-white shadow-md hover:bg-emerald-700">

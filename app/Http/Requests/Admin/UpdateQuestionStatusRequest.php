@@ -3,18 +3,28 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateQuestionStatusRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->role
-            === 'admin';
+        return $this->user()?->role === 'admin';
     }
 
-    /**
-     * @return array<string, mixed>
-     */
+    protected function prepareForValidation(): void
+    {
+        $reason = trim(
+            (string) $this->input('change_reason'),
+        );
+
+        $this->merge([
+            'change_reason' => $reason !== ''
+                ? $reason
+                : null,
+        ]);
+    }
+
     public function rules(): array
     {
         return [
@@ -22,15 +32,16 @@ class UpdateQuestionStatusRequest extends FormRequest
                 'required',
                 'boolean',
             ],
-
             'edit_version' => [
                 'required',
                 'integer',
                 'min:1',
             ],
-
             'change_reason' => [
-                'required',
+                Rule::requiredIf(
+                    fn (): bool => ! $this->boolean('active'),
+                ),
+                'nullable',
                 'string',
                 'min:5',
                 'max:500',
@@ -38,9 +49,6 @@ class UpdateQuestionStatusRequest extends FormRequest
         ];
     }
 
-    /**
-     * @return array<string, string>
-     */
     public function attributes(): array
     {
         return [

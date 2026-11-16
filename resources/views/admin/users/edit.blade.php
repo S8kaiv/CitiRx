@@ -80,9 +80,13 @@
                     </div>
 
                     <div>
-                        <label for="reason" class="block text-xs font-extrabold uppercase tracking-wider text-muted-ink">Reason for change</label>
-                        <textarea id="reason" name="reason" rows="3" required maxlength="500"
-                            class="mt-1 w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary">{{ old('reason') }}</textarea>
+                        <label for="reason" class="block text-xs font-extrabold uppercase tracking-wider text-muted-ink">
+                            Administrative note
+                            <span class="normal-case font-medium">(required for role changes)</span>
+                        </label>
+                        <textarea id="reason" name="reason" rows="3" maxlength="500" class="mt-1 w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary" placeholder="Optional for cohort-only assignments.">
+                            {{ old('reason') }}
+                        </textarea>
                         @error('reason') <p class="mt-1 text-xs font-bold text-rose-600">{{ $message }}</p> @enderror
                     </div>
 

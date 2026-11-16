@@ -234,16 +234,21 @@
             </x-ui.field>
 
             @if ($pearl)
-                <div class="md:col-span-2">
-                    <x-ui.field
-                        name="reason"
-                        label="Reason for change"
-                        type="textarea"
-                        :rows="3"
-                        required
-                        hint="Describe what changed so the immutable edit history remains useful."
-                    />
-                </div>
+                <details class="md:col-span-2 rounded-2xl border border-line bg-surface-2 p-4">
+                    <summary class="cursor-pointer font-bold text-ink">
+                        Add an internal edit note
+                        <span class="font-normal text-ink-muted">(optional)</span>
+                    </summary>
+                    <div class="mt-4">
+                        <x-ui.field
+                            name="reason"
+                            label="Internal Edit Note"
+                            type="textarea"
+                            :rows="3"
+                            hint="Use this only when additional context would help future reviewers."
+                        />
+                    </div>
+                </details>
             @endif
         </div>
     </section>

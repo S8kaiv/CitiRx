@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Content;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Content\MicroPearlTransitionRequest;
 use App\Http\Requests\Content\PublishMicroPearlRequest;
+use App\Http\Requests\Content\RetireMicroPearlRequest;
+use App\Http\Requests\Content\ReturnMicroPearlToDraftRequest;
 use App\Http\Requests\Content\SaveMicroPearlRequest;
+use App\Http\Requests\Content\SubmitMicroPearlForReviewRequest;
 use App\Models\MicroPearl;
 use App\Models\TosDomain;
 use App\Services\MicroPearlWorkflowService;
@@ -176,7 +178,7 @@ class MicroPearlManagementController extends Controller
     }
 
     public function submitReview(
-        MicroPearlTransitionRequest $request,
+        SubmitMicroPearlForReviewRequest $request,
         MicroPearl $pearl,
     ): RedirectResponse {
         return $this->transition(
@@ -191,7 +193,7 @@ class MicroPearlManagementController extends Controller
     }
 
     public function returnToDraft(
-        MicroPearlTransitionRequest $request,
+        ReturnMicroPearlToDraftRequest $request,
         MicroPearl $pearl,
     ): RedirectResponse {
         return $this->transition(
@@ -214,7 +216,7 @@ class MicroPearlManagementController extends Controller
                 $request->user(),
                 $pearl,
                 $request->integer('edit_version'),
-                $request->validated('reason'),
+                'Published after independent content review.',
                 $request->validated('published_at'),
             ),
             'Micro Pearl publication approved.',
@@ -222,7 +224,7 @@ class MicroPearlManagementController extends Controller
     }
 
     public function retire(
-        PublishMicroPearlRequest $request,
+        RetireMicroPearlRequest $request,
         MicroPearl $pearl,
     ): RedirectResponse {
         return $this->transition(

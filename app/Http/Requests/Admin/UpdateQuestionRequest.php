@@ -36,9 +36,8 @@ class UpdateQuestionRequest extends FormRequest
             ],
 
             'change_reason' => [
-                'required',
+                'nullable',
                 'string',
-                'min:5',
                 'max:500',
             ],
 

@@ -28,25 +28,11 @@ class PublishMicroPearlRequest extends FormRequest
                 'date',
                 'after_or_equal:now',
             ],
-            'reason' => [
-                'required',
-                'string',
-                'min:5',
-                'max:500',
-            ],
             'current_password' => [
                 'required',
+                'string',
                 'current_password',
             ],
         ];
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'reason' => trim(
-                (string) $this->input('reason'),
-            ),
-        ]);
     }
 }

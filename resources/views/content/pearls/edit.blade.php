@@ -93,11 +93,10 @@
                         <x-ui.field
                             name="reason"
                             id="submit-review-reason"
-                            label="Submission reason"
+                            label="Reviewer Note (optional)"
                             type="textarea"
                             :rows="3"
-                            required
-                            placeholder="Explain why this content is ready for review."
+                            placeholder="Add anything the reviewer should check closely."
                         />
 
                         <x-ui.button type="submit">
@@ -107,7 +106,7 @@
                 </x-ui.card>
             @elseif ($pearl->content_status === 'in_review')
                 <x-ui.alert variant="warning">
-                    Review the lesson, sources, rights status, and AI disclosure before choosing an outcome.
+                    Review the lesson, sources, rights status, and learner-facing content before choosing an outcome.
                 </x-ui.alert>
 
                 <div class="grid gap-6 lg:grid-cols-2">
@@ -187,16 +186,6 @@
                                 name="published_at"
                                 label="Publication date (optional)"
                                 type="datetime-local"
-                            />
-
-                            <x-ui.field
-                                name="reason"
-                                id="publish-reason"
-                                label="Approval reason"
-                                type="textarea"
-                                :rows="4"
-                                required
-                                placeholder="Document why this Pearl is approved for learners."
                             />
 
                             <x-ui.field

@@ -122,7 +122,6 @@ class MicroPearlImportService
         User $uploader,
         MicroPearlImport $import,
         int $expectedLockVersion,
-        string $reason,
     ): MicroPearlImport {
         $this->assertEditor($uploader);
 
@@ -134,7 +133,6 @@ class MicroPearlImportService
                     $uploader,
                     $import,
                     $expectedLockVersion,
-                    $reason,
                     &$ownedPreviewConfirmed,
                 ): MicroPearlImport {
                     $import = MicroPearlImport::query()
@@ -214,7 +212,7 @@ class MicroPearlImportService
                     $import->forceFill([
                         'status' => MicroPearlImport::STATUS_COMMITTED,
 
-                        'reason' => trim($reason),
+                        'reason' => 'Created as private drafts from a validated CSV preview.',
 
                         'committed_at' => now(),
 

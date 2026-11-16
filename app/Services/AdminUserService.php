@@ -20,7 +20,7 @@ class AdminUserService
         User $administrator,
         string $userId,
         array $data,
-        string $reason,
+        ?string $reason,
     ): bool {
         return DB::transaction(function () use (
             $administrator,
@@ -177,7 +177,7 @@ class AdminUserService
     public function restore(
         User $administrator,
         string $userId,
-        string $reason,
+        ?string $reason,
     ): void {
         DB::transaction(function () use (
             $administrator,

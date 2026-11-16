@@ -120,11 +120,8 @@ class SaveMicroPearlRequest extends FormRequest
                 'min:1',
             ],
             'reason' => [
-                $pearl instanceof MicroPearl
-                    ? 'required'
-                    : 'nullable',
+                'nullable',
                 'string',
-                'min:5',
                 'max:500',
             ],
         ];
@@ -132,10 +129,9 @@ class SaveMicroPearlRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $reason = trim((string) $this->input('reason'));
+
         $this->merge([
-            'reason' => trim(
-                (string) $this->input('reason'),
-            ),
-        ]);
+            'reason' => $reason !== '' ? $reason : null, ]);
     }
 }
