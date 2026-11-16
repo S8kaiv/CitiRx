@@ -27,14 +27,14 @@
                 </p>
                 <p class="mt-2">
                     <strong>Primary:</strong>
-                    eligible paired students who answered all 60 post-test items.
+                    eligible paired students who answered all 100 post-test items.
 
                     <strong>Sensitivity:</strong>
                     every eligible finalized pair, including attempts with existing
                     unanswered response rows.
 
                     Unanswered post-test rows count as incorrect using the fixed
-                    60-item denominator. Sessions with missing response rows,
+                    100-item denominator. Sessions with missing response rows,
                     mismatched questions, invalid form versions, or other integrity
                     failures are excluded.
                 </p>

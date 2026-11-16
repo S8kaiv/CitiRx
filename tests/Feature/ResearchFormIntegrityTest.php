@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Question;
+use App\Services\ResearchFormBlueprint;
 use Database\Seeders\ResearchQuestionSeeder;
 use Database\Seeders\TosSeeder;
 
@@ -36,6 +37,7 @@ it(
         $questionIdsByForm = [];
 
         foreach ($forms as $form) {
+            $required = ResearchFormBlueprint::total($form);
             /*
              * Load the complete form once and reuse
              * it for the remaining assertions.
@@ -63,18 +65,18 @@ it(
 
             /*
              * Requirement 1:
-             * Exactly 60 active questions.
+             * Each form has its own approved length.
              */
             $this->assertCount(
-                60,
+                $required,
                 $questions,
                 "{$form} must contain exactly "
-                    .'60 active questions.'
+                    ."{$required} active questions."
             );
 
             /*
              * Requirement 2:
-             * Positions must uniquely cover 1-60.
+             * Positions must uniquely cover the whole form.
              */
             $positions = $questions
                 ->pluck('form_position')
@@ -86,15 +88,15 @@ it(
                 ->all();
 
             $this->assertSame(
-                range(1, 60),
+                range(1, $required),
                 $positions,
                 "{$form} positions must "
-                    .'uniquely cover 1 through 60.'
+                    ."uniquely cover 1 through {$required}."
             );
 
             /*
              * Requirement 3:
-             * Ten questions in each of six domains.
+             * Match each form's subject allocation.
              */
             $domainCounts = Question::query()
                 ->where(
@@ -142,17 +144,14 @@ it(
                 ->all();
 
             $this->assertSame(
-                [
-                    1 => 10,
-                    2 => 10,
-                    3 => 10,
-                    4 => 10,
-                    5 => 10,
-                    6 => 10,
-                ],
+                collect(range(1, 6))->mapWithKeys(
+                    fn (int $domain): array => [
+                        $domain => ResearchFormBlueprint::domainTotal($form, $domain),
+                    ],
+                )->all(),
                 $domainCounts,
                 "{$form} must contain exactly "
-                    .'10 questions per domain.'
+                    .'the required questions per domain.'
             );
 
             foreach ($questions as $question) {

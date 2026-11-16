@@ -66,10 +66,17 @@
                     </h3>
 
                     <p class="mt-2 text-sm leading-relaxed text-slate-600">
-                        Upload the 60-question content CSV into an
+                        Upload a complete content CSV into an
                         unserved Draft version. Imported questions
                         remain unvalidated.
                     </p>
+
+                    <a
+                        href="{{ route('admin.research-form-imports.form-b-template') }}"
+                        class="mt-4 inline-flex min-h-11 items-center rounded-xl border border-line bg-surface px-4 text-sm font-bold text-ink hover:bg-surface-2"
+                    >
+                        Download 100-question Form B template
+                    </a>
 
                     @if ($contentVersions->isEmpty())
                         <div class="mt-5 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
@@ -121,7 +128,7 @@
                                             )
                                         >
                                             {{ $version->version_code }}
-                                            — {{ $version->questions_count }}/60 questions
+                                            — {{ $version->questions_count }}/{{ \App\Services\ResearchFormBlueprint::total($version->research_form) }} questions
                                         </option>
                                     @endforeach
                                 </select>
@@ -161,12 +168,13 @@
                     </p>
 
                     <h3 class="mt-1 font-display text-lg font-extrabold text-slate-900">
-                        Import faculty validation
+                        Import Form A faculty validation
                     </h3>
 
                     <p class="mt-2 text-sm leading-relaxed text-slate-600">
                         Upload the approved faculty-review CSV for an
-                        unserved version already placed In Review.
+                        unserved Form A version already placed In Review.
+                        Form B is approved by the dean in their review screen.
                     </p>
 
                     @if ($validationVersions->isEmpty())
@@ -219,7 +227,7 @@
                                             )
                                         >
                                             {{ $version->version_code }}
-                                            — {{ $version->questions_count }}/60 questions
+                                            — {{ $version->questions_count }}/{{ \App\Services\ResearchFormBlueprint::total($version->research_form) }} questions
                                         </option>
                                     @endforeach
                                 </select>

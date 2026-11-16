@@ -34,30 +34,6 @@ class ResearchFormAuditService
     ];
 
     /**
-     * This is the authoritative runtime blueprint.
-     *
-     * @var array<string, array<int, array<string, int>>>
-     */
-    private const BLUEPRINTS = [
-        Question::FORM_PRE_TEST_A => [
-            1 => ['PC-01' => 4, 'PC-02' => 5, 'PC-03' => 1],
-            2 => ['PB-01' => 5, 'PB-02' => 5],
-            3 => ['PP-01' => 2, 'PP-02' => 4, 'PP-03' => 2, 'PP-04' => 2],
-            4 => ['PK-01' => 6, 'PK-02' => 2, 'PK-03' => 2],
-            5 => ['PH-01' => 3, 'PH-02' => 3, 'PH-03' => 2, 'PH-04' => 2],
-            6 => ['QC-01' => 3, 'QC-02' => 2, 'QC-03' => 3, 'QC-04' => 2],
-        ],
-        Question::FORM_POST_TEST_B => [
-            1 => ['PC-01' => 4, 'PC-02' => 5, 'PC-03' => 1],
-            2 => ['PB-01' => 5, 'PB-02' => 5],
-            3 => ['PP-01' => 2, 'PP-02' => 4, 'PP-03' => 2, 'PP-04' => 2],
-            4 => ['PK-01' => 6, 'PK-02' => 2, 'PK-03' => 2],
-            5 => ['PH-01' => 3, 'PH-02' => 3, 'PH-03' => 2, 'PH-04' => 2],
-            6 => ['QC-01' => 2, 'QC-02' => 2, 'QC-03' => 3, 'QC-04' => 3],
-        ],
-    ];
-
-    /**
      * @return array<string, array<string, string>>
      */
     public function formDefinitions(): array
@@ -220,6 +196,8 @@ class ResearchFormAuditService
                 'form_version_id',
                 'form_position',
                 'cognitive_level',
+                'source_reference',
+                'copyright_permission',
                 'research_validated_at',
                 'research_validated_by',
                 'first_served_at',
@@ -227,9 +205,10 @@ class ResearchFormAuditService
             ])
             ->where('is_active', true)
             ->with([
-                'choices:choice_id,question_id,choice_letter,choice_text,is_correct',
+                'choices:choice_id,question_id,choice_letter,choice_text,is_correct,distractor_fallacy_note',
                 'competency:competency_id,domain_id,competency_code,title',
                 'competency.domain:domain_id,domain_number,domain_name',
+                'researchValidator:user_id,role',
             ]);
     }
 
@@ -244,7 +223,8 @@ class ResearchFormAuditService
         ?ResearchFormVersion $version = null,
     ): array {
         $definition = self::FORM_DEFINITIONS[$form];
-        $blueprint = self::BLUEPRINTS[$form];
+        $blueprint = ResearchFormBlueprint::quotas($form);
+        $required = ResearchFormBlueprint::total($form);
 
         $structuralErrors = [];
         $validationErrors = [];
@@ -270,9 +250,9 @@ class ResearchFormAuditService
                 .'registered form version.';
         }
 
-        if ($activeCount !== ResearchFormService::TOTAL_ITEMS) {
+        if ($activeCount !== $required) {
             $structuralErrors[] =
-                "Expected 60 active questions; found {$activeCount}.";
+                "Expected {$required} active questions; found {$activeCount}.";
         }
 
         $positions = $questions
@@ -286,12 +266,12 @@ class ResearchFormAuditService
 
         $positionsComplete = $positions === range(
             1,
-            ResearchFormService::TOTAL_ITEMS,
+            $required,
         );
 
         if (! $positionsComplete) {
             $structuralErrors[] =
-                'Active positions must uniquely cover 1 through 60.';
+                "Active positions must uniquely cover 1 through {$required}.";
         }
 
         $missingRelationships = $questions->filter(
@@ -335,20 +315,20 @@ class ResearchFormAuditService
                 ?->domain
                 ?->domain_name ?? "Domain {$domain}";
 
-            $matches =
-                $actual === ResearchFormService::ITEMS_PER_SUBJECT;
+            $domainRequired = ResearchFormBlueprint::domainTotal($form, $domain);
+            $matches = $actual === $domainRequired;
 
             $domainRows[] = [
                 'domain_number' => $domain,
                 'domain_name' => $name,
-                'expected' => ResearchFormService::ITEMS_PER_SUBJECT,
+                'expected' => $domainRequired,
                 'actual' => $actual,
                 'matches' => $matches,
             ];
 
             if (! $matches) {
                 $structuralErrors[] =
-                    "Domain {$domain} requires 10 items; found {$actual}.";
+                    "Domain {$domain} requires {$domainRequired} items; found {$actual}.";
             }
         }
 
@@ -519,6 +499,54 @@ class ResearchFormAuditService
                 .$this->positions($missingRationales).'.';
         }
 
+        if ($form === Question::FORM_POST_TEST_B) {
+            $developmentDetails = $questions->filter(
+                fn (Question $question): bool => str_contains(
+                    mb_strtoupper((string) $question->hypercorrection_rationale),
+                    'DEVELOPMENT',
+                ) || str_contains(
+                    mb_strtoupper((string) $question->source_reference),
+                    'DEVELOPMENT',
+                ) || $question->choices->contains(
+                    fn ($choice): bool => str_contains(
+                        mb_strtoupper((string) $choice->choice_text),
+                        'DEVELOPMENT',
+                    ) || str_starts_with((string) $choice->choice_text, 'Mock option ')
+                        || str_contains(
+                            mb_strtoupper((string) $choice->distractor_fallacy_note),
+                            'DEVELOPMENT',
+                        ),
+                ),
+            );
+
+            if ($developmentDetails->isNotEmpty()) {
+                $structuralErrors[] = 'Development answer, rationale, or source text remains at positions '
+                    .$this->positions($developmentDetails).'.';
+            }
+
+            $missingSources = $questions->filter(
+                fn (Question $question): bool => blank($question->source_reference),
+            );
+
+            if ($missingSources->isNotEmpty()) {
+                $structuralErrors[] = 'Missing source references at positions '
+                    .$this->positions($missingSources).'.';
+            }
+
+            $unresolvedRights = $questions->filter(
+                fn (Question $question): bool => ! in_array(
+                    $question->copyright_permission,
+                    ['permission confirmed', 'public domain', 'licensed'],
+                    true,
+                ),
+            );
+
+            if ($unresolvedRights->isNotEmpty()) {
+                $structuralErrors[] = 'Unresolved source rights at positions '
+                    .$this->positions($unresolvedRights).'.';
+            }
+        }
+
         $invalidCognitiveLevels = $questions->filter(
             fn (Question $question): bool => ! in_array(
                 $question->cognitive_level,
@@ -551,11 +579,23 @@ class ResearchFormAuditService
 
         if (
             $requireValidation
-            && $fullyValidated !== ResearchFormService::TOTAL_ITEMS
+            && $fullyValidated !== $required
         ) {
             $validationErrors[] =
-                'Expected 60 fully validated questions; '
+                "Expected {$required} fully validated questions; "
                 ."found {$fullyValidated}.";
+        }
+
+        if ($form === Question::FORM_POST_TEST_B && $requireValidation) {
+            $notDeanApproved = $questions->filter(
+                fn (Question $question): bool => $question->research_validated_at !== null
+                    && $question->researchValidator?->role !== 'dean',
+            );
+
+            if ($notDeanApproved->isNotEmpty()) {
+                $validationErrors[] = 'Form B requires dean approval at positions '
+                    .$this->positions($notDeanApproved).'.';
+            }
         }
 
         $servedQuestions = $questions->filter(
@@ -585,9 +625,10 @@ class ResearchFormAuditService
         $structurallyValid = $structuralErrors === [];
 
         $validationComplete =
-            $activeCount === ResearchFormService::TOTAL_ITEMS
-            && $fullyValidated === ResearchFormService::TOTAL_ITEMS
-            && $partialValidation->isEmpty();
+            $activeCount === $required
+            && $fullyValidated === $required
+            && $partialValidation->isEmpty()
+            && $validationErrors === [];
 
         $overrideConfigured = (bool) config(
             'citirx.research.allow_unvalidated_forms',
@@ -629,13 +670,13 @@ class ResearchFormAuditService
             'Version binding' => $versionIsBound
                 ? 'Pass'
                 : 'Fail',
-            'Active questions' => "{$activeCount}/60",
-            'Fully validated' => "{$fullyValidated}/60",
+            'Active questions' => "{$activeCount}/{$required}",
+            'Fully validated' => "{$fullyValidated}/{$required}",
             'Placeholders' => $placeholders->count(),
-            'Positions 1-60' => $positionsComplete
+            "Positions 1-{$required}" => $positionsComplete
                 ? 'Pass'
                 : 'Fail',
-            'Domains with 10 items' => "{$domainsMatching}/6",
+            'Domains with required items' => "{$domainsMatching}/6",
             'Competency blueprint' => "{$competenciesMatching}/"
                 .count($competencyRows),
             'Invalid choice structures' => $invalidChoiceStructures->count(),
@@ -666,7 +707,7 @@ class ResearchFormAuditService
             'version_is_bound' => $versionIsBound,
 
             'active_questions' => $activeCount,
-            'required_questions' => ResearchFormService::TOTAL_ITEMS,
+            'required_questions' => $required,
             'positions_complete' => $positionsComplete,
             'domains_matching' => $domainsMatching,
             'domain_rows' => $domainRows,

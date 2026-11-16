@@ -105,14 +105,14 @@
                             <div>
                                 <dt class="text-slate-500">Questions</dt>
                                 <dd class="font-bold">
-                                    {{ $audit['active_questions'] }}/60
+                                    {{ $audit['active_questions'] }}/{{ $audit['required_questions'] }}
                                 </dd>
                             </div>
 
                             <div>
                                 <dt class="text-slate-500">Validated</dt>
                                 <dd class="font-bold">
-                                    {{ $audit['fully_validated'] }}/60
+                                    {{ $audit['fully_validated'] }}/{{ $audit['required_questions'] }}
                                 </dd>
                             </div>
 

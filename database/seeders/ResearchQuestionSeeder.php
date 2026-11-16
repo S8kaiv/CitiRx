@@ -6,42 +6,13 @@ use App\Models\Question;
 use App\Models\QuestionChoice;
 use App\Models\ResearchFormVersion;
 use App\Models\TosCompetency;
+use App\Services\ResearchFormBlueprint;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 class ResearchQuestionSeeder extends Seeder
 {
-    private const QUESTIONS_PER_SUBJECT = 10;
-
-    private const QUESTIONS_PER_FORM = 60;
-
-    /**
-     * Development-only scaled TOS quotas.
-     *
-     * These create structurally equivalent Form A and Form B pools.
-     * They are not substitutes for faculty-authored, CVI-validated items.
-     */
-    private const COMPONENT_QUOTAS = [
-        Question::FORM_PRE_TEST_A => [
-            1 => ['PC-01' => 4, 'PC-02' => 5, 'PC-03' => 1],
-            2 => ['PB-01' => 5, 'PB-02' => 5],
-            3 => ['PP-01' => 2, 'PP-02' => 4, 'PP-03' => 2, 'PP-04' => 2],
-            4 => ['PK-01' => 6, 'PK-02' => 2, 'PK-03' => 2],
-            5 => ['PH-01' => 3, 'PH-02' => 3, 'PH-03' => 2, 'PH-04' => 2],
-            6 => ['QC-01' => 3, 'QC-02' => 2, 'QC-03' => 3, 'QC-04' => 2],
-        ],
-
-        Question::FORM_POST_TEST_B => [
-            1 => ['PC-01' => 4, 'PC-02' => 5, 'PC-03' => 1],
-            2 => ['PB-01' => 5, 'PB-02' => 5],
-            3 => ['PP-01' => 2, 'PP-02' => 4, 'PP-03' => 2, 'PP-04' => 2],
-            4 => ['PK-01' => 6, 'PK-02' => 2, 'PK-03' => 2],
-            5 => ['PH-01' => 3, 'PH-02' => 3, 'PH-03' => 2, 'PH-04' => 2],
-            6 => ['QC-01' => 2, 'QC-02' => 2, 'QC-03' => 3, 'QC-04' => 3],
-        ],
-    ];
-
     /**
      * Suggested 10-item cognitive-level scaling per subject.
      * Each list must contain exactly ten entries.
@@ -178,7 +149,7 @@ class ResearchQuestionSeeder extends Seeder
         }
 
         DB::transaction(function () use ($competencies): void {
-            foreach (self::COMPONENT_QUOTAS as $form => $subjects) {
+            foreach (ResearchFormBlueprint::QUOTAS as $form => $subjects) {
                 /*
                 * The version rows are created by the 4A migration.
                 * Questions must belong to the active version.
@@ -207,7 +178,9 @@ class ResearchQuestionSeeder extends Seeder
                         $competency = $competencies->get($code);
 
                         for ($componentItem = 1; $componentItem <= $quantity; $componentItem++) {
-                            $cognitiveLevel = $cognitiveLevels[$subjectItemIndex];
+                            $cognitiveLevel = $cognitiveLevels[
+                                $subjectItemIndex % count($cognitiveLevels)
+                            ];
 
                             $this->seedMockQuestion(
                                 competency: $competency,
@@ -231,7 +204,7 @@ class ResearchQuestionSeeder extends Seeder
         });
 
         $this->command?->info(
-            'Research mock seeder: 60 Form A + 60 Form B development-only questions.'
+            'Research mock seeder: 60 Form A + 100 Form B development-only questions.'
         );
     }
 
@@ -291,6 +264,8 @@ class ResearchQuestionSeeder extends Seeder
                     === Question::FORM_PRE_TEST_A,
 
                 'cognitive_level' => $cognitiveLevel,
+                'source_reference' => 'Development-only placeholder reference.',
+                'copyright_permission' => 'permission confirmed',
 
                 'difficulty_index_p' => null,
                 'speed_flag_count' => 0,
@@ -324,7 +299,7 @@ class ResearchQuestionSeeder extends Seeder
 
     private function validateBlueprint(): void
     {
-        foreach (self::COMPONENT_QUOTAS as $form => $subjects) {
+        foreach (ResearchFormBlueprint::QUOTAS as $form => $subjects) {
             if (count($subjects) !== 6) {
                 throw new RuntimeException("{$form} must contain six subjects.");
             }
@@ -334,16 +309,18 @@ class ResearchQuestionSeeder extends Seeder
             foreach ($subjects as $subjectNumber => $quotas) {
                 $subjectTotal = array_sum($quotas);
 
-                if ($subjectTotal !== self::QUESTIONS_PER_SUBJECT) {
+                $required = ResearchFormBlueprint::domainTotal($form, $subjectNumber);
+
+                if ($subjectTotal !== $required) {
                     throw new RuntimeException(
-                        "{$form} subject {$subjectNumber} must contain exactly 10 questions."
+                        "{$form} subject {$subjectNumber} must contain exactly {$required} questions."
                     );
                 }
 
                 if (
                     ! isset(self::COGNITIVE_LEVELS[$subjectNumber])
                     || count(self::COGNITIVE_LEVELS[$subjectNumber])
-                    !== self::QUESTIONS_PER_SUBJECT
+                    !== 10
                 ) {
                     throw new RuntimeException(
                         "Subject {$subjectNumber} must contain exactly 10 cognitive labels."
@@ -353,8 +330,8 @@ class ResearchQuestionSeeder extends Seeder
                 $formTotal += $subjectTotal;
             }
 
-            if ($formTotal !== self::QUESTIONS_PER_FORM) {
-                throw new RuntimeException("{$form} must contain exactly 60 questions.");
+            if ($formTotal !== ResearchFormBlueprint::total($form)) {
+                throw new RuntimeException("{$form} has an invalid question count.");
             }
         }
     }
@@ -364,7 +341,7 @@ class ResearchQuestionSeeder extends Seeder
     {
         $codes = [];
 
-        foreach (self::COMPONENT_QUOTAS as $subjects) {
+        foreach (ResearchFormBlueprint::QUOTAS as $subjects) {
             foreach ($subjects as $quotas) {
                 $codes = [
                     ...$codes,
@@ -400,18 +377,20 @@ class ResearchQuestionSeeder extends Seeder
             ->orderBy('form_position')
             ->get();
 
-        if ($questions->count() !== self::QUESTIONS_PER_FORM) {
+        $required = ResearchFormBlueprint::total($form);
+
+        if ($questions->count() !== $required) {
             throw new RuntimeException(
-                "{$form} must contain exactly 60 seeded questions."
+                "{$form} must contain exactly {$required} seeded questions."
             );
         }
 
         if (
             $questions->pluck('form_position')->all()
-            !== range(1, self::QUESTIONS_PER_FORM)
+            !== range(1, $required)
         ) {
             throw new RuntimeException(
-                "{$form} positions must cover 1 through 60 exactly once."
+                "{$form} positions must cover 1 through {$required} exactly once."
             );
         }
 

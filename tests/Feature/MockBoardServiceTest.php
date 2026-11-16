@@ -19,11 +19,6 @@ beforeEach(function () {
     );
 
     config()->set(
-        'citirx.research.post_test_duration_minutes',
-        72,
-    );
-
-    config()->set(
         'citirx.research.post_test_form_version',
         'post_test_b_v1',
     );
@@ -81,9 +76,9 @@ it('reports that an eligible student can start Form B', function () {
         ->and($status['availability'])
         ->toHaveCount(6)
         ->and($status['availability']->pluck('available')->all())
-        ->toBe([10, 10, 10, 10, 10, 10])
+        ->toBe([20, 15, 18, 15, 17, 15])
         ->and($status['duration_minutes'])
-        ->toBe(72)
+        ->toBe(100)
         ->and($status['form_version'])
         ->toBe('post_test_b_v1');
 });
@@ -123,7 +118,7 @@ it('blocks a student outside the cohort post-test window', function () {
         ->toContain('not currently available');
 });
 
-it('creates one session and exactly 60 empty response rows', function () {
+it('creates one session and exactly 100 empty response rows', function () {
     $session = $this->service->startPostTest($this->user);
 
     $responses = AssessmentResponse::query()
@@ -136,23 +131,23 @@ it('creates one session and exactly 60 empty response rows', function () {
         ->and($session->research_phase)
         ->toBe('post_test')
         ->and($session->target_length)
-        ->toBe(60)
+        ->toBe(100)
         ->and($session->total_items)
-        ->toBe(60)
+        ->toBe(100)
         ->and($session->correct_items)
         ->toBe(0)
         ->and($session->xp_awarded)
         ->toBe(0)
         ->and($session->served_question_ids)
-        ->toHaveCount(60)
+        ->toHaveCount(100)
         ->and($session->domain_mastery_snapshot)
         ->toHaveCount(6)
         ->and($session->expires_at)
         ->not->toBeNull()
         ->and($responses)
-        ->toHaveCount(60)
+        ->toHaveCount(100)
         ->and($responses->pluck('item_position')->all())
-        ->toBe(range(1, 60))
+        ->toBe(range(1, 100))
         ->and($responses->whereNotNull('selected_choice_id'))
         ->toHaveCount(0)
         ->and($responses->whereNotNull('is_correct'))
@@ -178,7 +173,7 @@ it('returns the existing attempt instead of creating a duplicate', function () {
                 ->where('session_id', $first->session_id)
                 ->count(),
         )
-        ->toBe(60);
+        ->toBe(100);
 });
 
 it('saves and clears one answer without scoring it early', function () {
@@ -344,11 +339,11 @@ it('scores answered rows while keeping unanswered rows in the denominator', func
         ->all();
 
     expect($result['total'])
-        ->toBe(60)
+        ->toBe(100)
         ->and($result['answered'])
         ->toBe(2)
         ->and($result['unanswered'])
-        ->toBe(58)
+        ->toBe(98)
         ->and($result['correct'])
         ->toBe(1)
         ->and($result['per_domain'])
@@ -376,7 +371,7 @@ it('scores answered rows while keeping unanswered rows in the denominator', func
                 ->whereNull('is_correct')
                 ->count(),
         )
-        ->toBe(58);
+        ->toBe(98);
 });
 
 it('submits an expired attempt and prevents further autosave', function () {
@@ -411,11 +406,11 @@ it('submits an expired attempt and prevents further autosave', function () {
     );
 
     expect($result['total'])
-        ->toBe(60)
+        ->toBe(100)
         ->and($result['answered'])
         ->toBe(0)
         ->and($result['unanswered'])
-        ->toBe(60)
+        ->toBe(100)
         ->and($session->fresh()->submission_reason)
         ->toBe('expired');
 });
@@ -440,7 +435,7 @@ it('returns the saved result when submit is called again', function () {
                 ->where('session_id', $session->session_id)
                 ->count(),
         )
-        ->toBe(60);
+        ->toBe(100);
 });
 
 it('does not expose unvalidated Form B when the override is disabled', function () {
@@ -544,7 +539,7 @@ it(
             ->and(
                 $expiredSession->total_items,
             )
-            ->toBe(60)
+            ->toBe(100)
             ->and(
                 $expiredSession->correct_items,
             )
@@ -590,6 +585,6 @@ it(
                 )
                 ->whereNull('is_correct')
                 ->count(),
-        )->toBe(60);
+        )->toBe(100);
     },
 );

@@ -43,6 +43,8 @@ class DashboardController extends Controller
                 'faculty.dashboard',
             ),
 
+            'dean' => redirect()->route('dean.research-forms.index'),
+
             'student' => view('dashboard.student', [
                 'user' => $user->loadMissing([
                     'cohort',

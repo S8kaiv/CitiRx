@@ -166,9 +166,9 @@ class MockBoardService
             /*
              * ResearchFormService guarantees:
              *
-             * - exactly 60 questions
-             * - exactly 10 per subject
-             * - positions 1 through 60
+             * - exactly 100 questions
+             * - the approved Form B subject quotas
+             * - positions 1 through 100
              * - four choices per question
              * - one correct choice per question
              */
@@ -214,12 +214,12 @@ class MockBoardService
                 'served_question_ids' => $orderedQuestions
                     ->pluck('question_id')
                     ->all(),
-                'target_length' => ResearchFormService::TOTAL_ITEMS,
+                'target_length' => ResearchFormBlueprint::total(Question::FORM_POST_TEST_B),
                 'domain_filter_id' => null,
                 'current_question_id' => null,
                 'current_question_started_at' => null,
                 'draft_answers' => null,
-                'total_items' => ResearchFormService::TOTAL_ITEMS,
+                'total_items' => ResearchFormBlueprint::total(Question::FORM_POST_TEST_B),
                 'correct_items' => 0,
                 'xp_awarded' => 0,
                 'started_at' => $startedAt,
@@ -237,7 +237,7 @@ class MockBoardService
             $timestamp = now();
 
             /*
-             * One bulk insert is more efficient than creating 60
+             * One bulk insert is more efficient than creating 100
              * AssessmentResponse models individually.
              */
             AssessmentResponse::query()->insert(
@@ -507,7 +507,7 @@ class MockBoardService
                 );
 
                 /*
-                 * Update all 60 answers in one database operation.
+                 * Update all 100 answers in one database operation.
                  */
                 AssessmentResponse::query()->upsert(
                     $updates->all(),
@@ -523,7 +523,7 @@ class MockBoardService
                 )->count();
 
                 $session->forceFill([
-                    'total_items' => ResearchFormService::TOTAL_ITEMS,
+                    'total_items' => ResearchFormBlueprint::total(Question::FORM_POST_TEST_B),
                     'correct_items' => $correct,
                     'completed_at' => $timestamp,
                     'submission_reason' => $submissionReason,
@@ -637,18 +637,7 @@ class MockBoardService
 
     private function durationMinutes(): int
     {
-        $duration = (int) config(
-            'citirx.research.post_test_duration_minutes',
-            0,
-        );
-
-        if ($duration < 1 || $duration > 600) {
-            throw new RuntimeException(
-                'The post-test duration configuration is invalid.',
-            );
-        }
-
-        return $duration;
+        return ResearchFormBlueprint::total(Question::FORM_POST_TEST_B);
     }
 
     /**
@@ -660,7 +649,7 @@ class MockBoardService
     ): void {
         if (
             $responses->count()
-            !== ResearchFormService::TOTAL_ITEMS
+            !== ResearchFormBlueprint::total(Question::FORM_POST_TEST_B)
         ) {
             throw new RuntimeException(
                 'The research post-test response set is incomplete.',

@@ -15,10 +15,6 @@ class ResearchFormService
 {
     public const SUBJECT_COUNT = 6;
 
-    public const ITEMS_PER_SUBJECT = 10;
-
-    public const TOTAL_ITEMS = 60;
-
     public function activeVersion(
         string $form,
         bool $lockForUpdate = false,
@@ -130,7 +126,10 @@ class ResearchFormService
                     'available' => (int) (
                         $counts[$domain->domain_id] ?? 0
                     ),
-                    'required' => self::ITEMS_PER_SUBJECT,
+                    'required' => ResearchFormBlueprint::domainTotal(
+                        $version->research_form,
+                        (int) $domain->domain_number,
+                    ),
                 ],
             );
     }
@@ -226,12 +225,14 @@ class ResearchFormService
         string $form,
         Collection $questions,
     ): void {
+        $required = ResearchFormBlueprint::total($form);
+
         if (
             $questions->count()
-            !== self::TOTAL_ITEMS
+            !== $required
         ) {
             throw new RuntimeException(
-                "{$form} requires exactly 60 "
+                "{$form} requires exactly {$required} "
                     .'active and approved questions; '
                     ."found {$questions->count()}.",
             );
@@ -248,11 +249,11 @@ class ResearchFormService
 
         if (
             $positions
-            !== range(1, self::TOTAL_ITEMS)
+            !== range(1, $required)
         ) {
             throw new RuntimeException(
                 "{$form} positions must uniquely "
-                    .'cover 1 through 60.',
+                    ."cover 1 through {$required}.",
             );
         }
 
@@ -272,13 +273,23 @@ class ResearchFormService
         }
 
         foreach ($perSubject as $subjectQuestions) {
+            $domainNumber = (int) $subjectQuestions
+                ->first()
+                ->competency
+                ->domain
+                ->domain_number;
+            $domainRequired = ResearchFormBlueprint::domainTotal(
+                $form,
+                $domainNumber,
+            );
+
             if (
                 $subjectQuestions->count()
-                !== self::ITEMS_PER_SUBJECT
+                !== $domainRequired
             ) {
                 throw new RuntimeException(
                     "{$form} requires exactly "
-                        .'10 items per subject.',
+                        ."{$domainRequired} items in domain {$domainNumber}.",
                 );
             }
         }

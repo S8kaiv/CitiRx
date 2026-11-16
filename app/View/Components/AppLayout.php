@@ -27,6 +27,7 @@ class AppLayout extends Component
         $resolvedSurface = $surface ?? match ($role) {
             'admin' => 'admin',
             'faculty' => 'faculty',
+            'dean' => 'admin',
             default => 'student',
         };
 

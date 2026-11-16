@@ -30,6 +30,7 @@ class UpdateUserAssignmentRequest extends AdminRequest
                     'student',
                     'faculty',
                     'admin',
+                    'dean',
                 ]),
             ],
             'cohort_id' => [

@@ -6,6 +6,7 @@ use App\Models\Question;
 use App\Models\QuestionChoice;
 use App\Models\ResearchFormVersion;
 use App\Models\TosCompetency;
+use App\Services\ResearchFormBlueprint;
 use App\Services\ResearchFormVersionTargetService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -143,7 +144,7 @@ class ImportResearchFormContent extends Command
             $transactionStarted = false;
 
             $this->info(
-                'Imported 60 unvalidated questions into '
+                'Imported '.ResearchFormBlueprint::total($form).' unvalidated questions into '
                     ."{$version->version_code}.",
             );
             $this->warn(
@@ -290,9 +291,11 @@ class ImportResearchFormContent extends Command
         string $form,
         ResearchFormVersion $version,
     ): array {
-        if (count($rows) !== 60) {
+        $required = ResearchFormBlueprint::total($form);
+
+        if (count($rows) !== $required) {
             throw new RuntimeException(
-                'The CSV must contain exactly 60 data rows; found '
+                "The CSV must contain exactly {$required} data rows; found "
                     .count($rows).'.',
             );
         }
@@ -353,9 +356,9 @@ class ImportResearchFormContent extends Command
 
             $position = (int) $positionValue;
 
-            if ($position < 1 || $position > 60) {
+            if ($position < 1 || $position > $required) {
                 throw new RuntimeException(
-                    "CSV line {$line} has form_position {$position}; expected 1-60.",
+                    "CSV line {$line} has form_position {$position}; expected 1-{$required}.",
                 );
             }
 
@@ -399,6 +402,10 @@ class ImportResearchFormContent extends Command
 
             $questionText = (string) $row['question_text'];
             $rationale = (string) $row['rationale'];
+            $sourceReference = trim((string) ($row['source_reference'] ?? ''));
+            $copyrightPermission = mb_strtolower(trim(
+                (string) ($row['copyright_permission'] ?? ''),
+            ));
             $choices = [
                 'A' => (string) $row['choice_a'],
                 'B' => (string) $row['choice_b'],
@@ -425,6 +432,20 @@ class ImportResearchFormContent extends Command
                 throw new RuntimeException(
                     "CSV line {$line} has an empty rationale.",
                 );
+            }
+
+            if ($form === Question::FORM_POST_TEST_B) {
+                if ($sourceReference === '') {
+                    throw new RuntimeException("CSV line {$line} needs a source_reference for dean review.");
+                }
+
+                if (! in_array($copyrightPermission, [
+                    'permission confirmed',
+                    'public domain',
+                    'licensed',
+                ], true)) {
+                    throw new RuntimeException("CSV line {$line} needs a resolved copyright_permission.");
+                }
             }
 
             if (str_contains(
@@ -500,6 +521,8 @@ class ImportResearchFormContent extends Command
                 'question_text' => $questionText,
                 'rationale' => $rationale,
                 'cognitive_level' => $cognitiveLevel,
+                'source_reference' => $sourceReference !== '' ? $sourceReference : null,
+                'copyright_permission' => $copyrightPermission !== '' ? $copyrightPermission : null,
                 'correct_choice' => $correctChoice,
                 'choices' => $choices,
             ];
@@ -507,9 +530,9 @@ class ImportResearchFormContent extends Command
 
         ksort($positions);
 
-        if (array_keys($positions) !== range(1, 60)) {
+        if (array_keys($positions) !== range(1, $required)) {
             throw new RuntimeException(
-                'CSV positions must uniquely cover 1 through 60.',
+                "CSV positions must uniquely cover 1 through {$required}.",
             );
         }
 
@@ -572,6 +595,8 @@ class ImportResearchFormContent extends Command
                 'form_position' => $row['form_position'],
 
                 'cognitive_level' => $row['cognitive_level'],
+                'source_reference' => $row['source_reference'],
+                'copyright_permission' => $row['copyright_permission'],
 
                 'research_validated_at' => null,
                 'research_validated_by' => null,
@@ -594,6 +619,8 @@ class ImportResearchFormContent extends Command
 
                             'is_correct' => $letter
                                 === $row['correct_choice'],
+
+                            'distractor_fallacy_note' => null,
                         ],
                     );
             }

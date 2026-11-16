@@ -113,14 +113,16 @@ class ResearchAttemptEligibilityService
                 'post_session_id' => $post->session_id,
 
                 /*
-                 * Both scores always use the fixed denominator of 60.
+                 * Forms A and B have different approved denominators.
                  */
                 'pre_score' => $this->percentage(
                     (int) $pre->correct_items,
+                    ResearchFormBlueprint::total(Question::FORM_PRE_TEST_A),
                 ),
 
                 'post_score' => $this->percentage(
                     (int) $post->correct_items,
+                    ResearchFormBlueprint::total(Question::FORM_POST_TEST_B),
                 ),
 
                 'readiness_snapshot_pct' => $post->readiness_snapshot_pct === null
@@ -131,14 +133,14 @@ class ResearchAttemptEligibilityService
 
                 'answered_items' => (int) $post->answered_items,
 
-                'expected_items' => ResearchFormService::TOTAL_ITEMS,
+                'expected_items' => ResearchFormBlueprint::total(Question::FORM_POST_TEST_B),
 
                 /*
                  * A valid unanswered row remains part of the
                  * denominator but prevents complete-case inclusion.
                  */
                 'is_complete' => (int) $post->answered_items
-                    === ResearchFormService::TOTAL_ITEMS,
+                    === ResearchFormBlueprint::total(Question::FORM_POST_TEST_B),
 
                 'pre_domain_scores' => $pre->domain_scores,
 
@@ -526,17 +528,18 @@ class ResearchAttemptEligibilityService
         ResearchFormVersion $expectedVersion,
     ): array {
         $reasons = [];
+        $required = ResearchFormBlueprint::total($expectedVersion->research_form);
 
         if (
             (int) $session->total_items
-            !== ResearchFormService::TOTAL_ITEMS
+            !== $required
         ) {
             $reasons[] = 'wrong_total_items';
         }
 
         if (
             (int) $session->target_length
-            !== ResearchFormService::TOTAL_ITEMS
+            !== $required
         ) {
             $reasons[] = 'wrong_target_length';
         }
@@ -551,21 +554,21 @@ class ResearchAttemptEligibilityService
 
         if (
             $servedIds->count()
-            !== ResearchFormService::TOTAL_ITEMS
+            !== $required
         ) {
             $reasons[] = 'wrong_served_question_count';
         }
 
         if (
             $servedIds->unique()->count()
-            !== ResearchFormService::TOTAL_ITEMS
+            !== $required
         ) {
             $reasons[] = 'duplicate_served_question_ids';
         }
 
         if (
             $rows->count()
-            !== ResearchFormService::TOTAL_ITEMS
+            !== $required
         ) {
             $reasons[] = 'wrong_response_row_count';
         }
@@ -576,7 +579,7 @@ class ResearchAttemptEligibilityService
 
         if (
             $responseQuestionIds->unique()->count()
-            !== ResearchFormService::TOTAL_ITEMS
+            !== $required
         ) {
             $reasons[] = 'duplicate_response_question_ids';
         }
@@ -606,7 +609,7 @@ class ResearchAttemptEligibilityService
             $positions
             !== range(
                 1,
-                ResearchFormService::TOTAL_ITEMS,
+                $required,
             )
         ) {
             $reasons[] = 'invalid_item_positions';
@@ -666,7 +669,10 @@ class ResearchAttemptEligibilityService
                     $domainNumber,
                     0,
                 )
-                !== ResearchFormService::ITEMS_PER_SUBJECT
+                !== ResearchFormBlueprint::domainTotal(
+                    $expectedVersion->research_form,
+                    $domainNumber,
+                )
             ) {
                 $reasons[] = 'invalid_domain_distribution';
 
@@ -802,12 +808,11 @@ class ResearchAttemptEligibilityService
                         ->count();
 
                     /*
-                     * Each valid domain has exactly 10 rows.
-                     * Unanswered post-test rows therefore remain
-                     * incorrect and stay in the denominator.
+                     * Integrity checks have already verified each domain's
+                     * item count. Unanswered rows remain incorrect.
                      */
                     return $correct * 100.0
-                        / ResearchFormService::ITEMS_PER_SUBJECT;
+                        / $domainRows->count();
                 },
             )
             ->all();
@@ -858,9 +863,10 @@ class ResearchAttemptEligibilityService
 
     private function percentage(
         int $correctItems,
+        int $totalItems,
     ): float {
         return $correctItems * 100.0
-            / ResearchFormService::TOTAL_ITEMS;
+            / $totalItems;
     }
 
     /**

@@ -61,6 +61,8 @@ class Question extends Model
         'form_position',
         'cognitive_level',
         'form_version_id',
+        'source_reference',
+        'copyright_permission',
     ];
 
     protected $table = 'questions';
@@ -90,6 +92,8 @@ class Question extends Model
         'research_validated_at',
         'research_validated_by',
         'form_version_id',
+        'source_reference',
+        'copyright_permission',
     ];
 
     protected $casts = [

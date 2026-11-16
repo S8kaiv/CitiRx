@@ -68,7 +68,7 @@
                         <div class="grid gap-3 sm:grid-cols-3">
                             <div class="rounded-2xl border-2 border-b-4 border-line bg-surface-2 p-4">
                                 <p class="font-display text-2xl font-black text-primary">
-                                    60
+                                    {{ \App\Services\ResearchFormBlueprint::total(\App\Models\Question::FORM_POST_TEST_B) }}
                                 </p>
 
                                 <p class="font-display text-xs font-bold uppercase tracking-wider text-ink-muted">
@@ -120,7 +120,7 @@
                                 <li class="flex gap-2">
                                     <span class="font-black text-primary">•</span>
                                     <span>
-                                        Unanswered questions remain part of the 60-item score.
+                                        Unanswered questions remain part of the 100-item score.
                                     </span>
                                 </li>
 
