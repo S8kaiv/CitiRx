@@ -252,7 +252,7 @@ class QuestionController extends Controller
                 payload: $validated,
                 expectedVersion: (int)
                 $validated['edit_version'],
-                reason: $validated['change_reason'],
+                reason: $validated['change_reason'] ?? null,
             );
         } catch (
             LogicException
@@ -297,7 +297,7 @@ class QuestionController extends Controller
                     ),
                     expectedVersion: (int)
                     $validated['edit_version'],
-                    reason: $validated['change_reason'],
+                    reason: $validated['change_reason'] ?? null,
                 );
         } catch (
             LogicException

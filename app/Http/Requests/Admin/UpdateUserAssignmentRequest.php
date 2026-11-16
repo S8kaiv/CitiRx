@@ -2,10 +2,25 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\User;
 use Illuminate\Validation\Rule;
 
 class UpdateUserAssignmentRequest extends AdminRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $reason = trim(
+            (string) $this->input('reason'),
+        );
+
+        $this->merge([
+            'cohort_id' => $this->input('cohort_id') ?: null,
+            'reason' => $reason !== ''
+                ? $reason
+                : null,
+        ]);
+    }
+
     public function rules(): array
     {
         return [
@@ -29,7 +44,10 @@ class UpdateUserAssignmentRequest extends AdminRequest
                 ),
             ],
             'reason' => [
-                'required',
+                Rule::requiredIf(
+                    fn (): bool => $this->roleIsChanging(),
+                ),
+                'nullable',
                 'string',
                 'min:5',
                 'max:500',
@@ -37,13 +55,16 @@ class UpdateUserAssignmentRequest extends AdminRequest
         ];
     }
 
-    protected function prepareForValidation(): void
+    private function roleIsChanging(): bool
     {
-        $this->merge([
-            'cohort_id' => $this->input('cohort_id') ?: null,
-            'reason' => trim(
-                (string) $this->input('reason'),
-            ),
-        ]);
+        $currentRole = User::withTrashed()
+            ->whereKey(
+                (string) $this->route('userId'),
+            )
+            ->value('role');
+
+        return is_string($currentRole)
+            && $currentRole
+                !== $this->input('role');
     }
 }

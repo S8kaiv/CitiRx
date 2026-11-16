@@ -80,7 +80,7 @@ class MicroPearlWorkflowService
         MicroPearl $pearl,
         array $data,
         int $expectedVersion,
-        string $reason,
+        ?string $reason,
     ): MicroPearl {
         $this->assertEditor($editor);
 
@@ -151,7 +151,7 @@ class MicroPearlWorkflowService
         User $editor,
         MicroPearl $pearl,
         int $expectedVersion,
-        string $reason,
+        ?string $reason,
     ): MicroPearl {
         $this->assertEditor($editor);
 
@@ -565,7 +565,7 @@ class MicroPearlWorkflowService
         User $editor,
         string $status,
         string $action,
-        string $reason,
+        ?string $reason,
         array $extra,
     ): MicroPearl {
         $before = (int) $pearl->edit_version;
@@ -619,7 +619,7 @@ class MicroPearlWorkflowService
             'editor_id' => $editor->user_id,
             'action' => $action,
             'changes' => $changes ?: null,
-            'reason' => $reason,
+            'reason' => filled($reason) ? trim((string) $reason) : null,
             'version_before' => $before,
             'version_after' => $after,
             'edited_at' => now(),

@@ -127,23 +127,10 @@
                             value="{{ $import->lock_version }}"
                         >
 
-                        <x-ui.field
-                            name="reason"
-                            label="Import reason"
-                            type="textarea"
-                            :rows="3"
-                            required
-                            hint="Explain where these lessons came from and why they are being imported."
-                        />
-
-                        <x-ui.field
-                            name="current_password"
-                            label="Current password"
-                            type="password"
-                            required
-                            autocomplete="current-password"
-                            hint="Required because this action creates multiple content records."
-                        />
+                        <x-ui.alert variant="info">
+                            This creates private drafts only. Lessons remain hidden until
+                            independently reviewed and published.
+                        </x-ui.alert>
 
                         <x-ui.button type="submit" class="w-full sm:w-auto">
                             Import {{ $import->row_count }} {{ str('Draft')->plural($import->row_count) }}

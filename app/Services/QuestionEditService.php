@@ -31,13 +31,13 @@ class QuestionEditService
         Question $question,
         array $payload,
         int $expectedVersion,
-        string $reason,
+        ?string $reason,
     ): Question {
         $this->assertAdministrator(
             $editor,
         );
 
-        $reason = $this->validatedReason(
+        $reason = $this->optionalReason(
             $reason,
         );
 
@@ -359,15 +359,13 @@ class QuestionEditService
         Question $question,
         bool $active,
         int $expectedVersion,
-        string $reason,
+        ?string $reason,
     ): Question {
         $this->assertAdministrator(
             $editor,
         );
 
-        $reason = $this->validatedReason(
-            $reason,
-        );
+        $reason = $active ? $this->optionalReason($reason) : $this->validatedReason((string) $reason);
 
         return DB::transaction(
             function () use (
@@ -667,7 +665,7 @@ class QuestionEditService
         User $editor,
         string $action,
         array $changes,
-        string $reason,
+        ?string $reason,
         int $versionBefore,
         int $versionAfter,
     ): void {
@@ -688,5 +686,17 @@ class QuestionEditService
 
             'edited_at' => now(),
         ]);
+    }
+
+    private function optionalReason(
+        ?string $reason,
+    ): ?string {
+        $reason = trim(
+            (string) $reason,
+        );
+
+        return $reason !== ''
+            ? $reason
+            : null;
     }
 }

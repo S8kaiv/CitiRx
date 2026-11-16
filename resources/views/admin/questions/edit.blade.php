@@ -145,19 +145,20 @@
                     @enderror
                 </div>
 
-                <div>
-                    <label for="change_reason" class="mb-1 block text-xs font-extrabold uppercase tracking-wider text-muted-ink">
-                        Reason for this revision
-                    </label>
-
-                    <textarea id="change_reason" name="change_reason" rows="3" required minlength="5" maxlength="500"
-                        class="w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary"
-                        placeholder="Example: Reworded the stem after faculty review identified ambiguity.">{{ old('change_reason') }}</textarea>
-
-                    @error('change_reason')
-                        <p class="mt-1 text-xs font-bold text-rose-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                <details class="rounded-2xl border border-line bg-surface-2 p-4" @if ($errors-has('change_reason')) open @endif>
+                    <summary class="cursor-pointer font-bold text-ink">
+                        Add an internal revision note
+                        <span class="font-normal text-ink-muted">(optional)</span>
+                    </summary>
+                    <div class="mt-4">
+                        <label for="change_reason" class="mb-1 block text-xs font-extrabold uppercase tracking-wider text-muted-ink">
+                            Revision Note
+                        </label>
+                        <textarea id="change_reason" name="change_reason" rows="3" maxlength="500" class="w-full rounded-xl border-2 border-line bg-surface text-sm font-medium text-ink focus:border-primary focus:ring-primary" placeholder="Add context only when it would help future reviewers.">
+                            {{ old('change_reason')}}
+                        </textarea>
+                    </div>
+                </details>
 
                 <div class="rx-admin-actions flex flex-wrap items-center gap-3 border-t border-slate-100 pt-5">
                     <button type="submit" style="--lip: rgb(var(--color-primary-lip));"

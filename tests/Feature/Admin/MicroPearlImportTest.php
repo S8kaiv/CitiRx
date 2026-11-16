@@ -11,9 +11,7 @@ use Illuminate\Support\Facades\Storage;
 
 beforeEach(function (): void {
     $this->withoutVite();
-
     Storage::fake('local');
-
     $this->seed(TosSeeder::class);
 });
 
@@ -21,9 +19,8 @@ beforeEach(function (): void {
  * @param  array<string, string>  $overrides
  * @return array<string, string>
  */
-function pearlImportRow(
-    array $overrides = [],
-): array {
+function pearlImportRow(array $overrides = []): array
+{
     return array_replace([
         'competency_code' => 'PC-01',
         'title' => 'Imported Calcium Lesson',
@@ -48,27 +45,15 @@ function pearlImportUpload(
     array $rows,
     ?array $headers = null,
 ): UploadedFile {
-    $headers ??=
-        MicroPearlImportService::HEADERS;
+    $headers ??= MicroPearlImportService::HEADERS;
 
-    $stream = fopen(
-        'php://temp',
-        'w+b',
-    );
+    $stream = fopen('php://temp', 'w+b');
 
     if ($stream === false) {
-        throw new RuntimeException(
-            'Unable to create the test CSV.',
-        );
+        throw new RuntimeException('Unable to create the test CSV.');
     }
 
-    fputcsv(
-        $stream,
-        $headers,
-        ',',
-        '"',
-        '',
-    );
+    fputcsv($stream, $headers, ',', '"', '');
 
     foreach ($rows as $row) {
         fputcsv(
@@ -84,44 +69,32 @@ function pearlImportUpload(
     }
 
     rewind($stream);
-
-    $contents = stream_get_contents(
-        $stream,
-    );
-
+    $contents = stream_get_contents($stream);
     fclose($stream);
 
     if ($contents === false) {
-        throw new RuntimeException(
-            'Unable to read the test CSV.',
-        );
+        throw new RuntimeException('Unable to read the test CSV.');
     }
 
-    return UploadedFile::fake()
-        ->createWithContent(
-            'micro-pearls.csv',
-            $contents,
-        );
+    return UploadedFile::fake()->createWithContent(
+        'micro-pearls.csv',
+        $contents,
+    );
 }
 
 it('redirects guests from the import page', function (): void {
-    $this->get(
-        route('content.pearls.imports.create'),
-    )->assertRedirect(route('login'));
+    $this->get(route('content.pearls.imports.create'))
+        ->assertRedirect(route('login'));
 
     $this->get(route('content.pearls.imports.workbook'))
         ->assertRedirect(route('login'));
 });
 
 it('blocks students from the import page', function (): void {
-    $student = User::factory()->create([
-        'role' => 'student',
-    ]);
+    $student = User::factory()->create(['role' => 'student']);
 
     $this->actingAs($student)
-        ->get(
-            route('content.pearls.imports.create'),
-        )
+        ->get(route('content.pearls.imports.create'))
         ->assertForbidden();
 
     $this->get(route('content.pearls.imports.workbook'))
@@ -131,22 +104,14 @@ it('blocks students from the import page', function (): void {
 it('allows authorized editors to open the import page', function (
     string $role,
 ): void {
-    $editor = User::factory()->create([
-        'role' => $role,
-    ]);
+    $editor = User::factory()->create(['role' => $role]);
 
     $this->actingAs($editor)
-        ->get(
-            route('content.pearls.imports.create'),
-        )
+        ->get(route('content.pearls.imports.create'))
         ->assertOk()
-        ->assertSeeText(
-            'Import Micro Pearl lessons',
-        )
+        ->assertSeeText('Import Micro Pearl lessons')
         ->assertSeeText('Download Faculty Workbook')
-        ->assertSeeText(
-            'Download CSV Template',
-        );
+        ->assertSeeText('Download CSV Template');
 })->with([
     'administrator' => 'admin',
     'faculty' => 'faculty',
@@ -159,7 +124,10 @@ it('downloads the formatted faculty workbook', function (): void {
         ->get(route('content.pearls.imports.workbook'))
         ->assertOk()
         ->assertDownload('micro-pearl-import-template.xlsx')
-        ->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        ->assertHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        );
 });
 
 it('downloads a template with only faculty lesson fields', function (): void {
@@ -171,35 +139,25 @@ it('downloads a template with only faculty lesson fields', function (): void {
         ->assertDownload('micro-pearl-import-template.csv');
 
     expect(trim($response->streamedContent()))
-        ->toBe("\xEF\xBB\xBF".'competency_code,title,mnemonic_summary,lesson_content,learning_objectives,key_points,common_pitfalls,recall_prompts,source_references,estimated_read_seconds,order_index,rights_status');
+        ->toBe(
+            "\xEF\xBB\xBF"
+            .'competency_code,title,mnemonic_summary,lesson_content,learning_objectives,key_points,common_pitfalls,recall_prompts,source_references,estimated_read_seconds,order_index,rights_status'
+        );
 });
 
 it('creates a preview without creating lessons', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
+    $faculty = User::factory()->create(['role' => 'faculty']);
 
     $response = $this->actingAs($faculty)
-        ->post(
-            route(
-                'content.pearls.imports.preview',
-            ),
-            [
-                'csv' => pearlImportUpload([
-                    pearlImportRow(),
-                ]),
-            ],
-        );
+        ->post(route('content.pearls.imports.preview'), [
+            'csv' => pearlImportUpload([pearlImportRow()]),
+        ]);
 
-    $import = MicroPearlImport::query()
-        ->firstOrFail();
+    $import = MicroPearlImport::query()->firstOrFail();
 
     $response
         ->assertRedirect(
-            route(
-                'content.pearls.imports.show',
-                ['import' => $import],
-            ),
+            route('content.pearls.imports.show', ['import' => $import]),
         )
         ->assertSessionHasNoErrors();
 
@@ -208,272 +166,158 @@ it('creates a preview without creating lessons', function (): void {
         ->and($import->row_count)
         ->toBe(1)
         ->and($import->status)
-        ->toBe(
-            MicroPearlImport::STATUS_PREVIEWED,
-        )
-        ->and(
-            Storage::disk('local')->exists(
-                $import->storage_path,
-            ),
-        )
+        ->toBe(MicroPearlImport::STATUS_PREVIEWED)
+        ->and(Storage::disk('local')->exists($import->storage_path))
         ->toBeTrue();
 });
 
 it('rejects an invalid CSV header', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
+    $faculty = User::factory()->create(['role' => 'faculty']);
 
     $this->actingAs($faculty)
-        ->from(
-            route(
-                'content.pearls.imports.create',
+        ->from(route('content.pearls.imports.create'))
+        ->post(route('content.pearls.imports.preview'), [
+            'csv' => pearlImportUpload(
+                [['bad_header' => 'bad value']],
+                ['bad_header'],
             ),
-        )
-        ->post(
-            route(
-                'content.pearls.imports.preview',
-            ),
-            [
-                'csv' => pearlImportUpload(
-                    [
-                        [
-                            'bad_header' => 'bad value',
-                        ],
-                    ],
-                    ['bad_header'],
-                ),
-            ],
-        )
-        ->assertRedirect(
-            route(
-                'content.pearls.imports.create',
-            ),
-        )
+        ])
+        ->assertRedirect(route('content.pearls.imports.create'))
         ->assertSessionHasErrors('csv');
 
-    expect(
-        MicroPearlImport::query()->count(),
-    )->toBe(0);
+    expect(MicroPearlImport::query()->count())->toBe(0);
 });
 
 it('rejects an unknown competency code', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
+    $faculty = User::factory()->create(['role' => 'faculty']);
 
     $this->actingAs($faculty)
-        ->post(
-            route(
-                'content.pearls.imports.preview',
-            ),
-            [
-                'csv' => pearlImportUpload([
-                    pearlImportRow([
-                        'competency_code' => 'UNKNOWN-01',
-                    ]),
-                ]),
-            ],
-        )
+        ->post(route('content.pearls.imports.preview'), [
+            'csv' => pearlImportUpload([
+                pearlImportRow(['competency_code' => 'UNKNOWN-01']),
+            ]),
+        ])
         ->assertSessionHasErrors('csv');
 
-    expect(
-        MicroPearlImport::query()->count(),
-    )->toBe(0);
+    expect(MicroPearlImport::query()->count())->toBe(0);
 });
 
 it('rejects duplicate CSV lessons', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
+    $faculty = User::factory()->create(['role' => 'faculty']);
     $row = pearlImportRow();
 
     $this->actingAs($faculty)
-        ->post(
-            route(
-                'content.pearls.imports.preview',
-            ),
-            [
-                'csv' => pearlImportUpload([
-                    $row,
-                    $row,
-                ]),
-            ],
-        )
+        ->post(route('content.pearls.imports.preview'), [
+            'csv' => pearlImportUpload([$row, $row]),
+        ])
         ->assertSessionHasErrors('csv');
 
-    expect(
-        MicroPearlImport::query()->count(),
-    )->toBe(0);
+    expect(MicroPearlImport::query()->count())->toBe(0);
 });
 
 it('rejects the legacy CSV layout with AI columns', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
+    $faculty = User::factory()->create(['role' => 'faculty']);
 
     $this->actingAs($faculty)
-        ->post(
-            route(
-                'content.pearls.imports.preview',
-            ),
-            [
-                'csv' => pearlImportUpload([pearlImportRow()], [
+        ->post(route('content.pearls.imports.preview'), [
+            'csv' => pearlImportUpload(
+                [pearlImportRow()],
+                [
                     ...MicroPearlImportService::HEADERS,
                     'is_ai_generated',
                     'ai_enrichment_allowed',
                     'generation_provider',
                     'generation_model',
                     'prompt_version',
-                ]),
-            ],
-        )
+                ],
+            ),
+        ])
         ->assertSessionHasErrors('csv');
 
-    expect(
-        MicroPearlImport::query()->count(),
-    )->toBe(0);
+    expect(MicroPearlImport::query()->count())->toBe(0);
 });
 
-it('prevents another editor from viewing a preview', function (): void {
-    $owner = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
-    $otherFaculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
+it('prevents another editor from viewing or committing a preview', function (): void {
+    $owner = User::factory()->create(['role' => 'faculty']);
+    $otherFaculty = User::factory()->create(['role' => 'faculty']);
 
     $this->actingAs($owner)
-        ->post(
-            route(
-                'content.pearls.imports.preview',
-            ),
-            [
-                'csv' => pearlImportUpload([
-                    pearlImportRow(),
-                ]),
-            ],
-        )
+        ->post(route('content.pearls.imports.preview'), [
+            'csv' => pearlImportUpload([pearlImportRow()]),
+        ])
         ->assertSessionHasNoErrors();
 
-    $import = MicroPearlImport::query()
-        ->firstOrFail();
+    $import = MicroPearlImport::query()->firstOrFail();
 
     $this->actingAs($otherFaculty)
-        ->get(
-            route(
-                'content.pearls.imports.show',
-                ['import' => $import],
-            ),
-        )
+        ->get(route('content.pearls.imports.show', ['import' => $import]))
         ->assertForbidden();
-});
-
-it('requires the current password to commit', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
-    $this->actingAs($faculty)
-        ->post(
-            route(
-                'content.pearls.imports.preview',
-            ),
-            [
-                'csv' => pearlImportUpload([
-                    pearlImportRow(),
-                ]),
-            ],
-        );
-
-    $import = MicroPearlImport::query()
-        ->firstOrFail();
 
     $this->post(
-        route(
-            'content.pearls.imports.commit',
-            ['import' => $import],
-        ),
-        [
-            'expected_lock_version' => $import->lock_version,
+        route('content.pearls.imports.commit', ['import' => $import]),
+        ['expected_lock_version' => $import->lock_version],
+    )->assertForbidden();
 
-            'reason' => 'Import approved faculty lessons.',
+    expect(MicroPearl::query()->count())->toBe(0);
+});
 
-            'current_password' => 'incorrect-password',
-        ],
-    )->assertSessionHasErrors(
-        'current_password',
-    );
+it('commits a preview without a password or typed reason', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
 
-    expect(
-        MicroPearl::query()->count(),
-    )->toBe(0);
+    $this->actingAs($faculty)
+        ->post(route('content.pearls.imports.preview'), [
+            'csv' => pearlImportUpload([pearlImportRow()]),
+        ])
+        ->assertSessionHasNoErrors();
+
+    $import = MicroPearlImport::query()->firstOrFail();
+
+    $this->post(
+        route('content.pearls.imports.commit', ['import' => $import]),
+        ['expected_lock_version' => $import->lock_version],
+    )
+        ->assertRedirect(route('content.pearls.index'))
+        ->assertSessionHasNoErrors();
+
+    expect($import->fresh()->status)
+        ->toBe(MicroPearlImport::STATUS_COMMITTED)
+        ->and(MicroPearl::query()->count())
+        ->toBe(1)
+        ->and(MicroPearl::query()->firstOrFail()->content_status)
+        ->toBe(MicroPearl::STATUS_DRAFT);
 });
 
 it('rejects an expired preview', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
+    $faculty = User::factory()->create(['role' => 'faculty']);
 
     $this->actingAs($faculty)
-        ->post(
-            route(
-                'content.pearls.imports.preview',
-            ),
-            [
-                'csv' => pearlImportUpload([
-                    pearlImportRow(),
-                ]),
-            ],
-        );
+        ->post(route('content.pearls.imports.preview'), [
+            'csv' => pearlImportUpload([pearlImportRow()]),
+        ]);
 
-    $import = MicroPearlImport::query()
-        ->firstOrFail();
+    $import = MicroPearlImport::query()->firstOrFail();
 
     $import->forceFill([
         'expires_at' => now()->subMinute(),
     ])->save();
 
     $this->post(
-        route(
-            'content.pearls.imports.commit',
-            ['import' => $import],
-        ),
-        [
-            'expected_lock_version' => $import->lock_version,
-
-            'reason' => 'Import approved faculty lessons.',
-
-            'current_password' => 'password',
-        ],
+        route('content.pearls.imports.commit', ['import' => $import]),
+        ['expected_lock_version' => $import->lock_version],
     )->assertSessionHasErrors('csv');
 
-    expect(
-        MicroPearl::query()->count(),
-    )->toBe(0);
+    expect(MicroPearl::query()->count())->toBe(0);
 });
 
 it('rejects a changed file after preview', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
+    $faculty = User::factory()->create(['role' => 'faculty']);
 
     $this->actingAs($faculty)
-        ->post(
-            route(
-                'content.pearls.imports.preview',
-            ),
-            [
-                'csv' => pearlImportUpload([
-                    pearlImportRow(),
-                ]),
-            ],
-        );
+        ->post(route('content.pearls.imports.preview'), [
+            'csv' => pearlImportUpload([pearlImportRow()]),
+        ]);
 
-    $import = MicroPearlImport::query()
-        ->firstOrFail();
+    $import = MicroPearlImport::query()->firstOrFail();
 
     Storage::disk('local')->put(
         $import->storage_path,
@@ -481,75 +325,57 @@ it('rejects a changed file after preview', function (): void {
     );
 
     $this->post(
-        route(
-            'content.pearls.imports.commit',
-            ['import' => $import],
-        ),
-        [
-            'expected_lock_version' => $import->lock_version,
-
-            'reason' => 'Import approved faculty lessons.',
-
-            'current_password' => 'password',
-        ],
+        route('content.pearls.imports.commit', ['import' => $import]),
+        ['expected_lock_version' => $import->lock_version],
     )->assertSessionHasErrors('csv');
 
-    expect(
-        MicroPearl::query()->count(),
-    )->toBe(0);
+    expect(MicroPearl::query()->count())->toBe(0);
+});
+
+it('rejects a stale preview version', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
+
+    $this->actingAs($faculty)
+        ->post(route('content.pearls.imports.preview'), [
+            'csv' => pearlImportUpload([pearlImportRow()]),
+        ])
+        ->assertSessionHasNoErrors();
+
+    $import = MicroPearlImport::query()->firstOrFail();
+
+    $this->post(
+        route('content.pearls.imports.commit', ['import' => $import]),
+        ['expected_lock_version' => $import->lock_version + 1],
+    )->assertSessionHasErrors('csv');
+
+    expect(MicroPearl::query()->count())->toBe(0);
 });
 
 it('commits all lessons as private drafts', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
-    $student = User::factory()->create([
-        'role' => 'student',
-    ]);
+    $faculty = User::factory()->create(['role' => 'faculty']);
+    $student = User::factory()->create(['role' => 'student']);
 
     $this->actingAs($faculty)
-        ->post(
-            route(
-                'content.pearls.imports.preview',
-            ),
-            [
-                'csv' => pearlImportUpload([
-                    pearlImportRow(),
-
-                    pearlImportRow([
-                        'title' => 'Imported Ionic Bond Lesson',
-
-                        'order_index' => '2',
-
-                        'lesson_content' => 'An ionic bond forms through electrostatic attraction between oppositely charged ions.',
-                    ]),
+        ->post(route('content.pearls.imports.preview'), [
+            'csv' => pearlImportUpload([
+                pearlImportRow(),
+                pearlImportRow([
+                    'title' => 'Imported Ionic Bond Lesson',
+                    'order_index' => '2',
+                    'lesson_content' => 'An ionic bond forms through electrostatic attraction between oppositely charged ions.',
                 ]),
-            ],
-        )
+            ]),
+        ])
         ->assertSessionHasNoErrors();
 
-    $import = MicroPearlImport::query()
-        ->firstOrFail();
-
+    $import = MicroPearlImport::query()->firstOrFail();
     $storedPath = $import->storage_path;
 
     $this->post(
-        route(
-            'content.pearls.imports.commit',
-            ['import' => $import],
-        ),
-        [
-            'expected_lock_version' => $import->lock_version,
-
-            'reason' => 'Import faculty-authored lessons for independent review.',
-
-            'current_password' => 'password',
-        ],
+        route('content.pearls.imports.commit', ['import' => $import]),
+        ['expected_lock_version' => $import->lock_version],
     )
-        ->assertRedirect(
-            route('content.pearls.index'),
-        )
+        ->assertRedirect(route('content.pearls.index'))
         ->assertSessionHasNoErrors();
 
     $pearls = MicroPearl::query()
@@ -558,98 +384,63 @@ it('commits all lessons as private drafts', function (): void {
 
     expect($pearls)
         ->toHaveCount(2)
-        ->and(
-            $pearls->every(
-                fn (MicroPearl $pearl): bool => $pearl->content_status
-                        === MicroPearl::STATUS_DRAFT,
-            ),
-        )
+        ->and($pearls->every(
+            fn (MicroPearl $pearl): bool => $pearl->content_status
+                === MicroPearl::STATUS_DRAFT,
+        ))
         ->toBeTrue()
-        ->and(
-            $pearls->every(
-                fn (MicroPearl $pearl): bool => $pearl->created_by
-                        === $faculty->user_id,
-            ),
-        )
+        ->and($pearls->every(
+            fn (MicroPearl $pearl): bool => $pearl->created_by
+                === $faculty->user_id,
+        ))
         ->toBeTrue()
         ->and(
             MicroPearlEdit::query()
                 ->where('action', 'created')
-                ->count(),
+                ->count()
         )
         ->toBe(2);
 
     $import->refresh();
 
     expect($import->status)
-        ->toBe(
-            MicroPearlImport::STATUS_COMMITTED,
-        )
+        ->toBe(MicroPearlImport::STATUS_COMMITTED)
         ->and($import->storage_path)
         ->toBeNull()
-        ->and(
-            Storage::disk('local')->exists(
-                $storedPath,
-            ),
-        )
+        ->and(Storage::disk('local')->exists($storedPath))
         ->toBeFalse();
 
     $this->actingAs($student)
         ->get(route('pearls.index'))
         ->assertOk()
-        ->assertDontSeeText(
-            'Imported Calcium Lesson',
-        )
-        ->assertDontSeeText(
-            'Imported Ionic Bond Lesson',
-        );
+        ->assertDontSeeText('Imported Calcium Lesson')
+        ->assertDontSeeText('Imported Ionic Bond Lesson');
 });
 
 it('rejects replaying a committed import', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
+    $faculty = User::factory()->create(['role' => 'faculty']);
 
     $this->actingAs($faculty)
-        ->post(
-            route(
-                'content.pearls.imports.preview',
-            ),
-            [
-                'csv' => pearlImportUpload([
-                    pearlImportRow(),
-                ]),
-            ],
-        );
+        ->post(route('content.pearls.imports.preview'), [
+            'csv' => pearlImportUpload([pearlImportRow()]),
+        ])
+        ->assertSessionHasNoErrors();
 
-    $import = MicroPearlImport::query()
-        ->firstOrFail();
+    $import = MicroPearlImport::query()->firstOrFail();
 
     $payload = [
         'expected_lock_version' => $import->lock_version,
-
-        'reason' => 'Import faculty-authored lessons.',
-
-        'current_password' => 'password',
     ];
 
     $this->post(
-        route(
-            'content.pearls.imports.commit',
-            ['import' => $import],
-        ),
+        route('content.pearls.imports.commit', ['import' => $import]),
         $payload,
     )->assertSessionHasNoErrors();
 
     $this->post(
-        route(
-            'content.pearls.imports.commit',
-            ['import' => $import],
-        ),
+        route('content.pearls.imports.commit', ['import' => $import]),
         $payload,
     )->assertSessionHasErrors('csv');
 
-    expect(
-        MicroPearl::query()->count(),
-    )->toBe(1);
+    expect(MicroPearl::query()->count())->toBe(1);
 });

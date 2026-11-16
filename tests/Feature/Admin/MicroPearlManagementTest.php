@@ -53,9 +53,7 @@ function pearlManagementPayload(array $overrides = []): array
     ], $overrides);
 }
 
-/**
- * @param  array<string, mixed>  $overrides
- */
+/** @param array<string, mixed> $overrides */
 function pearlManagementCreateDraft(
     User $creator,
     array $overrides = [],
@@ -66,40 +64,29 @@ function pearlManagementCreateDraft(
     );
 }
 
-/**
- * @param  array<string, mixed>  $overrides
- */
+/** @param array<string, mixed> $overrides */
 function pearlManagementCreateInReview(
     User $creator,
     array $overrides = [],
 ): MicroPearl {
-    $pearl = pearlManagementCreateDraft(
-        $creator,
-        $overrides,
-    );
+    $pearl = pearlManagementCreateDraft($creator, $overrides);
 
-    return app(MicroPearlWorkflowService::class)
-        ->submitForReview(
-            $creator,
-            $pearl,
-            (int) $pearl->edit_version,
-            'Ready for independent content review.',
-        );
+    return app(MicroPearlWorkflowService::class)->submitForReview(
+        $creator,
+        $pearl,
+        (int) $pearl->edit_version,
+        'Ready for independent content review.',
+    );
 }
 
-/**
- * @param  array<string, mixed>  $overrides
- */
+/** @param array<string, mixed> $overrides */
 function pearlManagementCreatePublished(
     User $creator,
     User $reviewer,
     array $overrides = [],
     ?string $publishedAt = null,
 ): MicroPearl {
-    $pearl = pearlManagementCreateInReview(
-        $creator,
-        $overrides,
-    );
+    $pearl = pearlManagementCreateInReview($creator, $overrides);
 
     return app(MicroPearlWorkflowService::class)->publish(
         $reviewer,
@@ -116,9 +103,7 @@ it('redirects guests from Micro Pearl management', function (): void {
 });
 
 it('blocks students from Micro Pearl management', function (): void {
-    $student = User::factory()->create([
-        'role' => 'student',
-    ]);
+    $student = User::factory()->create(['role' => 'student']);
 
     $this->actingAs($student)
         ->get(route('content.pearls.index'))
@@ -128,9 +113,7 @@ it('blocks students from Micro Pearl management', function (): void {
 it('allows authorized roles to access Micro Pearl management', function (
     string $role,
 ): void {
-    $editor = User::factory()->create([
-        'role' => $role,
-    ]);
+    $editor = User::factory()->create(['role' => $role]);
 
     $this->actingAs($editor)
         ->get(route('content.pearls.index'))
@@ -143,16 +126,13 @@ it('allows authorized roles to access Micro Pearl management', function (
 ]);
 
 it('creates a draft without exposing it to students', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
-    $payload = pearlManagementPayload([
-        'title' => 'Hidden Management Draft',
-    ]);
+    $faculty = User::factory()->create(['role' => 'faculty']);
 
     $this->actingAs($faculty)
-        ->post(route('content.pearls.store'), $payload)
+        ->post(
+            route('content.pearls.store'),
+            pearlManagementPayload(['title' => 'Hidden Management Draft']),
+        )
         ->assertRedirect()
         ->assertSessionHasNoErrors()
         ->assertSessionHas('status', 'Micro Pearl draft created.');
@@ -168,9 +148,7 @@ it('creates a draft without exposing it to students', function (): void {
         ->and($pearl->edits)
         ->toHaveCount(1);
 
-    $student = User::factory()->create([
-        'role' => 'student',
-    ]);
+    $student = User::factory()->create(['role' => 'student']);
 
     $this->actingAs($student)
         ->get(route('pearls.index'))
@@ -181,15 +159,64 @@ it('creates a draft without exposing it to students', function (): void {
         ->assertNotFound();
 });
 
-it('does not submit incomplete content for review', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
+it('updates a draft without a typed reason', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
+    $pearl = pearlManagementCreateDraft($faculty);
 
+    $payload = pearlManagementPayload([
+        'competency_id' => $pearl->competency_id,
+        'order_index' => $pearl->order_index,
+        'title' => 'Revised Faculty Lesson',
+    ]);
+    $payload['edit_version'] = $pearl->edit_version;
+
+    $this->actingAs($faculty)
+        ->put(
+            route('content.pearls.update', ['pearl' => $pearl->pearl_id]),
+            $payload,
+        )
+        ->assertSessionHasNoErrors();
+
+    expect($pearl->fresh()->title)
+        ->toBe('Revised Faculty Lesson')
+        ->and(
+            $pearl->edits()
+                ->where('action', 'content_updated')
+                ->firstOrFail()
+                ->reason
+        )
+        ->toBeNull();
+});
+
+it('submits a complete draft without a typed reason', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
+    $pearl = pearlManagementCreateDraft($faculty);
+
+    $this->actingAs($faculty)
+        ->patch(
+            route('content.pearls.submit-review', [
+                'pearl' => $pearl->pearl_id,
+            ]),
+            ['edit_version' => $pearl->edit_version],
+        )
+        ->assertSessionHasNoErrors();
+
+    expect($pearl->fresh()->content_status)
+        ->toBe(MicroPearl::STATUS_IN_REVIEW)
+        ->and(
+            $pearl->edits()
+                ->where('action', 'submitted_for_review')
+                ->firstOrFail()
+                ->reason
+        )
+        ->toBeNull();
+});
+
+it('does not submit incomplete content for review', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
     $pearl = pearlManagementCreateDraft($faculty, [
         'lesson_content' => null,
     ]);
-
     $editUrl = route('content.pearls.edit', [
         'pearl' => $pearl->pearl_id,
     ]);
@@ -200,10 +227,7 @@ it('does not submit incomplete content for review', function (): void {
             route('content.pearls.submit-review', [
                 'pearl' => $pearl->pearl_id,
             ]),
-            [
-                'edit_version' => $pearl->edit_version,
-                'reason' => 'Request an independent review.',
-            ],
+            ['edit_version' => $pearl->edit_version],
         )
         ->assertRedirect($editUrl)
         ->assertSessionHas(
@@ -216,14 +240,10 @@ it('does not submit incomplete content for review', function (): void {
 });
 
 it('blocks review while copyright rights are pending', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
+    $faculty = User::factory()->create(['role' => 'faculty']);
     $pearl = pearlManagementCreateDraft($faculty, [
         'rights_status' => MicroPearl::RIGHTS_PENDING,
     ]);
-
     $editUrl = route('content.pearls.edit', [
         'pearl' => $pearl->pearl_id,
     ]);
@@ -234,10 +254,7 @@ it('blocks review while copyright rights are pending', function (): void {
             route('content.pearls.submit-review', [
                 'pearl' => $pearl->pearl_id,
             ]),
-            [
-                'edit_version' => $pearl->edit_version,
-                'reason' => 'Request an independent review.',
-            ],
+            ['edit_version' => $pearl->edit_version],
         )
         ->assertRedirect($editUrl)
         ->assertSessionHas(
@@ -249,19 +266,49 @@ it('blocks review while copyright rights are pending', function (): void {
         ->toBe(MicroPearl::STATUS_DRAFT);
 });
 
-it('rejects AI fields on the manual authoring form', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
+it('requires corrections when returning a pearl to draft', function (): void {
+    $author = User::factory()->create(['role' => 'faculty']);
+    $reviewer = User::factory()->create(['role' => 'admin']);
+    $pearl = pearlManagementCreateInReview($author);
 
-    $payload = pearlManagementPayload([
-        'title' => 'Untracked AI Pearl',
-        'is_ai_generated' => true,
-    ]);
+    $this->actingAs($reviewer)
+        ->patch(
+            route('content.pearls.return-draft', [
+                'pearl' => $pearl->pearl_id,
+            ]),
+            ['edit_version' => $pearl->edit_version],
+        )
+        ->assertSessionHasErrors('reason');
+
+    expect($pearl->fresh()->content_status)
+        ->toBe(MicroPearl::STATUS_IN_REVIEW);
+
+    $this->patch(
+        route('content.pearls.return-draft', [
+            'pearl' => $pearl->pearl_id,
+        ]),
+        [
+            'edit_version' => $pearl->edit_version,
+            'reason' => 'Correct the inaccurate clinical explanation.',
+        ],
+    )->assertSessionHasNoErrors();
+
+    expect($pearl->fresh()->content_status)
+        ->toBe(MicroPearl::STATUS_DRAFT);
+});
+
+it('rejects AI fields on the manual authoring form', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
 
     $this->actingAs($faculty)
         ->from(route('content.pearls.create'))
-        ->post(route('content.pearls.store'), $payload)
+        ->post(
+            route('content.pearls.store'),
+            pearlManagementPayload([
+                'title' => 'Untracked AI Pearl',
+                'is_ai_generated' => true,
+            ]),
+        )
         ->assertRedirect(route('content.pearls.create'))
         ->assertSessionHasErrors('is_ai_generated');
 
@@ -271,12 +318,8 @@ it('rejects AI fields on the manual authoring form', function (): void {
 });
 
 it('does not allow an author to approve their own content', function (): void {
-    $author = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
+    $author = User::factory()->create(['role' => 'faculty']);
     $pearl = pearlManagementCreateInReview($author);
-
     $editUrl = route('content.pearls.edit', [
         'pearl' => $pearl->pearl_id,
     ]);
@@ -289,7 +332,6 @@ it('does not allow an author to approve their own content', function (): void {
             ]),
             [
                 'edit_version' => $pearl->edit_version,
-                'reason' => 'Approve this reviewed lesson for publication.',
                 'current_password' => 'password',
             ],
         )
@@ -299,44 +341,31 @@ it('does not allow an author to approve their own content', function (): void {
             'The author cannot approve and publish their own Micro Pearl.',
         );
 
-    $pearl->refresh();
-
-    expect($pearl->content_status)
+    expect($pearl->fresh()->content_status)
         ->toBe(MicroPearl::STATUS_IN_REVIEW)
-        ->and($pearl->reviewed_by)
+        ->and($pearl->fresh()->reviewed_by)
         ->toBeNull();
 });
 
-it('allows a different authorized reviewer to publish content', function (
+it('allows a different authorized reviewer to publish without a typed reason', function (
     string $reviewerRole,
 ): void {
-    $author = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
-    $reviewer = User::factory()->create([
-        'role' => $reviewerRole,
-    ]);
-
+    $author = User::factory()->create(['role' => 'faculty']);
+    $reviewer = User::factory()->create(['role' => $reviewerRole]);
     $pearl = pearlManagementCreateInReview($author, [
         'title' => 'Independently Reviewed Pearl',
     ]);
 
     $this->actingAs($reviewer)
-        ->from(route('content.pearls.edit', [
-            'pearl' => $pearl->pearl_id,
-        ]))
         ->patch(
             route('content.pearls.publish', [
                 'pearl' => $pearl->pearl_id,
             ]),
             [
                 'edit_version' => $pearl->edit_version,
-                'reason' => 'Independent review completed successfully.',
                 'current_password' => 'password',
             ],
         )
-        ->assertRedirect()
         ->assertSessionHasNoErrors()
         ->assertSessionHas(
             'status',
@@ -352,29 +381,26 @@ it('allows a different authorized reviewer to publish content', function (
         ->and($pearl->reviewed_at)
         ->not->toBeNull()
         ->and($pearl->published_at)
-        ->not->toBeNull();
+        ->not->toBeNull()
+        ->and(
+            $pearl->edits()
+                ->where('action', 'published')
+                ->firstOrFail()
+                ->reason
+        )
+        ->toBe('Published after independent content review.');
 })->with([
     'faculty reviewer' => 'faculty',
     'administrator reviewer' => 'admin',
 ]);
 
 it('keeps a future publication hidden from students', function (): void {
-    $author = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
-    $reviewer = User::factory()->create([
-        'role' => 'admin',
-    ]);
-
-    $student = User::factory()->create([
-        'role' => 'student',
-    ]);
-
+    $author = User::factory()->create(['role' => 'faculty']);
+    $reviewer = User::factory()->create(['role' => 'admin']);
+    $student = User::factory()->create(['role' => 'student']);
     $pearl = pearlManagementCreateInReview($author, [
         'title' => 'Scheduled Hidden Pearl',
     ]);
-
     $publishAt = now()->addHour();
 
     $this->actingAs($reviewer)
@@ -385,7 +411,6 @@ it('keeps a future publication hidden from students', function (): void {
             [
                 'edit_version' => $pearl->edit_version,
                 'published_at' => $publishAt->format('Y-m-d H:i:s'),
-                'reason' => 'Schedule this reviewed lesson for publication.',
                 'current_password' => 'password',
             ],
         )
@@ -402,19 +427,10 @@ it('keeps a future publication hidden from students', function (): void {
         ->assertNotFound();
 });
 
-it('exposes a scheduled publication when its publication time is due', function (): void {
-    $author = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
-    $reviewer = User::factory()->create([
-        'role' => 'admin',
-    ]);
-
-    $student = User::factory()->create([
-        'role' => 'student',
-    ]);
-
+it('exposes a scheduled publication when its time is due', function (): void {
+    $author = User::factory()->create(['role' => 'faculty']);
+    $reviewer = User::factory()->create(['role' => 'admin']);
+    $student = User::factory()->create(['role' => 'student']);
     $publishAt = now()->addHour();
 
     $pearl = pearlManagementCreatePublished(
@@ -437,18 +453,9 @@ it('exposes a scheduled publication when its publication time is due', function 
 });
 
 it('removes retired content from the student library', function (): void {
-    $author = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
-    $reviewer = User::factory()->create([
-        'role' => 'admin',
-    ]);
-
-    $student = User::factory()->create([
-        'role' => 'student',
-    ]);
-
+    $author = User::factory()->create(['role' => 'faculty']);
+    $reviewer = User::factory()->create(['role' => 'admin']);
+    $student = User::factory()->create(['role' => 'student']);
     $pearl = pearlManagementCreatePublished(
         $author,
         $reviewer,
@@ -473,11 +480,9 @@ it('removes retired content from the student library', function (): void {
         ->assertSessionHasNoErrors()
         ->assertSessionHas('status', 'Micro Pearl retired.');
 
-    $pearl->refresh();
-
-    expect($pearl->content_status)
+    expect($pearl->fresh()->content_status)
         ->toBe(MicroPearl::STATUS_RETIRED)
-        ->and($pearl->retired_at)
+        ->and($pearl->fresh()->retired_at)
         ->not->toBeNull();
 
     $this->actingAs($student)
@@ -489,11 +494,29 @@ it('removes retired content from the student library', function (): void {
         ->assertNotFound();
 });
 
-it('rejects a stale edit version', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
+it('requires a reason to retire even with the correct password', function (): void {
+    $author = User::factory()->create(['role' => 'faculty']);
+    $reviewer = User::factory()->create(['role' => 'admin']);
+    $pearl = pearlManagementCreatePublished($author, $reviewer);
 
+    $this->actingAs($reviewer)
+        ->patch(
+            route('content.pearls.retire', [
+                'pearl' => $pearl->pearl_id,
+            ]),
+            [
+                'edit_version' => $pearl->edit_version,
+                'current_password' => 'password',
+            ],
+        )
+        ->assertSessionHasErrors('reason');
+
+    expect($pearl->fresh()->content_status)
+        ->toBe(MicroPearl::STATUS_PUBLISHED);
+});
+
+it('rejects a stale edit version', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
     $pearl = pearlManagementCreateDraft($faculty);
     $staleVersion = (int) $pearl->edit_version;
 
@@ -506,10 +529,8 @@ it('rejects a stale edit version', function (): void {
             'title' => 'Updated Concurrent Pearl',
         ]),
         $staleVersion,
-        'Update the lesson before review.',
+        null,
     );
-
-    $pearl->refresh();
 
     $editUrl = route('content.pearls.edit', [
         'pearl' => $pearl->pearl_id,
@@ -521,10 +542,7 @@ it('rejects a stale edit version', function (): void {
             route('content.pearls.submit-review', [
                 'pearl' => $pearl->pearl_id,
             ]),
-            [
-                'edit_version' => $staleVersion,
-                'reason' => 'Submit this stale browser copy.',
-            ],
+            ['edit_version' => $staleVersion],
         )
         ->assertRedirect($editUrl)
         ->assertSessionHas(
@@ -536,92 +554,66 @@ it('rejects a stale edit version', function (): void {
         ->toBe(MicroPearl::STATUS_DRAFT);
 });
 
-it('requires the current password to publish content', function (): void {
-    $author = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
-    $reviewer = User::factory()->create([
-        'role' => 'admin',
-    ]);
-
+it('requires the current password to publish', function (): void {
+    $author = User::factory()->create(['role' => 'faculty']);
+    $reviewer = User::factory()->create(['role' => 'admin']);
     $pearl = pearlManagementCreateInReview($author);
     $url = route('content.pearls.publish', [
         'pearl' => $pearl->pearl_id,
     ]);
-
-    $basePayload = [
-        'edit_version' => $pearl->edit_version,
-        'reason' => 'Independent review completed successfully.',
-    ];
+    $payload = ['edit_version' => $pearl->edit_version];
 
     $this->actingAs($reviewer)
-        ->patch($url, $basePayload)
+        ->patch($url, $payload)
         ->assertSessionHasErrors('current_password');
 
-    $this->patch($url, array_merge($basePayload, [
+    $this->patch($url, [
+        ...$payload,
         'current_password' => 'incorrect-password',
-    ]))->assertSessionHasErrors('current_password');
+    ])->assertSessionHasErrors('current_password');
 
     expect($pearl->fresh()->content_status)
         ->toBe(MicroPearl::STATUS_IN_REVIEW);
 });
 
-it('requires the current password to retire content', function (): void {
-    $author = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
-    $reviewer = User::factory()->create([
-        'role' => 'admin',
-    ]);
-
-    $pearl = pearlManagementCreatePublished(
-        $author,
-        $reviewer,
-    );
-
+it('requires the current password to retire', function (): void {
+    $author = User::factory()->create(['role' => 'faculty']);
+    $reviewer = User::factory()->create(['role' => 'admin']);
+    $pearl = pearlManagementCreatePublished($author, $reviewer);
     $url = route('content.pearls.retire', [
         'pearl' => $pearl->pearl_id,
     ]);
-
-    $basePayload = [
+    $payload = [
         'edit_version' => $pearl->edit_version,
         'reason' => 'Retire outdated reviewed material.',
     ];
 
     $this->actingAs($reviewer)
-        ->patch($url, $basePayload)
+        ->patch($url, $payload)
         ->assertSessionHasErrors('current_password');
 
-    $this->patch($url, array_merge($basePayload, [
+    $this->patch($url, [
+        ...$payload,
         'current_password' => 'incorrect-password',
-    ]))->assertSessionHasErrors('current_password');
+    ])->assertSessionHasErrors('current_password');
 
     expect($pearl->fresh()->content_status)
         ->toBe(MicroPearl::STATUS_PUBLISHED);
 });
 
 it('keeps edit history immutable', function (): void {
-    $faculty = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
+    $faculty = User::factory()->create(['role' => 'faculty']);
     $pearl = pearlManagementCreateDraft($faculty);
     $edit = $pearl->edits()->firstOrFail();
 
-    expect(
-        fn () => $edit->update([
-            'reason' => 'Tampered audit reason.',
-        ]),
-    )->toThrow(
+    expect(fn () => $edit->update([
+        'reason' => 'Tampered audit reason.',
+    ]))->toThrow(
         LogicException::class,
         'Micro Pearl audit records are immutable.',
     );
 
-    expect(
-        fn () => $edit->fresh()->delete(),
-    )->toThrow(
+    expect(fn () => $edit->fresh()->delete())->toThrow(
         LogicException::class,
         'Micro Pearl audit records cannot be deleted.',
     );
@@ -632,57 +624,33 @@ it('keeps edit history immutable', function (): void {
         ->toBeNull();
 });
 
-it(
-    'escapes stored content when showing a published pearl',
-    function (): void {
-        $author = User::factory()->create([
-            'role' => 'faculty',
-        ]);
+it('escapes stored content when showing a published pearl', function (): void {
+    $author = User::factory()->create(['role' => 'faculty']);
+    $reviewer = User::factory()->create(['role' => 'admin']);
+    $student = User::factory()->create(['role' => 'student']);
 
-        $reviewer = User::factory()->create([
-            'role' => 'admin',
-        ]);
+    $pearl = pearlManagementCreatePublished($author, $reviewer, [
+        'title' => '<script>alert("title")</script>',
+        'mnemonic_summary' => '<img src=x onerror=alert("summary")>',
+        'lesson_content' => '<script>alert("lesson")</script>',
+    ]);
 
-        $student = User::factory()->create([
-            'role' => 'student',
-        ]);
-
-        $pearl = pearlManagementCreatePublished(
-            $author,
-            $reviewer,
-            [
-                'title' => '<script>alert("title")</script>',
-                'mnemonic_summary' => '<img src=x onerror=alert("summary")>',
-                'lesson_content' => '<script>alert("lesson")</script>',
-            ],
+    $this->actingAs($student)
+        ->get(route('pearls.show', $pearl))
+        ->assertOk()
+        ->assertDontSee('<script>alert("title")</script>', false)
+        ->assertDontSee('<script>alert("lesson")</script>', false)
+        ->assertDontSee('<img src=x onerror=alert("summary")>', false)
+        ->assertSee(
+            '&lt;script&gt;alert(&quot;title&quot;)&lt;/script&gt;',
+            false,
+        )
+        ->assertSee(
+            '&lt;script&gt;alert(&quot;lesson&quot;)&lt;/script&gt;',
+            false,
+        )
+        ->assertSee(
+            '&lt;img src=x onerror=alert(&quot;summary&quot;)&gt;',
+            false,
         );
-
-        $this->actingAs($student)
-            ->get(route('pearls.show', $pearl))
-            ->assertOk()
-            ->assertDontSee(
-                '<script>alert("title")</script>',
-                false,
-            )
-            ->assertDontSee(
-                '<script>alert("lesson")</script>',
-                false,
-            )
-            ->assertDontSee(
-                '<img src=x onerror=alert("summary")>',
-                false,
-            )
-            ->assertSee(
-                '&lt;script&gt;alert(&quot;title&quot;)&lt;/script&gt;',
-                false,
-            )
-            ->assertSee(
-                '&lt;script&gt;alert(&quot;lesson&quot;)&lt;/script&gt;',
-                false,
-            )
-            ->assertSee(
-                '&lt;img src=x onerror=alert(&quot;summary&quot;)&gt;',
-                false,
-            );
-    },
-);
+});
