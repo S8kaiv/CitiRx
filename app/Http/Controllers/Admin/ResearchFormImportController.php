@@ -103,6 +103,7 @@ class ResearchFormImportController extends Controller
                         [
                             'faculty',
                             'admin',
+                            'dean',
                         ],
                     )
                     ->whereNotNull(

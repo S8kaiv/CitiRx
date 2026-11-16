@@ -235,7 +235,7 @@
                                             <p class="mt-2 text-sm leading-relaxed text-ink-muted">
                                                 {{ $search !== '' || $status !== ''
                                                     ? 'Clear the filters to review all available content.'
-                                                    : 'Create a lesson draft with sources and rights information. Faculty submit drafts for review; administrators may publish their own completed drafts.' }}
+                                                    : 'Create a lesson draft with sources and rights information. Faculty submit drafts for review; administrators and deans may publish their own completed drafts.' }}
                                             </p>
 
                                             <div class="mt-5 flex flex-wrap justify-center gap-2">

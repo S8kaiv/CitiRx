@@ -53,7 +53,9 @@ CitiRx is a role-based web application for Pharmacy Licensure Examination (PhLE)
 - Dedicated verified Dean account and Form B review screen
 - Review all 100 imported questions, answer keys, rationales, sources, rights, and the proposed TOS allocation
 - Approve the complete unchanged form in one action, or return it to draft with revision notes
-- Dean approval is recorded in the audit history; an administrator still validates and publishes the version
+- The Dean also has full administrator access, including validation and publication after approval. Every action is recorded in the audit history.
+
+Full administrator access means the same Dean account can approve, validate, and publish Form B. Audit records distinguish those actions, but they do not provide an independent second-person sign-off. Use a separate administrator when the approved research protocol requires one.
 
 ## Research content review
 
@@ -61,11 +63,11 @@ Administrators can preview and import research-question CSV files in the browser
 
 Use **Admin → Research Forms → Secure Research Import Portal → Download 100-question Form B template** to start the question bank. The template fixes positions 1–100 and the proposed domain and competency assignments. Fill every row with a unique question, four choices, correct letter (`A`–`D`), rationale, cognitive level (`knowledge`, `comprehension`, `application`, `analysis`, `synthesis`, or `evaluation`), source reference, and rights status (`permission confirmed`, `public domain`, or `licensed`). Leave the supplied form, position, domain, and competency columns intact. Upload the completed CSV to the draft version, review the dry-run result, then commit the import.
 
-For an existing 60-question Form B, create a new draft version such as `post_test_b_v2`, import all 100 authored questions into it, submit it for review, and assign the Dean role to the reviewer. The Dean checks the full content and proposed allocation, then approves or returns the draft. After approval, the administrator marks the version validated and publishes it. Keep the post-test phase closed until the new version is published and its audit passes.
+For an existing 60-question Form B, create a new draft version such as `post_test_b_v2`, import all 100 authored questions into it, submit it for review, and assign the Dean role to the reviewer. The Dean checks the full content and proposed allocation, then approves or returns the draft. After approval, the Dean or another administrator marks the version validated and publishes it. Keep the post-test phase closed until the new version is published and its audit passes.
 
 The provisional Form B domain allocation is 20, 15, 18, 15, 17, and 15 questions for Domains 1 through 6. The Dean must confirm the competency-level allocation shown in the review screen. Form A continues to use 10 questions per domain.
 
-On Railway, run database migrations before using the Dean role. Form B's 100-minute limit is fixed in the application at one minute per question. After publishing the replacement version, set `CITIRX_POST_TEST_FORM_VERSION` to its exact code (for example, `post_test_b_v2`) so research analytics select the approved version. Do not seed development questions in production. Do not start official Form B collection until the Dean has approved the real 100-question content and the administrator has published it.
+On Railway, run database migrations before using the Dean role. Form B's 100-minute limit is fixed in the application at one minute per question. After publishing the replacement version, set `CITIRX_POST_TEST_FORM_VERSION` to its exact code (for example, `post_test_b_v2`) so research analytics select the approved version. Do not seed development questions in production. Do not start official Form B collection until the Dean has approved the real 100-question content and it has been published.
 
 ## PhLE Table of Specifications
 

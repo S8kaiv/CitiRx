@@ -9,7 +9,7 @@ class ReturnMicroPearlToDraftRequest extends FormRequest
     public function authorize(): bool
     {
         return in_array(
-            $this->user()?->role, ['admin', 'faculty'], true,
+            $this->user()?->role, ['admin', 'dean', 'faculty'], true,
         );
     }
 

@@ -261,7 +261,7 @@ class MicroPearlWorkflowService
                 $expectedVersion,
             );
 
-            $isAdministrator = $reviewer->role === 'admin';
+            $isAdministrator = in_array($reviewer->role, ['admin', 'dean'], true);
             $isAuthor = $pearl->created_by !== null
                 && $pearl->created_by === $reviewer->user_id;
 
@@ -366,12 +366,12 @@ class MicroPearlWorkflowService
         if (
             ! in_array(
                 $editor->role,
-                ['admin', 'faculty'],
+                ['admin', 'dean', 'faculty'],
                 true,
             )
         ) {
             throw new LogicException(
-                'Only administrators and faculty may manage Micro Pearls.',
+                'Only administrators, deans, and faculty may manage Micro Pearls.',
             );
         }
     }

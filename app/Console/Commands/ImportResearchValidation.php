@@ -97,6 +97,7 @@ class ImportResearchValidation extends Command
                     [
                         'faculty',
                         'admin',
+                        'dean',
                     ],
                 )
                 ->first();
@@ -104,7 +105,7 @@ class ImportResearchValidation extends Command
             if (! $validator) {
                 throw new RuntimeException(
                     'The validator must be an existing '
-                        .'faculty or admin user.',
+                        .'faculty, admin, or dean user.',
                 );
             }
 

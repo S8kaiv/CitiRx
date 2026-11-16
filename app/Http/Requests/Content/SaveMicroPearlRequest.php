@@ -13,7 +13,7 @@ class SaveMicroPearlRequest extends FormRequest
     {
         return in_array(
             $this->user()?->role,
-            ['admin', 'faculty'],
+            ['admin', 'dean', 'faculty'],
             true,
         );
     }

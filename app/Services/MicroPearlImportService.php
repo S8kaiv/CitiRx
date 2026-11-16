@@ -1100,12 +1100,12 @@ class MicroPearlImportService
         if (
             ! in_array(
                 $editor->role,
-                ['admin', 'faculty'],
+                ['admin', 'dean', 'faculty'],
                 true,
             )
         ) {
             throw new LogicException(
-                'Only administrators and faculty may import Micro Pearls.',
+                'Only administrators, deans, and faculty may import Micro Pearls.',
             );
         }
     }

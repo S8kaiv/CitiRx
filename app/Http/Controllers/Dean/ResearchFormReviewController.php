@@ -64,7 +64,7 @@ class ResearchFormReviewController extends Controller
             return back()->with('error', $exception->getMessage());
         }
 
-        return back()->with('status', 'All 100 Form B questions were approved. An administrator can now validate the version.');
+        return back()->with('status', 'All 100 Form B questions were approved. You can now validate and publish the version in Research Forms.');
     }
 
     public function returnForRevision(

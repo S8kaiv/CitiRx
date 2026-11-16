@@ -29,7 +29,7 @@ class DashboardController extends Controller
         $user = $request->user();
 
         return match ($user->role) {
-            'admin' => view(
+            'admin', 'dean' => view(
                 'dashboard.admin',
                 array_merge(
                     [
@@ -42,8 +42,6 @@ class DashboardController extends Controller
             'faculty' => redirect()->route(
                 'faculty.dashboard',
             ),
-
-            'dean' => redirect()->route('dean.research-forms.index'),
 
             'student' => view('dashboard.student', [
                 'user' => $user->loadMissing([

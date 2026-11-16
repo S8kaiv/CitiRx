@@ -15,11 +15,11 @@ class EnsureUserCanManageMicroPearls
         abort_unless(
             in_array(
                 $request->user()?->role,
-                ['admin', 'faculty'],
+                ['admin', 'dean', 'faculty'],
                 true,
             ),
             403,
-            'Only administrators and faculty may manage Micro Pearls.',
+            'Only administrators, deans, and faculty may manage Micro Pearls.',
         );
 
         return $next($request);

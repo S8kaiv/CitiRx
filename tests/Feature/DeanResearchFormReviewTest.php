@@ -115,6 +115,36 @@ it('requires administrator validation and publication after dean bulk approval',
         ->and($published->is_active)->toBeTrue();
 });
 
+it('lets the dean validate and publish the Form B they approved', function (): void {
+    [, $dean, $version] = deanReviewFixture();
+    $reviews = app(DeanResearchFormReviewService::class);
+
+    $reviews->approveAll(
+        $dean,
+        $version,
+        $version->lock_version,
+        $reviews->digest($reviews->questions($version)),
+    );
+
+    $versions = app(ResearchFormVersionManagementService::class);
+    $validated = $versions->markValidated(
+        $dean,
+        $version->fresh(),
+        $version->fresh()->lock_version,
+        'Dean validated the approved Form B.',
+    );
+    $published = $versions->publish(
+        $dean,
+        $validated,
+        $validated->lock_version,
+        'Dean published the approved Form B.',
+    );
+
+    expect($published->status)->toBe(ResearchFormVersion::STATUS_PUBLISHED)
+        ->and($published->published_by)->toBe($dean->user_id)
+        ->and($published->is_active)->toBeTrue();
+});
+
 it('rejects stale bulk approval without validating any questions', function (): void {
     [, $dean, $version] = deanReviewFixture();
 
