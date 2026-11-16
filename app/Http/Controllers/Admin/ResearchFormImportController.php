@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CommitResearchFormImportRequest;
 use App\Http\Requests\Admin\PreviewResearchFormImportRequest;
+use App\Models\Question;
 use App\Models\ResearchFormImport;
 use App\Models\ResearchFormVersion;
 use App\Models\User;
+use App\Services\ResearchFormBlueprint;
 use App\Services\ResearchFormImportWorkflowService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,12 +17,50 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\View\View;
 use LogicException;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ResearchFormImportController extends Controller
 {
     public function __construct(
         protected ResearchFormImportWorkflowService $imports,
     ) {}
+
+    public function formBTemplate(): StreamedResponse
+    {
+        return response()->streamDownload(function (): void {
+            $handle = fopen('php://output', 'wb');
+
+            if ($handle === false) {
+                return;
+            }
+
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, [
+                'research_form', 'form_position', 'domain_number', 'competency_code',
+                'question_text', 'choice_a', 'choice_b', 'choice_c', 'choice_d',
+                'correct_choice', 'rationale', 'cognitive_level',
+                'source_reference', 'copyright_permission',
+            ], ',', '"', '');
+
+            $position = 1;
+
+            foreach (ResearchFormBlueprint::quotas(Question::FORM_POST_TEST_B) as $domain => $competencies) {
+                foreach ($competencies as $code => $count) {
+                    for ($item = 0; $item < $count; $item++) {
+                        fputcsv($handle, [
+                            Question::FORM_POST_TEST_B, $position++, $domain, $code,
+                            '', '', '', '', '', '', '', '', '', '',
+                        ], ',', '"', '');
+                    }
+                }
+            }
+
+            fclose($handle);
+        }, 'citirx-form-b-100-template.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'no-store',
+        ]);
+    }
 
     public function index(
         Request $request,
@@ -50,6 +90,7 @@ class ResearchFormImportController extends Controller
                 'validationVersions' => (
                     clone $versionQuery
                 )
+                    ->where('research_form', Question::FORM_PRE_TEST_A)
                     ->where(
                         'status',
                         ResearchFormVersion::STATUS_IN_REVIEW,

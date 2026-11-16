@@ -3,6 +3,7 @@
 use App\Models\Question;
 use App\Models\ResearchFormVersion;
 use App\Services\ResearchFormAuditService;
+use App\Services\ResearchFormBlueprint;
 use App\Services\ResearchFormService;
 use Database\Seeders\ResearchQuestionSeeder;
 use Database\Seeders\TosSeeder;
@@ -34,7 +35,7 @@ it('registers one active version for each research form', function (): void {
             ->sole();
 
         expect($version->questions()->count())
-            ->toBe(60);
+            ->toBe(ResearchFormBlueprint::total($form));
 
         expect(
             $version

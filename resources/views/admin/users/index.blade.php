@@ -57,7 +57,7 @@
                     >
                         <option value="">All roles</option>
 
-                        @foreach (['student', 'faculty', 'admin'] as $role)
+                        @foreach (['student', 'faculty', 'admin', 'dean'] as $role)
                             <option
                                 value="{{ $role }}"
                                 @selected($filters['role'] === $role)

@@ -124,7 +124,7 @@ function includeAnalyticsParticipant(
 }
 
 /**
- * Create a structurally valid 60-item Form A/Form B pair.
+ * Create a structurally valid 60-item Form A and 100-item Form B pair.
  *
  * @return array{pre: AssessmentSession, post: AssessmentSession}
  */
@@ -142,7 +142,7 @@ function createFullAnalyticsPair(
         || $postCorrectItems < 0
         || $postCorrectItems > $postAnsweredItems
         || $postAnsweredItems < 0
-        || $postAnsweredItems > 60
+        || $postAnsweredItems > 100
     ) {
         throw new InvalidArgumentException(
             'Invalid analytics fixture totals.',
@@ -183,10 +183,10 @@ function createFullAnalyticsPair(
 
     if (
         $preQuestions->count() !== 60
-        || $postQuestions->count() !== 60
+        || $postQuestions->count() !== 100
     ) {
         throw new RuntimeException(
-            'The analytics fixture requires two 60-item forms.',
+            'The analytics fixture requires 60 Form A and 100 Form B items.',
         );
     }
 
@@ -261,8 +261,8 @@ function createFullAnalyticsPair(
             ->values()
             ->all(),
 
-        'target_length' => 60,
-        'total_items' => 60,
+        'target_length' => 100,
+        'total_items' => 100,
         'correct_items' => $postCorrectItems,
 
         'readiness_snapshot_pct' => 50,
@@ -321,7 +321,7 @@ function createFullAnalyticsPair(
     return compact('pre', 'post');
 }
 
-it('enforces full 60-item research eligibility', function () {
+it('enforces 60-item Form A and 100-item Form B research eligibility', function () {
     $this->seed([
         TosSeeder::class,
         ResearchQuestionSeeder::class,
@@ -345,7 +345,7 @@ it('enforces full 60-item research eligibility', function () {
         user: $completeStudent,
         preCorrectItems: 20,
         postCorrectItems: 40,
-        postAnsweredItems: 60,
+        postAnsweredItems: 100,
         submissionReason: 'manual',
     );
 
@@ -362,7 +362,7 @@ it('enforces full 60-item research eligibility', function () {
         user: $incompleteStudent,
         preCorrectItems: 30,
         postCorrectItems: 20,
-        postAnsweredItems: 50,
+        postAnsweredItems: 90,
         submissionReason: 'expired',
     );
 
@@ -378,7 +378,7 @@ it('enforces full 60-item research eligibility', function () {
         user: $missingRowStudent,
         preCorrectItems: 20,
         postCorrectItems: 20,
-        postAnsweredItems: 60,
+        postAnsweredItems: 100,
         submissionReason: 'manual',
     );
 
@@ -387,7 +387,7 @@ it('enforces full 60-item research eligibility', function () {
             'session_id',
             $missingRowPair['post']->session_id,
         )
-        ->where('item_position', 60)
+        ->where('item_position', 100)
         ->delete();
 
     /*
@@ -402,7 +402,7 @@ it('enforces full 60-item research eligibility', function () {
         user: $wrongVersionStudent,
         preCorrectItems: 20,
         postCorrectItems: 20,
-        postAnsweredItems: 60,
+        postAnsweredItems: 100,
         submissionReason: 'manual',
     );
 
@@ -422,7 +422,7 @@ it('enforces full 60-item research eligibility', function () {
         user: $chronologyStudent,
         preCorrectItems: 20,
         postCorrectItems: 20,
-        postAnsweredItems: 60,
+        postAnsweredItems: 100,
         submissionReason: 'manual',
     );
 
@@ -445,7 +445,7 @@ it('enforces full 60-item research eligibility', function () {
         user: $wrongTotalStudent,
         preCorrectItems: 20,
         postCorrectItems: 20,
-        postAnsweredItems: 60,
+        postAnsweredItems: 100,
         submissionReason: 'manual',
     );
 
@@ -465,7 +465,7 @@ it('enforces full 60-item research eligibility', function () {
         user: $correctMismatchStudent,
         preCorrectItems: 20,
         postCorrectItems: 20,
-        postAnsweredItems: 60,
+        postAnsweredItems: 100,
         submissionReason: 'manual',
     );
 
@@ -485,7 +485,7 @@ it('enforces full 60-item research eligibility', function () {
         user: $questionMismatchStudent,
         preCorrectItems: 20,
         postCorrectItems: 20,
-        postAnsweredItems: 60,
+        postAnsweredItems: 100,
         submissionReason: 'manual',
     );
 
@@ -520,7 +520,7 @@ it('enforces full 60-item research eligibility', function () {
         user: $duplicateStudent,
         preCorrectItems: 15,
         postCorrectItems: 30,
-        postAnsweredItems: 60,
+        postAnsweredItems: 100,
         submissionReason: 'manual',
         timelineOffsetMinutes: -240,
     );
@@ -529,7 +529,7 @@ it('enforces full 60-item research eligibility', function () {
         user: $duplicateStudent,
         preCorrectItems: 25,
         postCorrectItems: 35,
-        postAnsweredItems: 60,
+        postAnsweredItems: 100,
         submissionReason: 'manual',
     );
 
@@ -611,8 +611,8 @@ it('enforces full 60-item research eligibility', function () {
         ->toBe(0);
 
     /*
-     * The incomplete student's post-test score remains 20/60.
-     * It must not become 20/50.
+     * The incomplete student's post-test score remains 20/100.
+     * It must not become 20/90.
      */
     $incompletePair = $dataset['pairs']
         ->firstWhere(
@@ -623,13 +623,13 @@ it('enforces full 60-item research eligibility', function () {
     expect($incompletePair)
         ->not->toBeNull()
         ->and($incompletePair['answered_items'])
-        ->toBe(50)
+        ->toBe(90)
         ->and($incompletePair['expected_items'])
-        ->toBe(60)
+        ->toBe(100)
         ->and($incompletePair['is_complete'])
         ->toBeFalse()
         ->and(round($incompletePair['post_score'], 4))
-        ->toBe(33.3333);
+        ->toBe(20.0);
 
     /*
      * A missing database row is not treated as an unanswered item.
@@ -665,7 +665,7 @@ it('rejects a session bound to the wrong immutable form version', function (): v
         user: $student,
         preCorrectItems: 30,
         postCorrectItems: 40,
-        postAnsweredItems: 60,
+        postAnsweredItems: 100,
         submissionReason: 'manual',
     );
 
@@ -725,7 +725,7 @@ it('does not expose participant identifiers', function () {
         user: $student,
         preCorrectItems: 20,
         postCorrectItems: 40,
-        postAnsweredItems: 60,
+        postAnsweredItems: 100,
         submissionReason: 'manual',
     );
 
@@ -823,7 +823,7 @@ it('includes only explicitly included research participants', function (): void 
             user: $student,
             preCorrectItems: 20,
             postCorrectItems: 40,
-            postAnsweredItems: 60,
+            postAnsweredItems: 100,
             submissionReason: 'manual',
         );
     }

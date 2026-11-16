@@ -14,6 +14,7 @@ use App\Services\PilotControlService;
 use App\Services\ResearchFormVersionManagementService;
 use Database\Seeders\ResearchQuestionSeeder;
 use Database\Seeders\TosSeeder;
+use Illuminate\Support\Facades\DB;
 
 function pilotAdministrator(): User
 {
@@ -25,17 +26,21 @@ function pilotAdministrator(): User
 
 function pilotMakeResearchFormsReady(User $validator): void
 {
+    $dean = User::factory()->create(['role' => 'dean']);
+
     /*
      * Test-fixture setup only. The production model event must
      * continue protecting served or validated question content.
      */
-    Question::withoutEvents(function () use ($validator): void {
+    Question::withoutEvents(function () use ($validator, $dean): void {
         Question::query()
             ->whereIn('research_form', [
                 Question::FORM_PRE_TEST_A,
                 Question::FORM_POST_TEST_B,
             ])
-            ->each(function (Question $question) use ($validator): void {
+            ->each(function (Question $question) use ($validator, $dean): void {
+                $isFormB = $question->research_form === Question::FORM_POST_TEST_B;
+
                 $question->forceFill([
                     'question_text' => str_replace(
                         '[DEVELOPMENT MOCK - NOT VALIDATED] ',
@@ -43,10 +48,30 @@ function pilotMakeResearchFormsReady(User $validator): void
                         $question->question_text,
                     ),
                     'research_validated_at' => now(),
-                    'research_validated_by' => $validator->user_id,
+                    'research_validated_by' => $isFormB ? $dean->user_id : $validator->user_id,
+                    'hypercorrection_rationale' => $isFormB
+                        ? 'Test-authored explanation for the correct answer.'
+                        : $question->hypercorrection_rationale,
+                    'source_reference' => $isFormB
+                        ? 'Original question authored for this test.'
+                        : $question->source_reference,
+                    'copyright_permission' => $isFormB
+                        ? 'permission confirmed'
+                        : $question->copyright_permission,
                 ])->save();
             });
     });
+
+    $formBQuestionIds = Question::query()
+        ->where('research_form', Question::FORM_POST_TEST_B)
+        ->pluck('question_id');
+
+    DB::table('question_choices')
+        ->whereIn('question_id', $formBQuestionIds)
+        ->update([
+            'choice_text' => DB::raw("CONCAT('Answer ', choice_letter)"),
+            'distractor_fallacy_note' => null,
+        ]);
 
     ResearchFormVersion::query()
         ->whereIn('research_form', [
@@ -124,14 +149,16 @@ function pilotIncompleteSession(
     string $sessionType,
     string $researchPhase,
 ): AssessmentSession {
+    $length = $researchPhase === 'post_test' ? 100 : 60;
+
     return AssessmentSession::query()->create([
         'user_id' => $user->user_id,
         'session_type' => $sessionType,
         'research_phase' => $researchPhase,
         'served_question_ids' => [],
         'draft_answers' => [],
-        'target_length' => 60,
-        'total_items' => 60,
+        'target_length' => $length,
+        'total_items' => $length,
         'correct_items' => 0,
         'xp_awarded' => 0,
         'started_at' => now()->subMinute(),

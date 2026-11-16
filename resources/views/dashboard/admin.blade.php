@@ -419,7 +419,7 @@
                                     <dd class="mt-1 font-bold text-slate-950">
                                         {{ $stats[
                                             'active_questions'
-                                        ] }}/60
+                                        ] }}/{{ \App\Services\ResearchFormBlueprint::total($form) }}
                                     </dd>
                                 </div>
 
@@ -431,7 +431,7 @@
                                     <dd class="mt-1 font-bold text-slate-950">
                                         {{ $stats[
                                             'validated_questions'
-                                        ] }}/60
+                                        ] }}/{{ \App\Services\ResearchFormBlueprint::total($form) }}
                                     </dd>
                                 </div>
 

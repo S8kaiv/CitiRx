@@ -54,7 +54,7 @@
                         <label for="role" class="block text-xs font-extrabold uppercase tracking-wider text-muted-ink">Role</label>
                         <select id="role" name="role"
                             class="mt-1 w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary">
-                            @foreach (['student', 'faculty', 'admin'] as $role)
+                            @foreach (['student', 'faculty', 'admin', 'dean'] as $role)
                                 <option value="{{ $role }}" @selected(old('role', $managedUser->role) === $role)>
                                     {{ ucfirst($role) }}
                                 </option>

@@ -273,6 +273,7 @@
                                     {{ match ($authUser?->role) {
                                         'admin' => 'Admin Center',
                                         'faculty' => 'Faculty Workspace',
+                                        'dean' => 'Dean Review',
                                         default => 'PHLE Adaptive Prep',
                                     } }}
                                 </span>
@@ -284,9 +285,10 @@
                     <nav class="admin-sidebar-scroll min-h-0 flex-1 space-y-1 overflow-y-auto pr-1 font-display" aria-label="{{ match ($authUser?->role) {
                         'admin' => 'Administration',
                         'faculty' => 'Faculty navigation',
+                        'dean' => 'Dean navigation',
                         default => 'Student navigation',
                     } }}">
-                        @if ($authUser?->role !== 'faculty')
+                        @if (! in_array($authUser?->role, ['faculty', 'dean'], true))
                             <x-admin.nav-link
                                 :href="route('dashboard')"
                                 label="Dashboard"
@@ -355,6 +357,15 @@
 
                         @if ($authUser?->role === 'faculty')
                             <x-faculty.desktop-navigation />
+                        @endif
+
+                        @if ($authUser?->role === 'dean')
+                            <x-admin.nav-link
+                                :href="route('dean.research-forms.index')"
+                                label="Form B review"
+                                icon="forms"
+                                :active="request()->routeIs('dean.research-forms.*')"
+                            />
                         @endif
 
                         @if ($authUser?->role === 'admin')
@@ -467,6 +478,7 @@
                             {{ match ($authUser?->role) {
                                 'admin' => 'Administrator',
                                 'faculty' => 'Faculty',
+                                'dean' => 'Dean',
                                 'student' => 'Student',
                                 default => 'Account',
                             } }}
@@ -565,7 +577,7 @@
                 class="app-mobile-nav fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-line bg-surface/95 font-display text-[10px] font-bold shadow-lg backdrop-blur-md md:hidden"
             >
                 {{-- Home --}}
-                @if ($authUser?->role !== 'faculty')
+                @if (! in_array($authUser?->role, ['faculty', 'dean'], true))
                     <x-admin.mobile-link :href="route('dashboard')" label="Home" icon="dashboard" :active="request()->routeIs('dashboard')"/>
                 @endif
 
@@ -601,6 +613,15 @@
 
                 @if ($authUser?->role === 'faculty')
                     <x-faculty.mobile-navigation />
+                @endif
+
+                @if ($authUser?->role === 'dean')
+                    <x-admin.mobile-link
+                        :href="route('dean.research-forms.index')"
+                        label="Form B"
+                        icon="forms"
+                        :active="request()->routeIs('dean.research-forms.*')"
+                    />
                 @endif
 
                 @if ($authUser?->role === 'admin')

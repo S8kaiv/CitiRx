@@ -558,7 +558,7 @@ it('refuses to copy an incomplete source version', function (): void {
         ),
     )->toThrow(
         RuntimeException::class,
-        'complete 60-item version',
+        'complete source version',
     );
 });
 

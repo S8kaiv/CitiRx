@@ -72,11 +72,6 @@ beforeEach(function () {
     );
 
     config()->set(
-        'citirx.research.post_test_duration_minutes',
-        72,
-    );
-
-    config()->set(
         'citirx.research.post_test_form_version',
         'post_test_b_v1',
     );
@@ -265,11 +260,11 @@ it('validates the complete fixed Form B blueprint', function () {
         ->all();
 
     expect($questions)
-        ->toHaveCount(60)
+        ->toHaveCount(100)
         ->and($positions)
-        ->toBe(range(1, 60))
+        ->toBe(range(1, 100))
         ->and($subjectCounts)
-        ->toBe([10, 10, 10, 10, 10, 10]);
+        ->toBe([15, 15, 15, 17, 18, 20]);
 
     foreach ($questions as $question) {
         expect($question->choices)
@@ -328,7 +323,7 @@ it('rejects malformed Form B structures', function () {
 
     $originalPosition = $question->form_position;
 
-    $question->forceFill(['form_position' => 61])->save();
+    $question->forceFill(['form_position' => 101])->save();
 
     expect(
         fn () => $this->researchForms->load(
@@ -392,7 +387,7 @@ it('keeps Form A and Form B question IDs disjoint', function () {
     expect($formAIds)
         ->toHaveCount(60)
         ->and($formBIds)
-        ->toHaveCount(60)
+        ->toHaveCount(100)
         ->and(array_intersect($formAIds, $formBIds))
         ->toBe([]);
 });
@@ -451,7 +446,7 @@ it('resumes one incomplete session after repeated Start requests', function () {
                 ->where('session_id', $session->session_id)
                 ->count(),
         )
-        ->toBe(60);
+        ->toBe(100);
 });
 
 it('marks every Form B question as served when the session starts', function () {
@@ -479,9 +474,9 @@ it('marks every Form B question as served when the session starts', function () 
         ->count();
 
     expect($servedIds)
-        ->toHaveCount(60)
+        ->toHaveCount(100)
         ->and($markedAsServed)
-        ->toBe(60);
+        ->toBe(100);
 });
 
 it('prevents another attempt after completion', function () {
@@ -700,11 +695,11 @@ it('rejects changes after expiration and scores only saved answers', function ()
     );
 
     expect($result['total'])
-        ->toBe(60)
+        ->toBe(100)
         ->and($result['answered'])
         ->toBe(1)
         ->and($result['unanswered'])
-        ->toBe(59)
+        ->toBe(99)
         ->and($result['correct'])
         ->toBe(1)
         ->and($session->fresh()->submission_reason)
@@ -724,7 +719,7 @@ it('rejects changes after expiration and scores only saved answers', function ()
             ->whereNull('selected_choice_id')
             ->whereNull('is_correct')
             ->count(),
-    )->toBe(59);
+    )->toBe(99);
 });
 
 it('does not change learning or gamification state when submitted', function () {
@@ -947,7 +942,7 @@ it('does not expose answer keys rationales or distractor feedback in results', f
         ->assertOk()
         ->assertViewHas(
             'result',
-            fn (array $result): bool => $result['total'] === 60
+            fn (array $result): bool => $result['total'] === 100
                 && $result['correct'] === 1,
         )
         ->assertDontSee(

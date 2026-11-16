@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Question;
 use App\Models\ResearchFormVersion;
+use App\Services\ResearchFormBlueprint;
 use App\Services\ResearchFormVersionTargetService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
@@ -100,11 +101,9 @@ class ExportResearchFormsForReview extends Command
                 "Output: {$outputPath}",
             );
 
-            $this->warn(
-                'The exported version is not formally '
-                    .'validated until its approved faculty '
-                    .'review is imported.',
-            );
+            $this->warn($form === Question::FORM_POST_TEST_B
+                ? 'Form B requires Dean approval in CitiRx before validation and publication.'
+                : 'Form A is not formally validated until its approved faculty review is imported.');
 
             return self::SUCCESS;
         } catch (Throwable $exception) {
@@ -150,10 +149,12 @@ class ExportResearchFormsForReview extends Command
         string $form,
         Collection $questions,
     ): void {
-        if ($questions->count() !== 60) {
+        $required = ResearchFormBlueprint::total($form);
+
+        if ($questions->count() !== $required) {
             throw new RuntimeException(
                 "{$form} must contain exactly "
-                    .'60 active questions; found '
+                    ."{$required} active questions; found "
                     .$questions->count().'.'
             );
         }
@@ -167,10 +168,10 @@ class ExportResearchFormsForReview extends Command
             ->values()
             ->all();
 
-        if ($positions !== range(1, 60)) {
+        if ($positions !== range(1, $required)) {
             throw new RuntimeException(
                 "{$form} positions must uniquely "
-                    .'cover 1 through 60.'
+                    ."cover 1 through {$required}."
             );
         }
 
@@ -398,10 +399,9 @@ class ExportResearchFormsForReview extends Command
                         // Faculty supplies this.
                         '',
 
-                        // Add the exact source used.
-                        '',
+                        $question->source_reference ?? '',
 
-                        'Pending verification',
+                        $question->copyright_permission ?? 'Pending verification',
 
                         'Pending',
 

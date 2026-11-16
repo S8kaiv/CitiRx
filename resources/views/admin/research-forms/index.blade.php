@@ -72,7 +72,7 @@
                     <p class="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">
                         Copy an existing version before changing question content.
                         Published and previously served versions remain immutable.
-                        Publishing requires a complete structural audit, 60 validated
+                        Publishing requires a complete structural audit, all required validated
                         questions, a reason, and your current password.
                     </p>
                 </div>
@@ -112,7 +112,7 @@
                                                 </td>
 
                                                 <td class="px-4 py-3">
-                                                    {{ $version->questions_count }}/60
+                                                    {{ $version->questions_count }}/{{ \App\Services\ResearchFormBlueprint::total($form) }}
                                                 </td>
 
                                                 <td
@@ -353,7 +353,7 @@
                                     </dt>
 
                                     <dd class="mt-1 text-xl font-extrabold text-slate-900">
-                                        {{ $report['active_questions'] }}/60
+                                        {{ $report['active_questions'] }}/{{ $report['required_questions'] }}
                                     </dd>
                                 </div>
 
@@ -363,7 +363,7 @@
                                     </dt>
 
                                     <dd class="mt-1 text-xl font-extrabold text-slate-900">
-                                        {{ $report['fully_validated'] }}/60
+                                        {{ $report['fully_validated'] }}/{{ $report['required_questions'] }}
                                     </dd>
                                 </div>
 

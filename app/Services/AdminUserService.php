@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Cohort;
+use App\Models\Question;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use LogicException;
@@ -45,7 +46,7 @@ class AdminUserService
 
             $newRole = $data['role'];
 
-            $newCohortId = $newRole === 'admin'
+            $newCohortId = in_array($newRole, ['admin', 'dean'], true)
                 ? null
                 : ($data['cohort_id'] ?? null);
 
@@ -236,7 +237,12 @@ class AdminUserService
                 ->facultyInterventionsAssigned()
                 ->exists();
 
-        if ($hasStudentHistory || $hasFacultyHistory) {
+        $hasDeanApproval = $user->role === 'dean'
+            && Question::query()
+                ->where('research_validated_by', $user->user_id)
+                ->exists();
+
+        if ($hasStudentHistory || $hasFacultyHistory || $hasDeanApproval) {
             throw new LogicException(
                 'This role cannot be changed because role-specific history already exists.',
             );

@@ -16,6 +16,7 @@ use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\Content\MicroPearlImportController;
 use App\Http\Controllers\Content\MicroPearlManagementController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Dean\ResearchFormReviewController;
 use App\Http\Controllers\DiagnosticController;
 use App\Http\Controllers\FacultyDashboardController;
 use App\Http\Controllers\FacultyInterventionController;
@@ -601,6 +602,26 @@ Route::middleware([
         );
     });
 
+Route::middleware(['auth', 'verified', 'dean'])
+    ->prefix('dean')
+    ->name('dean.')
+    ->group(function (): void {
+        Route::get('/research-forms', [ResearchFormReviewController::class, 'index'])
+            ->name('research-forms.index');
+
+        Route::get('/research-forms/{researchFormVersion}', [ResearchFormReviewController::class, 'show'])
+            ->whereUuid('researchFormVersion')
+            ->name('research-forms.show');
+
+        Route::patch('/research-forms/{researchFormVersion}/approve', [ResearchFormReviewController::class, 'approve'])
+            ->whereUuid('researchFormVersion')
+            ->name('research-forms.approve');
+
+        Route::patch('/research-forms/{researchFormVersion}/return', [ResearchFormReviewController::class, 'returnForRevision'])
+            ->whereUuid('researchFormVersion')
+            ->name('research-forms.return');
+    });
+
 /*
 |--------------------------------------------------------------------------
 | Administrator Routes
@@ -680,6 +701,11 @@ Route::middleware([
         )->name(
             'research-form-imports.index',
         );
+
+        Route::get(
+            '/research-forms/imports/form-b-template',
+            [ResearchFormImportController::class, 'formBTemplate'],
+        )->name('research-form-imports.form-b-template');
 
         Route::post(
             '/research-forms/imports/preview',

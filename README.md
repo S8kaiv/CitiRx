@@ -4,7 +4,7 @@
 
 CitiRx is a role-based web application for Pharmacy Licensure Examination (PhLE) preparation and academic research. It combines competency-based assessment, adaptive practice, Bayesian Knowledge Tracing (BKT), readiness analytics, response telemetry, faculty interventions, controlled research-form versioning, and gamified progression.
 
-> **Research status:** Software readiness does not make question content or study instruments valid. Before official data collection, qualified pharmacy faculty must approve the questions, blueprint assignments, rationales, cognitive levels, source permissions, scoring rules, and research protocol.
+> **Research status:** Software readiness does not make question content or study instruments valid. Before official data collection, qualified pharmacy reviewers must approve the questions, blueprint assignments, rationales, cognitive levels, source permissions, scoring rules, and research protocol. The Dean reviews and approves the complete Form B in CitiRx.
 
 ## Current Capabilities
 
@@ -18,6 +18,7 @@ CitiRx is a role-based web application for Pharmacy Licensure Examination (PhLE)
 - Deterministic personalized study recommendations based on mastery, readiness, practice history, and published Micro Pearls
 - Adaptive practice with immediate feedback and research-form question exclusion
 - Timed Mock Board/post-test with autosave, server-enforced expiration, submission reasons, and resume support
+- Form B post-test targets 100 questions in 100 minutes; Form A remains a 60-question diagnostic
 - Rx Vault for mistakes, bookmarks, notes, and focused drills
 - Published and reviewed Micro Pearls library
 - Cohort-scoped informational leaderboard with privacy-conscious names
@@ -47,11 +48,24 @@ CitiRx is a role-based web application for Pharmacy Licensure Examination (PhLE)
 - Privacy-conscious administrative audit history and CSV export
 - Read-only system-health monitoring for the database, cache, queue configuration, failed jobs, scheduler, mail, storage, release version, and backup status
 
-## Important Current Limitation
+### Dean
 
-Research content and faculty-validation CSV files are currently imported through guarded Artisan commands. The administrator website can manage form versions and publication states, but it does not yet provide a secure browser upload workflow for research-question CSV files.
+- Dedicated verified Dean account and Form B review screen
+- Review all 100 imported questions, answer keys, rationales, sources, rights, and the proposed TOS allocation
+- Approve the complete unchanged form in one action, or return it to draft with revision notes
+- Dean approval is recorded in the audit history; an administrator still validates and publishes the version
 
-Do not add a web endpoint that accepts shell commands or arbitrary file paths. A future browser importer must use private temporary storage, dry-run validation, file hashing, current-password confirmation, one-time commit tokens, immutable audit records, and the same validation services used by the terminal commands.
+## Research content review
+
+Administrators can preview and import research-question CSV files in the browser. Form A keeps its faculty-validation CSV workflow. Form B uses the dedicated Dean review screen; a Form B faculty-validation CSV cannot replace Dean approval.
+
+Use **Admin → Research Forms → Secure Research Import Portal → Download 100-question Form B template** to start the question bank. The template fixes positions 1–100 and the proposed domain and competency assignments. Fill every row with a unique question, four choices, correct letter (`A`–`D`), rationale, cognitive level (`knowledge`, `comprehension`, `application`, `analysis`, `synthesis`, or `evaluation`), source reference, and rights status (`permission confirmed`, `public domain`, or `licensed`). Leave the supplied form, position, domain, and competency columns intact. Upload the completed CSV to the draft version, review the dry-run result, then commit the import.
+
+For an existing 60-question Form B, create a new draft version such as `post_test_b_v2`, import all 100 authored questions into it, submit it for review, and assign the Dean role to the reviewer. The Dean checks the full content and proposed allocation, then approves or returns the draft. After approval, the administrator marks the version validated and publishes it. Keep the post-test phase closed until the new version is published and its audit passes.
+
+The provisional Form B domain allocation is 20, 15, 18, 15, 17, and 15 questions for Domains 1 through 6. The Dean must confirm the competency-level allocation shown in the review screen. Form A continues to use 10 questions per domain.
+
+On Railway, run database migrations before using the Dean role. Form B's 100-minute limit is fixed in the application at one minute per question. After publishing the replacement version, set `CITIRX_POST_TEST_FORM_VERSION` to its exact code (for example, `post_test_b_v2`) so research analytics select the approved version. Do not seed development questions in production. Do not start official Form B collection until the Dean has approved the real 100-question content and the administrator has published it.
 
 ## PhLE Table of Specifications
 

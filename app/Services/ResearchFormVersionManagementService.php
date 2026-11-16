@@ -62,9 +62,14 @@ class ResearchFormVersionManagementService
                     ->orderBy('form_position')
                     ->get();
 
-                if ($questions->count() !== 60) {
+                $sourceCount = $questions->count();
+                $allowedCounts = $source->research_form === Question::FORM_POST_TEST_B
+                    ? [60, ResearchFormBlueprint::total(Question::FORM_POST_TEST_B)]
+                    : [ResearchFormBlueprint::total(Question::FORM_PRE_TEST_A)];
+
+                if (! in_array($sourceCount, $allowedCounts, true)) {
                     throw new RuntimeException(
-                        'Only a complete 60-item version '
+                        'Only a complete source version '
                             .'can be copied.',
                     );
                 }
@@ -136,6 +141,8 @@ class ResearchFormVersionManagementService
                         'form_position' => $question->form_position,
 
                         'cognitive_level' => $question->cognitive_level,
+                        'source_reference' => $question->source_reference,
+                        'copyright_permission' => $question->copyright_permission,
 
                         'research_validated_at' => null,
                         'research_validated_by' => null,
@@ -200,7 +207,7 @@ class ResearchFormVersionManagementService
 
                         'question_count' => [
                             'old' => 0,
-                            'new' => 60,
+                            'new' => $sourceCount,
                         ],
 
                         'source_lock_version' => [

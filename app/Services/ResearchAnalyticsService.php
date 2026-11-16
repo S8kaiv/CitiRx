@@ -533,13 +533,12 @@ class ResearchAnalyticsService
             $dataset['postSessions'] as $session
         ) {
             /*
-         * Session integrity has already guaranteed that 60
-         * response rows exist. Completeness here means that all
-         * 60 rows have selected answers.
+         * Session integrity has already guaranteed that all Form B
+         * response rows exist. Completeness means every row is answered.
          */
             $complete =
                 (int) $session->answered_items
-                === ResearchFormService::TOTAL_ITEMS;
+                === ResearchFormBlueprint::total(Question::FORM_POST_TEST_B);
 
             if (
                 ! in_array(

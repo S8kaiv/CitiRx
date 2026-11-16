@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Question;
 use App\Models\ResearchFormVersion;
 use App\Models\User;
+use App\Services\ResearchFormBlueprint;
 use App\Services\ResearchFormVersionTargetService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -124,7 +125,7 @@ class ImportResearchValidation extends Command
                 );
             }
 
-            $rows = $this->readCsv($path);
+            $rows = $this->readCsv($path, $form);
 
             DB::beginTransaction();
             $transactionStarted = true;
@@ -227,7 +228,7 @@ class ImportResearchValidation extends Command
     /**
      * @return array<int, array<string, string|int>>
      */
-    private function readCsv(string $path): array
+    private function readCsv(string $path, string $form): array
     {
         $csv = new SplFileObject($path, 'r');
         $csv->setCsvControl(',', '"', '');
@@ -329,9 +330,11 @@ class ImportResearchValidation extends Command
             ];
         }
 
-        if (count($rows) !== 60) {
+        $required = ResearchFormBlueprint::total($form);
+
+        if (count($rows) !== $required) {
             throw new RuntimeException(
-                'The approved CSV must contain exactly 60 data rows; found '
+                "The approved CSV must contain exactly {$required} data rows; found "
                     .count($rows).'.',
             );
         }
@@ -348,6 +351,7 @@ class ImportResearchValidation extends Command
         ResearchFormVersion $version,
     ): EloquentCollection {
         $form = $version->research_form;
+        $required = ResearchFormBlueprint::total($form);
         $questions = Question::query()
             ->where(
                 'research_form',
@@ -366,9 +370,9 @@ class ImportResearchValidation extends Command
             ->lockForUpdate()
             ->get();
 
-        if ($questions->count() !== 60) {
+        if ($questions->count() !== $required) {
             throw new RuntimeException(
-                "{$form} must have exactly 60 active database questions before approval; found {$questions->count()}.",
+                "{$form} must have exactly {$required} active database questions before approval; found {$questions->count()}.",
             );
         }
 
@@ -396,8 +400,8 @@ class ImportResearchValidation extends Command
 
             $position = (int) $positionValue;
 
-            if ($position < 1 || $position > 60) {
-                $errors[] = "Line {$line}: form_position must be from 1 through 60.";
+            if ($position < 1 || $position > $required) {
+                $errors[] = "Line {$line}: form_position must be from 1 through {$required}.";
 
                 continue;
             }
@@ -542,8 +546,8 @@ class ImportResearchValidation extends Command
         $positions = array_keys($seenPositions);
         sort($positions);
 
-        if ($positions !== range(1, 60)) {
-            $errors[] = 'The approved CSV positions must uniquely cover 1 through 60.';
+        if ($positions !== range(1, $required)) {
+            $errors[] = "The approved CSV positions must uniquely cover 1 through {$required}.";
         }
 
         if ($errors !== []) {
