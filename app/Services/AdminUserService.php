@@ -68,7 +68,7 @@ class AdminUserService
 
             if (
                 $administrator->is($user)
-                && $newRole !== 'admin'
+                && $newRole !== $user->role
             ) {
                 throw new LogicException(
                     'You cannot change your own administrator role.',

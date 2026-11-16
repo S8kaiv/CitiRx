@@ -19,13 +19,7 @@ class AdminAuditService
         array $changes = [],
         ?string $reason = null,
     ): AdminAuditLog {
-        $deanReviewAction = $administrator->role === 'dean'
-            && in_array($action, [
-                'research_form.dean_approved',
-                'research_form.dean_returned',
-            ], true);
-
-        if ($administrator->role !== 'admin' && ! $deanReviewAction) {
+        if (! in_array($administrator->role, ['admin', 'dean'], true)) {
             throw new LogicException(
                 'Only authorized reviewers can create this audit record.',
             );

@@ -661,7 +661,7 @@ class CohortAssignmentImportService
     private function assertAdministrator(
         User $administrator,
     ): void {
-        if ($administrator->role !== 'admin') {
+        if (! in_array($administrator->role, ['admin', 'dean'], true)) {
             throw new LogicException(
                 'Only administrators may import cohort assignments.',
             );

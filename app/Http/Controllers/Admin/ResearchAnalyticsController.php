@@ -15,7 +15,7 @@ class ResearchAnalyticsController extends Controller
 
     public function index(Request $request): View
     {
-        abort_unless($request->user()?->role === 'admin', 403);
+        abort_unless(in_array($request->user()?->role, ['admin', 'dean'], true), 403);
 
         return view('admin.research-analytics.index', [
             'report' => $this->analytics->fullReport(),

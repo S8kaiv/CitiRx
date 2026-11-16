@@ -54,6 +54,32 @@ it('blocks students and faculty from admin management', function (
         ->assertForbidden();
 })->with(['student', 'faculty']);
 
+it('lets the dean use the administrator dashboard and manage accounts', function (): void {
+    $dean = managementUser('dean');
+    $student = managementUser();
+
+    $this->actingAs($dean)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSeeText('Admin Dashboard')
+        ->assertSeeText('Form B review');
+
+    $this->get(route('admin.users.index'))->assertOk();
+    $this->get(route('admin.cohorts.index'))->assertOk();
+
+    $this->put(route('admin.users.update', ['userId' => $student->user_id]), [
+        'role' => 'faculty',
+        'cohort_id' => null,
+        'reason' => 'Dean assigned the faculty role.',
+    ])->assertSessionHasNoErrors();
+
+    expect($student->fresh()->role)->toBe('faculty')
+        ->and(AdminAuditLog::query()
+            ->where('action', 'user.assignment_updated')
+            ->where('admin_id', $dean->user_id)
+            ->exists())->toBeTrue();
+});
+
 it('assigns a cohort without requiring a reason', function (): void {
     $admin = managementAdmin();
     $faculty = managementUser('faculty');

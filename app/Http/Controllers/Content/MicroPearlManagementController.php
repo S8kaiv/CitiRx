@@ -211,7 +211,7 @@ class MicroPearlManagementController extends Controller
         PublishMicroPearlRequest $request,
         MicroPearl $pearl,
     ): RedirectResponse {
-        $isOwnAdministratorPearl = $request->user()->role === 'admin'
+        $isOwnAdministratorPearl = in_array($request->user()->role, ['admin', 'dean'], true)
             && $pearl->created_by === $request->user()->user_id;
 
         return $this->transition(

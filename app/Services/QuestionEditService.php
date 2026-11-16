@@ -459,7 +459,7 @@ class QuestionEditService
     private function assertAdministrator(
         User $editor,
     ): void {
-        if ($editor->role !== 'admin') {
+        if (! in_array($editor->role, ['admin', 'dean'], true)) {
             throw new LogicException(
                 'Only administrators may modify '
                     .'the question bank.',

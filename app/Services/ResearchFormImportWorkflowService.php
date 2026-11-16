@@ -543,8 +543,8 @@ class ResearchFormImportWorkflowService
         ) {
             if (! $validator) {
                 throw new LogicException(
-                    'A valid faculty or administrator '
-                        .'reviewer is required.',
+                    'A valid faculty, administrator, or dean '
+                            .'reviewer is required.',
                 );
             }
 
@@ -637,8 +637,8 @@ class ResearchFormImportWorkflowService
         if (! filled($validatorId)) {
             throw ValidationException::withMessages([
                 'validator_id' => [
-                    'Select the faculty or administrator '
-                        .'who approved this file.',
+                    'Select the faculty, administrator, or dean '
+                            .'who approved this file.',
                 ],
             ]);
         }
@@ -650,6 +650,7 @@ class ResearchFormImportWorkflowService
                 [
                     'faculty',
                     'admin',
+                    'dean',
                 ],
             )
             ->whereNotNull(
@@ -661,7 +662,7 @@ class ResearchFormImportWorkflowService
             throw ValidationException::withMessages([
                 'validator_id' => [
                     'The reviewer must be an active, '
-                        .'verified faculty or administrator.',
+                        .'verified faculty, administrator, or dean.',
                 ],
             ]);
         }
@@ -894,7 +895,7 @@ class ResearchFormImportWorkflowService
     private function assertAdministrator(
         User $administrator,
     ): void {
-        if ($administrator->role !== 'admin') {
+        if (! in_array($administrator->role, ['admin', 'dean'], true)) {
             throw new LogicException(
                 'Only administrators may import '
                     .'research-form files.',

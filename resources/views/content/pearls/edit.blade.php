@@ -105,7 +105,7 @@
                     </form>
                 </x-ui.card>
 
-                @if (auth()->user()->role === 'admin' && $pearl->created_by === auth()->id())
+                @if (in_array(auth()->user()->role, ['admin', 'dean'], true) && $pearl->created_by === auth()->id())
                     <x-ui.card class="border-success-strong/30 bg-success-tint">
                         <div class="mb-5">
                             <h2 class="font-display text-lg font-extrabold text-success-ink">
@@ -113,7 +113,7 @@
                             </h2>
 
                             <p class="mt-1 text-sm text-success-ink/80">
-                                Administrators can publish their own completed drafts without a separate approval. Sources and rights are checked before publication. Confirm with your current password.
+                                Administrators and deans can publish their own completed drafts without a separate approval. Sources and rights are checked before publication. Confirm with your current password.
                             </p>
                         </div>
 
@@ -204,11 +204,11 @@
                         </form>
                     </x-ui.card>
 
-                    @if (auth()->user()->role === 'admin' || $pearl->created_by !== auth()->id())
+                    @if (in_array(auth()->user()->role, ['admin', 'dean'], true) || $pearl->created_by !== auth()->id())
                     <x-ui.card class="border-success-strong/30 bg-success-tint">
                         <div class="mb-5">
                             <h2 class="font-display text-lg font-extrabold text-success-ink">
-                                {{ auth()->user()->role === 'admin' && $pearl->created_by === auth()->id()
+                                {{ in_array(auth()->user()->role, ['admin', 'dean'], true) && $pearl->created_by === auth()->id()
                                     ? 'Publish Your Pearl'
                                     : 'Approve Publication' }}
                             </h2>
@@ -250,7 +250,7 @@
                             />
 
                             <x-ui.button type="submit">
-                                {{ auth()->user()->role === 'admin' && $pearl->created_by === auth()->id()
+                                {{ in_array(auth()->user()->role, ['admin', 'dean'], true) && $pearl->created_by === auth()->id()
                                     ? 'Publish Pearl'
                                     : 'Approve Publication' }}
                             </x-ui.button>

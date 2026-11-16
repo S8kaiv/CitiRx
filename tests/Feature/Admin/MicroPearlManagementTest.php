@@ -352,8 +352,8 @@ it('does not allow an author to approve their own content', function (): void {
         ->toBeNull();
 });
 
-it('allows an administrator to publish their own complete draft directly', function (): void {
-    $admin = User::factory()->create(['role' => 'admin']);
+it('allows an administrator or dean to publish their own complete draft directly', function (string $role): void {
+    $admin = User::factory()->create(['role' => $role]);
     $student = User::factory()->create(['role' => 'student']);
     $pearl = pearlManagementCreateDraft($admin, [
         'title' => 'Administrator Published Pearl',
@@ -393,7 +393,7 @@ it('allows an administrator to publish their own complete draft directly', funct
         ->get(route('pearls.index'))
         ->assertOk()
         ->assertSeeText('Administrator Published Pearl');
-});
+})->with(['admin', 'dean']);
 
 it('lets an administrator publish their own pearl after optional review submission', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
@@ -552,6 +552,7 @@ it('allows a different authorized reviewer to publish without a typed reason', f
 })->with([
     'faculty reviewer' => 'faculty',
     'administrator reviewer' => 'admin',
+    'dean reviewer' => 'dean',
 ]);
 
 it('keeps a future publication hidden from students', function (): void {
