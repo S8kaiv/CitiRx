@@ -211,15 +211,22 @@ class MicroPearlManagementController extends Controller
         PublishMicroPearlRequest $request,
         MicroPearl $pearl,
     ): RedirectResponse {
+        $isOwnAdministratorPearl = $request->user()->role === 'admin'
+            && $pearl->created_by === $request->user()->user_id;
+
         return $this->transition(
             fn () => $this->workflow->publish(
                 $request->user(),
                 $pearl,
                 $request->integer('edit_version'),
-                'Published after independent content review.',
+                $isOwnAdministratorPearl
+                    ? 'Published by the administrator who authored this Micro Pearl.'
+                    : 'Published after independent content review.',
                 $request->validated('published_at'),
             ),
-            'Micro Pearl publication approved.',
+            $isOwnAdministratorPearl
+                ? 'Micro Pearl published.'
+                : 'Micro Pearl publication approved.',
         );
     }
 

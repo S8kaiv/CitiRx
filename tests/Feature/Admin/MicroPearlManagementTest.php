@@ -325,6 +325,11 @@ it('does not allow an author to approve their own content', function (): void {
     ]);
 
     $this->actingAs($author)
+        ->get($editUrl)
+        ->assertOk()
+        ->assertDontSeeText('Approve Publication');
+
+    $this->actingAs($author)
         ->from($editUrl)
         ->patch(
             route('content.pearls.publish', [
@@ -346,6 +351,161 @@ it('does not allow an author to approve their own content', function (): void {
         ->and($pearl->fresh()->reviewed_by)
         ->toBeNull();
 });
+
+it('allows an administrator to publish their own complete draft directly', function (): void {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $student = User::factory()->create(['role' => 'student']);
+    $pearl = pearlManagementCreateDraft($admin, [
+        'title' => 'Administrator Published Pearl',
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('content.pearls.edit', ['pearl' => $pearl->pearl_id]))
+        ->assertOk()
+        ->assertSeeText('Publish Your Pearl');
+
+    $this->patch(
+        route('content.pearls.publish', ['pearl' => $pearl->pearl_id]),
+        [
+            'edit_version' => $pearl->edit_version,
+            'current_password' => 'password',
+        ],
+    )->assertSessionHasNoErrors()
+        ->assertSessionHas('status', 'Micro Pearl published.');
+
+    $pearl->refresh();
+
+    expect($pearl->content_status)
+        ->toBe(MicroPearl::STATUS_PUBLISHED)
+        ->and($pearl->reviewed_by)
+        ->toBe($admin->user_id)
+        ->and($pearl->reviewed_at)
+        ->not->toBeNull()
+        ->and($pearl->published_at)
+        ->not->toBeNull()
+        ->and($pearl->edits()
+            ->where('action', 'admin_published')
+            ->firstOrFail()
+            ->reason)
+        ->toBe('Published by the administrator who authored this Micro Pearl.');
+
+    $this->actingAs($student)
+        ->get(route('pearls.index'))
+        ->assertOk()
+        ->assertSeeText('Administrator Published Pearl');
+});
+
+it('lets an administrator publish their own pearl after optional review submission', function (): void {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $pearl = pearlManagementCreateInReview($admin);
+
+    $this->actingAs($admin)
+        ->patch(
+            route('content.pearls.publish', ['pearl' => $pearl->pearl_id]),
+            [
+                'edit_version' => $pearl->edit_version,
+                'current_password' => 'password',
+            ],
+        )
+        ->assertSessionHasNoErrors();
+
+    expect($pearl->fresh()->content_status)
+        ->toBe(MicroPearl::STATUS_PUBLISHED)
+        ->and($pearl->edits()
+            ->where('action', 'admin_published')
+            ->exists())
+        ->toBeTrue();
+});
+
+it('requires faculty drafts to enter review before publication', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
+    $pearl = pearlManagementCreateDraft($faculty);
+    $editUrl = route('content.pearls.edit', ['pearl' => $pearl->pearl_id]);
+
+    $this->actingAs($faculty)
+        ->get($editUrl)
+        ->assertOk()
+        ->assertDontSeeText('Publish Your Pearl');
+
+    $this->from($editUrl)
+        ->patch(
+            route('content.pearls.publish', ['pearl' => $pearl->pearl_id]),
+            [
+                'edit_version' => $pearl->edit_version,
+                'current_password' => 'password',
+            ],
+        )
+        ->assertRedirect($editUrl)
+        ->assertSessionHas(
+            'error',
+            'Only a Pearl awaiting review or an administrator-authored draft can be published.',
+        );
+
+    expect($pearl->fresh()->content_status)
+        ->toBe(MicroPearl::STATUS_DRAFT);
+});
+
+it('does not let an administrator bypass review for a faculty draft', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
+    $admin = User::factory()->create(['role' => 'admin']);
+    $pearl = pearlManagementCreateDraft($faculty);
+    $editUrl = route('content.pearls.edit', ['pearl' => $pearl->pearl_id]);
+
+    $this->actingAs($admin)
+        ->get($editUrl)
+        ->assertOk()
+        ->assertDontSeeText('Publish Your Pearl');
+
+    $this->from($editUrl)
+        ->patch(
+            route('content.pearls.publish', ['pearl' => $pearl->pearl_id]),
+            [
+                'edit_version' => $pearl->edit_version,
+                'current_password' => 'password',
+            ],
+        )
+        ->assertRedirect($editUrl)
+        ->assertSessionHas(
+            'error',
+            'Only a Pearl awaiting review or an administrator-authored draft can be published.',
+        );
+
+    expect($pearl->fresh()->content_status)
+        ->toBe(MicroPearl::STATUS_DRAFT);
+});
+
+it('still checks content and rights before direct administrator publication', function (
+    array $overrides,
+    string $message,
+): void {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $pearl = pearlManagementCreateDraft($admin, $overrides);
+    $editUrl = route('content.pearls.edit', ['pearl' => $pearl->pearl_id]);
+
+    $this->actingAs($admin)
+        ->from($editUrl)
+        ->patch(
+            route('content.pearls.publish', ['pearl' => $pearl->pearl_id]),
+            [
+                'edit_version' => $pearl->edit_version,
+                'current_password' => 'password',
+            ],
+        )
+        ->assertRedirect($editUrl)
+        ->assertSessionHas('error', $message);
+
+    expect($pearl->fresh()->content_status)
+        ->toBe(MicroPearl::STATUS_DRAFT);
+})->with([
+    'missing lesson' => [
+        ['lesson_content' => null],
+        'Complete the lesson, objectives, key points, recall prompts, and references before review.',
+    ],
+    'pending source rights' => [
+        ['rights_status' => MicroPearl::RIGHTS_PENDING],
+        'Copyright or source rights must be resolved before review.',
+    ],
+]);
 
 it('allows a different authorized reviewer to publish without a typed reason', function (
     string $reviewerRole,
