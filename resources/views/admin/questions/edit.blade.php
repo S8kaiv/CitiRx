@@ -145,7 +145,7 @@
                     @enderror
                 </div>
 
-                <details class="rounded-2xl border border-line bg-surface-2 p-4" @if ($errors-has('change_reason')) open @endif>
+                <details class="rounded-2xl border border-line bg-surface-2 p-4" @if ($errors->has('change_reason')) open @endif>
                     <summary class="cursor-pointer font-bold text-ink">
                         Add an internal revision note
                         <span class="font-normal text-ink-muted">(optional)</span>
