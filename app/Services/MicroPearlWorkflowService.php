@@ -247,6 +247,12 @@ class MicroPearlWorkflowService
         });
     }
 
+    public function canPublish(User $reviewer, MicroPearl $pearl): bool
+    {
+        return $this->publicationRestriction($reviewer, $pearl) === null
+            && $this->publishableContentErrors($pearl) === [];
+    }
+
     public function publish(
         User $reviewer,
         MicroPearl $pearl,
@@ -270,31 +276,13 @@ class MicroPearlWorkflowService
                 $expectedVersion,
             );
 
+            $restriction = $this->publicationRestriction($reviewer, $pearl);
+            if ($restriction !== null) {
+                throw new LogicException($restriction);
+            }
+
             $isAdministrator = in_array($reviewer->role, ['admin', 'dean'], true);
-            $isAuthor = $pearl->created_by !== null
-                && $pearl->created_by === $reviewer->user_id;
-
-            if (
-                $pearl->content_status !== MicroPearl::STATUS_IN_REVIEW
-                && ! (
-                    $pearl->content_status === MicroPearl::STATUS_DRAFT
-                    && $isAdministrator
-                    && $isAuthor
-                )
-            ) {
-                throw new LogicException(
-                    'Only a Pearl awaiting review or an administrator-authored draft can be published.',
-                );
-            }
-
-            if (
-                $isAuthor
-                && ! $isAdministrator
-            ) {
-                throw new LogicException(
-                    'The author cannot approve and publish their own Micro Pearl.',
-                );
-            }
+            $isAuthor = $pearl->created_by === $reviewer->user_id;
 
             $this->assertPublishableContent($pearl);
 
@@ -399,9 +387,37 @@ class MicroPearlWorkflowService
         }
     }
 
-    private function assertPublishableContent(
-        MicroPearl $pearl,
-    ): void {
+    private function publicationRestriction(User $reviewer, MicroPearl $pearl): ?string
+    {
+        $isAdministrator = in_array($reviewer->role, ['admin', 'dean'], true);
+        $isAuthor = $pearl->created_by === $reviewer->user_id;
+
+        if ($pearl->content_status === MicroPearl::STATUS_DRAFT && $isAdministrator && $isAuthor) {
+            return null;
+        }
+
+        if ($pearl->content_status !== MicroPearl::STATUS_IN_REVIEW) {
+            return 'Only a Pearl awaiting review or an administrator-authored draft can be published.';
+        }
+
+        if ($isAuthor && ! $isAdministrator) {
+            return 'The author cannot approve and publish their own Micro Pearl.';
+        }
+
+        return null;
+    }
+
+    private function assertPublishableContent(MicroPearl $pearl): void
+    {
+        $errors = $this->publishableContentErrors($pearl);
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
+    }
+
+    private function publishableContentErrors(MicroPearl $pearl): array
+    {
         $errors = [];
         foreach ([
             'title' => $pearl->title, 'mnemonic_summary' => $pearl->mnemonic_summary,
@@ -438,9 +454,7 @@ class MicroPearlWorkflowService
         ) {
             $errors['lesson_content'] = 'Legacy AI-assisted content requires generation metadata.';
         }
-        if ($errors !== []) {
-            throw ValidationException::withMessages($errors);
-        }
+        return $errors;
     }
 
     /**

@@ -403,6 +403,9 @@ Route::middleware([
             ],
         )->name('store');
 
+        Route::post('/bulk-publish', [MicroPearlManagementController::class, 'bulkPublish'])
+            ->name('bulk-publish');
+
         Route::get(
             '/imports/create',
             [

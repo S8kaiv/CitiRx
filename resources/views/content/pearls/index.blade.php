@@ -43,7 +43,7 @@
                         </h2>
 
                         <p class="mt-1 text-sm leading-relaxed text-ink-muted">
-                            Draft lessons remain private until a different reviewer approves publication.
+                            Faculty drafts need an independent reviewer. Admins and Deans can publish their own completed drafts.
                         </p>
                     </div>
 
@@ -129,11 +129,54 @@
             </x-ui.card>
 
             <x-ui.card :padded="false">
+                <form method="POST" action="{{ route('content.pearls.bulk-publish') }}" data-bulk
+                    x-data="{ selectedCount: 0 }"
+                    x-init="selectedCount = $el.querySelectorAll('[data-row-select]:checked').length">
+                    @csrf
+
+                    @if ($publishableIds !== [])
+                        <div class="space-y-3 border-b border-line px-4 py-4 sm:px-6">
+                            <p class="text-sm text-ink-muted">Review each lesson in Manage before publishing.</p>
+                            <x-ui.selection-controls />
+                            <x-ui.button type="button" data-bulk-submit aria-haspopup="dialog" disabled
+                                x-on:click="selectedCount = $el.form.querySelectorAll('[data-row-select]:checked').length; $dispatch('open-modal', 'pearl-bulk-publish')">
+                                Publish selected
+                            </x-ui.button>
+                        </div>
+
+                        <x-modal name="pearl-bulk-publish" max-width="md" describedby="pearl-bulk-publish-description"
+                            :show="$errors->bulkPublish->has('current_password')" focusable>
+                            <div class="space-y-4 p-6">
+                                <h2 id="pearl-bulk-publish-title" class="text-lg font-bold">Publish selected Micro Pearls</h2>
+                                <p id="pearl-bulk-publish-description" class="text-sm text-ink-muted">
+                                    <span x-text="selectedCount"></span> selected. Publish these lessons to the student library now?
+                                </p>
+                                <x-ui.field name="current_password" id="bulk-publish-password" type="password"
+                                    label="Current password" autocomplete="current-password"
+                                    :error="$errors->bulkPublish->first('current_password')" required />
+                                <div class="flex flex-wrap justify-end gap-3">
+                                    <x-ui.button type="button" variant="secondary"
+                                        x-on:click="$dispatch('close-modal', 'pearl-bulk-publish')">
+                                        Cancel
+                                    </x-ui.button>
+                                    <x-ui.button type="submit" data-bulk-submit>Publish now</x-ui.button>
+                                </div>
+                            </div>
+                        </x-modal>
+                    @endif
+
+                    @if ($errors->bulkPublish->hasAny(['pearls', 'pearls.*']))
+                        <p class="px-4 py-3 text-sm text-danger-ink" role="alert">{{ $errors->bulkPublish->first('pearls') ?: $errors->bulkPublish->first('pearls.*') }}</p>
+                    @endif
+
                 <div class="overflow-x-auto">
                     <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                     <table class="min-w-[880px] w-full text-sm">
                         <thead class="bg-surface-2 text-left text-ink-muted">
                             <tr>
+                                @if ($publishableIds !== [])
+                                    <th scope="col" class="px-4 py-3"><span class="sr-only">Select to publish</span></th>
+                                @endif
                                 <th scope="col" class="px-4 py-3 font-bold sm:px-6">Pearl</th>
                                 <th scope="col" class="px-4 py-3 font-bold">Competency</th>
                                 <th scope="col" class="px-4 py-3 font-bold">Status</th>
@@ -157,6 +200,16 @@
                                 @endphp
 
                                 <tr>
+                                    @if ($publishableIds !== [])
+                                        <td class="px-4 py-4">
+                                            @if (in_array($pearl->pearl_id, $publishableIds, true))
+                                                <input type="checkbox" class="rounded border-line" data-row-select
+                                                    name="pearls[{{ $pearl->pearl_id }}]" value="{{ $pearl->edit_version }}"
+                                                    aria-label="Select {{ $pearl->title }} for publishing"
+                                                    @checked(old('pearls.'.$pearl->pearl_id) === (string) $pearl->edit_version)>
+                                            @endif
+                                        </td>
+                                    @endif
                                     <td class="max-w-md px-4 py-4 sm:px-6">
                                         <div class="font-bold text-ink">
                                             {{ $pearl->title }}
@@ -260,6 +313,8 @@
                     </table>
                     </div>
                 </div>
+
+                </form>
 
                 @if ($pearls->hasPages())
                     <div class="border-t border-line px-4 py-4 sm:px-6">
