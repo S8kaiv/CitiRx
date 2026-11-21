@@ -454,6 +454,7 @@ class MicroPearlWorkflowService
         ) {
             $errors['lesson_content'] = 'Legacy AI-assisted content requires generation metadata.';
         }
+
         return $errors;
     }
 
