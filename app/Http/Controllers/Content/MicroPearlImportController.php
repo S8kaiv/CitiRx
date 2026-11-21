@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Content;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Content\CommitMicroPearlImportRequest;
 use App\Http\Requests\Content\PreviewMicroPearlImportRequest;
+use App\Models\MicroPearl;
 use App\Models\MicroPearlImport;
 use App\Services\MicroPearlImportService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -157,6 +159,7 @@ class MicroPearlImportController extends Controller
         );
 
         $validated = $request->validated();
+        $submitForReview = $request->boolean('submit_for_review');
 
         try {
             $committed = $this->imports->commit(
@@ -168,7 +171,14 @@ class MicroPearlImportController extends Controller
                     'expected_lock_version'
                 ],
                 selectedRows: $validated['selected_rows'],
+                submitForReview: $submitForReview,
             );
+        } catch (QueryException $exception) {
+            report($exception);
+
+            return back()->withErrors([
+                'csv' => 'The import could not be saved. Upload and preview the CSV again.',
+            ]);
         } catch (
             InvalidArgumentException
             |LogicException
@@ -180,13 +190,18 @@ class MicroPearlImportController extends Controller
             ]);
         }
 
+        $submitted = collect($committed->preview_rows)
+            ->where('imported_status', MicroPearl::STATUS_IN_REVIEW)
+            ->count();
+        $drafts = $committed->row_count - $submitted;
+
         return redirect()
-            ->route('content.pearls.index')
+            ->route('content.pearls.index', $submitted > 0 ? ['status' => 'in_review'] : [])
             ->with(
                 'status',
-                $committed->row_count
-                    .' Micro Pearl draft(s) imported. '
-                    .'They remain private until independently reviewed and published.',
+                $submitted > 0
+                    ? "{$submitted} sent to review and {$drafts} kept as drafts."
+                    : "{$drafts} Micro Pearl draft(s) imported.",
             );
     }
 
