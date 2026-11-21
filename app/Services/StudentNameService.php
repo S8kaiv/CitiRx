@@ -25,7 +25,7 @@ class StudentNameService
                 return;
             }
             $pending = StudentNameRequest::query()->where('pending_user_id', $student->user_id)->first();
-            if ($pending && $pending->requested_names === $names) {
+            if ($pending && $this->normalize($pending->requested_names) === $names) {
                 return;
             }
             if ($pending) {
@@ -50,11 +50,12 @@ class StudentNameService
             if ($student->role !== 'student' || $request->status !== 'pending') {
                 throw ValidationException::withMessages(['decision' => 'This request is no longer available. Refresh the page.']);
             }
-            if ($approve && $request->original_names !== $this->names($student)) {
+            // JSON object key order can change after storage; compare canonical name fields.
+            if ($approve && $this->normalize($request->original_names) !== $this->names($student)) {
                 throw ValidationException::withMessages(['decision' => 'The official name has changed. Ask the student to submit a fresh request.']);
             }
             if ($approve) {
-                $student->forceFill($request->requested_names)->save();
+                $student->forceFill($this->normalize($request->requested_names))->save();
             }
             $request->update([
                 'status' => $approve ? 'approved' : 'declined', 'pending_user_id' => null,

@@ -17,7 +17,7 @@
         <p class="mt-4 text-sm text-ink-muted">Name changes are sent to the Dean. Your official name remains {{ $user->fullName() }} until approval. Email and password updates do not need name approval.</p>
         @if($nameRequest)
             <div class="mt-3 rounded-xl border border-line bg-surface-2 p-4 text-sm text-ink" role="status">
-                Name request: {{ ucfirst($nameRequest->status) }}. {{ implode(' ', array_filter($nameRequest->requested_names)) }}
+                Name request: {{ ucfirst($nameRequest->status) }}. {{ $nameRequest->requestedFullName() }}
                 @if($nameRequest->decision_note)<p class="mt-2">{{ $nameRequest->decision_note }}</p>@endif
             </div>
         @endif
