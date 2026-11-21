@@ -9,10 +9,7 @@
 
     <title>{{ config('app.name', 'CitiRx') }} PhLE Review</title>
 
-    <link rel="icon" type="image/vnd.microsoft.icon" sizes="16x16 32x32 48x48 64x64 128x128 256x256" href="{{ asset('favicon.ico') }}?v=pill-1">
-    <link rel="icon" type="image/svg+xml" sizes="any" href="{{ asset('citirx-pill.svg') }}?v=pill-1">
-
-<link rel="icon" type="image/svg+xml" sizes="any" href="{{ asset('citirx-pill.svg') }}">
+    <x-ui.brand-favicon />
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet" />
 

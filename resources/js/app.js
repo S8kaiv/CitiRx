@@ -94,7 +94,22 @@ const resolveComfortMode = (mode) => {
         : "light";
 };
 
-const applyDocumentComfort = (mode) => {
+const brandFavicon = document.querySelector('[data-brand-icon-root]');
+
+const updateBrandIcons = (themeId, comfort) => {
+    if (!brandFavicon) return;
+
+    const theme = themeId.slice('theme-'.length);
+    const version = new URL(brandFavicon.href).search;
+    const iconUrl = `${brandFavicon.dataset.brandIconRoot}/${theme}-${comfort}.png${version}`;
+    brandFavicon.href = iconUrl;
+
+    for (const logo of document.querySelectorAll('[data-brand-logo]')) {
+        logo.src = iconUrl;
+    }
+};
+
+const applyDocumentComfort = (mode, themeId = 'theme-standard') => {
     const resolved = resolveComfortMode(mode);
 
     document.documentElement.dataset.comfort =
@@ -110,6 +125,8 @@ const applyDocumentComfort = (mode) => {
             ? "#0F172A"
             : "#F8FAFC",
     );
+
+    updateBrandIcons(themeId, resolved);
 
     return resolved;
 };
@@ -192,6 +209,7 @@ Alpine.data(
                 }
 
                 this.globalTheme = themeId;
+                updateBrandIcons(themeId, this.resolvedComfort);
 
                 storeValue(
                     THEME_STORAGE_KEY,
@@ -213,6 +231,7 @@ Alpine.data(
                 this.resolvedComfort =
                     applyDocumentComfort(
                         this.comfortMode,
+                        this.globalTheme,
                     );
             },
 
@@ -249,6 +268,7 @@ Alpine.data(
                         this.resolvedComfort =
                             applyDocumentComfort(
                                 "auto",
+                                this.globalTheme,
                             );
                     }
                 };
