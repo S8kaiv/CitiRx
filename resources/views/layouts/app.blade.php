@@ -360,15 +360,54 @@
                         @endif
 
                         @if ($authUser?->role === 'dean')
-                            <x-admin.nav-link :href="route('dean.dashboard')" label="Dean dashboard" icon="dashboard" :active="request()->routeIs('dean.dashboard', 'dean.students.*')" />
-                            <x-admin.nav-link :href="route('dean.names.index')" label="Name requests" icon="users" :active="request()->routeIs('dean.names.*')" />
-                            <x-admin.nav-link :href="route('research-editor.index')" label="Form editor" icon="questions" :active="request()->routeIs('research-editor.*')" />
-                            <x-admin.nav-link :href="route('content.pearls.index')" label="Micro Pearls" icon="pearls" :active="request()->routeIs('content.pearls.*')" />
+                            <x-admin.nav-link
+                                :href="route('dean.dashboard')"
+                                label="Dashboard"
+                                icon="dashboard"
+                                :active="request()->routeIs('dean.students.*') || (request()->routeIs('dean.dashboard') && request()->query('view') !== 'interventions')"
+                            />
+
+                            <div class="admin-nav-group-label">
+                                Operations
+                            </div>
+
+                            <x-admin.nav-link
+                                :href="route('dean.dashboard', ['view' => 'interventions'])"
+                                label="Interventions"
+                                icon="participants"
+                                :active="request()->routeIs('dean.dashboard') && request()->query('view') === 'interventions'"
+                            />
+
+                            <x-admin.nav-link
+                                :href="route('dean.names.index')"
+                                label="Name requests"
+                                icon="users"
+                                :active="request()->routeIs('dean.names.*')"
+                            />
+
+                            <x-admin.nav-link
+                                :href="route('content.pearls.index')"
+                                label="Micro Pearls"
+                                icon="pearls"
+                                :active="request()->routeIs('content.pearls.*')"
+                            />
+
+                            <div class="admin-nav-group-label">
+                                Research
+                            </div>
+
                             <x-admin.nav-link
                                 :href="route('dean.research-forms.index')"
                                 label="Research reviews"
                                 icon="forms"
                                 :active="request()->routeIs('dean.research-forms.*')"
+                            />
+
+                            <x-admin.nav-link
+                                :href="route('research-editor.index')"
+                                label="Form editor"
+                                icon="questions"
+                                :active="request()->routeIs('research-editor.*')"
                             />
                         @endif
 
@@ -620,7 +659,18 @@
                 @endif
 
                 @if ($authUser?->role === 'dean')
-                    <x-admin.mobile-link :href="route('dean.dashboard')" label="Home" icon="dashboard" :active="request()->routeIs('dean.dashboard', 'dean.students.*')" />
+                    <x-admin.mobile-link
+                        :href="route('dean.dashboard')"
+                        label="Home"
+                        icon="dashboard"
+                        :active="request()->routeIs('dean.students.*') || (request()->routeIs('dean.dashboard') && request()->query('view') !== 'interventions')"
+                    />
+                    <x-admin.mobile-link
+                        :href="route('dean.dashboard', ['view' => 'interventions'])"
+                        label="Support"
+                        icon="participants"
+                        :active="request()->routeIs('dean.dashboard') && request()->query('view') === 'interventions'"
+                    />
                     <x-admin.mobile-link :href="route('dean.names.index')" label="Names" icon="users" :active="request()->routeIs('dean.names.*')" />
                     <x-admin.mobile-link :href="route('research-editor.index')" label="Editor" icon="questions" :active="request()->routeIs('research-editor.*')" />
                     <x-admin.mobile-link

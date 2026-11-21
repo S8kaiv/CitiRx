@@ -619,6 +619,12 @@ Route::middleware(['auth', 'verified', 'dean'])
         Route::get('/', [WorkspaceController::class, 'index'])->name('dashboard');
         Route::get('/students/{student}', [WorkspaceController::class, 'student'])->whereUuid('student')->name('students.show');
         Route::patch('/students/{student}/name', [WorkspaceController::class, 'updateName'])->whereUuid('student')->name('students.name');
+        Route::post('/students/{student}/interventions', [WorkspaceController::class, 'assignIntervention'])
+            ->whereUuid('student')
+            ->name('students.interventions.store');
+        Route::patch('/interventions/{intervention}/complete', [WorkspaceController::class, 'completeIntervention'])
+            ->whereUuid('intervention')
+            ->name('interventions.complete');
         Route::get('/name-requests', [WorkspaceController::class, 'names'])->name('names.index');
         Route::patch('/name-requests/{nameRequest}', [WorkspaceController::class, 'decideName'])->whereUuid('nameRequest')->name('names.decide');
         Route::get('/research-forms', [ResearchFormReviewController::class, 'index'])

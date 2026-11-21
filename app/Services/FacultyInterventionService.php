@@ -12,19 +12,35 @@ use Illuminate\Validation\ValidationException;
 
 class FacultyInterventionService
 {
+    public function __construct(protected AdminAuditService $audit) {}
+
     public function assign(
-        User $faculty,
+        User $actor,
         array $payload,
+        ?string $facultyId = null,
     ): FacultyIntervention {
-        $this->assertFacultyWithCohort(
-            $faculty,
-        );
+        $isDean = $actor->role === 'dean';
+
+        if (! $isDean) {
+            $this->assertFacultyWithCohort($actor);
+        }
 
         return DB::transaction(
-            function () use (
-                $faculty,
-                $payload,
-            ): FacultyIntervention {
+            function () use ($actor, $payload, $facultyId, $isDean): FacultyIntervention {
+                $faculty = $actor;
+                if ($isDean) {
+                    $faculty = User::query()
+                        ->where('role', 'faculty')
+                        ->whereNotNull('cohort_id')
+                        ->lockForUpdate()
+                        ->find($facultyId);
+
+                    if ($faculty === null) {
+                        throw ValidationException::withMessages([
+                            'faculty_id' => 'Choose an available faculty member.',
+                        ]);
+                    }
+                }
                 /*
                  * Locking the target serializes repeated
                  * double-click submissions for this student.
@@ -49,7 +65,9 @@ class FacultyInterventionService
 
                 if ($target === null) {
                     throw ValidationException::withMessages([
-                        'target_user_id' => 'The selected student is not available in your cohort.',
+                        'target_user_id' => $isDean
+                            ? 'The student must be in the same cohort as the selected faculty member.'
+                            : 'The selected student is not available in your cohort.',
                     ]);
                 }
 
@@ -130,7 +148,7 @@ class FacultyInterventionService
                     ]);
                 }
 
-                return FacultyIntervention::query()
+                $intervention = FacultyIntervention::query()
                     ->create([
                         'faculty_id' => $faculty->user_id,
 
@@ -152,21 +170,30 @@ class FacultyInterventionService
 
                         'assigned_at' => now(),
                     ]);
+
+                if ($isDean) {
+                    $this->audit->record($actor, 'intervention.assigned', $intervention, [
+                        'faculty_id' => ['old' => null, 'new' => $faculty->user_id],
+                    ]);
+                }
+
+                return $intervention;
             },
         );
     }
 
     public function complete(
-        User $faculty,
+        User $actor,
         string $interventionId,
     ): bool {
-        $this->assertFacultyWithCohort($faculty);
+        $isDean = $actor->role === 'dean';
+
+        if (! $isDean) {
+            $this->assertFacultyWithCohort($actor);
+        }
 
         return DB::transaction(
-            function () use (
-                $faculty,
-                $interventionId,
-            ): bool {
+            function () use ($actor, $interventionId, $isDean): bool {
                 /*
                  * Ownership-scoped lookup returns 404 for
                  * another faculty member's record instead
@@ -174,14 +201,13 @@ class FacultyInterventionService
                  */
                 $intervention =
                     FacultyIntervention::query()
-                        ->whereKey(
-                            $interventionId,
-                        )
-                        ->where(
-                            'faculty_id',
-                            $faculty->user_id,
-                        )
-                        ->whereHas('targetUser', fn ($query) => $query->where('cohort_id', $faculty->cohort_id)->where('role', 'student')->whereNull('deleted_at'))
+                        ->whereKey($interventionId)
+                        ->when(! $isDean, fn ($query) => $query
+                            ->where('faculty_id', $actor->user_id)
+                            ->whereHas('targetUser', fn ($query) => $query
+                                ->where('cohort_id', $actor->cohort_id)
+                                ->where('role', 'student')
+                                ->whereNull('deleted_at')))
                         ->lockForUpdate()
                         ->firstOrFail();
 
@@ -193,6 +219,12 @@ class FacultyInterventionService
                     'is_completed' => true,
                     'completed_at' => now(),
                 ])->save();
+
+                if ($isDean) {
+                    $this->audit->record($actor, 'intervention.completed', $intervention, [
+                        'is_completed' => ['old' => false, 'new' => true],
+                    ]);
+                }
 
                 return true;
             },
