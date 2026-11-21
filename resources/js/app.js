@@ -1,4 +1,5 @@
 import Alpine from "alpinejs";
+import { initializeAssessmentGuard } from './assessment-guard';
 
 window.Alpine = Alpine;
 
@@ -428,6 +429,11 @@ Alpine.data('publicComfort', () => ({
 }));
 
 Alpine.start();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAssessmentGuard, { once: true });
+} else {
+    initializeAssessmentGuard();
+}
 // One confirmation per form submission; validation still runs before opening it.
 document.addEventListener('DOMContentLoaded', () => {
     const dialog = document.getElementById('workflow-confirm');

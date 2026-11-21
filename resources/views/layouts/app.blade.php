@@ -165,7 +165,7 @@
     @php
         /*
          * Hide navigation while the student is actively
-         * answering Practice or Diagnostic questions.
+         * answering Practice, Diagnostic, or Mock Board questions.
          */
         $isFocusMode = request()->routeIs(
             'practice.show',
@@ -947,7 +947,14 @@
         @endif
 
         {{-- MAIN CONTENT AREA --}}
-        <div class="flex min-w-0 flex-1 flex-col {{ !$isFocusMode ? 'app-content-shell md:pl-64' : '' }}">
+        <div
+            @if ($isFocusMode)
+                data-assessment-content
+                inert
+                tabindex="-1"
+            @endif
+            class="flex min-w-0 flex-1 flex-col {{ !$isFocusMode ? 'app-content-shell md:pl-64' : '' }}"
+        >
             @isset($header)
                 <header class="admin-topbar sticky top-0 z-20 border-b bg-surface">
                     <div class="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
@@ -962,6 +969,9 @@
         </div>
 
     </div>
+    @if ($isFocusMode)
+        <x-ui.assessment-guard />
+    @endif
     <x-ui.confirm-dialog />
 </body>
 
