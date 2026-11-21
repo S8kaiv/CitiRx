@@ -8,6 +8,6 @@ abstract class AdminRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return in_array($this->user()?->role, ['admin', 'dean'], true);
+        return $this->user()?->role === 'admin';
     }
 }

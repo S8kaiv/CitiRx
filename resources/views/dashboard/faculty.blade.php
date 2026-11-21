@@ -50,6 +50,8 @@
                         <h2 id="faculty-intro-title">A clearer path for every student.</h2>
                         <p>Review your cohort’s progress and turn readiness insights into focused support.</p>
                         <x-ui.button href="#assign-intervention">Assign Intervention</x-ui.button>
+                        <x-ui.button variant="secondary" :href="route('faculty.interventions.index', ['status' => 'open'])">Open interventions</x-ui.button>
+                        <x-ui.button variant="secondary" :href="route('content.pearls.index')">Manage Micro Pearls</x-ui.button>
                     </div>
                     <img src="{{ asset('image/pill-mascot-admin.webp') }}" alt="" width="112" height="112" decoding="async">
                 </section>

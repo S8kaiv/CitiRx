@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-ui.page-header :title="'Review '.$version->version_code" description="Dean review · Form B" />
+        <x-ui.page-header :title="'Review '.$version->version_code" description="Dean review · whole-version approval" />
     </x-slot>
 
     <div class="mx-auto max-w-5xl space-y-5 px-4 py-6 sm:px-6 lg:px-8">
@@ -47,7 +47,7 @@
         </x-ui.card>
 
         <x-ui.card>
-            <h2 class="font-display text-xl font-extrabold text-ink">Proposed 100-question allocation</h2>
+            <h2 class="font-display text-xl font-extrabold text-ink">Blueprint allocation: {{ $report['required_questions'] }} questions</h2>
             <p class="mt-2 text-sm text-ink-muted">
                 This allocation follows the current six-domain TOS, rounded to whole questions. It is provisional until you approve the complete form.
             </p>
@@ -85,7 +85,7 @@
             </details>
         </x-ui.card>
 
-        <div class="space-y-3" aria-label="Form B questions">
+        <div class="space-y-3" aria-label="Research form questions">
             @foreach ($questions as $question)
                 <details class="rounded-2xl border border-line bg-surface p-4 sm:p-5">
                     <summary class="cursor-pointer font-bold text-ink">
@@ -120,26 +120,22 @@
             @endforeach
         </div>
 
-        @if ($version->status === \App\Models\ResearchFormVersion::STATUS_IN_REVIEW && $report['fully_validated'] === 0)
+        @if ($version->status === \App\Models\ResearchFormVersion::STATUS_IN_REVIEW)
             <div class="grid gap-5 lg:grid-cols-2">
                 <x-ui.card class="border-success-strong/30 bg-success-tint">
-                    <h2 class="font-display text-lg font-extrabold text-success-ink">Approve all 100 questions</h2>
+                    <h2 class="font-display text-lg font-extrabold text-success-ink">Approve all {{ $report['required_questions'] }} questions</h2>
                     <p class="mt-2 text-sm text-success-ink">
                         Approval is all or nothing. The system checks the blueprint, every question, its source and rights, and whether anything changed while you reviewed it.
                     </p>
 
-                    <form method="POST" action="{{ route('dean.research-forms.approve', $version) }}" class="mt-5 space-y-4">
+                    <form method="POST" action="{{ route('dean.research-forms.approve', $version) }}" data-confirm="Approve this complete, unchanged form, including its answers, sources, rights, and blueprint allocation?" class="mt-5 space-y-4">
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="expected_lock_version" value="{{ $version->lock_version }}">
                         <input type="hidden" name="expected_digest" value="{{ $digest }}">
 
-                        <label class="flex items-start gap-3 text-sm text-success-ink">
-                            <input type="checkbox" name="review_confirmed" value="1" required class="mt-1">
-                            <span>I reviewed the complete Form B, including answers, sources, rights, and the proposed item allocation.</span>
-                        </label>
-
-                        <x-ui.field name="current_password" label="Current password" type="password" required autocomplete="current-password" />
+                        <input type="hidden" name="review_confirmed" value="1">
+                        @error('review')<p class="text-danger-ink" role="alert">{{ $message }}</p>@enderror
                         <x-ui.button type="submit">Approve complete form</x-ui.button>
                     </form>
                 </x-ui.card>
@@ -148,12 +144,11 @@
                     <h2 class="font-display text-lg font-extrabold text-ink">Return for revision</h2>
                     <p class="mt-2 text-sm text-ink-muted">Tell the authors which positions or concepts need correction.</p>
 
-                    <form method="POST" action="{{ route('dean.research-forms.return', $version) }}" class="mt-5 space-y-4">
+                    <form method="POST" action="{{ route('dean.research-forms.return', $version) }}" data-confirm="Return this version to Draft with these revision notes?" class="mt-5 space-y-4">
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="expected_lock_version" value="{{ $version->lock_version }}">
                         <x-ui.field name="reason" label="Required corrections" type="textarea" :rows="5" required />
-                        <x-ui.field name="current_password" label="Current password" type="password" required autocomplete="current-password" />
                         <x-ui.button type="submit" variant="secondary">Return to draft</x-ui.button>
                     </form>
                 </x-ui.card>

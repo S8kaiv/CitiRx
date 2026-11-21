@@ -16,7 +16,6 @@ class ReturnResearchFormRequest extends FormRequest
         return [
             'expected_lock_version' => ['required', 'integer', 'min:1'],
             'reason' => ['required', 'string', 'min:10', 'max:2000'],
-            'current_password' => ['required', 'string', 'current_password'],
         ];
     }
 }

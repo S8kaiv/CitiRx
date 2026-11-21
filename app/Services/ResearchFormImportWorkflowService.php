@@ -7,7 +7,6 @@ use App\Models\ResearchFormImport;
 use App\Models\ResearchFormVersion;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -40,11 +39,7 @@ class ResearchFormImportWorkflowService
         );
 
         if (
-            ! in_array(
-                $type,
-                ResearchFormImport::TYPES,
-                true,
-            )
+            $type !== ResearchFormImport::TYPE_CONTENT
         ) {
             throw ValidationException::withMessages([
                 'import_type' => [
@@ -95,13 +90,8 @@ class ResearchFormImportWorkflowService
                         'local',
                     )->path($storedPath);
 
-                    $previewOutput = $this->executeImport(
-                        type: $type,
-                        version: $version,
-                        absolutePath: $absolutePath,
-                        validator: $validator,
-                        dryRun: true,
-                    );
+                    $rows = app(ResearchQuestionCsvService::class)->rows($absolutePath, $version);
+                    $previewOutput = 'Select eligible rows. Invalid or locked rows cannot be imported. The draft must meet the full blueprint before Dean approval.';
 
                     $hash = hash_file(
                         'sha256',
@@ -159,6 +149,7 @@ class ResearchFormImportWorkflowService
                             'lock_version' => 1,
 
                             'preview_output' => $previewOutput,
+                            'preview_rows' => $rows,
 
                             'expires_at' => now()
                                 ->addMinutes($minutes),
@@ -179,6 +170,7 @@ class ResearchFormImportWorkflowService
         ResearchFormImport $import,
         int $expectedLockVersion,
         string $reason,
+        array $selectedRows,
     ): ResearchFormImport {
         $this->assertAdministrator(
             $administrator,
@@ -198,6 +190,7 @@ class ResearchFormImportWorkflowService
                     $import,
                     $expectedLockVersion,
                     $reason,
+                    $selectedRows,
                     &$ownedPreviewConfirmed,
                 ): ResearchFormImport {
                     $import = ResearchFormImport::query()
@@ -289,18 +282,22 @@ class ResearchFormImportWorkflowService
                             $version,
                         );
 
-                    /*
-                     * The existing command runs in this PHP process.
-                     * No shell is started and no browser-supplied
-                     * command or filesystem path is accepted.
-                     */
-                    $this->executeImport(
-                        type: $import->import_type,
-                        version: $version,
-                        absolutePath: $absolutePath,
-                        validator: $validator,
-                        dryRun: false,
-                    );
+                    // Revalidate the stored file and eligibility at commit, not just at preview.
+                    $rows = collect(app(ResearchQuestionCsvService::class)->rows($absolutePath, $version))->keyBy('row_number');
+                    if ($selectedRows === [] || count($selectedRows) !== count(array_unique($selectedRows))) {
+                        throw ValidationException::withMessages(['selected_rows' => 'Select at least one eligible row.']);
+                    }
+                    foreach ($selectedRows as $rowNumber) {
+                        $row = $rows->get($rowNumber);
+                        if (! $row || $row['errors'] !== []) {
+                            throw ValidationException::withMessages(['selected_rows' => 'A selected row is invalid or locked. Preview the file again.']);
+                        }
+                        $freshVersion = $version->fresh();
+                        app(ResearchFormEditorService::class)->save($administrator, $freshVersion, array_merge($row['payload'], [
+                            'expected_lock_version' => $freshVersion->lock_version,
+                        ]));
+                    }
+                    $version->refresh();
 
                     $newQuestionCount = $this
                         ->activeQuestionCount(
@@ -515,70 +512,6 @@ class ResearchFormImportWorkflowService
         }
 
         return $pruned;
-    }
-
-    private function executeImport(
-        string $type,
-        ResearchFormVersion $version,
-        string $absolutePath,
-        ?User $validator,
-        bool $dryRun,
-    ): string {
-        $command = $type
-            === ResearchFormImport::TYPE_CONTENT
-            ? 'research:import-form-content'
-            : 'research:import-validation';
-
-        $arguments = [
-            'file' => $absolutePath,
-
-            '--form' => $version->research_form,
-
-            '--form-version' => $version->version_code,
-        ];
-
-        if (
-            $type
-            === ResearchFormImport::TYPE_VALIDATION
-        ) {
-            if (! $validator) {
-                throw new LogicException(
-                    'A valid faculty, administrator, or dean '
-                            .'reviewer is required.',
-                );
-            }
-
-            $arguments['--validator-email'] =
-                $validator->email;
-        }
-
-        if ($dryRun) {
-            $arguments['--dry-run'] = true;
-        }
-
-        $exitCode = Artisan::call(
-            $command,
-            $arguments,
-        );
-
-        $output = $this->sanitizeOutput(
-            Artisan::output(),
-            $absolutePath,
-        );
-
-        if ($exitCode !== 0) {
-            throw ValidationException::withMessages([
-                'csv' => [
-                    $output !== ''
-                        ? $output
-                        : 'The CSV failed import validation.',
-                ],
-            ]);
-        }
-
-        return $output !== ''
-            ? $output
-            : 'Dry run completed successfully.';
     }
 
     private function assertImportAllowed(
@@ -838,36 +771,6 @@ class ResearchFormImportWorkflowService
                 'research_validated_by',
             )
             ->count();
-    }
-
-    private function sanitizeOutput(
-        string $output,
-        string $absolutePath,
-    ): string {
-        $output = str_ireplace(
-            [
-                $absolutePath,
-                str_replace(
-                    '\\',
-                    '/',
-                    $absolutePath,
-                ),
-            ],
-            '[private CSV]',
-            $output,
-        );
-
-        $output = preg_replace(
-            '/\e\[[\d;]*[A-Za-z]/',
-            '',
-            $output,
-        ) ?? $output;
-
-        return mb_substr(
-            trim($output),
-            0,
-            12000,
-        );
     }
 
     private function safeOriginalFilename(

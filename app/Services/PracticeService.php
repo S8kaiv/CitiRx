@@ -1050,7 +1050,7 @@ class PracticeService
          * last_active_date becomes general activity tracking.
          */
         $today =
-            now()->toDateString();
+            now('Asia/Manila')->toDateString();
 
         if (
             $user->last_active_date
@@ -1064,7 +1064,7 @@ class PracticeService
         }
 
         $yesterday =
-            now()
+            now('Asia/Manila')
                 ->subDay()
                 ->toDateString();
 

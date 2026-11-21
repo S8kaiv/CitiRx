@@ -7,13 +7,13 @@
             </x-slot:title>
             <x-slot:actions>
                 @php
-                    $streak = (int) ($user->streak_count ?? 0);
+                    $streak = $user->currentStreak();
                     $xp = (int) ($user->total_xp ?? 0);
                 @endphp
 
                 {{-- Streak Pill --}}
                 <div class="flex items-center gap-1 rounded-xl border-2 border-b-2 sm:border-b-4 border-[#F5A623]/30 bg-gold-tint px-2.5 py-1 sm:px-3.5 sm:py-1.5 font-display font-bold text-gold-ink shadow-2xs"
-                    title="{{ $streak }}-day study streak">
+                    title="{{ $streak }}-day streak. Complete a practice session with 10 eligible answers and at least 70% accuracy. Speed-flagged answers do not count. One credit per Manila day.">
                     <span class="text-xs sm:text-sm">🔥</span>
                     <span class="text-xs sm:text-sm font-black">{{ $streak }}</span>
                     <span class="text-[9px] tracking-wider opacity-80 hidden xs:inline">DAYS</span>
@@ -87,6 +87,7 @@
                                 <span class="font-semibold text-slate-800">{{ $user->cohort->cohort_name }}</span> ·
                             @endif
                             Maintain your daily practice to climb through the readiness ranks.
+                            <span class="mt-2 block">Streak credit: complete a session with at least 10 non-speed-flagged answers and 70% accuracy, once per Manila day.</span>
                         </p>
                     </div>
                 </div>

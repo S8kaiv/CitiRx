@@ -104,27 +104,6 @@ class ResearchFormController extends Controller
         );
     }
 
-    public function markValidated(
-        TransitionResearchFormVersionRequest $request,
-        ResearchFormVersion $researchFormVersion,
-    ): RedirectResponse {
-        $validated = $request->validated();
-
-        $this->versions->markValidated(
-            administrator: $request->user(),
-            version: $researchFormVersion,
-            expectedLockVersion: $validated[
-                    'expected_lock_version'
-                ],
-            reason: $validated['reason'],
-        );
-
-        return back()->with(
-            'status',
-            'The version passed validation.',
-        );
-    }
-
     public function publish(
         PublishResearchFormVersionRequest $request,
         ResearchFormVersion $researchFormVersion,

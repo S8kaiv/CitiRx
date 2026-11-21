@@ -50,6 +50,7 @@ class ResearchFormImport extends Model
         'expected_form_lock_version',
         'lock_version',
         'preview_output',
+        'preview_rows',
         'failure_message',
         'reason',
         'expires_at',
@@ -57,6 +58,7 @@ class ResearchFormImport extends Model
     ];
 
     protected $casts = [
+        'preview_rows' => 'array',
         'file_size' => 'integer',
         'expected_form_lock_version' => 'integer',
         'lock_version' => 'integer',

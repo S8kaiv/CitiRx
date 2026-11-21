@@ -44,7 +44,7 @@ $levelBadgeBg = match (true) {
 };
 
 // Stats Variables
-$streak = (int) ($user->streak_count ?? 0);
+$streak = $user->currentStreak();
 $xp = (int) ($user->total_xp ?? 0);
 
 // Readiness Variables (For mobile view overview)
@@ -204,6 +204,7 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                                     >
                                         Day Streak
                                     </p>
+                                    <p class="mt-2 text-xs leading-relaxed text-ink-muted">Finish a practice session with 10 eligible answers and at least 70% accuracy. Speed-flagged answers do not count. One credit per Manila day.</p>
                                 </div>
                             </div>
 

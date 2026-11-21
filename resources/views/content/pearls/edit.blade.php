@@ -46,6 +46,19 @@
                 </x-ui.alert>
             @endif
 
+            @if ($pearl->content_status !== 'draft')
+                <x-ui.card>
+                    <h2 class="text-xl font-bold text-ink">Review lesson content</h2>
+                    <p class="mt-3 whitespace-pre-line break-words text-sm text-ink">{{ $pearl->mnemonic_summary }}</p>
+                    <div class="mt-5 whitespace-pre-line break-words text-ink">{{ $pearl->lesson_content }}</div>
+                    @foreach(['learning_objectives' => 'Learning objectives', 'key_points' => 'Key points', 'common_pitfalls' => 'Common pitfalls'] as $field => $label)
+                        <details class="mt-4 rounded-xl border border-line p-4"><summary class="cursor-pointer font-bold text-ink">{{ $label }}</summary><ul class="mt-3 list-disc space-y-2 pl-5 text-sm text-ink">@foreach($pearl->$field ?? [] as $line)<li>{{ $line }}</li>@endforeach</ul></details>
+                    @endforeach
+                    <details class="mt-4 rounded-xl border border-line p-4"><summary class="cursor-pointer font-bold text-ink">Recall questions and answers</summary><dl class="mt-3 space-y-3 text-sm text-ink">@foreach($pearl->recall_prompts ?? [] as $prompt)<div><dt class="font-bold">{{ $prompt['question'] ?? '' }}</dt><dd class="mt-1">{{ $prompt['answer'] ?? '' }}</dd></div>@endforeach</dl></details>
+                    <details open class="mt-4 rounded-xl border border-line p-4"><summary class="cursor-pointer font-bold text-ink">Sources and rights</summary><p class="mt-3 text-sm text-ink">Rights: {{ $pearl->rights_status }}</p><ul class="mt-2 list-disc space-y-2 pl-5 text-sm text-ink">@foreach($pearl->source_references ?? [] as $reference)<li class="break-words">{{ $reference }}</li>@endforeach</ul></details>
+                </x-ui.card>
+            @endif
+
             @if ($pearl->content_status === 'draft')
                 <x-ui.card>
                     <form
@@ -79,6 +92,7 @@
                             'content.pearls.submit-review',
                             ['pearl' => $pearl->pearl_id],
                         ) }}"
+                        data-confirm="Submit this saved draft for independent review? You can edit it again if it is returned for revision."
                         class="space-y-4"
                     >
                         @csrf
@@ -123,6 +137,7 @@
                                 'content.pearls.publish',
                                 ['pearl' => $pearl->pearl_id],
                             ) }}"
+                            data-confirm="Publish this completed lesson to the student library?"
                             class="space-y-4"
                         >
                             @csrf
@@ -177,6 +192,7 @@
                                 'content.pearls.return-draft',
                                 ['pearl' => $pearl->pearl_id],
                             ) }}"
+                            data-confirm="Return this lesson to its author for revision?"
                             class="space-y-4"
                         >
                             @csrf
@@ -224,6 +240,7 @@
                                 'content.pearls.publish',
                                 ['pearl' => $pearl->pearl_id],
                             ) }}"
+                            data-confirm="Approve and publish this independently reviewed lesson?"
                             class="space-y-4"
                         >
                             @csrf
@@ -280,6 +297,7 @@
                             'content.pearls.retire',
                             ['pearl' => $pearl->pearl_id],
                         ) }}"
+                        data-confirm="Retire this lesson from the student library? Its edit history will be kept."
                         class="space-y-4"
                     >
                         @csrf

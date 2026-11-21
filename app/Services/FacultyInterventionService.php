@@ -93,6 +93,7 @@ class FacultyInterventionService
                             'faculty_id',
                             $faculty->user_id,
                         )
+                        ->whereHas('targetUser', fn ($query) => $query->where('cohort_id', $faculty->cohort_id)->where('role', 'student')->whereNull('deleted_at'))
                         ->where(
                             'target_user_id',
                             $target->user_id,
@@ -159,11 +160,7 @@ class FacultyInterventionService
         User $faculty,
         string $interventionId,
     ): bool {
-        if ($faculty->role !== 'faculty') {
-            throw new AuthorizationException(
-                'Faculty access only.',
-            );
-        }
+        $this->assertFacultyWithCohort($faculty);
 
         return DB::transaction(
             function () use (
@@ -184,6 +181,7 @@ class FacultyInterventionService
                             'faculty_id',
                             $faculty->user_id,
                         )
+                        ->whereHas('targetUser', fn ($query) => $query->where('cohort_id', $faculty->cohort_id)->where('role', 'student')->whereNull('deleted_at'))
                         ->lockForUpdate()
                         ->firstOrFail();
 

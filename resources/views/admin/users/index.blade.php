@@ -6,9 +6,7 @@
         >
             <x-slot:actions>
                 <a
-                    href="{{ route(
-                        'admin.cohort-imports.create',
-                    ) }}"
+                    href="#bulk-cohort"
                     class="btn-press inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
                     style="--lip: rgb(var(--color-primary-lip));"
                 >
@@ -196,11 +194,19 @@
                 </div>
             </form>
 
-            <div class="overflow-x-auto rounded-3xl border-2 border-slate-200 bg-white">
+            @if(session('status'))<x-ui.alert variant="success">{{ session('status') }}</x-ui.alert>@endif
+            <form id="bulk-cohort" method="POST" action="{{ route('admin.users.assign-cohort') }}" data-bulk data-confirm="Assign the selected students to this active cohort? All changes are recorded in the audit history." class="space-y-4">
+            @csrf
+            <x-ui.selection-controls />
+            <x-ui.field name="cohort_id" id="bulk-cohort-target" label="Assign selected students to" type="select" data-cohort-target required><option value="">Choose an active cohort</option>@foreach($cohorts->whereNull('archived_at') as $cohort)<option value="{{ $cohort->cohort_id }}">{{ $cohort->cohort_name }}</option>@endforeach</x-ui.field>
+            @error('student_ids')<p class="text-sm text-danger-ink" role="alert">{{ $message }}</p>@enderror
+            <p class="text-sm text-ink-muted">Select active students below. Students who have started official research assessments are locked to their cohort.</p>
+            <div class="overflow-x-auto rounded-3xl border-2 border-line bg-surface">
                 <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
                 <table class="min-w-full divide-y divide-slate-200 text-sm">
                     <thead class="bg-slate-50 text-left">
                         <tr>
+                            <th class="p-4">Select</th>
                             <th class="p-4">User</th>
                             <th class="p-4">Role</th>
                             <th class="p-4">Cohort</th>
@@ -212,6 +218,7 @@
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($users as $managedUser)
                             <tr>
+                                <td class="p-4"><label class="inline-flex min-h-11 items-center gap-2"><input type="checkbox" name="student_ids[]" value="{{ $managedUser->user_id }}" data-row-select data-cohort="{{ $managedUser->cohort_id }}" @disabled($managedUser->role !== 'student' || $managedUser->trashed() || $managedUser->research_locked) aria-label="Select {{ $managedUser->fullName() }}">@if($managedUser->research_locked)<span class="text-xs text-ink-muted">Research locked</span>@endif</label><input type="hidden" name="original_cohorts[{{ $managedUser->user_id }}]" value="{{ $managedUser->cohort_id }}"></td>
                                 <td class="p-4">
                                     <div class="font-bold">
                                         {{ $managedUser->fullName() }}
@@ -246,7 +253,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="p-8 text-center text-slate-500">
+                                <td colspan="7" class="p-8 text-center text-slate-500">
                                     No users match these filters.
                                 </td>
                             </tr>
@@ -257,6 +264,8 @@
             </div>
 
             {{ $users->links() }}
+            <x-ui.button type="submit" data-bulk-submit>Assign cohort</x-ui.button>
+            </form>
         </div>
     </div>
 </x-app-layout>

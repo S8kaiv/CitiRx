@@ -79,26 +79,7 @@ class ResearchFormVersionTargetService
     public function assertValidationImportAllowed(
         ResearchFormVersion $version,
     ): void {
-        if ($version->research_form === Question::FORM_POST_TEST_B) {
-            throw new RuntimeException(
-                'Form B approval must be completed by the dean in the review screen.',
-            );
-        }
-
-        if (
-            $version->status
-            !== ResearchFormVersion::STATUS_IN_REVIEW
-        ) {
-            throw new RuntimeException(
-                'Faculty validation may only be imported into '
-                    .'a version that is in review.',
-            );
-        }
-
-        $this->assertUnserved(
-            $version,
-            'Research validation import',
-        );
+        throw new RuntimeException('Dean approval in the app is required for both Form A and Form B. Validation CSV imports have been removed.');
     }
 
     private function assertUnserved(

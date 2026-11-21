@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\StudentNameRequest;
 use App\Services\ReadinessService;
+use App\Services\StudentNameService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
@@ -16,6 +19,7 @@ class ProfileController extends Controller
 {
     public function __construct(
         protected ReadinessService $readiness,
+        protected StudentNameService $names,
     ) {}
 
     /**
@@ -52,6 +56,7 @@ class ProfileController extends Controller
             'isStudent' => $isStudent,
             'badgesCount' => $badgesCount,
             'readinessBand' => $readinessBand,
+            'nameRequest' => $isStudent ? StudentNameRequest::query()->where('user_id', $user->user_id)->latest()->first() : null,
         ]);
     }
 
@@ -60,7 +65,12 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $data = $request->validated();
+        if ($request->user()->role === 'student') {
+            $this->names->request($request->user(), $data);
+            $data = Arr::except($data, StudentNameService::FIELDS);
+        }
+        $request->user()->fill($data);
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;

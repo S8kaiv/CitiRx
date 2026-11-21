@@ -273,7 +273,7 @@
                                     {{ match ($authUser?->role) {
                                         'admin' => 'Admin Center',
                                         'faculty' => 'Faculty Workspace',
-                                        'dean' => 'Dean & Admin Center',
+                            'dean' => 'Dean Workspace',
                                         default => 'PHLE Adaptive Prep',
                                     } }}
                                 </span>
@@ -288,7 +288,7 @@
                         'dean' => 'Dean and administration',
                         default => 'Student navigation',
                     } }}">
-                        @if ($authUser?->role !== 'faculty')
+                        @if (! in_array($authUser?->role, ['faculty', 'dean'], true))
                             <x-admin.nav-link
                                 :href="route('dashboard')"
                                 label="Dashboard"
@@ -360,15 +360,19 @@
                         @endif
 
                         @if ($authUser?->role === 'dean')
+                            <x-admin.nav-link :href="route('dean.dashboard')" label="Dean dashboard" icon="dashboard" :active="request()->routeIs('dean.dashboard', 'dean.students.*')" />
+                            <x-admin.nav-link :href="route('dean.names.index')" label="Name requests" icon="users" :active="request()->routeIs('dean.names.*')" />
+                            <x-admin.nav-link :href="route('research-editor.index')" label="Form editor" icon="questions" :active="request()->routeIs('research-editor.*')" />
+                            <x-admin.nav-link :href="route('content.pearls.index')" label="Micro Pearls" icon="pearls" :active="request()->routeIs('content.pearls.*')" />
                             <x-admin.nav-link
                                 :href="route('dean.research-forms.index')"
-                                label="Form B review"
+                                label="Research reviews"
                                 icon="forms"
                                 :active="request()->routeIs('dean.research-forms.*')"
                             />
                         @endif
 
-                        @if (in_array($authUser?->role, ['admin', 'dean'], true))
+                        @if ($authUser?->role === 'admin')
                             <div class="admin-nav-group-label">
                                 Operations
                             </div>
@@ -379,7 +383,6 @@
                                 icon="users"
                                 :active="request()->routeIs(
                                     'admin.users.*',
-                                    'admin.cohort-imports.*',
                                 )"
                             />
 
@@ -415,6 +418,7 @@
                                 :active="request()->routeIs(
                                     'admin.research-forms.*',
                                     'admin.research-form-imports.*',
+                                    'research-editor.*',
                                 )"
                             />
 
@@ -577,7 +581,7 @@
                 class="app-mobile-nav fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-line bg-surface/95 font-display text-[10px] font-bold shadow-lg backdrop-blur-md md:hidden"
             >
                 {{-- Home --}}
-                @if ($authUser?->role !== 'faculty')
+                @if (! in_array($authUser?->role, ['faculty', 'dean'], true))
                     <x-admin.mobile-link :href="route('dashboard')" label="Home" icon="dashboard" :active="request()->routeIs('dashboard')"/>
                 @endif
 
@@ -616,15 +620,18 @@
                 @endif
 
                 @if ($authUser?->role === 'dean')
+                    <x-admin.mobile-link :href="route('dean.dashboard')" label="Home" icon="dashboard" :active="request()->routeIs('dean.dashboard', 'dean.students.*')" />
+                    <x-admin.mobile-link :href="route('dean.names.index')" label="Names" icon="users" :active="request()->routeIs('dean.names.*')" />
+                    <x-admin.mobile-link :href="route('research-editor.index')" label="Editor" icon="questions" :active="request()->routeIs('research-editor.*')" />
                     <x-admin.mobile-link
                         :href="route('dean.research-forms.index')"
-                        label="Form B"
+                        label="Reviews"
                         icon="forms"
                         :active="request()->routeIs('dean.research-forms.*')"
                     />
                 @endif
 
-                @if (in_array($authUser?->role, ['admin', 'dean'], true))
+                @if ($authUser?->role === 'admin')
                     @if ($authUser?->role === 'admin')
                         <x-admin.mobile-link
                             :href="route('admin.users.index')"
@@ -632,7 +639,6 @@
                             icon="users"
                             :active="request()->routeIs(
                                 'admin.users.*',
-                                'admin.cohort-imports.*',
                             )"
                         />
                     @endif
@@ -644,6 +650,7 @@
                         :active="request()->routeIs(
                             'admin.research-forms.*',
                             'admin.research-form-imports.*',
+                            'research-editor.*',
                         )"
                     />
 
@@ -711,22 +718,6 @@
                                 class="grid gap-1 p-4"
                                 aria-label="Additional administration"
                             >
-                                @if ($authUser?->role === 'dean')
-                                    <x-admin.nav-link
-                                        :href="route('admin.users.index')"
-                                        label="Users"
-                                        icon="users"
-                                        :active="request()->routeIs('admin.users.*', 'admin.cohort-imports.*')"
-                                    />
-
-                                    <x-admin.nav-link
-                                        :href="route('admin.pilot.index')"
-                                        label="Pilot Controls"
-                                        icon="pilot"
-                                        :active="request()->routeIs('admin.pilot.*')"
-                                    />
-                                @endif
-
                                 <x-admin.nav-link
                                     :href="route('admin.cohorts.index')"
                                     label="Cohorts"
@@ -921,6 +912,7 @@
         </div>
 
     </div>
+    <x-ui.confirm-dialog />
 </body>
 
 </html>

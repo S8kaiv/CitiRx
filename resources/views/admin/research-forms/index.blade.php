@@ -5,6 +5,7 @@
             description="Manage immutable versions, validation readiness, publication status, and pilot eligibility."
         >
             <x-slot:actions>
+                <x-ui.button :href="route('research-editor.index')">Edit forms in app</x-ui.button>
                 <a
                     href="{{ route(
                         'admin.research-form-imports.index',
@@ -208,40 +209,9 @@
                                                                 </form>
                                                             @endif
 
-                                                            {{-- Confirm review validation --}}
+                                                            {{-- Dean approval also completes validation. --}}
                                                             @if ($version->status === 'in_review')
-                                                                <form
-                                                                    method="POST"
-                                                                    action="{{ route('admin.research-forms.versions.validate', $version) }}"
-                                                                    class="research-workflow-form space-y-3 rounded-xl bg-violet-50 p-3"
-                                                                >
-                                                                    @csrf
-                                                                    @method('PATCH')
-
-                                                                    <input
-                                                                        type="hidden"
-                                                                        name="expected_lock_version"
-                                                                        value="{{ $version->lock_version }}"
-                                                                    >
-
-                                                                    <x-ui.field
-                                                                        :id="'validation-reason-'.$version->getKey()"
-                                                                        name="reason"
-                                                                        type="textarea"
-                                                                        label="Validation completion evidence"
-                                                                        :rows="2"
-                                                                        minlength="10"
-                                                                        maxlength="500"
-                                                                        required
-                                                                    />
-
-                                                                    <button
-                                                                        type="submit"
-                                                                        class="research-workflow-button rounded-xl bg-violet-700 px-3 py-2 text-xs font-bold text-white"
-                                                                    >
-                                                                        Confirm Validation
-                                                                    </button>
-                                                                </form>
+                                                                <p class="text-sm text-ink-muted">Awaiting complete Dean approval in the Dean workspace.</p>
                                                             @endif
 
                                                             {{-- Publish a validated version --}}
@@ -249,6 +219,7 @@
                                                                 <form
                                                                     method="POST"
                                                                     action="{{ route('admin.research-forms.versions.publish', $version) }}"
+                                                                    data-confirm="Publish this exact Dean-approved version? It will become the active official form and its content will be immutable."
                                                                     class="research-workflow-form space-y-3 rounded-xl bg-amber-50 p-3"
                                                                 >
                                                                     @csrf

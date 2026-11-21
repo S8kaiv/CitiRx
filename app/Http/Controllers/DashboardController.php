@@ -29,7 +29,8 @@ class DashboardController extends Controller
         $user = $request->user();
 
         return match ($user->role) {
-            'admin', 'dean' => view(
+            'dean' => redirect()->route('dean.dashboard'),
+            'admin' => view(
                 'dashboard.admin',
                 array_merge(
                     [

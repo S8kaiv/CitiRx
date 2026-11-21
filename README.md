@@ -4,7 +4,7 @@
 
 CitiRx is a role-based web application for Pharmacy Licensure Examination (PhLE) preparation and academic research. It combines competency-based assessment, adaptive practice, Bayesian Knowledge Tracing (BKT), readiness analytics, response telemetry, faculty interventions, controlled research-form versioning, and gamified progression.
 
-> **Research status:** Software readiness does not make question content or study instruments valid. Before official data collection, qualified pharmacy reviewers must approve the questions, blueprint assignments, rationales, cognitive levels, source permissions, scoring rules, and research protocol. The Dean reviews and approves the complete Form B in CitiRx.
+> **Research status:** Software readiness does not make question content or study instruments valid. Before official data collection, qualified pharmacy reviewers must approve the questions, blueprint assignments, rationales, cognitive levels, source permissions, scoring rules, and research protocol. The Dean reviews and approves each complete Form A and Form B version in CitiRx.
 
 ## Current Capabilities
 
@@ -36,7 +36,7 @@ CitiRx is a role-based web application for Pharmacy Licensure Examination (PhLE)
 
 - User search, filtering, role-safe updates, soft deletion, restoration, and cohort assignment
 - Cohort creation, editing, archiving, post-test windows, and participation summaries
-- CSV cohort-assignment preview and commit workflow
+- In-app student selection and bulk assignment to active cohorts, with research-attempt locks and per-student audit records
 - Question-bank filtering, editing, activation controls, locks, and immutable edit history
 - Research-form readiness audits and structural validation
 - Immutable Form A and Form B version management
@@ -50,20 +50,21 @@ CitiRx is a role-based web application for Pharmacy Licensure Examination (PhLE)
 
 ### Dean
 
-- Dedicated verified Dean account and Form B review screen
-- Review all 100 imported questions, answer keys, rationales, sources, rights, and the proposed TOS allocation
-- Approve the complete unchanged form in one action, or return it to draft with revision notes
-- The Dean also has full administrator access, including validation and publication after approval. Every action is recorded in the audit history.
+- Dedicated verified Dean workspace with cohort/status-filtered interventions, individual readiness, and pending reviews
+- Direct official student-name edits and decisions on student name-change requests; student profile changes keep the official name until approved
+- In-app Form A (60 questions) and Form B (100 questions) authoring and blueprint progress
+- Approve and validate the complete unchanged version in one action, or return it to draft with notes
+- Dean access is explicit: the Dean workspace, form editor/reviews, and Micro Pearl management. Admin account/cohort, pilot, analytics, and release routes remain administrator-only.
 
-Full administrator access means the same Dean account can approve, validate, and publish Form B. Audit records distinguish those actions, but they do not provide an independent second-person sign-off. Use a separate administrator when the approved research protocol requires one.
+Dean approval moves a complete version to Validated. An administrator publishes it using the existing password, pilot-control, and audit requirements. Editing unserved reviewed content clears approval and returns it to Draft. Published and served versions stay immutable.
 
 ## Research content review
 
-Administrators can preview and import research-question CSV files in the browser. Form A keeps its faculty-validation CSV workflow. Form B uses the dedicated Dean review screen; a Form B faculty-validation CSV cannot replace Dean approval.
+Use the in-app Research Form editor for routine authoring. Administrators can also preview research-question CSV files, select eligible rows, and import into a draft. Question Bank links to this same flow. Both forms require Dean approval; validation CSV imports and the manual Mark validated action have been removed.
 
-Use **Admin → Research Forms → Secure Research Import Portal → Download 100-question Form B template** to start the question bank. The template fixes positions 1–100 and the proposed domain and competency assignments. Fill every row with a unique question, four choices, correct letter (`A`–`D`), rationale, cognitive level (`knowledge`, `comprehension`, `application`, `analysis`, `synthesis`, or `evaluation`), source reference, and rights status (`permission confirmed`, `public domain`, or `licensed`). Leave the supplied form, position, domain, and competency columns intact. Upload the completed CSV to the draft version, review the dry-run result, then commit the import.
+Use **Question Bank → Import research CSV → Download Form B template** for bulk entry. The template fixes positions 1–100 and the proposed domain and competency assignments. Fill every row with a unique question, four choices, correct letter (`A`–`D`), rationale, cognitive level (`knowledge`, `comprehension`, `application`, `analysis`, `synthesis`, or `evaluation`), source reference, and rights status (`permission confirmed`, `public domain`, or `licensed`). Leave the supplied form, position, domain, and competency columns intact. Upload the CSV to a draft, review each row, select the eligible rows, then confirm the import. Form A has a separate 60-question template on the same page.
 
-For an existing 60-question Form B, create a new draft version such as `post_test_b_v2`, import all 100 authored questions into it, submit it for review, and assign the Dean role to the reviewer. The Dean checks the full content and proposed allocation, then approves or returns the draft. After approval, the Dean or another administrator marks the version validated and publishes it. Keep the post-test phase closed until the new version is published and its audit passes.
+For an existing 60-question Form B, copy it to a new draft, complete its 100 questions in the editor or with selected CSV rows, and submit it for review. Dean approval automatically validates the version. An administrator publishes the exact approved content. Keep the post-test phase closed until publication and the readiness audit pass.
 
 The provisional Form B domain allocation is 20, 15, 18, 15, 17, and 15 questions for Domains 1 through 6. The Dean must confirm the competency-level allocation shown in the review screen. Form A continues to use 10 questions per domain.
 
@@ -267,18 +268,15 @@ php artisan research:export-forms `
     --out="D:\secure\pre_test_a_v2_review.csv"
 ```
 
-Dry-run faculty validation:
+For approval, submit the complete version in the editor and open Dean review in the app. The legacy validation-import command refuses both forms. Store copyrighted questions and review workbooks outside Git.
 
-```powershell
-php artisan research:import-validation `
-    "D:\secure\pre_test_a_v2_approved.csv" `
-    --form=pre_test_a `
-    --form-version=pre_test_a_v2 `
-    --validator-email="faculty@example.edu" `
-    --dry-run
-```
+## Workflow update setup
 
-Remove `--dry-run` only after the preview passes and the source file has been formally approved. Store copyrighted questions and review workbooks outside Git.
+Run `php artisan migrate` to add student-name request records, whole-version Dean approval metadata, and selectable research-import previews. No existing attempts or published form records are rewritten. Previously published forms remain readable; any replacement version requires fresh Dean approval before publication. Re-upload old pending import previews that have no row selection data.
+
+Micro Pearl editors save incomplete drafts and provide add/remove recall prompts. Review and publication enforce complete content and source rights. Faculty-authored Pearls still require a different reviewer.
+
+A day streak requires a finalized practice session with at least 10 non-speed-flagged responses and 70% eligible accuracy. Credit is limited to once per Asia/Manila calendar day. Dashboard and profile show zero after a missed day. Existing historical date-only streak records are not backfilled.
 
 ## Pilot Controls
 

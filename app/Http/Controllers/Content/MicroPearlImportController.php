@@ -126,7 +126,7 @@ class MicroPearlImportController extends Controller
             )
             ->with(
                 'status',
-                'Dry run passed. Review the lessons before committing the import.',
+                'Preview ready. Select eligible lessons and review any row errors.',
             );
     }
 
@@ -167,6 +167,7 @@ class MicroPearlImportController extends Controller
                 expectedLockVersion: (int) $validated[
                     'expected_lock_version'
                 ],
+                selectedRows: $validated['selected_rows'],
             );
         } catch (
             InvalidArgumentException

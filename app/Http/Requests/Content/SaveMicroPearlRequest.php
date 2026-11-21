@@ -80,26 +80,29 @@ class SaveMicroPearlRequest extends FormRequest
                 'string',
                 'max:10000',
             ],
+            'recall_prompts' => ['nullable', 'array', 'max:30'],
+            'recall_prompts.*.question' => ['nullable', 'string', 'max:2000'],
+            'recall_prompts.*.answer' => ['nullable', 'string', 'max:4000'],
             'source_references_text' => [
                 'nullable',
                 'string',
                 'max:10000',
             ],
             'estimated_read_seconds' => [
-                'required',
+                'nullable',
                 'integer',
                 'min:30',
                 'max:3600',
             ],
             'order_index' => [
-                'required',
+                'nullable',
                 'integer',
                 'min:1',
                 'max:65535',
                 $orderRule,
             ],
             'rights_status' => [
-                'required',
+                'sometimes',
                 Rule::in([
                     MicroPearl::RIGHTS_PENDING,
                     MicroPearl::RIGHTS_ORIGINAL,
@@ -129,6 +132,9 @@ class SaveMicroPearlRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        if ($this->has('recall_prompts_present') && ! $this->has('recall_prompts')) {
+            $this->merge(['recall_prompts' => []]);
+        }
         $reason = trim((string) $this->input('reason'));
 
         $this->merge([

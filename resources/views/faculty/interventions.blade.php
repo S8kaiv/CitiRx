@@ -23,6 +23,7 @@
                 </x-ui.alert>
             @endif
 
+            <form method="GET" class="flex flex-wrap items-end gap-3"><x-ui.field name="status" label="Intervention status" type="select">@foreach(['open','completed','all'] as $status)<option value="{{ $status }}" @selected(request('status', 'open') === $status)>{{ ucfirst($status) }}</option>@endforeach</x-ui.field><x-ui.button type="submit">Filter</x-ui.button></form>
             @forelse ($interventions as $intervention)
                 <x-ui.card class="rx-faculty-intervention">
                     <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -104,6 +105,7 @@
                                     ],
                                 ) }}"
                                 class="shrink-0"
+                                data-confirm="Mark this intervention complete?"
                             >
                                 @csrf
                                 @method('PATCH')

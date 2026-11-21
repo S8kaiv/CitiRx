@@ -22,7 +22,7 @@ class ResearchFormVersionManagementService
     public function copyToDraft(
         User $administrator,
         ResearchFormVersion $source,
-        string $versionCode,
+        ?string $versionCode,
         int $expectedLockVersion,
         string $reason,
     ): ResearchFormVersion {
@@ -38,10 +38,16 @@ class ResearchFormVersionManagementService
                 $expectedLockVersion,
                 $reason,
             ): ResearchFormVersion {
+                $this->pilotControls->assertResearchConfigurationMutable();
                 $source = $this->lockedVersion(
                     $source,
                     $expectedLockVersion,
                 );
+
+                if ($versionCode === null) {
+                    $number = (int) ResearchFormVersion::query()->where('research_form', $source->research_form)->max('version_number') + 1;
+                    $versionCode = $source->research_form.'_v'.$number;
+                }
 
                 $this->assertVersionCodeMatchesForm(
                     $source->research_form,
@@ -243,30 +249,13 @@ class ResearchFormVersionManagementService
         );
     }
 
-    public function markValidated(
-        User $administrator,
-        ResearchFormVersion $version,
-        int $expectedLockVersion,
-        string $reason,
-    ): ResearchFormVersion {
-        return $this->transition(
-            administrator: $administrator,
-            version: $version,
-            expectedLockVersion: $expectedLockVersion,
-            from: ResearchFormVersion::STATUS_IN_REVIEW,
-            to: ResearchFormVersion::STATUS_VALIDATED,
-            requireValidation: true,
-            action: 'research_form_version.validated',
-            reason: $reason,
-        );
-    }
-
     public function publish(
         User $administrator,
         ResearchFormVersion $version,
         int $expectedLockVersion,
         string $reason,
     ): ResearchFormVersion {
+        abort_unless($administrator->role === 'admin', 403);
         $this->assertAdministrator(
             $administrator,
         );
@@ -319,6 +308,12 @@ class ResearchFormVersionManagementService
                     $version,
                     requireValidation: true,
                 );
+
+                $reviews = app(DeanResearchFormReviewService::class);
+                if ($version->dean_approved_at === null || $version->dean_approved_by === null
+                    || ! hash_equals((string) $version->approved_content_digest, $reviews->digest($reviews->questions($version)))) {
+                    throw ValidationException::withMessages(['version' => 'Fresh Dean approval of this exact content is required before publication.']);
+                }
 
                 if ($report['errors'] !== []) {
                     throw ValidationException::withMessages([
@@ -421,6 +416,7 @@ class ResearchFormVersionManagementService
                 $action,
                 $reason,
             ): ResearchFormVersion {
+                $this->pilotControls->assertResearchConfigurationMutable();
                 $version = $this->lockedVersion(
                     $version,
                     $expectedLockVersion,

@@ -8,7 +8,6 @@ use App\Http\Requests\Admin\PreviewResearchFormImportRequest;
 use App\Models\Question;
 use App\Models\ResearchFormImport;
 use App\Models\ResearchFormVersion;
-use App\Models\User;
 use App\Services\ResearchFormBlueprint;
 use App\Services\ResearchFormImportWorkflowService;
 use Illuminate\Http\RedirectResponse;
@@ -25,9 +24,12 @@ class ResearchFormImportController extends Controller
         protected ResearchFormImportWorkflowService $imports,
     ) {}
 
-    public function formBTemplate(): StreamedResponse
+    public function formBTemplate(Request $request): StreamedResponse
     {
-        return response()->streamDownload(function (): void {
+        $request->validate(['form' => ['nullable', 'in:pre_test_a,post_test_b']]);
+        $form = $request->input('form', Question::FORM_POST_TEST_B);
+
+        return response()->streamDownload(function () use ($form): void {
             $handle = fopen('php://output', 'wb');
 
             if ($handle === false) {
@@ -44,11 +46,11 @@ class ResearchFormImportController extends Controller
 
             $position = 1;
 
-            foreach (ResearchFormBlueprint::quotas(Question::FORM_POST_TEST_B) as $domain => $competencies) {
+            foreach (ResearchFormBlueprint::quotas($form) as $domain => $competencies) {
                 foreach ($competencies as $code => $count) {
                     for ($item = 0; $item < $count; $item++) {
                         fputcsv($handle, [
-                            Question::FORM_POST_TEST_B, $position++, $domain, $code,
+                            $form, $position++, $domain, $code,
                             '', '', '', '', '', '', '', '', '', '',
                         ], ',', '"', '');
                     }
@@ -56,7 +58,7 @@ class ResearchFormImportController extends Controller
             }
 
             fclose($handle);
-        }, 'citirx-form-b-100-template.csv', [
+        }, 'citirx-'.$form.'-template.csv', [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Cache-Control' => 'no-store',
         ]);
@@ -86,38 +88,6 @@ class ResearchFormImportController extends Controller
                         ResearchFormVersion::STATUS_DRAFT,
                     )
                     ->get(),
-
-                'validationVersions' => (
-                    clone $versionQuery
-                )
-                    ->where('research_form', Question::FORM_PRE_TEST_A)
-                    ->where(
-                        'status',
-                        ResearchFormVersion::STATUS_IN_REVIEW,
-                    )
-                    ->get(),
-
-                'validators' => User::query()
-                    ->whereIn(
-                        'role',
-                        [
-                            'faculty',
-                            'admin',
-                            'dean',
-                        ],
-                    )
-                    ->whereNotNull(
-                        'email_verified_at',
-                    )
-                    ->orderBy('last_name')
-                    ->orderBy('first_name')
-                    ->get([
-                        'user_id',
-                        'first_name',
-                        'last_name',
-                        'email',
-                        'role',
-                    ]),
 
                 'imports' => ResearchFormImport::query()
                     ->where(
@@ -172,8 +142,7 @@ class ResearchFormImportController extends Controller
             )
             ->with(
                 'status',
-                'Dry run passed. Review the result '
-                    .'and confirm the import before '
+                'Preview ready. Select eligible rows before '
                     .$import->expires_at->format(
                         'M j, Y g:i A',
                     ).'.',
@@ -199,7 +168,8 @@ class ResearchFormImportController extends Controller
                 expectedLockVersion: (int) $validated[
                     'expected_lock_version'
                 ],
-                reason: $validated['reason'],
+                reason: $validated['reason'] ?? 'Selected question rows imported into a draft.',
+                selectedRows: $validated['selected_rows'],
             );
         } catch (
             LogicException|RuntimeException $exception
@@ -209,10 +179,7 @@ class ResearchFormImportController extends Controller
             ]);
         }
 
-        $action = $import->import_type
-            === ResearchFormImport::TYPE_CONTENT
-            ? 'Question content was imported.'
-            : 'Faculty validation was imported.';
+        $action = 'Selected question rows were imported into the draft.';
 
         return redirect()
             ->route(

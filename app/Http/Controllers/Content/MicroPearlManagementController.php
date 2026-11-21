@@ -36,6 +36,8 @@ class MicroPearlManagementController extends Controller
             ->value();
 
         $pearls = MicroPearl::query()
+            ->when($request->user()->role === 'faculty', fn ($query) => $query->where(fn ($query) => $query
+                ->where('content_status', '!=', MicroPearl::STATUS_DRAFT)->orWhere('created_by', $request->user()->user_id)))
             ->with([
                 'competency.domain',
                 'creator',
@@ -136,6 +138,8 @@ class MicroPearlManagementController extends Controller
     public function edit(
         MicroPearl $pearl,
     ): View {
+        abort_if(auth()->user()->role === 'faculty' && $pearl->content_status === MicroPearl::STATUS_DRAFT
+            && $pearl->created_by !== auth()->id(), 403);
         $pearl->load([
             'competency.domain',
             'creator',
