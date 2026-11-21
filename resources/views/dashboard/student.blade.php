@@ -93,239 +93,213 @@
                 </div>
             </div>
 
-            <div class="grid gap-6 lg:grid-cols-3">
-
-                {{-- MAIN COLUMN --}}
-                <div class="space-y-6 lg:col-span-2">
-
-                    {{-- 1. HERO CARD: Focus / Diagnostic --}}
-                    @if (!$user->is_diagnostic_completed)
-                        <section
-                            class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/40 bg-primary-tint/40 p-6 sm:p-8 shadow-sm">
+            <div class="grid gap-6 lg:grid-cols-5">
+                @if (!$user->is_diagnostic_completed)
+                    <section
+                        class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/40 bg-primary-tint/40 p-6 sm:p-8 shadow-sm lg:col-span-3">
+                        <span
+                            class="inline-flex items-center rounded-full border border-primary/30 bg-white px-3 py-1 font-display text-xs font-bold text-primary shadow-sm">
+                            Step 1: Baseline Assessment
+                        </span>
+                        <h2 class="mt-3 font-display text-2xl font-extrabold text-slate-900 sm:text-3xl">
+                            Complete Your Diagnostic
+                        </h2>
+                        <p class="mt-2 max-w-lg text-sm leading-relaxed text-slate-700">
+                            CitiRx uses Bayesian Knowledge Tracing (BKT) to pinpoint your exact competencies. Start
+                            your baseline test to unlock adaptive practice.
+                        </p>
+                        <div class="mt-6">
+                            <a href="{{ $inProgressDiagnostic ? route('diagnostic.take', ['session' => $inProgressDiagnostic->session_id]) : route('diagnostic.intro') }}"
+                                style="--lip: rgb(var(--color-primary-lip));"
+                                class="btn-press inline-flex items-center rounded-2xl bg-primary px-7 py-3.5 font-display text-base font-bold text-white shadow-md">
+                                {{ $inProgressDiagnostic ? 'Resume Diagnostic' : 'Start Diagnostic' }}
+                            </a>
+                        </div>
+                    </section>
+                @else
+                    <section
+                        class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-primary-tint/40 p-6 sm:p-8 shadow-sm lg:col-span-3">
+                        @if ($inProgressPractice)
                             <span
-                                class="inline-flex items-center rounded-full border border-primary/30 bg-white px-3 py-1 font-display text-xs font-bold text-primary shadow-sm">
-                                Step 1: Baseline Assessment
+                                class="mb-3 inline-flex items-center gap-1.5 rounded-full bg-gold-tint px-2.5 py-0.5 text-xs font-bold text-gold-ink">
+                                <span class="h-2 w-2 animate-pulse rounded-full bg-gold"></span>
+                                In progress
                             </span>
-                            <h2 class="mt-3 font-display text-2xl font-extrabold text-slate-900 sm:text-3xl">
-                                Complete Your Diagnostic
-                            </h2>
-                            <p class="mt-2 max-w-lg text-sm leading-relaxed text-slate-700">
-                                CitiRx uses Bayesian Knowledge Tracing (BKT) to pinpoint your exact competencies. Start
-                                your baseline test to unlock adaptive practice.
-                            </p>
-                            <div class="mt-6">
-                                <a href="{{ $inProgressDiagnostic ? route('diagnostic.take', ['session' => $inProgressDiagnostic->session_id]) : route('diagnostic.intro') }}"
-                                    style="--lip: rgb(var(--color-primary-lip));"
-                                    class="btn-press inline-flex items-center rounded-2xl bg-primary px-7 py-3.5 font-display text-base font-bold text-white shadow-md">
-                                    {{ $inProgressDiagnostic ? 'Resume Diagnostic' : 'Start Diagnostic' }}
-                                </a>
-                            </div>
-                        </section>
-                    @else
-                        <section
-                            class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-primary-tint/40 p-6 sm:p-8 shadow-sm">
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="inline-flex items-center rounded-full bg-white px-3 py-1 font-display text-xs font-bold text-primary shadow-sm ring-1 ring-primary/20">
-                                    Adaptive Practice
-                                </span>
-                                @if ($inProgressPractice)
+                        @endif
+
+                        <h2 class="font-display text-2xl font-extrabold text-slate-900 sm:text-3xl">
+                            Adaptive Practice
+                        </h2>
+                        <p class="mt-2 max-w-xl text-sm leading-relaxed text-slate-700">
+                            Continue targeted practice sessions to expand your mastery scores across pharmacy
+                            domains.
+                        </p>
+
+                        <div class="mt-6 flex flex-wrap items-center gap-4">
+                            <a href="{{ $inProgressPractice ? route('practice.show', ['session' => $inProgressPractice->session_id]) : route('practice.intro') }}"
+                                style="--lip: rgb(var(--color-primary-lip));"
+                                class="btn-press inline-flex items-center rounded-2xl bg-primary px-6 py-3 font-display text-base font-bold text-white shadow-md">
+                                {{ $inProgressPractice ? 'Resume Session' : 'Start Practice Session' }}
+                            </a>
+
+                            <a href="{{ route('readiness.show') }}"
+                                class="rx-student-report-link font-display text-sm font-bold text-primary transition hover:underline">
+                                Readiness Report →
+                            </a>
+                        </div>
+                    </section>
+                @endif
+
+                <aside class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:col-span-2">
+                    <h2 class="font-display text-lg font-black text-slate-900">Your Progress</h2>
+
+                    <div @class([
+                        'mt-4 grid items-center gap-5',
+                        'sm:grid-cols-2' => $user->is_diagnostic_completed,
+                    ])>
+                        @if ($user->is_diagnostic_completed)
+                            <div class="min-w-0 text-center">
+                                <h3 class="font-display text-xs font-extrabold uppercase tracking-wider text-muted-ink">
+                                    Predicted PhLE Readiness
+                                </h3>
+
+                                <div class="mt-4 flex flex-col items-center">
+                                    @php
+                                        $pct = (float) ($user->predicted_readiness_pct ?? 0);
+
+                                        $dashPct = max(0, min(100, $pct));
+
+                                        $dashCircumference = 251.33;
+
+                                        /*
+                                         * Server-rendered fallback for cases where JavaScript
+                                         * is unavailable or has not loaded yet.
+                                         */
+                                        $dashOffset = $dashCircumference * (1 - $dashPct / 100);
+                                    @endphp
+
+                                    <div class="relative mb-2 flex h-24 w-24 items-center justify-center"
+                                        x-data="readinessRing(
+                                            @js($dashPct),
+                                            @js($dashCircumference)
+                                        )">
+
+                                        <svg class="absolute inset-0 h-full w-full -rotate-90 transform"
+                                            viewBox="0 0 100 100">
+                                            <circle cx="50" cy="50" r="40" fill="none" stroke="#E2E8F0"
+                                                stroke-width="10" />
+                                            <circle x-ref="ring" cx="50" cy="50" r="40" fill="none"
+                                                stroke="{{ $readinessStyles['hex'] }}" stroke-width="10"
+                                                stroke-linecap="round" stroke-dasharray="{{ $dashCircumference }}"
+                                                stroke-dashoffset="{{ round($dashOffset, 2) }}" />
+                                        </svg>
+
+                                        <div class="absolute flex flex-col items-center justify-center">
+                                            <span class="font-display text-2xl font-extrabold text-slate-900 leading-none">
+                                                <span x-text="displayScore">
+                                                    {{ number_format($dashPct, 1) }}
+                                                </span>
+                                            </span>
+                                        </div>
+                                    </div>
+
                                     <span
-                                        class="inline-flex items-center gap-1.5 rounded-full bg-gold-tint px-2.5 py-0.5 text-xs font-bold text-gold-ink">
-                                        <span class="h-2 w-2 animate-pulse rounded-full bg-gold"></span>
-                                        In progress
+                                        class="inline-flex items-center rounded-full border px-3 py-1 font-display text-xs font-bold {{ $readinessStyles['bg'] }} {{ $readinessStyles['text'] }} {{ $readinessStyles['border'] }}">
+                                        {{ $readinessStyles['label'] }}
                                     </span>
-                                @endif
+                                </div>
                             </div>
+                        @endif
 
-                            <h2 class="mt-3 font-display text-2xl font-extrabold text-slate-900 sm:text-3xl">
-                                Adaptive Practice
-                            </h2>
-                            <p class="mt-2 max-w-xl text-sm leading-relaxed text-slate-700">
-                                Continue targeted practice sessions to expand your mastery scores across pharmacy
-                                domains.
-                            </p>
-
-                            <div class="mt-6 flex flex-wrap items-center gap-4">
-                                <a href="{{ $inProgressPractice ? route('practice.show', ['session' => $inProgressPractice->session_id]) : route('practice.intro') }}"
-                                    style="--lip: rgb(var(--color-primary-lip));"
-                                    class="btn-press inline-flex items-center rounded-2xl bg-primary px-6 py-3 font-display text-base font-bold text-white shadow-md">
-                                    {{ $inProgressPractice ? 'Resume Session' : 'Start Practice Session' }}
-                                </a>
-
-                                <a href="{{ route('readiness.show') }}"
-                                    class="rx-student-report-link font-display text-sm font-bold text-primary transition hover:underline">
-                                    Readiness Report →
-                                </a>
-                            </div>
-                        </section>
-                        <x-study-plan :recommendation="$studyRecommendation" />
-                    @endif
-
-                    {{-- MOBILE-ONLY LEVEL WIDGET (Appears first on mobile screens before Hub cards) --}}
-                    <div class="block lg:hidden">
-                        <x-xp-journey
-                            :current-xp="$user->total_xp"
-                            :target-xp="$xpJourneyTarget"
-                        />
+                        <div class="min-w-0">
+                            <x-xp-journey
+                                :current-xp="$user->total_xp"
+                                :target-xp="$xpJourneyTarget"
+                            />
+                        </div>
                     </div>
+                </aside>
+            </div>
 
-                    {{-- 2. RX VAULT, BOOKMARKS & ACHIEVEMENTS ROW (Duolingo Tactile Button Vibe) --}}
-                    <div class="grid gap-5 sm:grid-cols-3">
+            @if ($user->is_diagnostic_completed)
+                <x-study-plan :recommendation="$studyRecommendation" :dashboard="true" />
+            @endif
 
-                        {{-- Rx Vault Tile (Rose Theme) --}}
+            <div class="grid gap-5 sm:grid-cols-3">
+
+                {{-- Rx Vault Tile (Rose Theme) --}}
+                <div
+                    class="flex flex-col justify-between rounded-3xl border-2 border-b-4 border-rose-300 bg-white p-5 sm:p-6 shadow-sm">
+                    <div>
                         <div
-                            class="flex flex-col justify-between rounded-3xl border-2 border-b-4 border-rose-300 bg-white p-5 sm:p-6 shadow-sm">
-                            <div>
-                                <div
-                                    class="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-b-3 border-rose-300 bg-rose-100 text-2xl shadow-2xs">
-                                    💊
-                                </div>
-                                <h4 class="mt-4 font-display text-lg font-black text-slate-900">Rx Vault</h4>
-                                <p class="text-xs font-semibold text-muted-ink mt-0.5">
-                                    @if ($activeVaultCount > 0)
-                                        <span class="font-bold text-slate-900">{{ $activeVaultCount }}</span>
-                                        {{ \Illuminate\Support\Str::plural('item', $activeVaultCount) }} to review.
-                                    @else
-                                        No pending items.
-                                    @endif
-                                </p>
-                            </div>
-                            <div class="mt-6">
-                                <a href="{{ route('vault.index') }}" style="--lip: #BE123C;"
-                                    class="btn-press block w-full rounded-2xl bg-rose-500 py-3 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-md transition hover:bg-rose-600">
-                                    Open Vault
-                                </a>
-                            </div>
+                            class="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-b-3 border-rose-300 bg-rose-100 text-2xl shadow-2xs">
+                            💊
                         </div>
-
-                        {{-- Bookmarks Tile (Amber Theme) --}}
-                        <div
-                            class="flex flex-col justify-between rounded-3xl border-2 border-b-4 border-amber-300 bg-white p-5 sm:p-6 shadow-sm">
-                            <div>
-                                <div
-                                    class="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-b-3 border-amber-300 bg-amber-100 text-2xl shadow-2xs">
-                                    ⭐
-                                </div>
-                                <h4 class="mt-4 font-display text-lg font-black text-slate-900">Bookmarks</h4>
-                                <p class="text-xs font-semibold text-muted-ink mt-0.5">
-                                    @if (($bookmarkCount ?? 0) > 0)
-                                        <span class="font-bold text-slate-900">{{ $bookmarkCount }}</span>
-                                        {{ \Illuminate\Support\Str::plural('question', $bookmarkCount) }} starred.
-                                    @else
-                                        No starred questions.
-                                    @endif
-                                </p>
-                            </div>
-                            <div class="mt-6">
-                                <a href="{{ route('vault.index', ['tab' => 'bookmarks']) }}" style="--lip: #B45309;"
-                                    class="btn-press block w-full rounded-2xl bg-amber-500 py-3 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-md transition hover:bg-amber-600">
-                                    View Bookmarks
-                                </a>
-                            </div>
-                        </div>
-
-                        {{-- Achievements Tile (Indigo Theme) --}}
-                        <div
-                            class="flex flex-col justify-between rounded-3xl border-2 border-b-4 border-indigo-300 bg-white p-5 sm:p-6 shadow-sm">
-                            <div>
-                                <div
-                                    class="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-b-3 border-indigo-300 bg-indigo-100 text-2xl shadow-2xs">
-                                    🏆
-                                </div>
-                                <h4 class="mt-4 font-display text-lg font-black text-slate-900">Badges</h4>
-                                <p class="text-xs font-semibold text-muted-ink mt-0.5">
-                                    <span class="font-bold text-slate-900">{{ $unlockedBadgeCount }}</span> of
-                                    {{ $totalBadgeCount }} unlocked
-                                </p>
-                            </div>
-                            <div class="mt-6">
-                                <a href="{{ route('badges.index') }}" style="--lip: #4338CA;"
-                                    class="btn-press block w-full rounded-2xl bg-indigo-600 py-3 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-md transition hover:bg-indigo-700">
-                                    View Badges
-                                </a>
-                            </div>
-                        </div>
-
+                        <h4 class="mt-4 font-display text-lg font-black text-slate-900">Rx Vault</h4>
+                        <p class="text-xs font-semibold text-muted-ink mt-0.5">
+                            @if ($activeVaultCount > 0)
+                                <span class="font-bold text-slate-900">{{ $activeVaultCount }}</span>
+                                {{ \Illuminate\Support\Str::plural('item', $activeVaultCount) }} to review.
+                            @else
+                                No pending items.
+                            @endif
+                        </p>
                     </div>
-
+                    <div class="mt-6">
+                        <a href="{{ route('vault.index') }}" style="--lip: #BE123C;"
+                            class="btn-press block w-full rounded-2xl bg-rose-500 py-3 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-md transition hover:bg-rose-600">
+                            Open Vault
+                        </a>
+                    </div>
                 </div>
 
-                {{-- SIDEBAR: Level & Readiness Widgets --}}
-                <aside class="space-y-6">
-
-                    {{-- Level & Progression Widget (Hidden on mobile since it's displayed above on mobile) --}}
-                    <div class="hidden lg:block">
-                        <x-xp-journey
-                            :current-xp="$user->total_xp"
-                            :target-xp="$xpJourneyTarget"
-                        />
+                {{-- Bookmarks Tile (Amber Theme) --}}
+                <div
+                    class="flex flex-col justify-between rounded-3xl border-2 border-b-4 border-amber-300 bg-white p-5 sm:p-6 shadow-sm">
+                    <div>
+                        <div
+                            class="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-b-3 border-amber-300 bg-amber-100 text-2xl shadow-2xs">
+                            ⭐
+                        </div>
+                        <h4 class="mt-4 font-display text-lg font-black text-slate-900">Bookmarks</h4>
+                        <p class="text-xs font-semibold text-muted-ink mt-0.5">
+                            @if (($bookmarkCount ?? 0) > 0)
+                                <span class="font-bold text-slate-900">{{ $bookmarkCount }}</span>
+                                {{ \Illuminate\Support\Str::plural('question', $bookmarkCount) }} starred.
+                            @else
+                                No starred questions.
+                            @endif
+                        </p>
                     </div>
+                    <div class="mt-6">
+                        <a href="{{ route('vault.index', ['tab' => 'bookmarks']) }}" style="--lip: #B45309;"
+                            class="btn-press block w-full rounded-2xl bg-amber-500 py-3 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-md transition hover:bg-amber-600">
+                            View Bookmarks
+                        </a>
+                    </div>
+                </div>
 
-                    {{-- Board Readiness Prediction Widget --}}
-                    @if ($user->is_diagnostic_completed)
-                        <section
-                            class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 text-center shadow-sm">
-                            <h3 class="font-display text-xs font-extrabold uppercase tracking-wider text-muted-ink">
-                                Predicted PhLE Readiness
-                            </h3>
-
-                            <div class="mt-4 flex flex-col items-center">
-                                @php
-                                    $pct = (float) ($user->predicted_readiness_pct ?? 0);
-
-                                    $dashPct = max(0, min(100, $pct));
-
-                                    $dashCircumference = 251.33;
-
-                                    /*
-                                     * Server-rendered fallback for cases where JavaScript
-                                     * is unavailable or has not loaded yet.
-                                     */
-                                    $dashOffset = $dashCircumference * (1 - $dashPct / 100);
-                                @endphp
-
-                                <div class="relative mb-4 flex h-32 w-32 items-center justify-center"
-                                    x-data="readinessRing(
-                                        @js($dashPct),
-                                        @js($dashCircumference)
-                                    )">
-
-                                    <svg class="absolute inset-0 h-full w-full -rotate-90 transform"
-                                        viewBox="0 0 100 100">
-                                        <circle cx="50" cy="50" r="40" fill="none" stroke="#E2E8F0"
-                                            stroke-width="10" />
-                                        <circle x-ref="ring" cx="50" cy="50" r="40" fill="none"
-                                            stroke="{{ $readinessStyles['hex'] }}" stroke-width="10"
-                                            stroke-linecap="round" stroke-dasharray="{{ $dashCircumference }}"
-                                            stroke-dashoffset="{{ round($dashOffset, 2) }}" />
-                                    </svg>
-
-                                    <div class="absolute flex flex-col items-center justify-center">
-                                        <span class="font-display text-2xl font-extrabold text-slate-900 leading-none">
-                                            <span x-text="displayScore">
-                                                {{ number_format($dashPct, 1) }}
-                                            </span>
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <span
-                                    class="inline-flex items-center rounded-full border px-3 py-1 font-display text-xs font-bold {{ $readinessStyles['bg'] }} {{ $readinessStyles['text'] }} {{ $readinessStyles['border'] }}">
-                                    {{ $readinessStyles['label'] }}
-                                </span>
-                            </div>
-
-                            <div class="mt-5 border-t border-slate-100 pt-4">
-                                <a href="{{ route('readiness.show') }}"
-                                    class="rx-student-report-link font-display text-xs font-bold text-primary hover:underline">
-                                    Detailed Statistics Breakdown →
-                                </a>
-                            </div>
-                        </section>
-                    @endif
-
-                </aside>
+                {{-- Achievements Tile (Indigo Theme) --}}
+                <div
+                    class="flex flex-col justify-between rounded-3xl border-2 border-b-4 border-indigo-300 bg-white p-5 sm:p-6 shadow-sm">
+                    <div>
+                        <div
+                            class="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-b-3 border-indigo-300 bg-indigo-100 text-2xl shadow-2xs">
+                            🏆
+                        </div>
+                        <h4 class="mt-4 font-display text-lg font-black text-slate-900">Badges</h4>
+                        <p class="text-xs font-semibold text-muted-ink mt-0.5">
+                            <span class="font-bold text-slate-900">{{ $unlockedBadgeCount }}</span> of
+                            {{ $totalBadgeCount }} unlocked
+                        </p>
+                    </div>
+                    <div class="mt-6">
+                        <a href="{{ route('badges.index') }}" style="--lip: #4338CA;"
+                            class="btn-press block w-full rounded-2xl bg-indigo-600 py-3 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-md transition hover:bg-indigo-700">
+                            View Badges
+                        </a>
+                    </div>
+                </div>
 
             </div>
         </div>

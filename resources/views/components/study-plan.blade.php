@@ -1,11 +1,13 @@
 @props([
     'recommendation',
+    'dashboard' => false,
 ])
 
 @php
     $hasData = (bool) ($recommendation['has_data'] ?? false);
     $requiresDiagnostic = (bool) ($recommendation['requires_diagnostic'] ?? false);
     $action = $recommendation['recommended_action'] ?? null;
+    $showChart = $dashboard && ! empty($recommendation['priority_competencies']);
 @endphp
 
 <section
@@ -57,8 +59,12 @@
             @endif
         </div>
     @else
-        <div class="space-y-6 p-5 sm:p-6">
-            <div>
+        <div @class([
+            'p-5 sm:p-6',
+            'space-y-6' => ! $showChart,
+            'grid items-start gap-6 md:grid-cols-5' => $showChart,
+        ])>
+            <div @class(['md:col-span-2 md:col-start-4 md:row-start-1' => $showChart])>
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <p class="font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
@@ -83,30 +89,56 @@
             </div>
 
             @if ($recommendation['priority_competencies'] !== [])
-                <div>
+                <div @class([
+                    'md:col-span-3 md:col-start-1 md:row-start-1' => $showChart,
+                    'md:row-span-2' => $showChart && $action,
+                ])>
                     <p class="font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
                         Priority Competencies
                     </p>
 
-                    <div class="mt-2 divide-y divide-slate-100 rounded-2xl border border-slate-200">
+                    <div @class([
+                        'mt-2',
+                        'space-y-3' => $showChart,
+                        'divide-y divide-slate-100 rounded-2xl border border-slate-200' => ! $showChart,
+                    ])>
                         @foreach ($recommendation['priority_competencies'] as $competency)
-                            <div class="flex items-center justify-between gap-4 px-4 py-3">
-                                <div class="min-w-0">
-                                    <span class="font-mono text-[10px] font-bold text-primary">
-                                        {{ $competency['code'] }}
-                                    </span>
+                            <div @class(['px-4 py-3' => ! $showChart])>
+                                <div @class([
+                                    'flex justify-between gap-4',
+                                    'items-end' => $showChart,
+                                    'items-center' => ! $showChart,
+                                ])>
+                                    <div class="min-w-0">
+                                        <span class="font-mono text-[10px] font-bold text-primary">
+                                            {{ $competency['code'] }}
+                                        </span>
 
-                                    <p
-                                        class="truncate text-sm font-semibold text-slate-800"
-                                        title="{{ $competency['title'] }}"
-                                    >
-                                        {{ $competency['title'] }}
-                                    </p>
+                                        <p
+                                            @class([
+                                                'text-sm font-semibold text-slate-800',
+                                                'break-words' => $showChart,
+                                                'truncate' => ! $showChart,
+                                            ])
+                                            title="{{ $competency['title'] }}"
+                                        >
+                                            {{ $competency['title'] }}
+                                        </p>
+                                    </div>
+
+                                    <span class="shrink-0 font-display text-sm font-black text-slate-900">
+                                        {{ number_format($competency['mastery_pct'], 1) }}%
+                                    </span>
                                 </div>
 
-                                <span class="shrink-0 font-display text-sm font-black text-slate-900">
-                                    {{ number_format($competency['mastery_pct'], 1) }}%
-                                </span>
+                                @if ($showChart)
+                                    <div aria-hidden="true" class="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-200">
+                                        <div
+                                            class="h-full rounded-full bg-primary"
+                                            style="width: {{ min(100, max(0, (float) $competency['mastery_pct'])) }}%"
+                                        ></div>
+                                    </div>
+                                @endif
                             </div>
                         @endforeach
                     </div>
@@ -114,7 +146,10 @@
             @endif
 
             @if ($action)
-                <div class="rounded-2xl border border-primary/25 bg-primary-tint/50 p-4">
+                <div @class([
+                    'rounded-2xl border border-primary/25 bg-primary-tint/50 p-4',
+                    'md:col-span-2 md:col-start-4 md:row-start-2' => $showChart,
+                ])>
                     <p class="font-display text-[10px] font-bold uppercase tracking-wider text-primary">
                         Recommended Action
                     </p>
@@ -137,7 +172,7 @@
             @endif
 
             @if ($recommendation['recommended_pearls'] !== [])
-                <div>
+                <div @class(['md:col-span-full' => $showChart])>
                     <p class="font-display text-[10px] font-bold uppercase tracking-wider text-muted-ink">
                         Suggested Micro Pearls
                     </p>
@@ -168,7 +203,10 @@
                 </div>
             @endif
 
-            <p class="border-t border-slate-100 pt-3 text-[11px] leading-relaxed text-muted-ink">
+            <p @class([
+                'border-t border-slate-100 pt-3 text-[11px] leading-relaxed text-muted-ink',
+                'md:col-span-full' => $showChart,
+            ])>
                 Recommendations guide review activities only. They do not change assessment scores,
                 mastery calculations, XP, or official research results.
             </p>

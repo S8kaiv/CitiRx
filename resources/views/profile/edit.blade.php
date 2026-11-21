@@ -204,7 +204,7 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                                     >
                                         Day Streak
                                     </p>
-                                    <p class="mt-2 text-xs leading-relaxed text-ink-muted">Finish a practice session with 10 eligible answers and at least 70% accuracy. Speed-flagged answers do not count. One credit per Manila day.</p>
+
                                 </div>
                             </div>
 
@@ -284,6 +284,12 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                             </div>
 
                         </div>
+
+                        <p class="px-1 text-xs leading-relaxed text-ink-muted">
+                            <strong class="font-semibold text-ink">Streak credit.</strong>
+                            Finish one practice session with 10 eligible answers and at least 70% accuracy.
+                            Speed-flagged answers don’t count. Limit 1 credit per day.
+                        </p>
 
                         {{-- Predicted Readiness Card (Mobile View Only) --}}
                         @if ($user->is_diagnostic_completed || $dashPct > 0)
