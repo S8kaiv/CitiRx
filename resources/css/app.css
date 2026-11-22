@@ -2,6 +2,60 @@
     display: none !important;
 }
 
+/* Gate only active assessment pages; leaving fullscreen never pauses their timers. */
+[data-assessment-content][inert] {
+    visibility: hidden;
+}
+
+.assessment-focus-locked {
+    overflow: hidden;
+}
+
+html:fullscreen {
+    background: rgb(var(--color-canvas));
+}
+
+.assessment-focus-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    width: min(32rem, calc(100% - 2rem));
+    max-width: none;
+    height: fit-content;
+    max-height: calc(100dvh - 2rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    margin: auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.assessment-focus-gate::backdrop {
+    background: rgb(var(--color-canvas) / 0.98);
+}
+
+.assessment-focus-gate:not([open]) {
+    display: none;
+}
+
+.assessment-focus-gate .ui-button {
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+.assessment-clipboard-notice {
+    position: fixed;
+    top: max(1rem, env(safe-area-inset-top, 0px));
+    right: max(1rem, env(safe-area-inset-right, 0px));
+    z-index: 100;
+    max-width: min(28rem, calc(100% - 2rem));
+    pointer-events: none;
+}
+
+.assessment-script-notice {
+    position: fixed;
+    inset: 0;
+    z-index: 101;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -227,7 +227,7 @@ class BadgeService
         int $days
     ): bool {
         return
-            (int) $user->streak_count
+            $user->currentStreak()
             >= $days;
     }
 

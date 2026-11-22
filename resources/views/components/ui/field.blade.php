@@ -12,7 +12,8 @@
 
 @php
     $id = $attributes->get('id', $name);
-    $errorMessage = $error ?: $errors->first($name);
+    $validationName = trim(str_replace(['[', ']'], ['.', ''], $name), '.');
+    $errorMessage = $error ?: $errors->first($validationName);
 
     $hintId = $hint ? "{$id}-hint" : null;
     $errorId = $errorMessage ? "{$id}-error" : null;
@@ -64,7 +65,7 @@
                 aria-describedby="{{ $describedBy }}"
             @endif
             {{ $controlAttributes }}
-        >{{ old($name, $value) }}</textarea>
+        >{{ old($validationName, $value) }}</textarea>
     @elseif ($type === 'select')
         <select
             id="{{ $id }}"
@@ -87,7 +88,7 @@
                 type="{{ $type }}"
                 value="{{ $type === 'password'
                     ? ''
-                    : old($name, $value) }}"
+                    : old($validationName, $value) }}"
                 @required($required)
                 @disabled($disabled)
                 aria-invalid="{{ $errorMessage ? 'true' : 'false' }}"

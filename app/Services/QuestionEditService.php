@@ -61,6 +61,10 @@ class QuestionEditService
                     $expectedVersion,
                 );
 
+                if ($question->form_version_id !== null) {
+                    throw new LogicException('Use the research form editor. Research changes require whole-version Dean approval.');
+                }
+
                 if (
                     $this->lock->isLocked(
                         $question,
@@ -388,6 +392,9 @@ class QuestionEditService
                  * Sending "inactive" twice keeps the question
                  * inactive instead of toggling it back on.
                  */
+                if ($question->form_version_id !== null) {
+                    throw new LogicException('Research item availability is controlled by its immutable form version. Copy it to a draft to revise it.');
+                }
                 if (
                     (bool) $question->is_active
                     === $active

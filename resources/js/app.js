@@ -1,4 +1,5 @@
 import Alpine from "alpinejs";
+import { initializeAssessmentGuard } from './assessment-guard';
 
 window.Alpine = Alpine;
 
@@ -93,7 +94,22 @@ const resolveComfortMode = (mode) => {
         : "light";
 };
 
-const applyDocumentComfort = (mode) => {
+const brandFavicon = document.querySelector('[data-brand-icon-root]');
+
+const updateBrandIcons = (themeId, comfort) => {
+    if (!brandFavicon) return;
+
+    const theme = themeId.slice('theme-'.length);
+    const version = new URL(brandFavicon.href).search;
+    const iconUrl = `${brandFavicon.dataset.brandIconRoot}/${theme}-${comfort}.png${version}`;
+    brandFavicon.href = iconUrl;
+
+    for (const logo of document.querySelectorAll('[data-brand-logo]')) {
+        logo.src = iconUrl;
+    }
+};
+
+const applyDocumentComfort = (mode, themeId = 'theme-standard') => {
     const resolved = resolveComfortMode(mode);
 
     document.documentElement.dataset.comfort =
@@ -109,6 +125,8 @@ const applyDocumentComfort = (mode) => {
             ? "#0F172A"
             : "#F8FAFC",
     );
+
+    updateBrandIcons(themeId, resolved);
 
     return resolved;
 };
@@ -191,6 +209,7 @@ Alpine.data(
                 }
 
                 this.globalTheme = themeId;
+                updateBrandIcons(themeId, this.resolvedComfort);
 
                 storeValue(
                     THEME_STORAGE_KEY,
@@ -212,6 +231,7 @@ Alpine.data(
                 this.resolvedComfort =
                     applyDocumentComfort(
                         this.comfortMode,
+                        this.globalTheme,
                     );
             },
 
@@ -248,6 +268,7 @@ Alpine.data(
                         this.resolvedComfort =
                             applyDocumentComfort(
                                 "auto",
+                                this.globalTheme,
                             );
                     }
                 };
@@ -428,3 +449,52 @@ Alpine.data('publicComfort', () => ({
 }));
 
 Alpine.start();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAssessmentGuard, { once: true });
+} else {
+    initializeAssessmentGuard();
+}
+// One confirmation per form submission; validation still runs before opening it.
+document.addEventListener('DOMContentLoaded', () => {
+    const dialog = document.getElementById('workflow-confirm');
+    if (!dialog) return;
+    let pending = null;
+    document.querySelectorAll('form[data-bulk]').forEach(form => {
+        const rows = () => [...form.querySelectorAll('[data-row-select]:not(:disabled)')];
+        const update = () => {
+            const checked = rows().filter(row => row.checked);
+            const target = form.querySelector('[data-cohort-target]')?.value;
+            const moves = checked.filter(row => row.dataset.cohort !== target).length;
+            const counter = form.querySelector('[data-selected-count]');
+            if (counter) counter.textContent = `${checked.length} selected` + (target ? ` · ${moves} will move to the chosen cohort` : '');
+            const all = form.querySelector('[data-select-all]');
+            if (all) { all.checked = rows().length > 0 && checked.length === rows().length; all.indeterminate = checked.length > 0 && checked.length < rows().length; }
+            form.querySelectorAll('[data-bulk-submit]').forEach(button => { button.disabled = checked.length === 0; });
+        };
+        form.addEventListener('change', event => {
+            if (event.target.matches('[data-select-all]')) rows().forEach(row => { row.checked = event.target.checked; });
+            update();
+        });
+        update();
+    });
+    document.addEventListener('submit', event => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement) || !form.hasAttribute('data-confirm')) return;
+        if (form.dataset.confirmed === 'yes') { delete form.dataset.confirmed; return; }
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        pending = { form, submitter: event.submitter };
+        const count = form.querySelectorAll('input[data-row-select]:checked:not(:disabled)').length;
+        document.getElementById('workflow-confirm-message').textContent = form.dataset.confirm + (form.hasAttribute('data-bulk') ? `\n${form.querySelector('[data-selected-count]')?.textContent || 'Selected records: ' + count}` : '');
+        dialog.showModal();
+    });
+    document.getElementById('workflow-confirm-cancel').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', () => { pending?.submitter?.focus(); pending = null; });
+    document.getElementById('workflow-confirm-accept').addEventListener('click', () => {
+        if (!pending) return;
+        const { form, submitter } = pending;
+        form.dataset.confirmed = 'yes';
+        dialog.close();
+        form.requestSubmit(submitter || undefined);
+    });
+});

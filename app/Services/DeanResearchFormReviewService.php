@@ -22,7 +22,7 @@ class DeanResearchFormReviewService
     {
         return Question::query()
             ->where('form_version_id', $version->form_version_id)
-            ->where('research_form', Question::FORM_POST_TEST_B)
+            ->where('research_form', $version->research_form)
             ->where('is_active', true)
             ->with([
                 'choices' => fn ($query) => $query->orderBy('choice_letter'),
@@ -74,7 +74,7 @@ class DeanResearchFormReviewService
 
             $questions = Question::query()
                 ->where('form_version_id', $version->form_version_id)
-                ->where('research_form', Question::FORM_POST_TEST_B)
+                ->where('research_form', $version->research_form)
                 ->where('is_active', true)
                 ->with([
                     'choices' => fn ($query) => $query->orderBy('choice_letter'),
@@ -96,15 +96,6 @@ class DeanResearchFormReviewService
                 throw ValidationException::withMessages(['review' => $report['errors']]);
             }
 
-            if ($questions->contains(
-                fn (Question $question): bool => $question->research_validated_at !== null
-                    || $question->research_validated_by !== null,
-            )) {
-                throw ValidationException::withMessages([
-                    'review' => 'This version already contains approval metadata.',
-                ]);
-            }
-
             Question::query()
                 ->whereIn('question_id', $questions->modelKeys())
                 ->update([
@@ -113,7 +104,13 @@ class DeanResearchFormReviewService
                 ]);
 
             $oldLockVersion = (int) $version->lock_version;
-            $version->forceFill(['lock_version' => $oldLockVersion + 1])->save();
+            $version->forceFill([
+                'status' => ResearchFormVersion::STATUS_VALIDATED,
+                'lock_version' => $oldLockVersion + 1,
+                'dean_approved_by' => $dean->user_id,
+                'dean_approved_at' => now(),
+                'approved_content_digest' => $expectedDigest,
+            ])->save();
 
             $this->adminAudit->record(
                 $dean,
@@ -124,7 +121,7 @@ class DeanResearchFormReviewService
                     'content_sha256' => ['old' => null, 'new' => $expectedDigest],
                     'lock_version' => ['old' => $oldLockVersion, 'new' => $oldLockVersion + 1],
                 ],
-                'The dean approved every Form B question, its answer, source, and rights status.',
+                'The Dean approved the complete '.$version->research_form.' version, its answers, blueprint, sources, and rights.',
             );
         }, attempts: 3);
     }
@@ -146,17 +143,13 @@ class DeanResearchFormReviewService
 
             $this->assertReviewable($version, $expectedLockVersion);
 
-            if ($version->questions()
-                ->where(fn ($query) => $query
-                    ->whereNotNull('research_validated_at')
-                    ->orWhereNotNull('research_validated_by'))
-                ->exists()) {
-                throw new LogicException('Approved content cannot be returned to draft.');
-            }
-
+            $version->questions()->update(['research_validated_at' => null, 'research_validated_by' => null]);
             $oldLockVersion = (int) $version->lock_version;
             $version->forceFill([
                 'status' => ResearchFormVersion::STATUS_DRAFT,
+                'dean_approved_by' => null,
+                'dean_approved_at' => null,
+                'approved_content_digest' => null,
                 'lock_version' => $oldLockVersion + 1,
             ])->save();
 
@@ -180,11 +173,12 @@ class DeanResearchFormReviewService
 
     private function assertReviewable(ResearchFormVersion $version, int $expectedLockVersion): void
     {
-        if ($version->research_form !== Question::FORM_POST_TEST_B
+        if (! in_array($version->research_form, [Question::FORM_PRE_TEST_A, Question::FORM_POST_TEST_B], true)
             || $version->status !== ResearchFormVersion::STATUS_IN_REVIEW
             || $version->first_served_at !== null
+            || $version->questions()->whereNotNull('first_served_at')->exists()
             || $version->sessions()->exists()) {
-            throw new LogicException('Only an unserved Form B version in review can be approved.');
+            throw new LogicException('Only an unserved Form A or B version in review can be approved.');
         }
 
         if ((int) $version->lock_version !== $expectedLockVersion) {

@@ -113,8 +113,11 @@ jobs:
       - name: Build frontend assets
         run: npm run build
 
+      - name: Prepare CI environment file
+        run: cp .env.example .env
+
       - name: Verify database migrations
         run: php artisan migrate:fresh --force
 
       - name: Run automated tests
-        run: php artisan test
+        run: php artisan test --display-warnings --colors=never

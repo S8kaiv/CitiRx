@@ -200,6 +200,9 @@ class QuestionController extends Controller
         Request $request,
         Question $question,
     ): View|RedirectResponse {
+        if ($question->form_version_id !== null) {
+            return redirect()->route('research-editor.edit', ['version' => $question->form_version_id, 'position' => $question->form_position]);
+        }
         if (
             $this->lock->isLocked(
                 $question,

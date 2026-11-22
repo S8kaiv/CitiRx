@@ -19,6 +19,30 @@
 
     <div class="admin-surface pt-6 pb-6 sm:pb-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+            @if (session('error'))
+                <div
+                    role="alert"
+                    class="rounded-2xl border border-red-300 bg-red-50 p-4 text-red-800 sm:p-5"
+                >
+                    <p class="font-black">
+                        Unable to update pilot phase
+                    </p>
+
+                    <p class="mt-2 text-sm">
+                        {{ session('error') }}
+                    </p>
+                </div>
+            @endif
+
+            @if (session('status'))
+                <div
+                    role="status"
+                    class="rounded-2xl border border-green-300 bg-green-50 p-4 text-green-800 sm:p-5"
+                >
+                    {{ session('status') }}
+                </div>
+            @endif
+            
             @if ($errors->any())
                 <div
                     role="alert"

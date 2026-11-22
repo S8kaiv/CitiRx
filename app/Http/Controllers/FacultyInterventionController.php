@@ -20,6 +20,7 @@ class FacultyInterventionController extends Controller
         Request $request,
     ): View|RedirectResponse {
         $faculty = $request->user();
+        $request->validate(['status' => ['nullable', 'in:open,completed,all']]);
 
         if (
             $this->dashboard->cohortFor(
@@ -42,6 +43,7 @@ class FacultyInterventionController extends Controller
                 'interventions' => $this->dashboard
                     ->paginatedInterventions(
                         $faculty,
+                        status: $request->input('status', 'open'),
                     ),
             ],
         );

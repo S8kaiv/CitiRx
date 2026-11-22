@@ -5,6 +5,7 @@ use App\Models\AssessmentSession;
 use App\Models\Question;
 use App\Models\ResearchFormVersion;
 use App\Models\User;
+use App\Services\DeanResearchFormReviewService;
 use App\Services\LegacyResearchCommandGuard;
 use App\Services\ResearchFormService;
 use App\Services\ResearchFormVersionManagementService;
@@ -56,24 +57,7 @@ function rvwCopyDraft(
 function rvwMakeDraftReviewable(
     ResearchFormVersion $version,
 ): void {
-    Question::query()
-        ->where(
-            'form_version_id',
-            $version->form_version_id,
-        )
-        ->orderBy('form_position')
-        ->get()
-        ->each(
-            function (Question $question): void {
-                $question->update([
-                    'question_text' => str_replace(
-                        '[DEVELOPMENT MOCK - NOT VALIDATED] ',
-                        '',
-                        $question->question_text,
-                    ),
-                ]);
-            },
-        );
+    makeResearchFormFixtureReviewable($version);
 }
 
 function rvwValidateQuestions(
@@ -731,17 +715,8 @@ it('blocks publication while the development override is enabled', function (): 
         reason: 'Submit the complete draft for review.',
     );
 
-    rvwValidateQuestions(
-        $draft,
-        $administrator,
-    );
-
-    $draft = $service->markValidated(
-        administrator: $administrator,
-        version: $draft,
-        expectedLockVersion: $draft->lock_version,
-        reason: 'Record completion of faculty validation.',
-    );
+    $dean = User::factory()->create(['role' => 'dean']);
+    $draft = approveResearchFormFixture($draft, $dean);
 
     config()->set(
         'citirx.research.allow_unvalidated_forms',
@@ -853,35 +828,16 @@ it('publishes one validated version and preserves historical sessions', function
         ->and($draft->lock_version)
         ->toBe(2);
 
-    rvwValidateQuestions(
-        $draft,
-        $administrator,
-    );
-
-    $this->actingAs($administrator)
-        ->from(
-            route(
-                'admin.research-forms.index',
-            ),
-        )
-        ->patch(
-            route(
-                'admin.research-forms.'
-                    .'versions.validate',
-                $draft,
-            ),
-            [
-                'expected_lock_version' => $draft->lock_version,
-
-                'reason' => 'Faculty validation metadata is complete.',
-            ],
-        )
-        ->assertRedirect(
-            route(
-                'admin.research-forms.index',
-            ),
-        )
-        ->assertSessionHasNoErrors();
+    $dean = User::factory()->create(['role' => 'dean']);
+    $reviews = app(DeanResearchFormReviewService::class);
+    $reviewUrl = route('dean.research-forms.show', $draft);
+    $this->actingAs($dean)->from($reviewUrl)
+        ->patch(route('dean.research-forms.approve', $draft), [
+            'expected_lock_version' => $draft->lock_version,
+            'expected_digest' => $reviews->digest($reviews->questions($draft)),
+            'review_confirmed' => '1',
+        ])
+        ->assertRedirect($reviewUrl)->assertSessionHasNoErrors();
 
     $draft->refresh();
 
@@ -1007,7 +963,7 @@ it('publishes one validated version and preserves historical sessions', function
     $this->assertDatabaseHas(
         'admin_audit_logs',
         [
-            'action' => 'research_form_version.validated',
+            'action' => 'research_form.dean_approved',
 
             'target_id' => $draft->form_version_id,
         ],

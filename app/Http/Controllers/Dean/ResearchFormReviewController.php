@@ -24,7 +24,7 @@ class ResearchFormReviewController extends Controller
     {
         return view('dean.research-forms.index', [
             'versions' => ResearchFormVersion::query()
-                ->where('research_form', Question::FORM_POST_TEST_B)
+                ->whereIn('research_form', [Question::FORM_PRE_TEST_A, Question::FORM_POST_TEST_B])
                 ->whereIn('status', [
                     ResearchFormVersion::STATUS_IN_REVIEW,
                     ResearchFormVersion::STATUS_VALIDATED,
@@ -37,7 +37,7 @@ class ResearchFormReviewController extends Controller
 
     public function show(ResearchFormVersion $researchFormVersion): View
     {
-        abort_unless($researchFormVersion->research_form === Question::FORM_POST_TEST_B, 404);
+        abort_unless(in_array($researchFormVersion->research_form, [Question::FORM_PRE_TEST_A, Question::FORM_POST_TEST_B], true), 404);
 
         $questions = $this->reviews->questions($researchFormVersion);
 
@@ -64,7 +64,7 @@ class ResearchFormReviewController extends Controller
             return back()->with('error', $exception->getMessage());
         }
 
-        return back()->with('status', 'All 100 Form B questions were approved. You can now validate and publish the version in Research Forms.');
+        return back()->with('status', 'The complete version is approved and validated. An administrator may publish it using the existing release controls.');
     }
 
     public function returnForRevision(
@@ -83,6 +83,6 @@ class ResearchFormReviewController extends Controller
         }
 
         return redirect()->route('dean.research-forms.index')
-            ->with('status', 'Form B was returned to draft with your revision notes.');
+            ->with('status', 'The version was returned to draft with your revision notes.');
     }
 }

@@ -13,6 +13,16 @@
         @csrf
     </form>
 
+    @if($user->role === 'student')
+        <p class="mt-4 text-sm text-ink-muted">Name changes are sent to the Dean. Your official name remains {{ $user->fullName() }} until approval. Email and password updates do not need name approval.</p>
+        @if($nameRequest)
+            <div class="mt-3 rounded-xl border border-line bg-surface-2 p-4 text-sm text-ink" role="status">
+                Name request: {{ ucfirst($nameRequest->status) }}. {{ $nameRequest->requestedFullName() }}
+                @if($nameRequest->decision_note)<p class="mt-2">{{ $nameRequest->decision_note }}</p>@endif
+            </div>
+        @endif
+        <p class="mt-3 text-sm text-ink-muted">Day streak: {{ $user->currentStreak() }}. Finish a practice session with at least 10 non-speed-flagged answers and 70% accuracy. Credit is limited to once per Asia/Manila day; a missed day resets the current streak.</p>
+    @endif
     <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-5">
         @csrf
         @method('patch')

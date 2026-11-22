@@ -16,6 +16,8 @@ class CommitResearchFormImportRequest extends AdminRequest
     public function rules(): array
     {
         return [
+            'selected_rows' => ['required', 'array', 'min:1', 'max:200'],
+            'selected_rows.*' => ['required', 'integer', 'min:2', 'distinct'],
             'expected_lock_version' => [
                 'required',
                 'integer',
@@ -23,17 +25,11 @@ class CommitResearchFormImportRequest extends AdminRequest
             ],
 
             'reason' => [
-                'required',
+                'nullable',
                 'string',
-                'min:10',
                 'max:500',
             ],
 
-            'current_password' => [
-                'required',
-                'string',
-                'current_password',
-            ],
         ];
     }
 }

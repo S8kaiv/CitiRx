@@ -12,6 +12,7 @@ use App\Models\Cohort;
 use App\Models\User;
 use App\Services\AdminUserService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 use LogicException;
 
@@ -42,7 +43,7 @@ class UserController extends Controller
             default => User::query(),
         };
 
-        $query->with('cohort');
+        $query->with('cohort')->withExists(['assessmentSessions as research_locked' => fn ($q) => $q->whereIn('research_phase', ['pre_test', 'post_test'])]);
 
         if ($filters['role'] !== null) {
             $query->where(
@@ -157,6 +158,19 @@ class UserController extends Controller
                 ->limit(20)
                 ->get(),
         ]);
+    }
+
+    public function assignCohort(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'student_ids' => ['required', 'array', 'min:1', 'max:100'],
+            'student_ids.*' => ['required', 'uuid', 'distinct'],
+            'cohort_id' => ['required', 'uuid', 'exists:cohorts,cohort_id'],
+            'original_cohorts' => ['required', 'array'], 'original_cohorts.*' => ['nullable', 'uuid'],
+        ]);
+        $count = $this->users->assignCohort($request->user(), $data['student_ids'], $data['cohort_id'], $data['original_cohorts']);
+
+        return back()->with('status', "{$count} students moved to the selected cohort.");
     }
 
     public function update(

@@ -60,6 +60,7 @@ class ResearchFormVersion extends Model
         'published_at' => 'datetime',
         'first_served_at' => 'datetime',
         'lock_version' => 'integer',
+        'dean_approved_at' => 'datetime',
     ];
 
     public function scopeActive(

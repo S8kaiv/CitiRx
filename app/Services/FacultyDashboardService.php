@@ -100,12 +100,15 @@ class FacultyDashboardService
     public function paginatedInterventions(
         User $faculty,
         int $perPage = 15,
+        ?string $status = null,
     ): LengthAwarePaginator {
         return FacultyIntervention::query()
             ->where(
                 'faculty_id',
                 $faculty->user_id,
             )
+            ->whereHas('targetUser', fn ($q) => $q->where('cohort_id', $faculty->cohort_id)->where('role', 'student')->whereNull('deleted_at'))
+            ->when(in_array($status, ['open', 'completed'], true), fn ($q) => $q->where('is_completed', $status === 'completed'))
             ->with([
                 'targetUser:user_id,first_name,last_name,student_id,deleted_at',
 
@@ -120,7 +123,7 @@ class FacultyDashboardService
                 $perPage,
                 ['*'],
                 'interventions_page',
-            );
+            )->withQueryString();
     }
 
     public function formOptions(): Collection
@@ -494,6 +497,7 @@ class FacultyDashboardService
                 'faculty_id',
                 $faculty->user_id,
             )
+            ->whereIn('target_user_id', User::query()->where('cohort_id', $faculty->cohort_id)->where('role', 'student')->select('user_id'))
             ->selectRaw(
                 'COUNT(*) AS total',
             )

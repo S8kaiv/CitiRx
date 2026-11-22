@@ -586,14 +586,15 @@ class ResearchFormAuditService
                 ."found {$fullyValidated}.";
         }
 
-        if ($form === Question::FORM_POST_TEST_B && $requireValidation) {
+        if ($requireValidation && ($form === Question::FORM_POST_TEST_B
+            || ! in_array($version?->status, [ResearchFormVersion::STATUS_PUBLISHED, ResearchFormVersion::STATUS_RETIRED], true))) {
             $notDeanApproved = $questions->filter(
                 fn (Question $question): bool => $question->research_validated_at !== null
                     && $question->researchValidator?->role !== 'dean',
             );
 
             if ($notDeanApproved->isNotEmpty()) {
-                $validationErrors[] = 'Form B requires dean approval at positions '
+                $validationErrors[] = 'This research version requires Dean approval at positions '
                     .$this->positions($notDeanApproved).'.';
             }
         }

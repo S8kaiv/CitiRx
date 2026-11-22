@@ -169,4 +169,13 @@ class User extends Authenticatable implements MustVerifyEmail
             $this->last_name,
         ])->filter()->implode(' ');
     }
+
+    public function currentStreak(): int
+    {
+        $today = now('Asia/Manila')->toDateString();
+        $yesterday = now('Asia/Manila')->subDay()->toDateString();
+
+        return in_array($this->last_active_date?->toDateString(), [$today, $yesterday], true)
+            ? (int) $this->streak_count : 0;
+    }
 }

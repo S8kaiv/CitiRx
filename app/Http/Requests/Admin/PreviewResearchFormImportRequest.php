@@ -36,7 +36,7 @@ class PreviewResearchFormImportRequest extends AdminRequest
             'import_type' => [
                 'required',
                 Rule::in(
-                    ResearchFormImport::TYPES,
+                    [ResearchFormImport::TYPE_CONTENT],
                 ),
             ],
 

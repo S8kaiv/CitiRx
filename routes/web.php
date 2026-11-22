@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Admin\AuditLogController;
-use App\Http\Controllers\Admin\CohortAssignmentImportController;
 use App\Http\Controllers\Admin\CohortController;
 use App\Http\Controllers\Admin\PilotControlController;
 use App\Http\Controllers\Admin\QuestionController;
@@ -17,6 +16,7 @@ use App\Http\Controllers\Content\MicroPearlImportController;
 use App\Http\Controllers\Content\MicroPearlManagementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Dean\ResearchFormReviewController;
+use App\Http\Controllers\Dean\WorkspaceController;
 use App\Http\Controllers\DiagnosticController;
 use App\Http\Controllers\FacultyDashboardController;
 use App\Http\Controllers\FacultyInterventionController;
@@ -27,6 +27,7 @@ use App\Http\Controllers\PracticeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\ReadinessController;
+use App\Http\Controllers\ResearchFormEditorController;
 use App\Http\Controllers\RxVaultController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -42,6 +43,15 @@ Route::get('/', function () {
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
+Route::middleware(['auth', 'verified', 'research-editor'])->prefix('research-forms')->name('research-editor.')->group(function (): void {
+    Route::get('/', [ResearchFormEditorController::class, 'index'])->name('index');
+    Route::post('/', [ResearchFormEditorController::class, 'store'])->name('store');
+    Route::get('/{version}/edit', [ResearchFormEditorController::class, 'edit'])->whereUuid('version')->name('edit');
+    Route::put('/{version}', [ResearchFormEditorController::class, 'save'])->whereUuid('version')->name('save');
+    Route::post('/{version}/submit', [ResearchFormEditorController::class, 'submit'])->whereUuid('version')->name('submit');
+    Route::post('/{version}/copy', [ResearchFormEditorController::class, 'copy'])->whereUuid('version')->name('copy');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])
@@ -393,6 +403,9 @@ Route::middleware([
             ],
         )->name('store');
 
+        Route::post('/bulk-publish', [MicroPearlManagementController::class, 'bulkPublish'])
+            ->name('bulk-publish');
+
         Route::get(
             '/imports/create',
             [
@@ -606,6 +619,17 @@ Route::middleware(['auth', 'verified', 'dean'])
     ->prefix('dean')
     ->name('dean.')
     ->group(function (): void {
+        Route::get('/', [WorkspaceController::class, 'index'])->name('dashboard');
+        Route::get('/students/{student}', [WorkspaceController::class, 'student'])->whereUuid('student')->name('students.show');
+        Route::patch('/students/{student}/name', [WorkspaceController::class, 'updateName'])->whereUuid('student')->name('students.name');
+        Route::post('/students/{student}/interventions', [WorkspaceController::class, 'assignIntervention'])
+            ->whereUuid('student')
+            ->name('students.interventions.store');
+        Route::patch('/interventions/{intervention}/complete', [WorkspaceController::class, 'completeIntervention'])
+            ->whereUuid('intervention')
+            ->name('interventions.complete');
+        Route::get('/name-requests', [WorkspaceController::class, 'names'])->name('names.index');
+        Route::patch('/name-requests/{nameRequest}', [WorkspaceController::class, 'decideName'])->whereUuid('nameRequest')->name('names.decide');
         Route::get('/research-forms', [ResearchFormReviewController::class, 'index'])
             ->name('research-forms.index');
 
@@ -666,18 +690,6 @@ Route::middleware([
             ->whereUuid('researchFormVersion')
             ->name(
                 'research-forms.versions.submit-review',
-            );
-
-        Route::patch(
-            '/research-forms/versions/{researchFormVersion}/validate',
-            [
-                ResearchFormController::class,
-                'markValidated',
-            ],
-        )
-            ->whereUuid('researchFormVersion')
-            ->name(
-                'research-forms.versions.validate',
             );
 
         Route::patch(
@@ -839,51 +851,7 @@ Route::middleware([
         |--------------------------------------------------------------------------
         */
 
-        Route::get(
-            '/users/import',
-            [
-                CohortAssignmentImportController::class,
-                'create',
-            ],
-        )->name('cohort-imports.create');
-
-        Route::post(
-            '/users/import/preview',
-            [
-                CohortAssignmentImportController::class,
-                'preview',
-            ],
-        )->name('cohort-imports.preview');
-
-        Route::get(
-            '/users/import/{import}',
-            [
-                CohortAssignmentImportController::class,
-                'show',
-            ],
-        )
-            ->whereUuid('import')
-            ->name('cohort-imports.show');
-
-        Route::post(
-            '/users/import/{import}/commit',
-            [
-                CohortAssignmentImportController::class,
-                'commit',
-            ],
-        )
-            ->whereUuid('import')
-            ->name('cohort-imports.commit');
-
-        Route::delete(
-            '/users/import/{import}',
-            [
-                CohortAssignmentImportController::class,
-                'destroy',
-            ],
-        )
-            ->whereUuid('import')
-            ->name('cohort-imports.destroy');
+        Route::post('/users/assign-cohort', [UserController::class, 'assignCohort'])->name('users.assign-cohort');
 
         Route::get(
             '/users',

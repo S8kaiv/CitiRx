@@ -14,6 +14,9 @@ use App\Services\MicroPearlWorkflowService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use InvalidArgumentException;
 use LogicException;
@@ -36,6 +39,8 @@ class MicroPearlManagementController extends Controller
             ->value();
 
         $pearls = MicroPearl::query()
+            ->when($request->user()->role === 'faculty', fn ($query) => $query->where(fn ($query) => $query
+                ->where('content_status', '!=', MicroPearl::STATUS_DRAFT)->orWhere('created_by', $request->user()->user_id)))
             ->with([
                 'competency.domain',
                 'creator',
@@ -90,12 +95,17 @@ class MicroPearlManagementController extends Controller
             ->paginate(25)
             ->withQueryString();
 
+        $publishableIds = $pearls->getCollection()
+            ->filter(fn (MicroPearl $pearl) => $this->workflow->canPublish($request->user(), $pearl))
+            ->modelKeys();
+
         return view(
             'content.pearls.index',
             compact(
                 'pearls',
                 'status',
                 'search',
+                'publishableIds',
             ),
         );
     }
@@ -136,6 +146,8 @@ class MicroPearlManagementController extends Controller
     public function edit(
         MicroPearl $pearl,
     ): View {
+        abort_if(auth()->user()->role === 'faculty' && $pearl->content_status === MicroPearl::STATUS_DRAFT
+            && $pearl->created_by !== auth()->id(), 403);
         $pearl->load([
             'competency.domain',
             'creator',
@@ -228,6 +240,56 @@ class MicroPearlManagementController extends Controller
                 ? 'Micro Pearl published.'
                 : 'Micro Pearl publication approved.',
         );
+    }
+
+    public function bulkPublish(Request $request): RedirectResponse
+    {
+        $validated = $request->validateWithBag('bulkPublish', [
+            'pearls' => ['required', 'array', 'min:1', 'max:25'],
+            'pearls.*' => ['required', 'integer', 'min:1'],
+            'current_password' => ['required', 'string', 'current_password'],
+        ]);
+        $versions = $validated['pearls'];
+
+        foreach (array_keys($versions) as $id) {
+            if (! is_string($id) || ! Str::isUuid($id)) {
+                return back()->with('error', 'Select valid Micro Pearls to publish.');
+            }
+        }
+
+        $reviewer = $request->user();
+        ksort($versions);
+
+        try {
+            DB::transaction(function () use ($reviewer, $versions): void {
+                $pearls = MicroPearl::query()->whereKey(array_keys($versions))->get()->keyBy('pearl_id');
+
+                foreach ($versions as $id => $version) {
+                    $pearl = $pearls->get($id);
+                    if ($pearl === null) {
+                        throw new LogicException('A selected Micro Pearl is no longer available. Refresh the list.');
+                    }
+
+                    try {
+                        $this->workflow->publish(
+                            $reviewer,
+                            $pearl,
+                            (int) $version,
+                            'Published from the Micro Pearl list after content review.',
+                            null,
+                        );
+                    } catch (ValidationException $exception) {
+                        throw new LogicException($pearl->title.': '.$exception->getMessage(), previous: $exception);
+                    }
+                }
+            });
+        } catch (LogicException $exception) {
+            return back()
+                ->withInput($request->only('pearls'))
+                ->with('error', 'Publication canceled for the selected batch. '.$exception->getMessage());
+        }
+
+        return back()->with('status', count($versions).' Micro Pearl(s) published.');
     }
 
     public function retire(

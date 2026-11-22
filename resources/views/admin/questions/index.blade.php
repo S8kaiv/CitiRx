@@ -5,6 +5,7 @@
             description="Review, revise, validate, freeze, and retire assessment questions."
         >
             <x-slot:actions>
+                <x-ui.button :href="route('research-editor.index')">Research form editor</x-ui.button>
                 <a
                     href="{{ route(
                         'admin.research-form-imports.index',

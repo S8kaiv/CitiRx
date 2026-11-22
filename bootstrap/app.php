@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureUserCanEditResearchForms;
 use App\Http\Middleware\EnsureUserCanManageMicroPearls;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsDean;
@@ -33,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
+            'research-editor' => EnsureUserCanEditResearchForms::class,
             'dean' => EnsureUserIsDean::class,
             'faculty' => EnsureUserIsFaculty::class,
             'student' => EnsureUserIsStudent::class,

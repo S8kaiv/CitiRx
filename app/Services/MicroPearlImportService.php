@@ -122,6 +122,8 @@ class MicroPearlImportService
         User $uploader,
         MicroPearlImport $import,
         int $expectedLockVersion,
+        array $selectedRows,
+        bool $submitForReview = false,
     ): MicroPearlImport {
         $this->assertEditor($uploader);
 
@@ -133,8 +135,10 @@ class MicroPearlImportService
                     $uploader,
                     $import,
                     $expectedLockVersion,
+                    $selectedRows,
+                    $submitForReview,
                     &$ownedPreviewConfirmed,
-                ): MicroPearlImport {
+                ): MicroPearlImport|ValidationException {
                     $import = MicroPearlImport::query()
                         ->whereKey($import->import_id)
                         ->lockForUpdate()
@@ -187,6 +191,7 @@ class MicroPearlImportService
                      */
                     $rows = $this->parseAndValidate(
                         $absolutePath,
+                        forCommit: true,
                     );
 
                     if (
@@ -198,21 +203,71 @@ class MicroPearlImportService
                         );
                     }
 
-                    foreach ($rows as $row) {
-                        /*
-                         * This creates a private draft and records
-                         * the existing immutable MicroPearlEdit.
-                         */
-                        $this->workflow->create(
-                            $uploader,
-                            $row['payload'],
-                        );
+                    $byNumber = collect($rows)->keyBy(fn ($row) => $row['preview']['row_number']);
+                    if ($selectedRows === [] || count($selectedRows) !== count(array_unique($selectedRows))) {
+                        throw ValidationException::withMessages(['selected_rows' => 'Select at least one eligible lesson.']);
+                    }
+                    foreach ($selectedRows as $number) {
+                        $row = $byNumber->get($number);
+                        if ($row === null) {
+                            throw ValidationException::withMessages([
+                                'selected_rows' => 'Select rows from the current preview.',
+                            ]);
+                        }
+
+                        if ($row['preview']['errors'] !== []) {
+                            // Keep the refreshed preview without importing any lessons.
+                            $import->forceFill([
+                                'preview_rows' => array_column($rows, 'preview'),
+                                'lock_version' => $expectedLockVersion + 1,
+                            ])->save();
+
+                            return ValidationException::withMessages([
+                                'selected_rows' => "Row {$number} is no longer eligible. Review the updated preview and try again.",
+                            ]);
+                        }
+                    }
+
+                    $outcomes = [];
+                    foreach ($selectedRows as $number) {
+                        $row = $byNumber->get($number);
+                        $pearl = $this->workflow->create($uploader, $row['payload']);
+
+                        if ($submitForReview && in_array(
+                            $pearl->rights_status,
+                            MicroPearl::PUBLISHABLE_RIGHTS_STATUSES,
+                            true,
+                        )) {
+                            try {
+                                $pearl = $this->workflow->submitForReview(
+                                    $uploader,
+                                    $pearl,
+                                    $pearl->edit_version,
+                                    'Submitted from the CSV import.',
+                                );
+                            } catch (ValidationException $exception) {
+                                throw ValidationException::withMessages([
+                                    'selected_rows' => "Row {$number}: ".$exception->getMessage(),
+                                ]);
+                            }
+                        }
+
+                        $outcomes[$number] = $pearl->content_status;
                     }
 
                     $import->forceFill([
+                        'row_count' => count($selectedRows),
+                        'preview_rows' => array_map(function (array $row) use ($outcomes): array {
+                            $preview = $row['preview'];
+                            $preview['imported_status'] = $outcomes[$preview['row_number']] ?? null;
+
+                            return $preview;
+                        }, $rows),
                         'status' => MicroPearlImport::STATUS_COMMITTED,
 
-                        'reason' => 'Created as private drafts from a validated CSV preview.',
+                        'reason' => $submitForReview
+                            ? 'Imported from a validated CSV preview with review requested for eligible lessons.'
+                            : 'Created as private drafts from a validated CSV preview.',
 
                         'committed_at' => now(),
 
@@ -227,11 +282,15 @@ class MicroPearlImportService
                 },
             );
         } catch (Throwable $exception) {
-            if ($ownedPreviewConfirmed) {
-                $this->markFailed($import);
+            if ($ownedPreviewConfirmed && ! ($exception instanceof ValidationException)) {
+                $this->markFailed($import, $expectedLockVersion);
             }
 
             throw $exception;
+        }
+
+        if ($committed instanceof ValidationException) {
+            throw $committed;
         }
 
         $this->purgeStoredFile($committed);
@@ -361,6 +420,7 @@ class MicroPearlImportService
      */
     private function parseAndValidate(
         string $absolutePath,
+        bool $forCommit = false,
     ): array {
         $records = $this->readCsv(
             $absolutePath,
@@ -383,6 +443,8 @@ class MicroPearlImportService
                 'competency_code',
                 $competencyCodes,
             )
+            ->orderBy('competency_id')
+            ->when($forCommit, fn ($query) => $query->lockForUpdate())
             ->get()
             ->keyBy('competency_code');
 
@@ -428,6 +490,7 @@ class MicroPearlImportService
         $rows = [];
 
         foreach ($records as $record) {
+            $errors = $record['errors'] ?? [];
             $rowNumber = $record['row_number'];
             $values = $record['values'];
 
@@ -528,6 +591,8 @@ class MicroPearlImportService
                         "CSV row {$rowNumber}: {$message}";
                 }
 
+                $rows[] = ['preview' => ['row_number' => $rowNumber, 'competency_code' => $values['competency_code'], 'title' => $values['title'], 'order_index' => $values['order_index'], 'rights_status' => $values['rights_status'], 'errors' => $errors], 'payload' => null];
+
                 continue;
             }
 
@@ -539,6 +604,8 @@ class MicroPearlImportService
                 $errors[] =
                     "CSV row {$rowNumber}: competency_code "
                     ."{$values['competency_code']} does not exist.";
+
+                $rows[] = ['preview' => ['row_number' => $rowNumber, 'competency_code' => $values['competency_code'], 'title' => $values['title'], 'order_index' => $values['order_index'], 'rights_status' => $values['rights_status'], 'errors' => $errors], 'payload' => null];
 
                 continue;
             }
@@ -649,7 +716,7 @@ class MicroPearlImportService
                     'order_index' => $orderIndex,
 
                     'rights_status' => $values['rights_status'],
-
+                    'errors' => $errors,
                 ],
 
                 'payload' => [
@@ -681,10 +748,6 @@ class MicroPearlImportService
 
                 ],
             ];
-        }
-
-        if ($errors !== []) {
-            $this->failValidation($errors);
         }
 
         return $rows;
@@ -801,11 +864,13 @@ class MicroPearlImportService
                     count($cells)
                     !== count(self::HEADERS)
                 ) {
-                    throw ValidationException::withMessages([
-                        'csv' => [
-                            "CSV row {$csvRow} does not contain the expected number of columns.",
-                        ],
-                    ]);
+                    if (count($records) >= self::MAX_ROWS) {
+                        throw ValidationException::withMessages(['csv' => 'Upload no more than 200 lessons.']);
+                    }
+                    $records[] = ['row_number' => $csvRow, 'values' => array_fill_keys(self::HEADERS, ''),
+                        'errors' => ['Column count does not match the template.']];
+
+                    continue;
                 }
 
                 $values = array_combine(
@@ -999,10 +1064,12 @@ class MicroPearlImportService
 
     private function markFailed(
         MicroPearlImport $import,
+        int $expectedLockVersion,
     ): void {
         $failed = DB::transaction(
             function () use (
                 $import,
+                $expectedLockVersion,
             ): ?MicroPearlImport {
                 $locked = MicroPearlImport::query()
                     ->whereKey($import->import_id)
@@ -1011,10 +1078,10 @@ class MicroPearlImportService
 
                 if (
                     ! $locked
-                    || $locked->status
-                        !== MicroPearlImport::STATUS_PREVIEWED
+                    || $locked->status !== MicroPearlImport::STATUS_PREVIEWED
+                    || $locked->lock_version !== $expectedLockVersion
                 ) {
-                    return $locked;
+                    return null;
                 }
 
                 $locked->forceFill([

@@ -6,6 +6,7 @@ use App\Models\Cohort;
 use App\Models\Question;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use LogicException;
 
 class AdminUserService
@@ -173,6 +174,43 @@ class AdminUserService
                 $reason,
             );
         });
+    }
+
+    public function assignCohort(User $actor, array $ids, string $cohortId, array $originalCohorts): int
+    {
+        abort_unless($actor->role === 'admin', 403);
+
+        return DB::transaction(function () use ($actor, $ids, $cohortId, $originalCohorts): int {
+            $cohort = Cohort::query()->active()->lockForUpdate()->find($cohortId);
+            if (! $cohort) {
+                throw ValidationException::withMessages(['cohort_id' => 'Choose an active cohort.']);
+            }
+            $students = User::query()->whereIn('user_id', $ids)->orderBy('user_id')->lockForUpdate()->get();
+            if ($students->count() !== count($ids) || $students->contains(fn ($student) => $student->role !== 'student')) {
+                throw ValidationException::withMessages(['student_ids' => 'Only active student accounts can be assigned. Refresh your selection.']);
+            }
+            $count = 0;
+            foreach ($students as $student) {
+                if (! array_key_exists($student->user_id, $originalCohorts)
+                    || ($originalCohorts[$student->user_id] ?: null) !== $student->cohort_id) {
+                    throw ValidationException::withMessages(['student_ids' => 'A selected cohort assignment changed. Reload and select again.']);
+                }
+                if ($student->cohort_id === $cohortId) {
+                    continue;
+                }
+                try {
+                    $this->assertCohortCanChange($student);
+                } catch (LogicException $exception) {
+                    throw ValidationException::withMessages(['student_ids' => $exception->getMessage()]);
+                }
+                $old = $student->cohort_id;
+                $student->forceFill(['cohort_id' => $cohortId])->save();
+                $this->audit->record($actor, 'user.bulk_cohort_assigned', $student, ['cohort_id' => ['old' => $old, 'new' => $cohortId]]);
+                $count++;
+            }
+
+            return $count;
+        }, attempts: 3);
     }
 
     public function restore(

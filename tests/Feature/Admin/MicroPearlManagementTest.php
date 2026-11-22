@@ -230,10 +230,7 @@ it('does not submit incomplete content for review', function (): void {
             ['edit_version' => $pearl->edit_version],
         )
         ->assertRedirect($editUrl)
-        ->assertSessionHas(
-            'error',
-            'Complete the lesson, objectives, key points, recall prompts, and references before review.',
-        );
+        ->assertSessionHasErrors('lesson_content');
 
     expect($pearl->fresh()->content_status)
         ->toBe(MicroPearl::STATUS_DRAFT);
@@ -257,10 +254,7 @@ it('blocks review while copyright rights are pending', function (): void {
             ['edit_version' => $pearl->edit_version],
         )
         ->assertRedirect($editUrl)
-        ->assertSessionHas(
-            'error',
-            'Copyright or source rights must be resolved before review.',
-        );
+        ->assertSessionHasErrors('rights_status');
 
     expect($pearl->fresh()->content_status)
         ->toBe(MicroPearl::STATUS_DRAFT);
@@ -476,7 +470,7 @@ it('does not let an administrator bypass review for a faculty draft', function (
 
 it('still checks content and rights before direct administrator publication', function (
     array $overrides,
-    string $message,
+    string $field,
 ): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $pearl = pearlManagementCreateDraft($admin, $overrides);
@@ -492,20 +486,67 @@ it('still checks content and rights before direct administrator publication', fu
             ],
         )
         ->assertRedirect($editUrl)
-        ->assertSessionHas('error', $message);
+        ->assertSessionHasErrors($field);
 
     expect($pearl->fresh()->content_status)
         ->toBe(MicroPearl::STATUS_DRAFT);
 })->with([
     'missing lesson' => [
         ['lesson_content' => null],
-        'Complete the lesson, objectives, key points, recall prompts, and references before review.',
+        'lesson_content',
     ],
     'pending source rights' => [
         ['rights_status' => MicroPearl::RIGHTS_PENDING],
-        'Copyright or source rights must be resolved before review.',
+        'rights_status',
     ],
 ]);
+
+it('allows a faculty member to save an incomplete draft with unfinished recall prompts', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
+    $this->actingAs($faculty)->post(route('content.pearls.store'), [
+        'title' => 'Incomplete faculty draft', 'competency_id' => pearlManagementCompetency()->competency_id,
+        'recall_prompts' => [['question' => 'An unfinished prompt?', 'answer' => '']],
+    ])->assertRedirect()->assertSessionHasNoErrors();
+    $pearl = MicroPearl::query()->where('title', 'Incomplete faculty draft')->sole();
+    expect($pearl->content_status)->toBe(MicroPearl::STATUS_DRAFT)
+        ->and($pearl->created_by)->toBe($faculty->user_id)->and($pearl->lesson_content)->toBeNull()
+        ->and($pearl->mnemonic_summary)->toBe('')
+        ->and($pearl->rights_status)->toBe(MicroPearl::RIGHTS_PENDING)
+        ->and($pearl->recall_prompts)->toEqual([['question' => 'An unfinished prompt?', 'answer' => '']]);
+    $this->patch(route('content.pearls.submit-review', $pearl), ['edit_version' => $pearl->edit_version])
+        ->assertSessionHasErrors(['lesson_content', 'recall_prompts.0.answer', 'rights_status']);
+    expect($pearl->fresh()->content_status)->toBe(MicroPearl::STATUS_DRAFT);
+});
+
+it('saves added recall prompts and lets the author remove every prompt from a draft', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
+    $pearl = pearlManagementCreateDraft($faculty);
+    $payload = pearlManagementPayload([
+        'title' => $pearl->title, 'order_index' => $pearl->order_index, 'edit_version' => $pearl->edit_version,
+        'recall_prompts' => [['question' => 'First?', 'answer' => 'One'], ['question' => 'Second?', 'answer' => 'Two']],
+    ]);
+    $this->actingAs($faculty)->put(route('content.pearls.update', $pearl), $payload)->assertSessionHasNoErrors();
+    expect($pearl->fresh()->recall_prompts)->toHaveCount(2);
+    unset($payload['recall_prompts']);
+    $payload['recall_prompts_present'] = '1';
+    $payload['edit_version'] = $pearl->fresh()->edit_version;
+    $this->put(route('content.pearls.update', $pearl), $payload)->assertSessionHasNoErrors();
+    expect($pearl->fresh()->recall_prompts)->toBe([]);
+    $this->patch(route('content.pearls.submit-review', $pearl), ['edit_version' => $pearl->fresh()->edit_version])
+        ->assertSessionHasErrors('recall_prompts');
+});
+
+it('does not let another faculty member view or edit a private draft', function (): void {
+    $author = User::factory()->create(['role' => 'faculty']);
+    $other = User::factory()->create(['role' => 'faculty']);
+    $pearl = pearlManagementCreateDraft($author, ['title' => 'Private author draft']);
+    $this->actingAs($other)->get(route('content.pearls.index'))->assertOk()->assertDontSeeText($pearl->title);
+    $this->get(route('content.pearls.edit', $pearl))->assertForbidden();
+    $this->put(route('content.pearls.update', $pearl), pearlManagementPayload([
+        'title' => 'Unauthorized revision', 'edit_version' => $pearl->edit_version,
+    ]))->assertForbidden();
+    expect($pearl->fresh()->title)->toBe('Private author draft');
+});
 
 it('allows a different authorized reviewer to publish without a typed reason', function (
     string $reviewerRole,

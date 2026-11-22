@@ -10,7 +10,7 @@ class EnsureUserIsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! in_array($request->user()?->role, ['admin', 'dean'], true)) {
+        if ($request->user()?->role !== 'admin') {
             abort(403, 'Admin access only.');
         }
 

@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use LogicException;
 
@@ -93,6 +94,10 @@ class MicroPearlWorkflowService
         ): MicroPearl {
             $pearl = $this->lock($pearl);
 
+            if ($editor->role === 'faculty' && $pearl->created_by !== $editor->user_id) {
+                abort(403, 'Only the author may edit a faculty draft.');
+            }
+
             $this->assertVersion(
                 $pearl,
                 $expectedVersion,
@@ -162,6 +167,10 @@ class MicroPearlWorkflowService
             $reason,
         ): MicroPearl {
             $pearl = $this->lock($pearl);
+
+            if ($editor->role === 'faculty' && $pearl->created_by !== $editor->user_id) {
+                abort(403, 'Only the author may submit this faculty draft.');
+            }
 
             $this->assertVersion(
                 $pearl,
@@ -393,18 +402,24 @@ class MicroPearlWorkflowService
     private function assertPublishableContent(
         MicroPearl $pearl,
     ): void {
-        if (
-            blank($pearl->title)
-            || blank($pearl->mnemonic_summary)
-            || blank($pearl->lesson_content)
-            || blank($pearl->learning_objectives)
-            || blank($pearl->key_points)
-            || blank($pearl->recall_prompts)
-            || blank($pearl->source_references)
-        ) {
-            throw new LogicException(
-                'Complete the lesson, objectives, key points, recall prompts, and references before review.',
-            );
+        $errors = [];
+        foreach ([
+            'title' => $pearl->title, 'mnemonic_summary' => $pearl->mnemonic_summary,
+            'lesson_content' => $pearl->lesson_content, 'learning_objectives_text' => $pearl->learning_objectives,
+            'key_points_text' => $pearl->key_points, 'recall_prompts' => $pearl->recall_prompts,
+            'source_references_text' => $pearl->source_references,
+        ] as $field => $value) {
+            if (blank($value)) {
+                $errors[$field] = 'Complete this section before submitting for review or publication.';
+            }
+        }
+        foreach ($pearl->recall_prompts ?? [] as $index => $prompt) {
+            if (blank($prompt['question'] ?? null)) {
+                $errors["recall_prompts.{$index}.question"] = 'Enter a recall question.';
+            }
+            if (blank($prompt['answer'] ?? null)) {
+                $errors["recall_prompts.{$index}.answer"] = 'Enter its answer.';
+            }
         }
 
         if (
@@ -414,18 +429,17 @@ class MicroPearlWorkflowService
                 true,
             )
         ) {
-            throw new LogicException(
-                'Copyright or source rights must be resolved before review.',
-            );
+            $errors['rights_status'] = 'Resolve source rights before review or publication.';
         }
 
         if (
             $pearl->is_ai_generated
             && blank($pearl->generation_metadata)
         ) {
-            throw new LogicException(
-                'AI-assisted content requires generation metadata.',
-            );
+            $errors['lesson_content'] = 'Legacy AI-assisted content requires generation metadata.';
+        }
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
         }
     }
 
@@ -439,9 +453,7 @@ class MicroPearlWorkflowService
         return [
             'competency_id' => $data['competency_id'],
             'title' => trim($data['title']),
-            'mnemonic_summary' => $this->nullable(
-                $data['mnemonic_summary'] ?? null,
-            ),
+            'mnemonic_summary' => trim((string) ($data['mnemonic_summary'] ?? '')),
             'lesson_content' => $this->nullable(
                 $data['lesson_content'] ?? null,
             ),
@@ -454,15 +466,16 @@ class MicroPearlWorkflowService
             'common_pitfalls' => $this->lines(
                 $data['common_pitfalls_text'] ?? null,
             ),
-            'recall_prompts' => $this->recallPrompts(
-                $data['recall_prompts_text'] ?? null,
-            ),
+            'recall_prompts' => array_key_exists('recall_prompts', $data)
+                ? collect($data['recall_prompts'] ?? [])->map(fn ($p) => ['question' => trim((string) ($p['question'] ?? '')), 'answer' => trim((string) ($p['answer'] ?? ''))])
+                    ->filter(fn ($p) => $p['question'] !== '' || $p['answer'] !== '')->values()->all()
+                : $this->recallPrompts($data['recall_prompts_text'] ?? null),
             'source_references' => $this->lines(
                 $data['source_references_text'] ?? null,
             ),
-            'estimated_read_seconds' => (int) $data['estimated_read_seconds'],
-            'order_index' => (int) $data['order_index'],
-            'rights_status' => $data['rights_status'],
+            'estimated_read_seconds' => (int) ($data['estimated_read_seconds'] ?? 180),
+            'order_index' => (int) ($data['order_index'] ?? (1 + MicroPearl::query()->where('competency_id', $data['competency_id'])->max('order_index'))),
+            'rights_status' => $data['rights_status'] ?? MicroPearl::RIGHTS_PENDING,
         ];
     }
 
