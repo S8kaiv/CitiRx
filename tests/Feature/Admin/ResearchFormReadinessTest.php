@@ -231,53 +231,12 @@ it('distinguishes a ready content gate from a served locked form', function (): 
     $this->seed(TosSeeder::class);
     $this->seed(ResearchQuestionSeeder::class);
 
-    $validator = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
-    $questions = Question::query()
-        ->where(
-            'research_form',
-            Question::FORM_PRE_TEST_A,
-        )
-        ->orderBy('form_position')
-        ->get();
-
-    foreach ($questions as $question) {
-        $question->update([
-            'question_text' => str_replace(
-                '[DEVELOPMENT MOCK - NOT VALIDATED] ',
-                '',
-                $question->question_text,
-            ),
-        ]);
-    }
-
-    Question::query()
-        ->where(
-            'research_form',
-            Question::FORM_PRE_TEST_A,
-        )
-        ->update([
-            'research_validated_at' => now(),
-            'research_validated_by' => $validator->user_id,
-        ]);
-
-    $formVersion = ResearchFormVersion::query()
-        ->where(
-            'research_form',
-            Question::FORM_PRE_TEST_A,
-        )
-        ->where('is_active', true)
-        ->where(
-            'active_slot',
-            Question::FORM_PRE_TEST_A,
-        )
-        ->firstOrFail();
-
-    $formVersion->update([
-        'status' => ResearchFormVersion::STATUS_VALIDATED,
-    ]);
+    $dean = User::factory()->create(['role' => 'dean']);
+    $formVersion = ResearchFormVersion::query()->where('research_form', Question::FORM_PRE_TEST_A)
+        ->where('is_active', true)->sole();
+    makeResearchFormFixtureReviewable($formVersion);
+    $formVersion = approveResearchFormFixture($formVersion, $dean);
+    $questions = $formVersion->questions()->orderBy('form_position')->get();
 
     $service = app(
         ResearchFormAuditService::class,

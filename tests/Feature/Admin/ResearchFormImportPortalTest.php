@@ -6,620 +6,307 @@ use App\Models\Question;
 use App\Models\ResearchFormImport;
 use App\Models\ResearchFormVersion;
 use App\Models\User;
+use App\Services\ResearchFormBlueprint;
 use App\Services\ResearchFormVersionManagementService;
+use App\Services\ResearchQuestionCsvService;
 use Database\Seeders\ResearchQuestionSeeder;
 use Database\Seeders\TosSeeder;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 
 function ripAdministrator(): User
 {
-    return User::factory()->create([
-        'role' => 'admin',
-        'password' => 'password',
-    ]);
+    return User::factory()->create(['role' => 'admin', 'password' => 'password']);
 }
 
-function ripActiveVersion(): ResearchFormVersion
+function ripActiveVersion(string $form = Question::FORM_PRE_TEST_A): ResearchFormVersion
 {
-    return ResearchFormVersion::query()
-        ->where(
-            'research_form',
-            Question::FORM_PRE_TEST_A,
-        )
-        ->where('is_active', true)
-        ->where(
-            'active_slot',
-            Question::FORM_PRE_TEST_A,
-        )
-        ->sole();
+    return ResearchFormVersion::query()->where('research_form', $form)->where('is_active', true)->sole();
 }
 
-function ripDraft(
-    User $administrator,
-): ResearchFormVersion {
-    $source = ripActiveVersion();
+function ripDraft(User $administrator, string $form = Question::FORM_PRE_TEST_A): ResearchFormVersion
+{
+    $source = ripActiveVersion($form);
 
-    return app(
-        ResearchFormVersionManagementService::class,
-    )->copyToDraft(
-        administrator: $administrator,
-        source: $source,
-        versionCode: 'pre_test_a_v2',
-        expectedLockVersion: $source->lock_version,
-        reason: 'Create a protected import-portal test draft.',
+    return app(ResearchFormVersionManagementService::class)->copyToDraft(
+        $administrator, $source, $form.'_v2', $source->lock_version, 'Create an unserved draft for import testing.',
     );
 }
 
-function ripCsv(): UploadedFile
+function ripRow(array $overrides = []): array
 {
-    return UploadedFile::fake()
-        ->createWithContent(
-            'pre_test_a_v2.csv',
-            "research_form,form_position\npre_test_a,1\n",
-        );
+    return array_replace([
+        'research_form' => Question::FORM_PRE_TEST_A, 'form_position' => '1', 'domain_number' => '1',
+        'competency_code' => 'PC-01', 'question_text' => 'A unique authored research question for position one?',
+        'choice_a' => 'First answer', 'choice_b' => 'Second answer', 'choice_c' => 'Third answer', 'choice_d' => 'Fourth answer',
+        'correct_choice' => 'A', 'rationale' => 'The first answer is correct for the stated reason.',
+        'cognitive_level' => 'application', 'source_reference' => 'Original question authored for this test.',
+        'copyright_permission' => 'permission confirmed',
+    ], $overrides);
 }
 
-function ripPreview(
-    User $administrator,
-    ResearchFormVersion $version,
-): ResearchFormImport {
-    Artisan::shouldReceive('call')
-        ->once()
-        ->andReturn(0);
+function ripCsv(?array $rows = null): UploadedFile
+{
+    $stream = fopen('php://temp', 'w+b');
+    if ($stream === false) {
+        throw new RuntimeException('Unable to create the research CSV fixture.');
+    }
+    fputcsv($stream, ResearchQuestionCsvService::HEADERS, ',', '"', '');
+    foreach ($rows ?? [ripRow()] as $row) {
+        fputcsv($stream, array_map(fn ($header) => $row[$header] ?? '', ResearchQuestionCsvService::HEADERS), ',', '"', '');
+    }
+    rewind($stream);
+    $contents = stream_get_contents($stream);
+    fclose($stream);
+    if ($contents === false) {
+        throw new RuntimeException('Unable to read the research CSV fixture.');
+    }
 
-    Artisan::shouldReceive('output')
-        ->once()
-        ->andReturn(
-            'Dry run passed; database changes were rolled back.',
-        );
+    return UploadedFile::fake()->createWithContent('research-questions.csv', $contents);
+}
 
-    test()
-        ->actingAs($administrator)
-        ->post(
-            route(
-                'admin.research-form-imports.preview',
-            ),
-            [
-                'import_type' => ResearchFormImport::TYPE_CONTENT,
+function ripPreview(User $administrator, ResearchFormVersion $version, ?array $rows = null): ResearchFormImport
+{
+    test()->actingAs($administrator)->post(route('admin.research-form-imports.preview'), [
+        'import_type' => ResearchFormImport::TYPE_CONTENT, 'form_version_id' => $version->form_version_id, 'csv' => ripCsv($rows),
+    ])->assertRedirect(route('admin.research-form-imports.index'))->assertSessionHasNoErrors();
 
-                'form_version_id' => $version->form_version_id,
+    return ResearchFormImport::query()->latest()->firstOrFail();
+}
 
-                'csv' => ripCsv(),
-            ],
-        )
-        ->assertSessionHasNoErrors();
-
-    return ResearchFormImport::query()
-        ->latest()
-        ->firstOrFail();
+function ripCommitPayload(ResearchFormImport $import, array $selected = [2]): array
+{
+    return ['expected_lock_version' => $import->lock_version, 'selected_rows' => $selected];
 }
 
 beforeEach(function (): void {
     $this->withoutVite();
-
     Storage::fake('local');
-
-    config()->set(
-        'citirx.research.allow_unvalidated_forms',
-        false,
-    );
-
-    config()->set(
-        'citirx.research.import_preview_minutes',
-        30,
-    );
-
-    $this->seed([
-        TosSeeder::class,
-        ResearchQuestionSeeder::class,
-    ]);
+    config()->set('citirx.research.allow_unvalidated_forms', false);
+    $this->seed([TosSeeder::class, ResearchQuestionSeeder::class]);
 });
 
 it('redirects guests from the research import portal', function (): void {
-    $this->get(
-        route(
-            'admin.research-form-imports.index',
-        ),
-    )->assertRedirect(
-        route('login'),
-    );
+    $this->get(route('admin.research-form-imports.index'))->assertRedirect(route('login'));
 });
 
-it('blocks non administrators from the research import portal', function (
-    string $role,
-): void {
-    $user = User::factory()->create([
-        'role' => $role,
-    ]);
+it('blocks non administrators from research imports', function (string $role): void {
+    $this->actingAs(User::factory()->create(['role' => $role]))
+        ->get(route('admin.research-form-imports.index'))->assertForbidden();
+})->with(['student', 'faculty', 'dean']);
 
-    $this->actingAs($user)
-        ->get(
-            route(
-                'admin.research-form-imports.index',
-            ),
-        )
-        ->assertForbidden();
-})->with([
-    'student',
-    'faculty',
-]);
-
-it('allows an administrator to view importable versions', function (): void {
-    $administrator = ripAdministrator();
-    $draft = ripDraft($administrator);
-
-    $this->actingAs($administrator)
-        ->get(
-            route(
-                'admin.research-form-imports.index',
-            ),
-        )
-        ->assertOk()
-        ->assertSeeText(
-            'Secure Research Import Portal',
-        )
-        ->assertSeeText(
-            $draft->version_code,
-        );
+it('shows draft versions and the in app editor entry point', function (): void {
+    $admin = ripAdministrator();
+    $draft = ripDraft($admin);
+    $this->actingAs($admin)->get(route('admin.research-form-imports.index'))->assertOk()
+        ->assertSeeText('Research question import')->assertSeeText('Open in-app form editor')
+        ->assertSeeText($draft->version_code);
+    $this->get(route('admin.questions.index'))->assertOk()->assertSee(route('admin.research-form-imports.index'), false);
 });
 
-it('uses the existing importer to reject malformed content', function (): void {
-    $administrator = ripAdministrator();
-    $draft = ripDraft($administrator);
+it('downloads the correct blueprint template for each form', function (string $form): void {
+    $response = $this->actingAs(ripAdministrator())
+        ->get(route('admin.research-form-imports.form-b-template', ['form' => $form]))
+        ->assertOk()->assertDownload('citirx-'.$form.'-template.csv');
+    $lines = preg_split('/\r?\n/', trim($response->streamedContent()));
+    expect($lines)->toHaveCount(ResearchFormBlueprint::total($form) + 1);
+    expect($lines[1])->toStartWith($form.',1,1,PC-01,');
+})->with([Question::FORM_PRE_TEST_A, Question::FORM_POST_TEST_B]);
 
-    $this->actingAs($administrator)
-        ->post(
-            route(
-                'admin.research-form-imports.preview',
-            ),
-            [
-                'import_type' => ResearchFormImport::TYPE_CONTENT,
-
-                'form_version_id' => $draft->form_version_id,
-
-                'csv' => UploadedFile::fake()
-                    ->createWithContent(
-                        'invalid.csv',
-                        "wrong_header\ninvalid\n",
-                    ),
-            ],
-        )
-        ->assertSessionHasErrors('csv');
-
-    expect(
-        ResearchFormImport::query()->count(),
-    )->toBe(0);
-
-    expect(
-        Storage::disk('local')->allFiles(
-            'research-form-imports',
-        ),
-    )->toBe([]);
+it('rejects malformed headers and removes the private upload', function (): void {
+    $admin = ripAdministrator();
+    $draft = ripDraft($admin);
+    $this->actingAs($admin)->post(route('admin.research-form-imports.preview'), [
+        'import_type' => 'content', 'form_version_id' => $draft->form_version_id,
+        'csv' => UploadedFile::fake()->createWithContent('bad.csv', "wrong_header\ninvalid\n"),
+    ])->assertSessionHasErrors('csv');
+    expect(ResearchFormImport::query()->count())->toBe(0)
+        ->and(Storage::disk('local')->allFiles('research-form-imports'))->toBe([]);
 });
 
-it('stores a successful preview privately without changing form content', function (): void {
-    $administrator = ripAdministrator();
-    $draft = ripDraft($administrator);
-
-    $questionBefore = Question::query()
-        ->where(
-            'form_version_id',
-            $draft->form_version_id,
-        )
-        ->where('form_position', 1)
-        ->value('question_text');
-
-    Artisan::shouldReceive('call')
-        ->once()
-        ->withArgs(
-            function (
-                string $command,
-                array $arguments,
-            ) use (
-                $draft,
-            ): bool {
-                return $command
-                        === 'research:import-form-content'
-                    && $arguments['--form']
-                        === Question::FORM_PRE_TEST_A
-                    && $arguments['--form-version']
-                        === $draft->version_code
-                    && $arguments['--dry-run'] === true;
-            },
-        )
-        ->andReturn(0);
-
-    Artisan::shouldReceive('output')
-        ->once()
-        ->andReturn(
-            'Dry run passed; database changes were rolled back.',
-        );
-
-    $this->actingAs($administrator)
-        ->post(
-            route(
-                'admin.research-form-imports.preview',
-            ),
-            [
-                'import_type' => ResearchFormImport::TYPE_CONTENT,
-
-                'form_version_id' => $draft->form_version_id,
-
-                'csv' => ripCsv(),
-            ],
-        )
-        ->assertRedirect(
-            route(
-                'admin.research-form-imports.index',
-            ),
-        )
-        ->assertSessionHasNoErrors();
-
-    $import = ResearchFormImport::query()
-        ->sole();
-
-    expect($import->status)
-        ->toBe(
-            ResearchFormImport::STATUS_PREVIEWED,
-        )
-        ->and($import->admin_id)
-        ->toBe($administrator->user_id)
-        ->and($import->form_version_id)
-        ->toBe($draft->form_version_id)
-        ->and($import->storage_path)
-        ->not->toBeNull();
-
-    Storage::disk('local')->assertExists(
-        $import->storage_path,
-    );
-
-    expect(
-        Question::query()
-            ->where(
-                'form_version_id',
-                $draft->form_version_id,
-            )
-            ->where('form_position', 1)
-            ->value('question_text'),
-    )->toBe($questionBefore);
+it('stores row previews privately without modifying the draft', function (): void {
+    $admin = ripAdministrator();
+    $draft = ripDraft($admin);
+    $before = $draft->questions()->where('form_position', 1)->value('question_text');
+    $import = ripPreview($admin, $draft);
+    expect($import->status)->toBe(ResearchFormImport::STATUS_PREVIEWED)
+        ->and($import->admin_id)->toBe($admin->user_id)
+        ->and($import->form_version_id)->toBe($draft->form_version_id)
+        ->and($import->preview_rows[0]['row_number'])->toBe(2)
+        ->and($import->preview_rows[0]['errors'])->toBe([])
+        ->and($draft->questions()->where('form_position', 1)->value('question_text'))->toBe($before);
+    Storage::disk('local')->assertExists($import->storage_path);
 });
 
-it('requires the actual reviewer for validation imports', function (): void {
-    $administrator = ripAdministrator();
-    $validator = User::factory()->create([
-        'role' => 'faculty',
-    ]);
-
-    $draft = ripDraft($administrator);
-
-    /*
-     * Version transitions are covered by their own test file.
-     * This fixture places the target in the state required by
-     * the validation-import command.
-     */
-    $draft->forceFill([
-        'status' => ResearchFormVersion::STATUS_IN_REVIEW,
-    ])->save();
-
-    Artisan::shouldReceive('call')
-        ->once()
-        ->withArgs(
-            function (
-                string $command,
-                array $arguments,
-            ) use (
-                $draft,
-                $validator,
-            ): bool {
-                return $command
-                        === 'research:import-validation'
-                    && $arguments['--form-version']
-                        === $draft->version_code
-                    && $arguments['--validator-email']
-                        === $validator->email
-                    && $arguments['--dry-run'] === true;
-            },
-        )
-        ->andReturn(0);
-
-    Artisan::shouldReceive('output')
-        ->once()
-        ->andReturn(
-            'Dry-run approval passed.',
-        );
-
-    $this->actingAs($administrator)
-        ->post(
-            route(
-                'admin.research-form-imports.preview',
-            ),
-            [
-                'import_type' => ResearchFormImport::TYPE_VALIDATION,
-
-                'form_version_id' => $draft->form_version_id,
-
-                'validator_id' => $validator->user_id,
-
-                'csv' => ripCsv(),
-            ],
-        )
-        ->assertSessionHasNoErrors();
-
-    expect(
-        ResearchFormImport::query()
-            ->sole()
-            ->validator_id,
-    )->toBe($validator->user_id);
+it('previews invalid rows without letting them be selected for commit', function (): void {
+    $admin = ripAdministrator();
+    $draft = ripDraft($admin);
+    $import = ripPreview($admin, $draft, [ripRow(['competency_code' => 'UNKNOWN'])]);
+    expect($import->preview_rows[0]['errors'])->not->toBeEmpty();
+    $this->get(route('admin.research-form-imports.index'))->assertOk()->assertSeeText('Select all eligible on this page');
+    $this->post(route('admin.research-form-imports.commit', $import), ripCommitPayload($import))
+        ->assertSessionHasErrors('selected_rows');
+    expect($draft->questions()->where('question_text', ripRow()['question_text'])->count())->toBe(0);
 });
 
-it('requires the current password before committing', function (): void {
-    $administrator = ripAdministrator();
-    $draft = ripDraft($administrator);
-    $import = ripPreview(
-        $administrator,
-        $draft,
-    );
-
-    $this->actingAs($administrator)
-        ->post(
-            route(
-                'admin.research-form-imports.commit',
-                $import,
-            ),
-            [
-                'expected_lock_version' => $import->lock_version,
-
-                'reason' => 'Commit the reviewed research-form content.',
-
-                'current_password' => 'incorrect-password',
-            ],
-        )
-        ->assertSessionHasErrors(
-            'current_password',
-        );
-
-    expect($import->fresh()->status)
-        ->toBe(
-            ResearchFormImport::STATUS_PREVIEWED,
-        );
-
-    Storage::disk('local')->assertExists(
-        $import->storage_path,
-    );
+it('does not accept the retired validation csv workflow', function (): void {
+    $admin = ripAdministrator();
+    $draft = ripDraft($admin);
+    $this->actingAs($admin)->post(route('admin.research-form-imports.preview'), [
+        'import_type' => ResearchFormImport::TYPE_VALIDATION, 'form_version_id' => $draft->form_version_id, 'csv' => ripCsv(),
+    ])->assertSessionHasErrors('import_type');
+    expect(ResearchFormImport::query()->count())->toBe(0);
 });
 
-it('prevents another administrator from using a preview', function (): void {
+it('requires an explicit selection before committing', function (): void {
+    $admin = ripAdministrator();
+    $draft = ripDraft($admin);
+    $import = ripPreview($admin, $draft);
+    $this->post(route('admin.research-form-imports.commit', $import), ['expected_lock_version' => $import->lock_version])
+        ->assertSessionHasErrors('selected_rows');
+    expect($import->fresh()->status)->toBe(ResearchFormImport::STATUS_PREVIEWED);
+    Storage::disk('local')->assertExists($import->storage_path);
+});
+
+it('prevents another administrator from committing or discarding a valid preview', function (): void {
     $owner = ripAdministrator();
-    $otherAdministrator = ripAdministrator();
-
-    $draft = ripDraft($owner);
-    $import = ripPreview(
-        $owner,
-        $draft,
-    );
-
-    $this->actingAs($otherAdministrator)
-        ->post(
-            route(
-                'admin.research-form-imports.commit',
-                $import,
-            ),
-            [
-                'expected_lock_version' => $import->lock_version,
-
-                'reason' => 'Attempt to commit another administrator preview.',
-
-                'current_password' => 'password',
-            ],
-        )
+    $import = ripPreview($owner, ripDraft($owner));
+    $this->actingAs(ripAdministrator())->post(route('admin.research-form-imports.commit', $import), ripCommitPayload($import))
         ->assertForbidden();
-
-    expect($import->fresh()->status)
-        ->toBe(
-            ResearchFormImport::STATUS_PREVIEWED,
-        );
+    $this->delete(route('admin.research-form-imports.destroy', $import))->assertForbidden();
+    expect($import->fresh()->status)->toBe(ResearchFormImport::STATUS_PREVIEWED);
+    Storage::disk('local')->assertExists($import->storage_path);
 });
 
 it('rejects a private upload changed after preview', function (): void {
-    $administrator = ripAdministrator();
-    $draft = ripDraft($administrator);
-    $import = ripPreview(
-        $administrator,
-        $draft,
-    );
-
+    $admin = ripAdministrator();
+    $draft = ripDraft($admin);
+    $import = ripPreview($admin, $draft);
     $path = $import->storage_path;
-
-    Storage::disk('local')->put(
-        $path,
-        'tampered content',
-    );
-
-    $this->actingAs($administrator)
-        ->post(
-            route(
-                'admin.research-form-imports.commit',
-                $import,
-            ),
-            [
-                'expected_lock_version' => $import->lock_version,
-
-                'reason' => 'Commit the approved research-form content.',
-
-                'current_password' => 'password',
-            ],
-        )
-        ->assertSessionHasErrors('csv');
-
-    expect($import->fresh()->status)
-        ->toBe(
-            ResearchFormImport::STATUS_FAILED,
-        );
-
-    Storage::disk('local')->assertMissing(
-        $path,
-    );
+    Storage::disk('local')->put($path, 'tampered content');
+    $this->post(route('admin.research-form-imports.commit', $import), ripCommitPayload($import))->assertSessionHasErrors('csv');
+    expect($import->fresh()->status)->toBe(ResearchFormImport::STATUS_FAILED);
+    Storage::disk('local')->assertMissing($path);
 });
 
-it('commits once increments the version lock and writes a safe audit', function (): void {
-    $administrator = ripAdministrator();
-    $draft = ripDraft($administrator);
-
-    Artisan::shouldReceive('call')
-        ->twice()
-        ->andReturn(0, 0);
-
-    Artisan::shouldReceive('output')
-        ->twice()
-        ->andReturn(
-            'Dry run passed.',
-            'Imported 60 unvalidated questions.',
-        );
-
-    $this->actingAs($administrator)
-        ->post(
-            route(
-                'admin.research-form-imports.preview',
-            ),
-            [
-                'import_type' => ResearchFormImport::TYPE_CONTENT,
-
-                'form_version_id' => $draft->form_version_id,
-
-                'csv' => ripCsv(),
-            ],
-        )
-        ->assertSessionHasNoErrors();
-
-    $import = ResearchFormImport::query()
-        ->sole();
-
-    $storedPath = $import->storage_path;
-    $oldVersionLock = $draft->fresh()->lock_version;
-
-    $this->actingAs($administrator)
-        ->post(
-            route(
-                'admin.research-form-imports.commit',
-                $import,
-            ),
-            [
-                'expected_lock_version' => $import->lock_version,
-
-                'reason' => 'Import the faculty-reviewed Form A content.',
-
-                'current_password' => 'password',
-            ],
-        )
-        ->assertRedirect(
-            route(
-                'admin.research-forms.index',
-            ),
-        )
-        ->assertSessionHasNoErrors();
-
-    $import->refresh();
-    $draft->refresh();
-
-    expect($import->status)
-        ->toBe(
-            ResearchFormImport::STATUS_COMMITTED,
-        )
-        ->and($import->committed_at)
-        ->not->toBeNull()
-        ->and($import->storage_path)
-        ->toBeNull()
-        ->and($draft->lock_version)
-        ->toBe($oldVersionLock + 1);
-
-    Storage::disk('local')->assertMissing(
-        $storedPath,
-    );
-
-    $audit = AdminAuditLog::query()
-        ->where(
-            'action',
-            'research_form.content_imported',
-        )
-        ->latest()
-        ->firstOrFail();
-
-    $serializedAudit = json_encode(
-        $audit->changes,
-        JSON_THROW_ON_ERROR,
-    );
-
-    expect($serializedAudit)
-        ->not->toContain(
-            $administrator->email,
-        )
-        ->not->toContain(
-            'password',
-        )
-        ->not->toContain(
-            'pre_test_a_v2.csv',
-        )
-        ->not->toContain(
-            'research-form-imports',
-        );
-
-    /*
-     * Replaying a committed preview must fail without running
-     * the import command a third time.
-     */
-    $this->actingAs($administrator)
-        ->post(
-            route(
-                'admin.research-form-imports.commit',
-                $import,
-            ),
-            [
-                'expected_lock_version' => $import->lock_version,
-
-                'reason' => 'Attempt to replay the completed import.',
-
-                'current_password' => 'password',
-            ],
-        )
-        ->assertSessionHasErrors('csv');
+it('rejects an expired preview', function (): void {
+    $admin = ripAdministrator();
+    $import = ripPreview($admin, ripDraft($admin));
+    $import->update(['expires_at' => now()->subMinute()]);
+    $this->post(route('admin.research-form-imports.commit', $import), ripCommitPayload($import))->assertSessionHasErrors('csv');
+    expect($import->fresh()->status)->toBe(ResearchFormImport::STATUS_FAILED);
 });
 
-it('blocks imports after official collection starts', function (): void {
-    $administrator = ripAdministrator();
-    $draft = ripDraft($administrator);
+it('rejects a stale preview lock without invalidating the preview', function (): void {
+    $admin = ripAdministrator();
+    $import = ripPreview($admin, ripDraft($admin));
+    $payload = ripCommitPayload($import);
+    $payload['expected_lock_version']++;
+    $this->post(route('admin.research-form-imports.commit', $import), $payload)->assertSessionHasErrors('csv');
+    expect($import->fresh()->status)->toBe(ResearchFormImport::STATUS_PREVIEWED);
+});
 
-    PilotControl::query()->update([
-        'official_collection_started_at' => now(),
+it('rejects a form changed since preview', function (): void {
+    $admin = ripAdministrator();
+    $draft = ripDraft($admin);
+    $import = ripPreview($admin, $draft);
+    $draft->increment('lock_version');
+    $this->post(route('admin.research-form-imports.commit', $import), ripCommitPayload($import))->assertSessionHasErrors('csv');
+    expect($draft->questions()->where('question_text', ripRow()['question_text'])->count())->toBe(0);
+});
 
-        'official_collection_started_by' => $administrator->user_id,
+it('imports only selected eligible rows without approval or publication', function (): void {
+    $admin = ripAdministrator();
+    $draft = ripDraft($admin);
+    $secondText = $draft->questions()->where('form_position', 2)->value('question_text');
+    $import = ripPreview($admin, $draft, [
+        ripRow(),
+        ripRow(['form_position' => '2', 'question_text' => 'An unselected authored question?']),
     ]);
+    $lock = $draft->lock_version;
+    $path = $import->storage_path;
+    $this->post(route('admin.research-form-imports.commit', $import), ripCommitPayload($import))
+        ->assertRedirect(route('admin.research-forms.index'))->assertSessionHasNoErrors();
+    $draft->refresh();
+    expect($import->fresh()->status)->toBe(ResearchFormImport::STATUS_COMMITTED)
+        ->and($import->fresh()->storage_path)->toBeNull()
+        ->and($draft->lock_version)->toBe($lock + 2)
+        ->and($draft->status)->toBe(ResearchFormVersion::STATUS_DRAFT)
+        ->and($draft->dean_approved_at)->toBeNull()
+        ->and($draft->is_active)->toBeFalse()
+        ->and($draft->questions()->where('form_position', 1)->value('question_text'))->toBe(ripRow()['question_text'])
+        ->and($draft->questions()->where('form_position', 2)->value('question_text'))->toBe($secondText)
+        ->and($draft->questions()->whereNotNull('research_validated_at')->count())->toBe(0);
+    Storage::disk('local')->assertMissing($path);
+    $question = $draft->questions()->with('choices')->where('form_position', 1)->sole();
+    expect($question->choices)->toHaveCount(4)
+        ->and($question->choices->where('is_correct', true)->sole()->choice_letter)->toBe('A');
+    $audit = AdminAuditLog::query()->where('action', 'research_form.content_imported')->sole();
+    $json = json_encode($audit->changes, JSON_THROW_ON_ERROR);
+    expect($audit->admin_id)->toBe($admin->user_id)->and($audit->target_id)->toBe($draft->form_version_id)
+        ->and($json)->not->toContain($admin->email)->not->toContain('password')->not->toContain('research-questions.csv');
+});
 
-    Artisan::shouldReceive('call')->never();
+it('rejects replaying a committed preview without duplicating changes or audit', function (): void {
+    $admin = ripAdministrator();
+    $draft = ripDraft($admin);
+    $import = ripPreview($admin, $draft);
+    $payload = ripCommitPayload($import);
+    $this->post(route('admin.research-form-imports.commit', $import), $payload)->assertSessionHasNoErrors();
+    $lock = $draft->fresh()->lock_version;
+    $this->post(route('admin.research-form-imports.commit', $import), $payload)->assertSessionHasErrors('csv');
+    expect($draft->fresh()->lock_version)->toBe($lock)
+        ->and(AdminAuditLog::query()->where('action', 'research_form.content_imported')->count())->toBe(1);
+});
 
-    $this->actingAs($administrator)
-        ->post(
-            route(
-                'admin.research-form-imports.preview',
-            ),
-            [
-                'import_type' => ResearchFormImport::TYPE_CONTENT,
+it('rolls back all selected rows when any selected row is invalid', function (): void {
+    $admin = ripAdministrator();
+    $draft = ripDraft($admin);
+    $before = $draft->questions()->where('form_position', 1)->value('question_text');
+    $import = ripPreview($admin, $draft, [ripRow(), ripRow(['form_position' => '2', 'competency_code' => 'UNKNOWN'])]);
+    $this->post(route('admin.research-form-imports.commit', $import), ripCommitPayload($import, [2, 3]))
+        ->assertSessionHasErrors('selected_rows');
+    expect($draft->questions()->where('form_position', 1)->value('question_text'))->toBe($before)
+        ->and(AdminAuditLog::query()->where('action', 'research_form.content_imported')->count())->toBe(0)
+        ->and(AdminAuditLog::query()->where('action', 'research_form.question_saved')->count())->toBe(0);
+});
 
-                'form_version_id' => $draft->form_version_id,
+it('rejects rows not contained in the preview', function (): void {
+    $admin = ripAdministrator();
+    $draft = ripDraft($admin);
+    $import = ripPreview($admin, $draft);
+    $this->post(route('admin.research-form-imports.commit', $import), ripCommitPayload($import, [999]))
+        ->assertSessionHasErrors('selected_rows');
+});
 
-                'csv' => ripCsv(),
-            ],
-        )
-        ->assertSessionHasErrors('csv');
+it('disables locked question rows and refuses forged selection', function (): void {
+    $admin = ripAdministrator();
+    $draft = ripDraft($admin);
+    $question = $draft->questions()->where('form_position', 1)->sole();
+    $question->forceFill(['first_served_at' => now()])->save();
+    $import = ripPreview($admin, $draft);
+    expect(implode(' ', $import->preview_rows[0]['errors']))->toContain('locked');
+    $this->post(route('admin.research-form-imports.commit', $import), ripCommitPayload($import))
+        ->assertSessionHasErrors('selected_rows');
+    expect($question->fresh()->question_text)->not->toBe(ripRow()['question_text']);
+});
 
-    expect(
-        ResearchFormImport::query()->count(),
-    )->toBe(0);
+it('blocks previews after official collection starts', function (): void {
+    $admin = ripAdministrator();
+    $draft = ripDraft($admin);
+    PilotControl::query()->update(['official_collection_started_at' => now(), 'official_collection_started_by' => $admin->user_id]);
+    $this->actingAs($admin)->post(route('admin.research-form-imports.preview'), [
+        'import_type' => 'content', 'form_version_id' => $draft->form_version_id, 'csv' => ripCsv(),
+    ])->assertSessionHasErrors('csv');
+    expect(ResearchFormImport::query()->count())->toBe(0)
+        ->and(Storage::disk('local')->allFiles('research-form-imports'))->toBe([]);
+});
 
-    expect(
-        Storage::disk('local')->allFiles(
-            'research-form-imports',
-        ),
-    )->toBe([]);
+it('blocks committing a preview after official collection starts', function (): void {
+    $admin = ripAdministrator();
+    $draft = ripDraft($admin);
+    $import = ripPreview($admin, $draft);
+    PilotControl::query()->update(['official_collection_started_at' => now(), 'official_collection_started_by' => $admin->user_id]);
+    $this->post(route('admin.research-form-imports.commit', $import), ripCommitPayload($import))->assertSessionHasErrors('csv');
+    expect($draft->questions()->where('question_text', ripRow()['question_text'])->count())->toBe(0);
 });

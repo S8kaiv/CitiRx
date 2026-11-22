@@ -54,30 +54,18 @@ it('blocks students and faculty from admin management', function (
         ->assertForbidden();
 })->with(['student', 'faculty']);
 
-it('lets the dean use the administrator dashboard and manage accounts', function (): void {
+it('gives the dean a dedicated workspace without administrator account permissions', function (): void {
     $dean = managementUser('dean');
     $student = managementUser();
-
-    $this->actingAs($dean)
-        ->get(route('dashboard'))
-        ->assertOk()
-        ->assertSeeText('Admin Dashboard')
-        ->assertSeeText('Form B review');
-
-    $this->get(route('admin.users.index'))->assertOk();
-    $this->get(route('admin.cohorts.index'))->assertOk();
-
+    $this->actingAs($dean)->get(route('dashboard'))->assertRedirect(route('dean.dashboard'));
+    $this->get(route('dean.dashboard'))->assertOk()->assertSeeText('Dean workspace');
+    $this->get(route('admin.users.index'))->assertForbidden();
+    $this->get(route('admin.cohorts.index'))->assertForbidden();
     $this->put(route('admin.users.update', ['userId' => $student->user_id]), [
-        'role' => 'faculty',
-        'cohort_id' => null,
-        'reason' => 'Dean assigned the faculty role.',
-    ])->assertSessionHasNoErrors();
-
-    expect($student->fresh()->role)->toBe('faculty')
-        ->and(AdminAuditLog::query()
-            ->where('action', 'user.assignment_updated')
-            ->where('admin_id', $dean->user_id)
-            ->exists())->toBeTrue();
+        'role' => 'faculty', 'cohort_id' => null, 'reason' => 'Attempt to use administrator-only permissions.',
+    ])->assertForbidden();
+    expect($student->fresh()->role)->toBe('student')
+        ->and(AdminAuditLog::query()->where('action', 'user.assignment_updated')->count())->toBe(0);
 });
 
 it('assigns a cohort without requiring a reason', function (): void {

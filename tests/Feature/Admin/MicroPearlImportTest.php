@@ -3,8 +3,10 @@
 use App\Models\MicroPearl;
 use App\Models\MicroPearlEdit;
 use App\Models\MicroPearlImport;
+use App\Models\TosCompetency;
 use App\Models\User;
 use App\Services\MicroPearlImportService;
+use App\Services\MicroPearlWorkflowService;
 use Database\Seeders\TosSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -188,31 +190,33 @@ it('rejects an invalid CSV header', function (): void {
     expect(MicroPearlImport::query()->count())->toBe(0);
 });
 
-it('rejects an unknown competency code', function (): void {
+it('previews unknown competencies as invalid rows and refuses their selection', function (): void {
     $faculty = User::factory()->create(['role' => 'faculty']);
-
-    $this->actingAs($faculty)
-        ->post(route('content.pearls.imports.preview'), [
-            'csv' => pearlImportUpload([
-                pearlImportRow(['competency_code' => 'UNKNOWN-01']),
-            ]),
-        ])
-        ->assertSessionHasErrors('csv');
-
-    expect(MicroPearlImport::query()->count())->toBe(0);
+    $this->actingAs($faculty)->post(route('content.pearls.imports.preview'), [
+        'csv' => pearlImportUpload([pearlImportRow(['competency_code' => 'UNKNOWN-01'])]),
+    ])->assertSessionHasNoErrors();
+    $import = MicroPearlImport::query()->sole();
+    expect($import->preview_rows[0]['errors'])->not->toBeEmpty()
+        ->and(MicroPearl::query()->count())->toBe(0);
+    $this->post(route('content.pearls.imports.commit', $import), [
+        'expected_lock_version' => $import->lock_version, 'selected_rows' => [2],
+    ])->assertSessionHasErrors('selected_rows');
+    expect(MicroPearl::query()->count())->toBe(0);
 });
 
-it('rejects duplicate CSV lessons', function (): void {
+it('marks duplicate CSV lessons invalid instead of discarding the whole preview', function (): void {
     $faculty = User::factory()->create(['role' => 'faculty']);
     $row = pearlImportRow();
-
-    $this->actingAs($faculty)
-        ->post(route('content.pearls.imports.preview'), [
-            'csv' => pearlImportUpload([$row, $row]),
-        ])
-        ->assertSessionHasErrors('csv');
-
-    expect(MicroPearlImport::query()->count())->toBe(0);
+    $this->actingAs($faculty)->post(route('content.pearls.imports.preview'), [
+        'csv' => pearlImportUpload([$row, $row]),
+    ])->assertSessionHasNoErrors();
+    $import = MicroPearlImport::query()->sole();
+    expect($import->preview_rows[0]['errors'])->toBe([])
+        ->and($import->preview_rows[1]['errors'])->not->toBeEmpty();
+    $this->post(route('content.pearls.imports.commit', $import), [
+        'expected_lock_version' => $import->lock_version, 'selected_rows' => [2, 3],
+    ])->assertSessionHasErrors('selected_rows');
+    expect(MicroPearl::query()->count())->toBe(0);
 });
 
 it('rejects the legacy CSV layout with AI columns', function (): void {
@@ -255,7 +259,7 @@ it('prevents another editor from viewing or committing a preview', function (): 
 
     $this->post(
         route('content.pearls.imports.commit', ['import' => $import]),
-        ['expected_lock_version' => $import->lock_version],
+        ['expected_lock_version' => $import->lock_version, 'selected_rows' => [2]],
     )->assertForbidden();
 
     expect(MicroPearl::query()->count())->toBe(0);
@@ -274,7 +278,7 @@ it('commits a preview without a password or typed reason', function (): void {
 
     $this->post(
         route('content.pearls.imports.commit', ['import' => $import]),
-        ['expected_lock_version' => $import->lock_version],
+        ['expected_lock_version' => $import->lock_version, 'selected_rows' => [2]],
     )
         ->assertRedirect(route('content.pearls.index'))
         ->assertSessionHasNoErrors();
@@ -303,7 +307,7 @@ it('rejects an expired preview', function (): void {
 
     $this->post(
         route('content.pearls.imports.commit', ['import' => $import]),
-        ['expected_lock_version' => $import->lock_version],
+        ['expected_lock_version' => $import->lock_version, 'selected_rows' => [2]],
     )->assertSessionHasErrors('csv');
 
     expect(MicroPearl::query()->count())->toBe(0);
@@ -326,7 +330,7 @@ it('rejects a changed file after preview', function (): void {
 
     $this->post(
         route('content.pearls.imports.commit', ['import' => $import]),
-        ['expected_lock_version' => $import->lock_version],
+        ['expected_lock_version' => $import->lock_version, 'selected_rows' => [2]],
     )->assertSessionHasErrors('csv');
 
     expect(MicroPearl::query()->count())->toBe(0);
@@ -345,7 +349,7 @@ it('rejects a stale preview version', function (): void {
 
     $this->post(
         route('content.pearls.imports.commit', ['import' => $import]),
-        ['expected_lock_version' => $import->lock_version + 1],
+        ['expected_lock_version' => $import->lock_version + 1, 'selected_rows' => [2]],
     )->assertSessionHasErrors('csv');
 
     expect(MicroPearl::query()->count())->toBe(0);
@@ -373,7 +377,7 @@ it('commits all lessons as private drafts', function (): void {
 
     $this->post(
         route('content.pearls.imports.commit', ['import' => $import]),
-        ['expected_lock_version' => $import->lock_version],
+        ['expected_lock_version' => $import->lock_version, 'selected_rows' => [2, 3]],
     )
         ->assertRedirect(route('content.pearls.index'))
         ->assertSessionHasNoErrors();
@@ -430,6 +434,7 @@ it('rejects replaying a committed import', function (): void {
 
     $payload = [
         'expected_lock_version' => $import->lock_version,
+        'selected_rows' => [2],
     ];
 
     $this->post(
@@ -442,5 +447,50 @@ it('rejects replaying a committed import', function (): void {
         $payload,
     )->assertSessionHasErrors('csv');
 
+    expect(MicroPearl::query()->count())->toBe(1);
+});
+
+it('requires a row selection without consuming a valid preview', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
+    $this->actingAs($faculty)->post(route('content.pearls.imports.preview'), [
+        'csv' => pearlImportUpload([pearlImportRow()]),
+    ])->assertSessionHasNoErrors();
+    $import = MicroPearlImport::query()->sole();
+    $this->post(route('content.pearls.imports.commit', $import), ['expected_lock_version' => $import->lock_version])
+        ->assertSessionHasErrors('selected_rows');
+    expect($import->fresh()->status)->toBe(MicroPearlImport::STATUS_PREVIEWED)
+        ->and(MicroPearl::query()->count())->toBe(0);
+});
+
+it('creates only the selected eligible lesson', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
+    $this->actingAs($faculty)->post(route('content.pearls.imports.preview'), [
+        'csv' => pearlImportUpload([
+            pearlImportRow(),
+            pearlImportRow(['title' => 'Second lesson only', 'order_index' => '2']),
+        ]),
+    ])->assertSessionHasNoErrors();
+    $import = MicroPearlImport::query()->sole();
+    $this->post(route('content.pearls.imports.commit', $import), [
+        'expected_lock_version' => $import->lock_version, 'selected_rows' => [3],
+    ])->assertSessionHasNoErrors();
+    expect(MicroPearl::query()->count())->toBe(1)
+        ->and(MicroPearl::query()->sole()->title)->toBe('Second lesson only')
+        ->and(MicroPearl::query()->sole()->content_status)->toBe(MicroPearl::STATUS_DRAFT);
+});
+
+it('rechecks lesson eligibility when records change after preview', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
+    $this->actingAs($faculty)->post(route('content.pearls.imports.preview'), [
+        'csv' => pearlImportUpload([pearlImportRow()]),
+    ])->assertSessionHasNoErrors();
+    $import = MicroPearlImport::query()->sole();
+    app(MicroPearlWorkflowService::class)->create($faculty, [
+        'competency_id' => TosCompetency::query()->where('competency_code', 'PC-01')->sole()->competency_id,
+        'title' => pearlImportRow()['title'], 'order_index' => 1,
+    ]);
+    $this->post(route('content.pearls.imports.commit', $import), [
+        'expected_lock_version' => $import->lock_version, 'selected_rows' => [2],
+    ])->assertSessionHasErrors('selected_rows');
     expect(MicroPearl::query()->count())->toBe(1);
 });

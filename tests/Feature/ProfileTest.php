@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\StudentNameRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -15,8 +16,10 @@ test('profile page is displayed', function () {
     $response->assertOk();
 });
 
-test('profile information can be updated', function () {
+test('student name changes create a pending request while email updates immediately', function () {
     $user = User::factory()->create();
+
+    $officialNames = $user->only(['first_name', 'middle_name', 'last_name']);
 
     $response = $this
         ->actingAs($user)
@@ -33,14 +36,13 @@ test('profile information can be updated', function () {
 
     $user->refresh();
 
-    expect($user->first_name)
-        ->toBe('Test');
-
-    expect($user->middle_name)
-        ->toBe('Middle');
-
-    expect($user->last_name)
-        ->toBe('Student');
+    expect($user->only(['first_name', 'middle_name', 'last_name']))->toBe($officialNames);
+    $nameRequest = StudentNameRequest::query()->where('user_id', $user->user_id)->sole();
+    expect($nameRequest->status)->toBe('pending')
+        ->and($nameRequest->original_names)->toEqual($officialNames)
+        ->and($nameRequest->requested_names)->toEqual([
+            'first_name' => 'Test', 'middle_name' => 'Middle', 'last_name' => 'Student',
+        ]);
 
     expect($user->email)
         ->toBe('test@example.com');
