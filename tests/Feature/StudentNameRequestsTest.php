@@ -37,7 +37,8 @@ it('keeps name decisions and the Dean workspace unavailable to other roles', fun
     expect($request->fresh()->status)->toBe('pending')->and($student->fresh()->first_name)->toBe('Alicia');
 })->with(['student', 'faculty', 'admin']);
 
-it('shows pending requests and an honest missing diagnostic state in the Dean workspace', function (): void {$student = nameRequestStudent();
+it('shows pending requests and an honest missing diagnostic state in the Dean workspace', function (): void {
+    $student = nameRequestStudent();
     pendingNameRequest($student);
 
     $this->actingAs(User::factory()->create(['role' => 'dean']))->get(route('dean.dashboard'))->assertOk()->assertViewHas('pendingNames', 1)
