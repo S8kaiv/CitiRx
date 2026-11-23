@@ -23,6 +23,7 @@ it('syncs the level from total XP', function () {
         ->and($notice)
         ->toBe([
             'level_number' => 4,
+            'previous_level' => 1,
             'tier_name' => 'Intermediate',
         ]);
 });
@@ -126,7 +127,7 @@ it('protects the progress page from guests', function () {
         ->assertRedirect(route('login'));
 });
 
-it('uses the configured maximum level threshold for the dashboard journey', function () {
+it('uses the configured XP threshold for the next dashboard theme', function () {
     Level::query()
         ->where('level_number', 10)
         ->update([
@@ -144,14 +145,10 @@ it('uses the configured maximum level threshold for the dashboard journey', func
         ->actingAs($user)
         ->get(route('dashboard'))
         ->assertOk()
-        ->assertSee('6,000')
-        ->assertSee('12,000')
-        ->assertSee(
-            'aria-valuemax="12000"',
-            escape: false,
-        )
-        ->assertSee(
-            'aria-valuenow="6000"',
-            escape: false,
-        );
+        ->assertSeeText('Next theme')
+        ->assertSeeText('Solar Gold')
+        ->assertSeeText('6,000 XP to unlock')
+        ->assertSee('aria-label="Progress toward Solar Gold"', escape: false)
+        ->assertSee('aria-valuemax="100"', escape: false)
+        ->assertSee('aria-valuenow="25"', escape: false);
 });
