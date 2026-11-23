@@ -25,8 +25,14 @@
     @endphp
 
     {{-- Compact Outer Container (pt-6) --}}
-    <div class="ui-assessment-stage pt-6 font-sans antialiased text-ink">
+    <div class="ui-assessment-stage pt-6 font-sans antialiased text-ink" data-practice-session="{{ $session->session_id }}">
         <div class="max-w-2xl px-4 mx-auto sm:px-6 lg:px-8">
+            <p data-practice-request-status hidden role="status" class="mb-3 text-sm font-semibold text-ink-muted">Saving changes…</p>
+            <div data-practice-request-error hidden role="alert" class="mb-3 space-y-2 rounded-xl border border-danger-strong/40 bg-danger-tint p-4 text-sm text-danger-ink">
+                <p data-practice-error-message></p>
+                <a href="{{ route('practice.show', $session) }}" class="inline-flex min-h-11 items-center font-bold underline underline-offset-4">Reload practice</a>
+            </div>
+            <div data-practice-panel tabindex="-1">
             {{-- Level Up Notification Banner --}}
             <x-level-up-alert />
 
@@ -342,6 +348,7 @@
                 Session Ref: {{ $session->session_id }}
             </div>
 
+            </div>
         </div>
     </div>
 </x-app-layout>

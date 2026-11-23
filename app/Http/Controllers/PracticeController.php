@@ -30,6 +30,10 @@ class PracticeController extends Controller
     public function intro(
         Request $request,
     ): View|RedirectResponse {
+        if ($request->header('X-CitiRx-Practice') === 'panel') {
+            $request->session()->keep(['level_up', 'status', 'error']);
+        }
+
         $user = $request->user();
 
         if (! $user->is_diagnostic_completed) {
@@ -576,6 +580,11 @@ class PracticeController extends Controller
             $request,
             $session
         );
+
+        // The background fetch precedes the visible navigation to this terminal page.
+        if ($request->header('X-CitiRx-Practice') === 'panel') {
+            $request->session()->keep(['level_up', 'status', 'error']);
+        }
 
         $session =
             $session->fresh();
