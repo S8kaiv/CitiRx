@@ -122,16 +122,16 @@
                         </div>
                     @else
                         {{-- LOCKED BADGE: Muted & Dashed Container --}}
-                        <div class="flex flex-col justify-between rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/70 p-5 opacity-75">
+                        <div class="flex flex-col justify-between rounded-3xl border-2 border-dashed border-line bg-surface-2 p-5">
                             <div>
                                 <div class="flex items-start justify-between gap-3">
                                     {{-- Padlock Token --}}
-                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-slate-200 bg-slate-100 text-xl text-slate-400 shadow-inner">
+                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-slate-200 bg-slate-100 text-xl text-ink-muted shadow-inner">
                                         🔒
                                     </div>
 
                                     {{-- Dimmed Reward Pill --}}
-                                    <span class="inline-flex items-center rounded-full border-2 border-slate-200 bg-white px-2.5 py-0.5 font-display text-xs font-bold text-slate-400">
+                                    <span class="inline-flex items-center rounded-full border-2 border-slate-200 bg-white px-2.5 py-0.5 font-display text-xs font-bold text-ink-muted">
                                         +{{ $badge->xp_reward }} XP
                                     </span>
                                 </div>
@@ -139,16 +139,16 @@
                                 <h4 class="mt-4 font-display text-base font-bold text-slate-700">
                                     {{ $badge->badge_name }}
                                 </h4>
-                                <p class="mt-1 text-xs leading-relaxed text-muted-ink">
+                                <p class="mt-1 text-xs leading-relaxed text-ink-muted">
                                     {{ $badge->description }}
                                 </p>
                             </div>
 
                             <div class="mt-5 pt-3 border-t-2 border-slate-200/60 flex items-center justify-between">
-                                <span class="font-display text-[11px] font-bold uppercase tracking-wider text-muted-ink">
+                                <span class="font-display text-[11px] font-bold uppercase tracking-wider text-ink-muted">
                                     Locked
                                 </span>
-                                <span class="text-[10px] text-slate-400 font-medium">
+                                <span class="text-[10px] text-ink-muted font-medium">
                                     Incomplete
                                 </span>
                             </div>

@@ -785,7 +785,7 @@ class PracticeController extends Controller
     /**
      * Store a level-up notification for the next page request.
      *
-     * @param  array{level_number: int, tier_name: string}|null  $levelUp
+     * @param  array{level_number: int, previous_level: int, tier_name: string}|null  $levelUp
      */
     private function flashLevelUp(
         ?array $levelUp

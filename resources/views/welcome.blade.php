@@ -155,7 +155,10 @@
                 <div>
                     @foreach ($faqs as [$question, $answer])
                         <details>
-                            <summary>{{ $question }}</summary>
+                            <summary x-data @click="$el.dataset.faqAnimate = $event.detail > 0">
+                                {{ $question }}
+                                <span class="rx-faq-icon" aria-hidden="true"></span>
+                            </summary>
                             <p>{{ $answer }}</p>
                         </details>
                     @endforeach

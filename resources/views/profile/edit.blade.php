@@ -100,7 +100,7 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
 
     {{-- Alpine State: activeTab controls switching, activeTheme tracks the color state --}}
     <div class="pt-6 pb-20 font-sans text-ink antialiased" x-data="{
-        activeTab: @js(collect($errors->getBags())->contains(fn($bag) => $bag->any()) || session('status') ? 'settings' : 'overview')
+        activeTab: @js(collect($errors->getBags())->contains(fn($bag) => $bag->any()) || session('status') || request()->query('tab') === 'settings' ? 'settings' : 'overview')
     }">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
@@ -410,71 +410,58 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
 
                     {{-- Cosmetic themes remain student-only. --}}
                     @if ($isStudent)
-                        <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-6 shadow-sm sm:p-8">
+                        <div id="theme-locker" class="scroll-mt-24 rounded-3xl border-2 border-b-4 border-slate-200 bg-surface p-6 shadow-sm sm:p-8">
                             <header>
                                 <h2 class="font-display text-lg font-black text-ink">
                                     Theme Locker
                                 </h2>
 
                                 <p class="mt-1 text-xs font-semibold uppercase tracking-wider text-ink-muted">
-                                    Level up to unlock additional themes
+                                    Use an unlocked theme across your student workspace.
                                 </p>
                             </header>
 
                             <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3">
                                 <template x-for="theme in themes" :key="theme.id">
-                                    <button type="button" @click="applyTheme(theme.id)"
-                                        :disabled="!isUnlocked(theme)"
-                                        :aria-pressed="(
-                                            globalTheme === theme.id
-                                        ).toString()"
-                                        :aria-label="isUnlocked(theme) ?
-                                            `Use ${theme.name} theme` :
-                                            `${theme.name} unlocks at level ${theme.requiredLevel}`"
-                                        :class="{
-                                            'border-primary bg-primary-tint ring-2 ring-primary/20': globalTheme ===
-                                                theme.id,
-                                            'border-slate-200 bg-surface hover:-translate-y-1 hover:shadow-md': isUnlocked(
-                                                    theme) &&
-                                                globalTheme !== theme.id,
-                                            'cursor-not-allowed border-slate-100 bg-surface-2 opacity-70':
-                                                !isUnlocked(theme),
-                                        }"
-                                        class="relative flex flex-col items-center rounded-2xl border-2 border-b-4 p-4 text-left transition duration-200">
-                                        <span x-show="!isUnlocked(theme)" x-cloak
-                                            class="absolute right-3 top-2 text-lg" aria-hidden="true">
-                                            🔒
-                                        </span>
+                                    <div class="flex min-w-0 flex-col gap-1">
+                                        <button type="button"
+                                            x-data="{ playing: false }"
+                                            @click="
+                                                const changed = globalTheme !== theme.id;
+                                                if (applyTheme(theme.id) && changed && $event.detail > 0) {
+                                                    playing = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                                                }
+                                            "
+                                            :data-theme-playing="playing"
+                                            :disabled="!isUnlocked(theme)"
+                                            :aria-pressed="globalTheme === theme.id"
+                                            :aria-label="isUnlocked(theme)
+                                                ? 'Use ' + theme.name + ' theme'
+                                                : theme.name + ' unlocks at level ' + theme.requiredLevel"
+                                            :class="globalTheme === theme.id
+                                                ? 'border-primary bg-primary-tint ring-2 ring-primary/20'
+                                                : 'border-line bg-surface'"
+                                            class="theme-locker-card flex flex-1 flex-col items-center rounded-2xl border-2 border-b-4 p-3 text-center disabled:cursor-not-allowed">
+                                            <span class="theme-locker-preview" aria-hidden="true">
+                                                <span class="theme-locker-art" :data-theme-preview="theme.id"
+                                                    @animationend="playing = false" @animationcancel="playing = false"></span>
+                                            </span>
 
-                                        <span class="mb-3 h-12 w-12 rounded-full border-2 border-b-4"
-                                            :class="{
-                                                'grayscale opacity-40':
-                                                    !isUnlocked(theme),
-                                            }"
-                                            :style="`
-                                                                        background-color: ${theme.swatch};
-                                                                        border-color: ${theme.border};
-                                                                    `"
-                                            aria-hidden="true"></span>
-
-                                        <span class="text-center font-display text-sm font-black text-ink"
-                                            x-text="theme.name"></span>
-
-                                        <span
-                                            class="mt-1 text-center font-display text-[10px] font-bold uppercase tracking-wider"
-                                            :class="isUnlocked(theme) ?
-                                                'text-ink-muted' :
-                                                'text-rose-500'"
-                                            x-text="
-                            isUnlocked(theme)
-                                ? (
-                                    theme.requiredLevel === 1
-                                        ? 'Default'
-                                        : 'Unlocked'
-                                )
-                                : `Level ${theme.requiredLevel} unlock`
-                        "></span>
-                                    </button>
+                                            <span class="font-display text-sm font-black text-ink" x-text="theme.name"></span>
+                                            <span class="mt-1 text-xs font-semibold text-ink-muted"
+                                                x-text="globalTheme === theme.id ? 'Equipped'
+                                                    : (isUnlocked(theme) ? 'Ready to equip' : 'Unlocks at level ' + theme.requiredLevel)">
+                                            </span>
+                                        </button>
+                                        <template x-if="isUnlocked(theme)">
+                                            <a :href="@js(route('dashboard', ['preview-theme' => '__theme__'])).replace('__theme__', encodeURIComponent(theme.id))"
+                                                x-on:click="$el.hash = $event.detail > 0 ? 'theme-preview-motion' : ''"
+                                                :aria-label="'Preview ' + theme.name + ' on your dashboard'"
+                                                class="inline-flex min-h-11 items-center justify-center text-center text-xs font-bold text-primary-ink underline underline-offset-4">
+                                                Preview on dashboard
+                                            </a>
+                                        </template>
+                                    </div>
                                 </template>
                             </div>
                         </div>

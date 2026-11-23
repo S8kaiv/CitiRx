@@ -19,6 +19,19 @@
 
 @php
     $themeLevel = Auth::user()?->role === 'student' ? max(1, (int) (Auth::user()->current_level ?? 1)) : 1;
+
+    /*
+     * Hide navigation while the student is actively
+     * answering Practice, Diagnostic, or Mock Board questions.
+     */
+    $isFocusMode = request()->routeIs(
+        'practice.show',
+        'practice.answer',
+        'diagnostic.take',
+        'diagnostic.answer',
+        'mock-board.take',
+        'mock-board.answer',
+    );
 @endphp
 
 <body
@@ -27,10 +40,13 @@
     x-data="themeManager(
         @js($themeLevel),
         @js($surface),
+        @js(array_values(config('student-themes'))),
+        @js(request()->routeIs('dashboard') ? request()->query('preview-theme') : null),
     )"
     :class="[
         globalTheme,
         {
+            'has-earned-theme': globalTheme !== 'theme-standard',
             'theme-animations-paused': animationsPaused,
         },
     ]"
@@ -39,12 +55,14 @@
         selection:text-primary-ink role-{{ $surface }}"
 >
 
-    @if ($surface === 'student' && request()->routeIs('dashboard'))
+    @if ($surface === 'student' && ! $isFocusMode)
         {{-- ============================================================ --}}
         {{-- ATMOSPHERIC THEME ENVIRONMENT & PARTICLE ANIMATIONS         --}}
         {{-- ============================================================ --}}
-        <div class="theme-environment pointer-events-none fixed inset-0 z-0 overflow-hidden transition-colors duration-500"
-        aria-hidden="true">
+        <div x-ref="themeEnvironment" class="theme-environment pointer-events-none fixed inset-0 z-0 overflow-hidden"
+            @unless (request()->routeIs('dashboard')) x-show="globalTheme !== 'theme-standard'" x-cloak @endunless
+            aria-hidden="true">
+        @if (request()->routeIs('dashboard'))
         <div class="theme-particles absolute inset-0 h-full w-full">
             {{-- Sakura --}}
             <template x-if="globalTheme === 'theme-sakura'">
@@ -156,23 +174,11 @@
                     </div>
                 </template>
             </div>
+        @endif
         </div>
     @endif
 
     @php
-        /*
-         * Hide navigation while the student is actively
-         * answering Practice, Diagnostic, or Mock Board questions.
-         */
-        $isFocusMode = request()->routeIs(
-            'practice.show',
-            'practice.answer',
-            'diagnostic.take',
-            'diagnostic.answer',
-            'mock-board.take',
-            'mock-board.answer',
-        );
-
         /*
          * Auth::user() is appropriate in this shared layout.
          * Route middleware still provides the actual security.
@@ -259,7 +265,10 @@
                             href="{{ route('dashboard') }}"
                             class="group flex items-center gap-3 rounded-2xl p-1 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
                         >
-                            <x-application-logo class="h-12 w-12 transition-transform duration-150 group-active:translate-y-0.5" />
+                            <span class="theme-reward-art relative block h-12 w-12 shrink-0 transition-transform duration-150 group-active:translate-y-0.5"
+                                :data-theme-reward="globalTheme.slice('theme-'.length)">
+                                <x-application-logo class="h-full w-full" />
+                            </span>
 
                             <span class="min-w-0">
                                 <span class="block font-display text-xl font-black leading-none tracking-[-0.02em] text-ink">
