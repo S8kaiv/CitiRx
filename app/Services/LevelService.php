@@ -14,7 +14,7 @@ class LevelService
      * Returns a small notification payload only when the user
      * genuinely moves upward from an already initialized level.
      *
-     * @return array{level_number: int, tier_name: string}|null
+     * @return array{level_number: int, previous_level: int, tier_name: string}|null
      */
     public function sync(User $user): ?array
     {
@@ -116,7 +116,7 @@ class LevelService
      * Persist the correct cached level and determine whether
      * a level-up notification should be returned.
      *
-     * @return array{level_number: int, tier_name: string}|null
+     * @return array{level_number: int, previous_level: int, tier_name: string}|null
      */
     private function apply(
         User $user,
@@ -148,6 +148,7 @@ class LevelService
 
         return [
             'level_number' => $correctLevel,
+            'previous_level' => (int) $previousLevel,
             'tier_name' => (string) $level->tier->tier_name,
         ];
     }

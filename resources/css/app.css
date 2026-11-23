@@ -383,7 +383,6 @@ html:fullscreen {
 .theme-environment {
     contain: paint;
     background-color: #f8fafc;
-    transition: background 0.5s ease;
 }
 
 .theme-particles {
@@ -1937,29 +1936,12 @@ html[data-comfort="dark"] body .admin-sidebar {
     box-shadow: 8px 0 24px rgb(2 6 23 / 0.18);
 }
 
-/* Cosmetic environments remain subordinate to dark comfort. */
 html[data-comfort="dark"] body .theme-environment {
-    background: rgb(var(--color-canvas)) !important;
+    background: rgb(var(--color-canvas));
 }
 
 html[data-comfort="dark"] body .theme-scene {
     opacity: 0.18;
-}
-
-/* Preserve the currently active Midnight environment. */
-html[data-comfort="dark"] body.theme-midnight .theme-environment {
-    background:
-        radial-gradient(
-            ellipse at 72% 22%,
-            rgb(91 33 182 / 0.22),
-            transparent 38%
-        ),
-        radial-gradient(
-            ellipse at 15% 82%,
-            rgb(14 116 144 / 0.16),
-            transparent 40%
-        ),
-        #0b1222 !important;
 }
 
 html[data-comfort="dark"] body.theme-midnight .galaxy-scene {
@@ -2831,9 +2813,30 @@ html[data-comfort="dark"] .rx-welcome {
 
 .rx-welcome summary::-webkit-details-marker { display: none; }
 
-.rx-welcome summary:after { content: '+'; font-size: 24px; font-weight: 500; color: var(--purple); }
+.rx-welcome .rx-faq-icon {
+    position: relative;
+    flex: 0 0 16px;
+    height: 16px;
+    color: var(--purple);
+}
 
-.rx-welcome details[open] summary:after { content: 'Ã¢Ë†â€™'; }
+.rx-welcome .rx-faq-icon::before,
+.rx-welcome .rx-faq-icon::after {
+    content: "";
+    position: absolute;
+    inset: 7px 1px;
+    border-radius: 1px;
+    background: currentColor;
+}
+
+.rx-welcome .rx-faq-icon::after { transform: rotate(90deg); }
+.rx-welcome details[open] .rx-faq-icon::after { transform: rotate(0deg); }
+
+@media (prefers-reduced-motion: no-preference) {
+    .rx-welcome summary[data-faq-animate="true"] .rx-faq-icon::after {
+        transition: transform 150ms var(--ease-out);
+    }
+}
 
 .rx-welcome details p { padding-bottom: 22px; font-size: 14px; }
 
@@ -3016,7 +3019,6 @@ html[data-comfort="dark"] .rx-welcome {
 
     .rx-welcome summary { font-size: 15px; line-height: 1.5; }
 
-    .rx-welcome summary:after { flex-shrink: 0; }
 
     .rx-welcome .rx-footer { padding-bottom: calc(28px + env(safe-area-inset-bottom,0px)); }
 }
@@ -4343,6 +4345,59 @@ html[data-comfort="dark"] body.role-student.theme-standard {
     --color-danger-ink: 255 178 197;
 }
 
+/* Distinct dark palettes for the workspace. Active assessments keep the neutral surfaces. */
+html[data-comfort="dark"] body.role-student.theme-forest:not(:has([data-assessment-content])) {
+    --color-canvas: 13 30 25;
+    --color-surface: 21 43 35;
+    --color-surface-2: 30 55 45;
+    --color-line: 58 84 72;
+    --color-line-strong: 96 125 108;
+}
+
+html[data-comfort="dark"] body.role-student.theme-sakura:not(:has([data-assessment-content])) {
+    --color-canvas: 41 22 34;
+    --color-surface: 55 32 46;
+    --color-surface-2: 68 41 57;
+    --color-line: 104 72 93;
+    --color-line-strong: 146 105 129;
+}
+
+html[data-comfort="dark"] body.role-student.theme-midnight:not(:has([data-assessment-content])) {
+    --color-canvas: 14 23 44;
+    --color-surface: 24 35 62;
+    --color-surface-2: 34 47 76;
+    --color-line: 65 82 114;
+    --color-line-strong: 102 123 163;
+}
+
+html[data-comfort="dark"] body.role-student.theme-ocean:not(:has([data-assessment-content])) {
+    --color-canvas: 10 28 43;
+    --color-surface: 18 40 57;
+    --color-surface-2: 26 53 73;
+    --color-line: 55 83 102;
+    --color-line-strong: 89 123 144;
+}
+
+html[data-comfort="dark"] body.role-student.theme-solar:not(:has([data-assessment-content])) {
+    --color-canvas: 38 27 16;
+    --color-surface: 52 38 24;
+    --color-surface-2: 66 49 31;
+    --color-line: 103 81 55;
+    --color-line-strong: 147 119 81;
+}
+
+html[data-comfort="dark"] body.role-student.has-earned-theme .theme-environment {
+    background:
+        radial-gradient(ellipse at 88% 10%, rgb(var(--color-primary-default) / .22), transparent 52%),
+        radial-gradient(ellipse at 16% 90%, rgb(var(--color-primary-default) / .12), transparent 54%),
+        rgb(var(--color-canvas));
+}
+
+body.role-student.has-earned-theme:not(:has([data-assessment-content])) .admin-topbar {
+    background-color: rgb(var(--color-surface));
+    border-bottom-color: rgb(var(--color-primary-default) / .4);
+}
+
 /* Shared component equivalents used throughout student review, learning and profile views. */
 .role-student main .ui-card {
     border: 1px solid rgb(var(--color-line)); border-radius: 16px;
@@ -4486,4 +4541,236 @@ html[data-comfort="dark"] body.role-student main :is(a, button):is(.bg-rose-500,
     .role-faculty .rx-pearl-import .ui-button-primary:hover {
         filter: none;
     }
+}
+
+/* Theme Locker previews use the same palette regardless of the equipped theme. */
+.theme-locker-preview {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: block;
+    width: 100%;
+    height: 4.5rem;
+    margin-bottom: .75rem;
+    border: 1px solid var(--preview-edge);
+    border-radius: .75rem;
+    background:
+        radial-gradient(ellipse at 75% 15%, var(--preview-glow), transparent 70%),
+        var(--preview-base);
+}
+
+.theme-locker-art {
+    position: absolute;
+    inset: 0;
+}
+
+.theme-locker-preview:has([data-theme-preview="theme-standard"]) {
+    --preview-base: #27184d;
+    --preview-edge: #7158b4;
+    --preview-glow: #6848b8;
+}
+.theme-locker-art[data-theme-preview="theme-standard"] {
+    --preview-motion: theme-locker-standard;
+    background:
+        linear-gradient(115deg, transparent 30%, #ede1ff 50%, transparent 70%) 50% 50% / 36% 2px no-repeat,
+        radial-gradient(ellipse at center, #bda1ff, transparent 65%) 50% 50% / 60% 40% no-repeat;
+}
+
+.theme-locker-preview:has([data-theme-preview="theme-forest"]) {
+    --preview-base: #12372a;
+    --preview-edge: #3f8061;
+    --preview-glow: #347a55;
+}
+.theme-locker-art[data-theme-preview="theme-forest"] {
+    --preview-motion: theme-locker-forest;
+    transform-origin: 50% 100%;
+    background:
+        radial-gradient(ellipse at 35% 65%, #a5d399 0 35%, transparent 40%) 33% 60% / 20% 28% no-repeat,
+        radial-gradient(ellipse at 65% 35%, #72bc90 0 35%, transparent 40%) 55% 33% / 26% 33% no-repeat,
+        radial-gradient(ellipse at 50% 50%, #539d70 0 35%, transparent 40%) 74% 67% / 19% 25% no-repeat;
+}
+
+.theme-locker-preview:has([data-theme-preview="theme-sakura"]) {
+    --preview-base: #54283b;
+    --preview-edge: #a45c79;
+    --preview-glow: #a84f73;
+}
+.theme-locker-art[data-theme-preview="theme-sakura"] {
+    --preview-motion: theme-locker-sakura;
+    background:
+        radial-gradient(ellipse at center, #ffd0df 0 40%, transparent 47%) 27% 36% / 9% 16% no-repeat,
+        radial-gradient(ellipse at center, #ffabc6 0 40%, transparent 47%) 49% 63% / 11% 16% no-repeat,
+        radial-gradient(ellipse at center, #f78eb4 0 40%, transparent 47%) 68% 28% / 10% 19% no-repeat,
+        radial-gradient(ellipse at center, #ffd0df 0 40%, transparent 47%) 81% 63% / 7% 14% no-repeat;
+}
+
+.theme-locker-preview:has([data-theme-preview="theme-midnight"]) {
+    --preview-base: #141b32;
+    --preview-edge: #667293;
+    --preview-glow: #3d4b72;
+}
+.theme-locker-art[data-theme-preview="theme-midnight"] {
+    --preview-motion: theme-locker-midnight;
+    background:
+        radial-gradient(circle at 54% 43%, #f3f5ff 0 2px, #a2b6f5 3px, transparent 10px),
+        radial-gradient(circle at 27% 58%, #cbdafa 0 1px, transparent 2px),
+        radial-gradient(circle at 71% 29%, #f2f4ff 0 1px, transparent 2px),
+        radial-gradient(circle at 82% 62%, #a2b6f5 0 1px, transparent 2px);
+}
+
+.theme-locker-preview:has([data-theme-preview="theme-ocean"]) {
+    --preview-base: #113448;
+    --preview-edge: #3f839e;
+    --preview-glow: #236c89;
+}
+.theme-locker-art[data-theme-preview="theme-ocean"] {
+    --preview-motion: theme-locker-ocean;
+    background:
+        radial-gradient(ellipse at center, #a3e8f3 0 30%, transparent 55%) 70% 44% / 54% 13% no-repeat,
+        radial-gradient(ellipse at center, #59c7e4 0 26%, transparent 54%) 32% 65% / 60% 16% no-repeat,
+        radial-gradient(ellipse at center, #62aecb 0 26%, transparent 55%) 66% 77% / 47% 11% no-repeat;
+}
+
+.theme-locker-preview:has([data-theme-preview="theme-solar"]) {
+    --preview-base: #593718;
+    --preview-edge: #c28b50;
+    --preview-glow: #ab632f;
+}
+.theme-locker-art[data-theme-preview="theme-solar"] {
+    --preview-motion: theme-locker-solar;
+    background: radial-gradient(circle at 50% 55%, #fff1bd 0 7px, #ffc36d 8px, #e79b4e 11px, transparent 24px);
+}
+
+@keyframes theme-locker-standard { from { transform: translateX(-12%) scale(.95); opacity: .45; } }
+@keyframes theme-locker-forest { from { transform: rotate(-9deg); opacity: .55; } }
+@keyframes theme-locker-sakura { from { transform: translate(9%, -14%) rotate(5deg); opacity: .45; } }
+@keyframes theme-locker-midnight { from { opacity: .3; } }
+@keyframes theme-locker-ocean { from { transform: translateX(-16%); opacity: .55; } }
+@keyframes theme-locker-solar { from { transform: scale(.92); opacity: .45; } }
+
+@media (prefers-reduced-motion: no-preference) {
+    .theme-locker-card[data-theme-playing="true"] .theme-locker-art {
+        animation: var(--preview-motion) 240ms var(--ease-out);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+    .theme-locker-card:hover .theme-locker-art {
+        animation: var(--preview-motion) 240ms var(--ease-out);
+    }
+}
+
+.theme-preview-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.theme-journey-fill {
+    background: #b45309;
+}
+
+html[data-comfort="dark"] .theme-journey-fill {
+    background: #f5bd69;
+}
+
+body:is(.theme-forest, .theme-sakura, .theme-midnight, .theme-ocean, .theme-solar) .theme-environment::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--theme-texture);
+    background-size: var(--theme-texture-size);
+    mask-image: linear-gradient(105deg, transparent 25%, black 90%);
+}
+
+body.theme-forest .theme-environment {
+    --theme-texture: radial-gradient(rgb(var(--color-primary-ink) / .14) 1px, transparent 1px);
+    --theme-texture-size: 24px 24px;
+}
+
+body.theme-sakura .theme-environment {
+    --theme-texture: radial-gradient(ellipse at 35% 40%, rgb(var(--color-primary-ink) / .15) 0 2px, transparent 3px);
+    --theme-texture-size: 38px 32px;
+}
+
+body.theme-midnight .theme-environment {
+    --theme-texture: radial-gradient(circle at 30% 30%, rgb(var(--color-primary-ink) / .22) 0 1px, transparent 2px),
+        radial-gradient(circle at 75% 65%, rgb(var(--color-primary-ink) / .13) 0 1px, transparent 2px);
+    --theme-texture-size: 67px 53px;
+}
+
+body.theme-ocean .theme-environment {
+    --theme-texture: repeating-linear-gradient(162deg, transparent 0 24px, rgb(var(--color-primary-ink) / .10) 25px 26px, transparent 27px 39px);
+}
+
+body.theme-solar .theme-environment {
+    --theme-texture: repeating-linear-gradient(122deg, transparent 0 38px, rgb(var(--color-primary-ink) / .10) 39px 42px, transparent 43px 62px);
+}
+
+.theme-reward-art[data-theme-reward="forest"]::after,
+.theme-reward-art[data-theme-reward="sakura"]::after,
+.theme-reward-art[data-theme-reward="midnight"]::after,
+.theme-reward-art[data-theme-reward="ocean"]::after,
+.theme-reward-art[data-theme-reward="solar"]::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+}
+
+.theme-reward-art[data-theme-reward="forest"]::after {
+    --reward-motion: theme-locker-forest;
+    inset: 70% 10% 7%;
+    background: linear-gradient(90deg, #d3e9e1 0 45%, #608779 45% 54%, #edf8f5 54%);
+    clip-path: polygon(0 40%, 30% 0, 50% 52%, 70% 0, 100% 40%, 93% 100%, 7% 100%);
+}
+
+.theme-reward-art[data-theme-reward="sakura"]::after {
+    --reward-motion: theme-locker-sakura;
+    inset: 6% 5% 60% 61%;
+    background:
+        radial-gradient(circle at 50% 50%, #fff1bd 0 13%, transparent 16%),
+        radial-gradient(circle at 50% 25%, #ffe0ec 0 22%, transparent 24%),
+        radial-gradient(circle at 75% 58%, #ffa6c5 0 22%, transparent 24%),
+        radial-gradient(circle at 30% 70%, #ffbfd7 0 22%, transparent 24%),
+        radial-gradient(circle at 24% 37%, #ffcbe0 0 22%, transparent 24%);
+    transform: rotate(10deg);
+}
+
+.theme-reward-art[data-theme-reward="midnight"]::after {
+    --reward-motion: theme-locker-midnight;
+    inset: 68% 13% 9%;
+    background: linear-gradient(125deg, #666dde, #212a62 70%);
+    clip-path: polygon(0 43%, 24% 0, 50% 43%, 76% 0, 100% 43%, 91% 100%, 9% 100%);
+}
+
+.theme-reward-art[data-theme-reward="ocean"]::after {
+    --reward-motion: theme-locker-ocean;
+    inset: 72% 18% 8%;
+    background: linear-gradient(170deg, #d4fcff 0 30%, #4ec1da 35% 55%, #1a6684 60%);
+    clip-path: polygon(0 25%, 23% 0, 51% 32%, 78% 6%, 100% 32%, 88% 78%, 68% 100%, 35% 75%, 15% 100%);
+}
+
+.theme-reward-art[data-theme-reward="solar"]::after {
+    --reward-motion: theme-locker-solar;
+    inset: -5% -1% 70% 51%;
+    rotate: 14deg;
+    background:
+        radial-gradient(circle at 50% 70%, #a33e59 0 12%, transparent 14%),
+        linear-gradient(to bottom, #fff3ad, #ffc34f 76%, #c77824 78%);
+    clip-path: polygon(0 22%, 26% 46%, 50% 0, 74% 46%, 100% 22%, 88% 100%, 12% 100%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .theme-level-up {
+        animation: theme-reward-reveal 240ms var(--ease-out) both;
+    }
+
+    .theme-level-up .theme-reward-art::after {
+        animation: var(--reward-motion) 240ms var(--ease-out);
+    }
+}
+
+@keyframes theme-reward-reveal {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }

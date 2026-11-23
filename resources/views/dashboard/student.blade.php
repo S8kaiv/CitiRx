@@ -73,6 +73,27 @@
 
     <div class="py-6 font-sans text-slate-900 antialiased">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+            <section x-cloak x-show="previewThemeId" aria-labelledby="theme-preview-title"
+                class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-line bg-surface p-4">
+                <div class="flex items-center gap-3">
+                    @foreach (config('student-themes') as $theme)
+                        <template x-if="previewThemeId === @js($theme['id'])">
+                            <x-theme-reward-art :theme="$theme" />
+                        </template>
+                    @endforeach
+                    <div>
+                        <h2 id="theme-preview-title" class="font-display text-base font-extrabold text-ink">
+                            Previewing <span x-text="previewThemeName"></span>
+                        </h2>
+                        <p class="text-sm text-ink-muted">Equip this theme to use it across your workspace.</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <x-ui.button variant="secondary" x-on:click="finishThemePreview(false, $event.detail > 0)">Cancel</x-ui.button>
+                    <x-ui.button x-on:click="finishThemePreview(true)">Equip theme</x-ui.button>
+                </div>
+            </section>
+
 
             {{-- Welcome Bar --}}
             <div
@@ -214,7 +235,8 @@
                         <div class="min-w-0">
                             <x-xp-journey
                                 :current-xp="$user->total_xp"
-                                :target-xp="$xpJourneyTarget"
+                                :current-level="max(1, (int) $user->current_level)"
+                                :theme-xp-thresholds="$themeXpThresholds"
                             />
                         </div>
                     </div>

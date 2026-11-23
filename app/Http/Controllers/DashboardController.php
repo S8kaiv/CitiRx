@@ -50,10 +50,7 @@ class DashboardController extends Controller
                     'level.tier',
                 ]),
 
-                'xpJourneyTarget' => max(
-                    1,
-                    (int) Level::query()->max('min_xp'),
-                ),
+                'themeXpThresholds' => Level::query()->pluck('min_xp', 'level_number'),
 
                 'inProgressDiagnostic' => AssessmentSession::query()
                     ->where('user_id', $user->user_id)

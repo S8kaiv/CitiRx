@@ -3,51 +3,6 @@ import { initializeAssessmentGuard } from './assessment-guard';
 
 window.Alpine = Alpine;
 
-const CITI_RX_THEMES = [
-    {
-        id: "theme-standard",
-        name: "Standard",
-        swatch: "#6D4AFF",
-        border: "#4A2FC4",
-        requiredLevel: 1,
-    },
-    {
-        id: "theme-forest",
-        name: "Forest Grove",
-        swatch: "#10B981",
-        border: "#047857",
-        requiredLevel: 2,
-    },
-    {
-        id: "theme-sakura",
-        name: "Sakura Romance",
-        swatch: "#F43F5E",
-        border: "#BE123C",
-        requiredLevel: 4,
-    },
-    {
-        id: "theme-midnight",
-        name: "Midnight Slate",
-        swatch: "#1E293B",
-        border: "#020617",
-        requiredLevel: 6,
-    },
-    {
-        id: "theme-ocean",
-        name: "Ocean Abyss",
-        swatch: "#0EA5E9",
-        border: "#0369A1",
-        requiredLevel: 8,
-    },
-    {
-        id: "theme-solar",
-        name: "Solar Gold",
-        swatch: "#F59E0B",
-        border: "#B45309",
-        requiredLevel: 10,
-    },
-];
-
 const COMFORT_STORAGE_KEY = "citiRxComfort";
 const THEME_STORAGE_KEY = "citiRxTheme";
 
@@ -141,7 +96,9 @@ Alpine.data(
     "themeManager",
     (
         level = 1,
-        surface = "student",
+        surface,
+        themes,
+        requestedPreview,
     ) => {
         const parsedLevel = Number.parseInt(
             level,
@@ -155,15 +112,17 @@ Alpine.data(
             : 1;
 
         return {
-            themes: CITI_RX_THEMES.map(
-                (theme) => ({
-                    ...theme,
-                }),
-            ),
-
+            themes,
             surface,
             currentLevel,
             globalTheme: "theme-standard",
+            equippedTheme: "theme-standard",
+            previewThemeId: null,
+            previewBackdrop: null,
+
+            get previewThemeName() {
+                return this.themes.find((theme) => theme.id === this.previewThemeId)?.name ?? "";
+            },
 
             comfortMode: initialComfortMode,
             resolvedComfort:
@@ -208,15 +167,60 @@ Alpine.data(
                     return false;
                 }
 
+                this.equippedTheme = themeId;
                 this.globalTheme = themeId;
                 updateBrandIcons(themeId, this.resolvedComfort);
 
-                storeValue(
-                    THEME_STORAGE_KEY,
-                    themeId,
-                );
+                if (this.surface === "student") {
+                    storeValue(THEME_STORAGE_KEY, themeId);
+                }
 
                 return true;
+            },
+
+            showPreviewPalette(themeId, animate) {
+                this.previewBackdrop?.remove();
+                this.previewBackdrop = null;
+
+                const environment = this.$refs.themeEnvironment;
+                if (
+                    animate
+                    && environment?.animate
+                    && themeId !== this.globalTheme
+                    && window.matchMedia("(prefers-reduced-motion: no-preference)").matches
+                ) {
+                    const backdrop = document.createElement("div");
+                    backdrop.className = "theme-preview-backdrop";
+                    backdrop.style.background = window.getComputedStyle(environment).background;
+                    environment.append(backdrop);
+                    this.previewBackdrop = backdrop;
+                    const easing = window.getComputedStyle(environment).getPropertyValue("--ease-out").trim() || "linear";
+                    const fade = backdrop.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, easing });
+                    fade.onfinish = () => {
+                        backdrop.remove();
+                        if (this.previewBackdrop === backdrop) this.previewBackdrop = null;
+                    };
+                }
+
+                this.globalTheme = themeId;
+                updateBrandIcons(themeId, this.resolvedComfort);
+            },
+
+            finishThemePreview(equip, animate = false) {
+                if (!this.previewThemeId) return;
+
+                if (equip) {
+                    this.applyTheme(this.previewThemeId);
+                } else {
+                    this.showPreviewPalette(this.equippedTheme, animate);
+                }
+
+                this.previewThemeId = null;
+                const url = new URL(window.location.href);
+                url.searchParams.delete("preview-theme");
+                if (url.hash === "#theme-preview-motion") url.hash = "";
+                window.history.replaceState(window.history.state, "", url);
+                this.$nextTick(() => this.$refs.themeJourney?.focus());
             },
 
             setComfort(mode) {
@@ -240,10 +244,17 @@ Alpine.data(
                     THEME_STORAGE_KEY,
                 );
 
-                if (!this.applyTheme(storedTheme)) {
-                    this.applyTheme(
-                        "theme-standard",
-                    );
+                if (this.isUnlocked(storedTheme)) {
+                    this.equippedTheme = storedTheme;
+                    this.globalTheme = storedTheme;
+                }
+
+                updateBrandIcons(this.globalTheme, this.resolvedComfort);
+
+                if (this.surface === "student" && typeof requestedPreview === "string" && this.isUnlocked(requestedPreview)) {
+                    this.previewThemeId = requestedPreview;
+                    const animate = window.location.hash === "#theme-preview-motion";
+                    this.$nextTick(() => this.showPreviewPalette(requestedPreview, animate));
                 }
 
                 this.visibilityHandler = () => {
