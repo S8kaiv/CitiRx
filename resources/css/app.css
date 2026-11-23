@@ -4734,6 +4734,7 @@ body.theme-solar .theme-environment {
         radial-gradient(circle at 30% 70%, #ffbfd7 0 22%, transparent 24%),
         radial-gradient(circle at 24% 37%, #ffcbe0 0 22%, transparent 24%);
     transform: rotate(10deg);
+    filter: drop-shadow(0 1px 0.75px rgb(92 22 55 / 0.55))
 }
 
 .theme-reward-art[data-theme-reward="midnight"]::after {
@@ -4755,8 +4756,8 @@ body.theme-solar .theme-environment {
     inset: -5% -1% 70% 51%;
     rotate: 14deg;
     background:
-        radial-gradient(circle at 50% 70%, #a33e59 0 12%, transparent 14%),
-        linear-gradient(to bottom, #fff3ad, #ffc34f 76%, #c77824 78%);
+        radial-gradient(circle at 50% 70%, #ffe4a3 0 12%, transparent 14%),
+        linear-gradient(to bottom, #b9631a, #8a4313 76%, #62300e 78%);
     clip-path: polygon(0 22%, 26% 46%, 50% 0, 74% 46%, 100% 22%, 88% 100%, 12% 100%);
 }
 
@@ -4773,4 +4774,10 @@ body.theme-solar .theme-environment {
 @keyframes theme-reward-reveal {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+
+.rx-welcome .rx-brand [data-brand-logo],
+.rx-auth-brand [data-brand-logo],
+.admin-sidebar [data-brand-logo] {
+    filter: drop-shadow(0 2px 2px rgb(36 21 73 / 0.32))
 }
