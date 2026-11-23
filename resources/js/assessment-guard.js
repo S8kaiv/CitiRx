@@ -1,3 +1,5 @@
+import { initializePracticeNavigation } from './practice-navigation';
+
 export function initializeAssessmentGuard() {
     const content = document.querySelector('[data-assessment-content]');
     const gate = document.querySelector('[data-assessment-gate]');
@@ -120,5 +122,6 @@ export function initializeAssessmentGuard() {
         }
     }, true);
 
+    initializePracticeNavigation(content);
     lock('Enter fullscreen to answer questions. You can return to the dashboard at any time.');
 }
