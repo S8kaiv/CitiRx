@@ -17,6 +17,8 @@ class Question extends Model
 
     public const FORM_POST_TEST_B = 'post_test_b';
 
+    public const SOURCE_RIGHTS_STATUSES = ['permission confirmed', 'public domain', 'licensed'];
+
     public const COGNITIVE_KNOWLEDGE =
         'knowledge';
 

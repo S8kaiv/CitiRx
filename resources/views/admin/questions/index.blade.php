@@ -5,6 +5,8 @@
             description="Review, revise, validate, freeze, and retire assessment questions."
         >
             <x-slot:actions>
+                <x-ui.button :href="route('admin.practice-questions.create')">Add practice question</x-ui.button>
+                <x-ui.button variant="secondary" :href="route('admin.practice-questions.index')">Practice questions</x-ui.button>
                 <x-ui.button :href="route('research-editor.index')">Research form editor</x-ui.button>
                 <a
                     href="{{ route(

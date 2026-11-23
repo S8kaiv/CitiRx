@@ -178,7 +178,7 @@ class AdminUserService
 
     public function assignCohort(User $actor, array $ids, string $cohortId, array $originalCohorts): int
     {
-        abort_unless($actor->role === 'admin', 403);
+        abort_unless(in_array($actor->role, ['admin', 'dean'], true), 403);
 
         return DB::transaction(function () use ($actor, $ids, $cohortId, $originalCohorts): int {
             $cohort = Cohort::query()->active()->lockForUpdate()->find($cohortId);

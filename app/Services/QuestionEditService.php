@@ -23,6 +23,61 @@ class QuestionEditService
         protected QuestionLockService $lock,
     ) {}
 
+    public function createPractice(User $editor, array $payload): Question
+    {
+        $this->assertAdministrator($editor);
+        $texts = $this->validatedChoiceTexts($payload['choices'] ?? null);
+        $correct = strtoupper(trim((string) ($payload['correct_choice'] ?? '')));
+        $content = [];
+        foreach (['question_text', 'hypercorrection_rationale', 'source_reference'] as $field) {
+            $content[$field] = trim((string) ($payload[$field] ?? ''));
+            if ($content[$field] === '') {
+                throw new InvalidArgumentException('Complete the question, rationale, and source before saving.');
+            }
+        }
+        $rights = $payload['copyright_permission'] ?? null;
+        $cognitive = $this->nullableText($payload['cognitive_level'] ?? null);
+        if (! in_array($correct, self::CHOICE_LETTERS, true)
+            || ! in_array($rights, Question::SOURCE_RIGHTS_STATUSES, true)
+            || ($cognitive !== null && ! in_array($cognitive, Question::COGNITIVE_LEVELS, true))) {
+            throw new InvalidArgumentException('Choose a valid correct answer, cognitive level, and source-rights status.');
+        }
+
+        return DB::transaction(function () use ($editor, $payload, $texts, $correct, $content, $rights, $cognitive): Question {
+            $question = Question::query()->create([
+                ...$content,
+                'competency_id' => $payload['competency_id'],
+                'copyright_permission' => $rights,
+                'cognitive_level' => $cognitive,
+                'research_form' => null,
+                'form_version_id' => null,
+                'form_position' => null,
+                'research_validated_at' => null,
+                'research_validated_by' => null,
+                'is_diagnostic_pool' => false,
+                'is_active' => true,
+            ]);
+
+            foreach ($texts as $letter => $text) {
+                $question->choices()->create([
+                    'choice_letter' => $letter,
+                    'choice_text' => $text,
+                    'is_correct' => $letter === $correct,
+                ]);
+            }
+
+            $changes = [];
+            foreach ([...$content, 'competency_id' => $question->competency_id,
+                'copyright_permission' => $rights, 'cognitive_level' => $cognitive,
+                'choices' => $texts, 'correct_choice' => $correct, 'is_active' => true] as $field => $value) {
+                $changes[$field] = ['old' => null, 'new' => $value];
+            }
+            $this->recordAudit($question, $editor, 'created', $changes, 'Practice question authored in CitiRx.', 0, 1);
+
+            return $question->fresh(['choices', 'competency.domain']);
+        });
+    }
+
     /**
      * @param  array<string, mixed>  $payload
      */
