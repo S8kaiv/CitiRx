@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\BookmarkController;
+use App\Http\Controllers\CohortWorkspaceController;
 use App\Http\Controllers\Content\MicroPearlImportController;
 use App\Http\Controllers\Content\MicroPearlManagementController;
 use App\Http\Controllers\DashboardController;
@@ -24,6 +25,8 @@ use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\MicroPearlController;
 use App\Http\Controllers\MockBoardController;
 use App\Http\Controllers\PracticeController;
+use App\Http\Controllers\PracticeQuestionImportController;
+use App\Http\Controllers\PracticeQuestionManagementController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\ReadinessController;
@@ -572,6 +575,9 @@ Route::middleware([
     ->prefix('faculty')
     ->name('faculty.')
     ->group(function (): void {
+        Route::get('/cohorts', [CohortWorkspaceController::class, 'index'])->name('cohorts.index');
+        Route::get('/cohorts/{cohort}', [CohortWorkspaceController::class, 'show'])->whereUuid('cohort')->name('cohorts.show');
+
         Route::get(
             '/',
             [
@@ -619,6 +625,24 @@ Route::middleware(['auth', 'verified', 'dean'])
     ->prefix('dean')
     ->name('dean.')
     ->group(function (): void {
+        Route::prefix('practice-questions/imports')->name('practice-questions.imports.')->controller(PracticeQuestionImportController::class)->group(function (): void {
+            Route::get('/', 'create')->name('create');
+            Route::get('/template', 'template')->name('template');
+            Route::post('/preview', 'preview')->middleware('throttle:10,1')->name('preview');
+            Route::get('/{import}', 'show')->whereUuid('import')->name('show');
+            Route::post('/{import}/commit', 'commit')->whereUuid('import')->name('commit');
+        });
+
+        Route::resource('practice-questions', PracticeQuestionManagementController::class)
+            ->only(['index', 'create', 'store', 'show'])->parameters(['practice-questions' => 'question']);
+
+        Route::get('/cohorts', [CohortWorkspaceController::class, 'index'])->name('cohorts.index');
+        Route::get('/cohorts/create', [CohortWorkspaceController::class, 'create'])->name('cohorts.create');
+        Route::post('/cohorts', [CohortWorkspaceController::class, 'store'])->name('cohorts.store');
+        Route::get('/cohorts/assign-students', [CohortWorkspaceController::class, 'assignments'])->name('cohorts.assignments');
+        Route::post('/cohorts/assign-students', [CohortWorkspaceController::class, 'assign'])->name('cohorts.assign');
+        Route::get('/cohorts/{cohort}', [CohortWorkspaceController::class, 'show'])->whereUuid('cohort')->name('cohorts.show');
+
         Route::get('/', [WorkspaceController::class, 'index'])->name('dashboard');
         Route::get('/students/{student}', [WorkspaceController::class, 'student'])->whereUuid('student')->name('students.show');
         Route::patch('/students/{student}/name', [WorkspaceController::class, 'updateName'])->whereUuid('student')->name('students.name');
@@ -660,6 +684,17 @@ Route::middleware([
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        Route::prefix('practice-questions/imports')->name('practice-questions.imports.')->controller(PracticeQuestionImportController::class)->group(function (): void {
+            Route::get('/', 'create')->name('create');
+            Route::get('/template', 'template')->name('template');
+            Route::post('/preview', 'preview')->middleware('throttle:10,1')->name('preview');
+            Route::get('/{import}', 'show')->whereUuid('import')->name('show');
+            Route::post('/{import}/commit', 'commit')->whereUuid('import')->name('commit');
+        });
+
+        Route::resource('practice-questions', PracticeQuestionManagementController::class)
+            ->only(['index', 'create', 'store', 'show'])->parameters(['practice-questions' => 'question']);
+
         Route::get(
             '/research-forms',
             [

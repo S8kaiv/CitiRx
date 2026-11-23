@@ -247,6 +247,17 @@ class MicroPearlWorkflowService
         });
     }
 
+    public function canPublish(User $reviewer, MicroPearl $pearl): bool
+    {
+        try {
+            $this->assertCanPublish($reviewer, $pearl);
+
+            return true;
+        } catch (LogicException|ValidationException) {
+            return false;
+        }
+    }
+
     public function publish(
         User $reviewer,
         MicroPearl $pearl,
@@ -270,33 +281,10 @@ class MicroPearlWorkflowService
                 $expectedVersion,
             );
 
+            $this->assertCanPublish($reviewer, $pearl);
+
             $isAdministrator = in_array($reviewer->role, ['admin', 'dean'], true);
-            $isAuthor = $pearl->created_by !== null
-                && $pearl->created_by === $reviewer->user_id;
-
-            if (
-                $pearl->content_status !== MicroPearl::STATUS_IN_REVIEW
-                && ! (
-                    $pearl->content_status === MicroPearl::STATUS_DRAFT
-                    && $isAdministrator
-                    && $isAuthor
-                )
-            ) {
-                throw new LogicException(
-                    'Only a Pearl awaiting review or an administrator-authored draft can be published.',
-                );
-            }
-
-            if (
-                $isAuthor
-                && ! $isAdministrator
-            ) {
-                throw new LogicException(
-                    'The author cannot approve and publish their own Micro Pearl.',
-                );
-            }
-
-            $this->assertPublishableContent($pearl);
+            $isAuthor = $pearl->created_by === $reviewer->user_id;
 
             return $this->transition(
                 $pearl,
@@ -397,6 +385,32 @@ class MicroPearlWorkflowService
                 'This Micro Pearl was changed by another user. Reload the page.',
             );
         }
+    }
+
+    private function assertCanPublish(User $reviewer, MicroPearl $pearl): void
+    {
+        $this->assertEditor($reviewer);
+
+        $isAdministrator = in_array($reviewer->role, ['admin', 'dean'], true);
+        $isAuthor = $pearl->created_by !== null
+            && $pearl->created_by === $reviewer->user_id;
+
+        if (
+            $pearl->content_status !== MicroPearl::STATUS_IN_REVIEW
+            && ! ($pearl->content_status === MicroPearl::STATUS_DRAFT && $isAdministrator && $isAuthor)
+        ) {
+            throw new LogicException(
+                'Only a Pearl awaiting review or an administrator-authored draft can be published.',
+            );
+        }
+
+        if ($isAuthor && ! $isAdministrator) {
+            throw new LogicException(
+                'The author cannot approve and publish their own Micro Pearl.',
+            );
+        }
+
+        $this->assertPublishableContent($pearl);
     }
 
     private function assertPublishableContent(

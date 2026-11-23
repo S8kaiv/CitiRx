@@ -1,6 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-ui.page-header title="Dean workspace" description="Review student support, official names, and research forms." />
+        <x-ui.page-header title="Dean workspace" description="Review student support, official names, and research forms.">
+            <x-slot:actions>
+                <x-ui.button variant="secondary" :href="route('dean.practice-questions.index')">Practice questions</x-ui.button>
+            </x-slot:actions>
+        </x-ui.page-header>
     </x-slot>
 
     @php

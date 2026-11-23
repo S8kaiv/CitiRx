@@ -6,6 +6,13 @@
 />
 
 <x-admin.mobile-link
+    :href="route('faculty.cohorts.index')"
+    label="Cohort"
+    icon="cohorts"
+    :active="request()->routeIs('faculty.cohorts.*')"
+/>
+
+<x-admin.mobile-link
     :href="route('faculty.interventions.index')"
     label="Support"
     icon="participants"

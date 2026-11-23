@@ -10,6 +10,13 @@
 />
 
 <x-admin.nav-link
+    :href="route('faculty.cohorts.index')"
+    label="My cohort"
+    icon="cohorts"
+    :active="request()->routeIs('faculty.cohorts.*')"
+/>
+
+<x-admin.nav-link
     :href="route('faculty.interventions.index')"
     label="Interventions"
     icon="participants"

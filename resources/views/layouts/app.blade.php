@@ -364,6 +364,13 @@
                                 :active="request()->routeIs('dean.students.*') || (request()->routeIs('dean.dashboard') && request()->query('view') !== 'interventions')"
                             />
 
+                            <x-admin.nav-link
+                                :href="route('dean.cohorts.index')"
+                                label="Cohorts"
+                                icon="cohorts"
+                                :active="request()->routeIs('dean.cohorts.*')"
+                            />
+
                             <div class="admin-nav-group-label">
                                 Operations
                             </div>
@@ -387,6 +394,13 @@
                                 label="Micro Pearls"
                                 icon="pearls"
                                 :active="request()->routeIs('content.pearls.*')"
+                            />
+
+                            <x-admin.nav-link
+                                :href="route('dean.practice-questions.index')"
+                                label="Practice questions"
+                                icon="questions"
+                                :active="request()->routeIs('dean.practice-questions.*')"
                             />
 
                             <div class="admin-nav-group-label">
@@ -433,7 +447,7 @@
                                 :href="route('admin.questions.index')"
                                 label="Question Bank"
                                 icon="questions"
-                                :active="request()->routeIs('admin.questions.*')"
+                                :active="request()->routeIs('admin.questions.*', 'admin.practice-questions.*')"
                             />
 
                             <x-admin.nav-link
@@ -663,6 +677,12 @@
                         :active="request()->routeIs('dean.students.*') || (request()->routeIs('dean.dashboard') && request()->query('view') !== 'interventions')"
                     />
                     <x-admin.mobile-link
+                        :href="route('dean.cohorts.index')"
+                        label="Cohorts"
+                        icon="cohorts"
+                        :active="request()->routeIs('dean.cohorts.*')"
+                    />
+                    <x-admin.mobile-link
                         :href="route('dean.dashboard', ['view' => 'interventions'])"
                         label="Support"
                         icon="participants"
@@ -780,6 +800,7 @@
                                     icon="questions"
                                     :active="request()->routeIs(
                                         'admin.questions.*',
+                                        'admin.practice-questions.*',
                                     )"
                                 />
 

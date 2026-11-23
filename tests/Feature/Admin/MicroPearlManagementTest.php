@@ -97,6 +97,48 @@ function pearlManagementCreatePublished(
     );
 }
 
+it('lists populated Micro Pearls with publication eligibility for every staff role', function (string $role): void {
+    $editor = User::factory()->create(['role' => $role]);
+    $ownDraft = pearlManagementCreateDraft($editor);
+    $review = pearlManagementCreateInReview(User::factory()->create(['role' => 'faculty']));
+    $version = $ownDraft->edit_version;
+
+    $this->actingAs($editor)->get(route('content.pearls.index'))
+        ->assertOk()
+        ->assertViewHas('publishableIds', function (array $ids) use ($role, $ownDraft, $review): bool {
+            return in_array($review->pearl_id, $ids, true)
+                && in_array($ownDraft->pearl_id, $ids, true) === ($role !== 'faculty');
+        });
+
+    expect($ownDraft->fresh()->content_status)->toBe(MicroPearl::STATUS_DRAFT)
+        ->and($ownDraft->fresh()->edit_version)->toBe($version);
+})->with(['admin', 'dean', 'faculty']);
+
+it('does not offer publication to faculty authors or for incomplete content', function (): void {
+    $faculty = User::factory()->create(['role' => 'faculty']);
+    $reviewer = User::factory()->create(['role' => 'dean']);
+    $workflow = app(MicroPearlWorkflowService::class);
+    $pearl = pearlManagementCreateInReview($faculty);
+
+    expect($workflow->canPublish($faculty, $pearl))->toBeFalse()
+        ->and($workflow->canPublish($reviewer, $pearl))->toBeTrue()
+        ->and($workflow->canPublish(User::factory()->create(['role' => 'student']), $pearl))->toBeFalse();
+
+    $pearl->forceFill(['rights_status' => MicroPearl::RIGHTS_PENDING])->save();
+    expect($workflow->canPublish($reviewer, $pearl))->toBeFalse();
+
+    $pearl->forceFill(['rights_status' => MicroPearl::RIGHTS_ORIGINAL, 'lesson_content' => null])->save();
+    expect($workflow->canPublish($reviewer, $pearl))->toBeFalse();
+});
+
+it('does not offer publication for another authors draft or an already published or retired Pearl', function (string $status): void {
+    $reviewer = User::factory()->create(['role' => 'admin']);
+    $pearl = pearlManagementCreateDraft(User::factory()->create(['role' => 'faculty']));
+    $pearl->forceFill(['content_status' => $status])->save();
+
+    expect(app(MicroPearlWorkflowService::class)->canPublish($reviewer, $pearl))->toBeFalse();
+})->with([MicroPearl::STATUS_DRAFT, MicroPearl::STATUS_PUBLISHED, MicroPearl::STATUS_RETIRED]);
+
 it('redirects guests from Micro Pearl management', function (): void {
     $this->get(route('content.pearls.index'))
         ->assertRedirect(route('login'));
