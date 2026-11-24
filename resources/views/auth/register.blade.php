@@ -1,6 +1,6 @@
 <x-rx-auth-layout
     title="Make room for your next chapter."
-    subtitle="Create your CitiRx account and start your personalized PhLE review."
+    subtitle="Confirm your email after registering. A Dean or Admin will then review your student account."
     headline="Big goals. Small steps. Your pace."
     description="Start with a diagnostic, focus on the topics that need you, and build a review habit that lasts."
     bubble="Let’s take the first step."

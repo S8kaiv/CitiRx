@@ -24,7 +24,7 @@ class RegisteredUserController extends Controller
     ): RedirectResponse {
         $validated = $request->validated();
 
-        $user = User::query()->create([
+        $user = User::query()->make([
             'first_name' => $validated[
                 'first_name'
             ],
@@ -45,6 +45,9 @@ class RegisteredUserController extends Controller
                 'password'
             ],
         ]);
+
+        $user->student_approval_pending = true;
+        $user->save();
 
         /*
          * Because User now implements MustVerifyEmail, this event
