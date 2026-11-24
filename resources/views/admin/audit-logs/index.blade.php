@@ -1,9 +1,7 @@
 <x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
-            title="Audit history"
-            description="Review the immutable record of sensitive administrative actions."
-        >
+            title="Audit history">
             <x-slot:actions>
                 <a
                     href="{{ route(
@@ -105,106 +103,68 @@
                 </div>
             </form>
 
-            <p class="text-sm text-slate-600">
-                Showing {{ $logs->firstItem() ?? 0 }}–{{ $logs->lastItem() ?? 0 }}
-                of {{ $logs->total() }} records
-            </p>
+            @php
+                $days = $logs->getCollection()->groupBy(fn ($log) => $log->created_at->toDateString());
+                $formatValue = fn ($value) => match (true) {
+                    $value === null => 'Not set',
+                    is_string($value) => $value === '' ? '""' : $value,
+                    default => json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                };
+            @endphp
 
-            <div class="overflow-x-auto rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
-                <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
-                <table class="min-w-full divide-y divide-slate-200 text-sm">
-                    <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
-                        <tr>
-                            <th class="p-4">Date</th>
-                            <th class="p-4">Administrator</th>
-                            <th class="p-4">Action</th>
-                            <th class="p-4">Target</th>
-                            <th class="p-4">Details</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @forelse ($logs as $log)
-                            <tr class="align-top">
-                                <td class="whitespace-nowrap p-4">
-                                    <div class="font-semibold text-slate-800">
-                                        {{ $log->created_at->format('M j, Y') }}
-                                    </div>
-                                    <div class="text-xs text-slate-500">
-                                        {{ $log->created_at->format('g:i:s A') }}
-                                    </div>
-                                </td>
-                                <td class="p-4">
-                                    <div class="font-semibold text-slate-800">
-                                        {{ $log->actorDisplayName() }}
-                                    </div>
-                                    @if ($log->admin?->trashed())
-                                        <span class="text-xs font-semibold text-red-600">
-                                            Deleted account
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="p-4">
-                                    <span class="rounded-full bg-primary-tint px-2.5 py-1 font-mono text-xs font-bold text-primary">
-                                        {{ $log->action }}
-                                    </span>
-                                </td>
-                                <td class="p-4">
-                                    <div class="font-semibold text-slate-800">
-                                        {{ $targetTypes[$log->target_type] ?? class_basename($log->target_type) }}
-                                    </div>
-                                    <div class="max-w-52 truncate font-mono text-xs text-slate-500" title="{{ $log->target_id }}">
-                                        {{ $log->target_id }}
-                                    </div>
-                                    @if (isset($targetLinks[$log->log_id]))
-                                        <a href="{{ $targetLinks[$log->log_id] }}" class="mt-1 inline-flex text-xs font-bold text-primary hover:underline">
-                                            Open record
-                                        </a>
-                                    @endif
-                                </td>
-                                <td class="min-w-72 p-4">
-                                    <details>
-                                        <summary class="cursor-pointer font-bold text-primary">
-                                            View changes
-                                        </summary>
-                                        <div class="mt-3 space-y-2">
-                                            @forelse ($log->changes ?? [] as $field => $change)
-                                                <div class="rounded-xl bg-slate-50 p-3 text-xs">
-                                                    <div class="font-mono font-bold text-slate-700">
-                                                        {{ $field }}
-                                                    </div>
-                                                    <div class="mt-1 break-all text-slate-600">
-                                                        {{ is_scalar($change['old'] ?? null) ? ($change['old'] ?? '—') : json_encode($change['old'] ?? null) }}
-                                                        →
-                                                        {{ is_scalar($change['new'] ?? null) ? ($change['new'] ?? '—') : json_encode($change['new'] ?? null) }}
-                                                    </div>
-                                                </div>
-                                            @empty
-                                                <p class="text-xs text-slate-500">
-                                                    No field-level changes recorded.
-                                                </p>
-                                            @endforelse
-                                            @if ($log->reason)
-                                                <p class="text-xs text-slate-600">
-                                                    <strong>Reason:</strong> {{ $log->reason }}
-                                                </p>
+            @forelse ($days as $entries)
+                <section class="space-y-2" aria-labelledby="audit-day-{{ $entries->first()->log_id }}">
+                    <h2 id="audit-day-{{ $entries->first()->log_id }}" class="text-sm font-bold text-ink-muted">
+                        {{ $entries->first()->created_at->format('l, M j, Y') }}
+                    </h2>
+                    <ol class="space-y-2">
+                        @foreach ($entries as $log)
+                            <li>
+                                <x-admin.disclosure :title="str($log->action)->replace(['.', '_'], ' ')->headline()->toString().' by '.$log->actorDisplayName()">
+                                    <x-slot:meta>
+                                        <time datetime="{{ $log->created_at->toIso8601String() }}">{{ $log->created_at->format('g:i:s A') }}</time>
+                                    </x-slot:meta>
+                                    <div class="space-y-3 p-4 text-sm">
+                                        <p class="text-ink">
+                                            {{ $targetTypes[$log->target_type] ?? class_basename($log->target_type) }}
+                                            @if ($log->admin?->trashed())
+                                                <span class="text-danger-ink"> &middot; Deleted administrator account</span>
                                             @endif
-                                        </div>
-                                    </details>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="p-12 text-center text-slate-500">
-                                    No audit records match these filters.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-                    </div>
-            </div>
+                                        </p>
+                                        <p class="break-all font-mono text-xs text-ink-muted">{{ $log->action }} &middot; {{ $log->target_id }}</p>
+                                        @if (isset($targetLinks[$log->log_id]))
+                                            <a href="{{ $targetLinks[$log->log_id] }}" class="font-bold text-primary-ink underline underline-offset-4">Open record</a>
+                                        @endif
+                                        @if ($log->reason)
+                                            <p class="break-words text-ink-muted"><strong>Reason</strong> {{ $log->reason }}</p>
+                                        @endif
+                                        @if ($log->changes)
+                                            <dl class="grid gap-2 sm:grid-cols-2">
+                                                @foreach ($log->changes as $field => $change)
+                                                    <div class="min-w-0 rounded-xl bg-surface-2 p-3">
+                                                        <dt class="break-words font-bold text-ink">{{ $field }}</dt>
+                                                        <dd class="mt-1 break-all text-ink-muted">
+                                                            {{ $formatValue($change['old'] ?? null) }}
+                                                            <span aria-hidden="true">&rarr;</span><span class="sr-only"> changed to </span>
+                                                            {{ $formatValue($change['new'] ?? null) }}
+                                                        </dd>
+                                                    </div>
+                                                @endforeach
+                                            </dl>
+                                        @else
+                                            <p class="text-ink-muted">No field-level changes recorded.</p>
+                                        @endif
+                                    </div>
+                                </x-admin.disclosure>
+                            </li>
+                        @endforeach
+                    </ol>
+                </section>
+            @empty
+                <p class="rounded-2xl border border-line bg-surface p-6 text-sm text-ink-muted">No audit records match these filters.</p>
+            @endforelse
 
-            {{ $logs->links() }}
+            <x-admin.pager :paginator="$logs" label="Audit history" />
         </div>
     </div>
 </x-app-layout>

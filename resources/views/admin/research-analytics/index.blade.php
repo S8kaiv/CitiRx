@@ -1,9 +1,7 @@
 <x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
-            title="Research analytics"
-            description="Review eligible research attempts, paired outcomes, descriptive statistics, and sensitivity analyses."
-        >
+            title="Research analytics">
             <x-slot:actions>
                 <button
                     type="button"
@@ -40,6 +38,31 @@
                 </p>
             </section>
 
+            <dl class="grid gap-3 sm:grid-cols-3">
+                @foreach ([
+                    'Eligible pre-tests' => $report['funnel']['pre_completed'],
+                    'Eligible finalized pairs' => $report['funnel']['paired_finalized'],
+                    'Primary complete-case pairs' => $report['funnel']['paired_complete'],
+                ] as $label => $count)
+                    <div class="rounded-2xl border border-line bg-surface p-4">
+                        <dt class="text-sm text-ink-muted">{{ $label }}</dt>
+                        <dd class="mt-1 font-display text-2xl font-extrabold tabular-nums text-ink">{{ $count }}</dd>
+                    </div>
+                @endforeach
+            </dl>
+
+            @include('admin.research-analytics.partials.descriptives', [
+                'title' => '2. Overall scores — primary complete-case analysis',
+                'analysis' => $report['primary'],
+            ])
+
+            @include('admin.research-analytics.partials.wilcoxon', [
+                'title' => '3. Overall Wilcoxon signed-rank — primary',
+                'analysis' => $report['primary'],
+            ])
+
+            <x-admin.disclosure title="Participant scope and sample exclusions">
+                <div class="min-w-0 space-y-4 p-4">
             <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h3 class="font-display text-lg font-extrabold text-slate-900">
                     Official participant scope
@@ -126,16 +149,11 @@
                 </div>
             </section>
 
-            @include('admin.research-analytics.partials.descriptives', [
-                'title' => '2. Overall scores — primary complete-case analysis',
-                'analysis' => $report['primary'],
-            ])
+                </div>
+            </x-admin.disclosure>
 
-            @include('admin.research-analytics.partials.wilcoxon', [
-                'title' => '3. Overall Wilcoxon signed-rank — primary',
-                'analysis' => $report['primary'],
-            ])
-
+            <x-admin.disclosure title="Subject results and readiness accuracy">
+                <div class="min-w-0 space-y-4 p-4">
             <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h3 class="font-display text-lg font-extrabold text-slate-900">
                     4. Per-domain primary analysis
@@ -244,6 +262,11 @@
                 </p>
             </section>
 
+                </div>
+            </x-admin.disclosure>
+
+            <x-admin.disclosure title="Sensitivity analysis">
+                <div class="min-w-0 space-y-4 p-4">
             @include('admin.research-analytics.partials.descriptives', [
                 'title' => '6. Overall scores — sensitivity analysis',
                 'analysis' => $report['sensitivity'],
@@ -254,6 +277,11 @@
                 'analysis' => $report['sensitivity'],
             ])
 
+                </div>
+            </x-admin.disclosure>
+
+            <x-admin.disclosure title="Submissions, interpretation, and cohorts">
+                <div class="min-w-0 space-y-4 p-4">
             <section class="grid gap-6 lg:grid-cols-2">
                 <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                     <h3 class="font-display text-lg font-extrabold text-slate-900">
@@ -341,6 +369,9 @@
                     </div>
                 </div>
             </section>
+                </div>
+            </x-admin.disclosure>
+
         </div>
     </div>
 </x-app-layout>

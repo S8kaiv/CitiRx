@@ -4570,7 +4570,6 @@ html[data-comfort="dark"] body.role-student main :is(a, button):is(.bg-rose-500,
     --preview-glow: #6848b8;
 }
 .theme-locker-art[data-theme-preview="theme-standard"] {
-    --preview-motion: theme-locker-standard;
     background:
         linear-gradient(115deg, transparent 30%, #ede1ff 50%, transparent 70%) 50% 50% / 36% 2px no-repeat,
         radial-gradient(ellipse at center, #bda1ff, transparent 65%) 50% 50% / 60% 40% no-repeat;
@@ -4582,8 +4581,6 @@ html[data-comfort="dark"] body.role-student main :is(a, button):is(.bg-rose-500,
     --preview-glow: #347a55;
 }
 .theme-locker-art[data-theme-preview="theme-forest"] {
-    --preview-motion: theme-locker-forest;
-    transform-origin: 50% 100%;
     background:
         radial-gradient(ellipse at 35% 65%, #a5d399 0 35%, transparent 40%) 33% 60% / 20% 28% no-repeat,
         radial-gradient(ellipse at 65% 35%, #72bc90 0 35%, transparent 40%) 55% 33% / 26% 33% no-repeat,
@@ -4596,7 +4593,6 @@ html[data-comfort="dark"] body.role-student main :is(a, button):is(.bg-rose-500,
     --preview-glow: #a84f73;
 }
 .theme-locker-art[data-theme-preview="theme-sakura"] {
-    --preview-motion: theme-locker-sakura;
     background:
         radial-gradient(ellipse at center, #ffd0df 0 40%, transparent 47%) 27% 36% / 9% 16% no-repeat,
         radial-gradient(ellipse at center, #ffabc6 0 40%, transparent 47%) 49% 63% / 11% 16% no-repeat,
@@ -4610,7 +4606,6 @@ html[data-comfort="dark"] body.role-student main :is(a, button):is(.bg-rose-500,
     --preview-glow: #3d4b72;
 }
 .theme-locker-art[data-theme-preview="theme-midnight"] {
-    --preview-motion: theme-locker-midnight;
     background:
         radial-gradient(circle at 54% 43%, #f3f5ff 0 2px, #a2b6f5 3px, transparent 10px),
         radial-gradient(circle at 27% 58%, #cbdafa 0 1px, transparent 2px),
@@ -4624,7 +4619,6 @@ html[data-comfort="dark"] body.role-student main :is(a, button):is(.bg-rose-500,
     --preview-glow: #236c89;
 }
 .theme-locker-art[data-theme-preview="theme-ocean"] {
-    --preview-motion: theme-locker-ocean;
     background:
         radial-gradient(ellipse at center, #a3e8f3 0 30%, transparent 55%) 70% 44% / 54% 13% no-repeat,
         radial-gradient(ellipse at center, #59c7e4 0 26%, transparent 54%) 32% 65% / 60% 16% no-repeat,
@@ -4637,11 +4631,9 @@ html[data-comfort="dark"] body.role-student main :is(a, button):is(.bg-rose-500,
     --preview-glow: #ab632f;
 }
 .theme-locker-art[data-theme-preview="theme-solar"] {
-    --preview-motion: theme-locker-solar;
     background: radial-gradient(circle at 50% 55%, #fff1bd 0 7px, #ffc36d 8px, #e79b4e 11px, transparent 24px);
 }
 
-@keyframes theme-locker-standard { from { transform: translateX(-12%) scale(.95); opacity: .45; } }
 @keyframes theme-locker-forest { from { transform: rotate(-9deg); opacity: .55; } }
 @keyframes theme-locker-sakura { from { transform: translate(9%, -14%) rotate(5deg); opacity: .45; } }
 @keyframes theme-locker-midnight { from { opacity: .3; } }
@@ -4649,14 +4641,18 @@ html[data-comfort="dark"] body.role-student main :is(a, button):is(.bg-rose-500,
 @keyframes theme-locker-solar { from { transform: scale(.92); opacity: .45; } }
 
 @media (prefers-reduced-motion: no-preference) {
-    .theme-locker-card[data-theme-playing="true"] .theme-locker-art {
-        animation: var(--preview-motion) 240ms var(--ease-out);
+    body:not(.theme-animations-paused) .theme-locker-card:enabled .theme-locker-art {
+        transition: transform 160ms var(--ease-out);
+    }
+
+    body:not(.theme-animations-paused) .theme-locker-card:enabled:active:not(:focus-visible) .theme-locker-art {
+        transform: scale(0.98);
     }
 }
 
 @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
-    .theme-locker-card:hover .theme-locker-art {
-        animation: var(--preview-motion) 240ms var(--ease-out);
+    body:not(.theme-animations-paused) .theme-locker-card:enabled:hover:not(:active) .theme-locker-art {
+        transform: scale(1.04);
     }
 }
 
@@ -4780,4 +4776,127 @@ body.theme-solar .theme-environment {
 .rx-auth-brand [data-brand-logo],
 .admin-sidebar [data-brand-logo] {
     filter: drop-shadow(0 2px 2px rgb(36 21 73 / 0.32))
+}
+
+.study-coach {
+    --coach-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    --coach-right: max(1rem, env(safe-area-inset-right, 0px));
+    --coach-size: 6.5rem;
+}
+
+.study-coach-trigger {
+    position: fixed;
+    right: var(--coach-right);
+    bottom: var(--coach-bottom);
+    z-index: 30;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    width: var(--coach-size);
+    height: var(--coach-size);
+    padding: 0.375rem;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    touch-action: manipulation;
+}
+
+.study-coach-art,
+.study-coach-avatar {
+    transform-origin: center 85%;
+}
+
+.study-coach-panel {
+    position: fixed;
+    inset: auto var(--coach-right) var(--coach-bottom) auto;
+    width: min(24rem, calc(100% - var(--coach-right) - max(1rem, env(safe-area-inset-left, 0px))));
+    max-height: calc(100dvh - var(--coach-bottom) - max(1rem, env(safe-area-inset-top, 0px)));
+    margin: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    transform-origin: bottom right;
+}
+
+.study-coach-panel::backdrop {
+    background: rgb(22 16 39 / 0.14);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+}
+
+@media (min-width: 1024px) {
+    .study-coach {
+        --coach-bottom: max(3.25rem, env(safe-area-inset-bottom, 0px));
+        --coach-size: 7.75rem;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .study-coach-art {
+        animation: study-coach-greet 240ms var(--ease-out);
+        transition: transform 120ms var(--ease-out);
+    }
+
+    .study-coach-trigger:active:not(:focus-visible) .study-coach-art {
+        transform: scale(0.94);
+    }
+
+    .study-coach-panel[open][data-pointer-open] {
+        animation: study-coach-open 180ms var(--ease-out) both;
+    }
+
+    .study-coach-panel[open][data-pointer-open] .study-coach-avatar[data-thinking="true"] {
+        animation: study-coach-nod 150ms var(--ease-out);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+    .study-coach-trigger:hover:not(:active) .study-coach-art {
+        transform: translateY(-3px) rotate(-6deg);
+    }
+}
+
+.theme-animations-paused .study-coach :is(.study-coach-art, .study-coach-avatar, .study-coach-panel) {
+    animation: none;
+    transition: none;
+}
+
+@keyframes study-coach-greet {
+    35% {
+        transform: translateY(-3px) rotate(-7deg);
+    }
+
+    70% {
+        transform: rotate(4deg);
+    }
+}
+
+@keyframes study-coach-open {
+    from {
+        opacity: 0;
+        transform: translateY(6px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes study-coach-nod {
+    50% {
+        transform: translateY(2px) rotate(-6deg);
+    }
+}
+
+.admin-disclosure > summary::-webkit-details-marker {
+    display: none;
+}
+
+.admin-disclosure[open] > summary > svg {
+    transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .admin-disclosure > summary:not(:focus-visible) > svg {
+        transition: transform 150ms var(--ease-out);
+    }
 }

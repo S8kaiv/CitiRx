@@ -91,6 +91,7 @@ class ResearchParticipantService
         return $query
             ->orderBy('last_name')
             ->orderBy('first_name')
+            ->orderBy('user_id')
             ->paginate(30)
             ->withQueryString();
     }

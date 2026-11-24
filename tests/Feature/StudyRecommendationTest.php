@@ -527,3 +527,17 @@ it(
             );
     },
 );
+
+test('the study coach offers the diagnostic to a new student and rejects staff access', function (): void {
+    $url = route('student.study-coach');
+    $student = studyRecommendationStudent(diagnosticCompleted: false);
+
+    $this->actingAs($student)->getJson($url)
+        ->assertOk()
+        ->assertJsonPath('label', 'Start diagnostic')
+        ->assertJsonPath('url', route('diagnostic.intro'));
+
+    $this->actingAs(User::factory()->create(['role' => 'faculty']))
+        ->getJson($url)
+        ->assertForbidden();
+});

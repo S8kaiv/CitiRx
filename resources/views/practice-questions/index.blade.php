@@ -1,12 +1,15 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-ui.page-header title="Practice questions" description="Author questions for adaptive practice. These items are separate from research Forms A and B.">
-            <x-slot:actions>
-                <x-ui.button :href="route($routePrefix.'.create')">Add practice question</x-ui.button>
-                <x-ui.button variant="secondary" :href="route($routePrefix.'.imports.create')">Import practice CSV</x-ui.button>
-            </x-slot:actions>
-        </x-ui.page-header>
+        <x-ui.page-header title="Practice Questions" description="Manage questions used in adaptive practice." />
     </x-slot>
+
+    <nav aria-label="Practice question tools" class="flex flex-wrap items-center gap-2">
+        @if ($routePrefix === 'admin.practice-questions')
+            <x-ui.button variant="ghost" :href="route('admin.questions.index')">Back to Question Bank</x-ui.button>
+        @endif
+        <x-ui.button :href="route($routePrefix.'.create')">Add practice question</x-ui.button>
+        <x-ui.button variant="secondary" :href="route($routePrefix.'.imports.create')">Import practice CSV</x-ui.button>
+    </nav>
 
     <div class="mx-auto max-w-7xl space-y-5 px-4 py-6 sm:px-6 lg:px-8">
         @if (session('status'))<x-ui.alert variant="success">{{ session('status') }}</x-ui.alert>@endif
@@ -16,29 +19,32 @@
             <x-ui.button variant="ghost" :href="route($routePrefix.'.index')">Clear search</x-ui.button>
         </form>
 
-        <x-ui.card :padded="false">
-            <ul class="divide-y divide-line">
-                @forelse ($questions as $question)
-                    <li class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-                        <div class="min-w-0 space-y-2">
-                            <h2 class="break-words font-semibold text-ink">{{ \Illuminate\Support\Str::limit($question->question_text, 180) }}</h2>
-                            <p class="break-words text-sm text-ink-muted">{{ $question->competency?->domain?->domain_name }} · {{ $question->competency?->competency_code }}</p>
-                            <div class="flex flex-wrap gap-2">
-                                <x-ui.badge :variant="$question->is_active ? 'success' : 'neutral'">{{ $question->is_active ? 'Active in practice pool' : 'Inactive' }}</x-ui.badge>
-                                @if ($question->contentIsFrozen())<x-ui.badge>Content locked</x-ui.badge>@endif
-                            </div>
-                        </div>
-                        <x-ui.button variant="secondary" :href="route($routePrefix.'.show', $question)" class="shrink-0">View question</x-ui.button>
-                    </li>
-                @empty
-                    <li class="space-y-2 p-6 text-sm">
-                        <h2 class="font-bold text-ink">{{ $search !== '' ? 'No practice questions match this search.' : 'No practice questions yet.' }}</h2>
-                        <p class="text-ink-muted">{{ $search !== '' ? 'Try another search or clear the filter.' : 'Add your first question with its answer, rationale, competency, and source.' }}</p>
-                    </li>
-                @endforelse
-            </ul>
-        </x-ui.card>
+        <section id="practice-results" class="scroll-mt-32" aria-label="Practice question results">
 
-        {{ $questions->links() }}
+            <x-ui.card :padded="false">
+                <ul class="divide-y divide-line">
+                    @forelse ($questions as $question)
+                        <li class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                            <div class="min-w-0 space-y-2">
+                                <h2 class="break-words font-semibold text-ink">{{ \Illuminate\Support\Str::limit($question->question_text, 180) }}</h2>
+                                <p class="break-words text-sm text-ink-muted">{{ $question->competency?->domain?->domain_name }} · {{ $question->competency?->competency_code }}</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <x-ui.badge :variant="$question->is_active ? 'success' : 'neutral'">{{ $question->is_active ? 'Active in practice pool' : 'Inactive' }}</x-ui.badge>
+                                    @if ($question->contentIsFrozen())<x-ui.badge>Content locked</x-ui.badge>@endif
+                                </div>
+                            </div>
+                            <x-ui.button variant="secondary" :href="route($routePrefix.'.show', $question)" class="shrink-0">View question</x-ui.button>
+                        </li>
+                    @empty
+                        <li class="space-y-2 p-6 text-sm">
+                            <h2 class="font-bold text-ink">{{ $search !== '' ? 'No practice questions match this search.' : 'No practice questions yet.' }}</h2>
+                            <p class="text-ink-muted">{{ $search !== '' ? 'Try another search or clear the filter.' : 'Add your first question with its answer, rationale, competency, and source.' }}</p>
+                        </li>
+                    @endforelse
+                </ul>
+            </x-ui.card>
+
+            <x-admin.pager :paginator="$questions->fragment('practice-results')" label="Practice questions" />
+        </section>
     </div>
 </x-app-layout>

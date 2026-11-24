@@ -1,221 +1,211 @@
 <x-app-layout surface="admin">
     <x-slot name="header">
-        <x-admin.page-header
-            title="Question bank"
-            description="Review, revise, validate, freeze, and retire assessment questions."
-        >
-            <x-slot:actions>
-                <x-ui.button :href="route('admin.practice-questions.create')">Add practice question</x-ui.button>
-                <x-ui.button variant="secondary" :href="route('admin.practice-questions.index')">Practice questions</x-ui.button>
-                <x-ui.button :href="route('research-editor.index')">Research form editor</x-ui.button>
-                <a
-                    href="{{ route(
-                        'admin.research-form-imports.index',
-                    ) }}"
-                    class="btn-press inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
-                    style="--lip: rgb(var(--color-primary-lip));"
-                >
-                    Import research CSV
-                </a>
-            </x-slot:actions>
-        </x-admin.page-header>
+        <x-admin.page-header title="Question Bank" />
     </x-slot>
 
-    <div class="py-6 font-sans text-slate-900 antialiased">
-        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-            <form method="GET" action="{{ route('admin.questions.index') }}"
-                class="grid grid-cols-1 gap-3 rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 shadow-sm md:grid-cols-2 xl:grid-cols-6">
+    @php
+        $selectedSubject = $domains->firstWhere('domain_id', $filters['domain_id']);
+        $showSubjects = ! request()->query->has('page')
+            && request()->query('view') !== 'all'
+            && ! collect($filters)->contains(fn ($value) => filled($value));
+        $bankContext = array_filter([
+            ...$filters,
+            'view' => 'all',
+            'page' => $questions->currentPage(),
+        ], fn ($value) => filled($value));
+    @endphp
+
+    <div class="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+        <nav aria-label="Question bank tools" class="flex flex-wrap items-center justify-between gap-3">
+            <x-ui.button :href="route('admin.practice-questions.create')">
+                Add practice question
+            </x-ui.button>
+
+            <div class="flex flex-wrap gap-2">
+                <x-ui.button variant="secondary" :href="route('admin.practice-questions.index')">Practice questions</x-ui.button>
+                <x-ui.button variant="ghost" :href="route('research-editor.index')">Research form editor</x-ui.button>
+                <x-ui.button variant="ghost" :href="route('admin.research-form-imports.index')">Import research CSV</x-ui.button>
+            </div>
+        </nav>
+
+        <form method="GET" action="{{ route('admin.questions.index') }}#question-results"
+            class="space-y-4 rounded-2xl border border-line bg-surface p-4 sm:p-5">
+            <h2 class="font-display text-base font-bold text-ink">Find questions</h2>
+            <input type="hidden" name="view" value="all">
+
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5 [&>*]:min-w-0">
                 <div class="xl:col-span-2">
-                    <label for="q" class="mb-1 block text-xs font-extrabold uppercase tracking-wider text-muted-ink">Search</label>
-                    <input id="q" type="search" name="q" maxlength="100" value="{{ $filters['q'] }}"
-                        placeholder="Search question text..."
-                        class="w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary">
+                    <x-ui.field name="q" label="Question text" type="search"
+                        :value="$filters['q']" maxlength="100" placeholder="Search question text" />
                 </div>
 
-                <div>
-                    <label for="form" class="mb-1 block text-xs font-extrabold uppercase tracking-wider text-muted-ink">Form</label>
-                    <select id="form" name="form"
-                        class="w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary">
-                        <option value="">All forms</option>
-                        <option value="pre_test_a" @selected($filters['form'] === 'pre_test_a')>Form A</option>
-                        <option value="post_test_b" @selected($filters['form'] === 'post_test_b')>Form B</option>
-                    </select>
+                <x-ui.field name="domain_id" label="Subject" type="select">
+                    <option value="">All subjects</option>
+                    @foreach ($domains as $domain)
+                        <option value="{{ $domain->domain_id }}"
+                            @selected((string) $filters['domain_id'] === (string) $domain->domain_id)>
+                            {{ $domain->domain_name }}
+                        </option>
+                    @endforeach
+                </x-ui.field>
+
+                <x-ui.field name="form" label="Research form" type="select">
+                    <option value="">All forms</option>
+                    <option value="pre_test_a" @selected($filters['form'] === 'pre_test_a')>Form A</option>
+                    <option value="post_test_b" @selected($filters['form'] === 'post_test_b')>Form B</option>
+                </x-ui.field>
+
+                <x-ui.field name="status" label="Status" type="select">
+                    <option value="">Any status</option>
+                    @foreach ([
+                        'editable' => 'Editable',
+                        'locked' => 'Locked',
+                        'validated' => 'Validated',
+                        'unvalidated' => 'Unvalidated',
+                        'awaiting_validation' => 'Awaiting validation',
+                        'validation_issue' => 'Validation issue',
+                        'served' => 'Served',
+                        'unserved' => 'Never served',
+                        'active' => 'Active',
+                        'inactive' => 'Inactive',
+                        'placeholder' => 'Placeholders',
+                    ] as $value => $label)
+                        <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
+                    @endforeach
+                </x-ui.field>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+                <x-ui.button type="submit" variant="secondary">Apply filters</x-ui.button>
+                <x-ui.button variant="ghost" :href="route('admin.questions.index', ['view' => 'all']).'#question-results'">
+                    Clear filters
+                </x-ui.button>
+            </div>
+        </form>
+
+        @if ($showSubjects)
+            <section aria-labelledby="question-subjects" class="space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <h2 id="question-subjects" class="font-display text-xl font-extrabold text-ink">Browse by subject</h2>
+                    <x-ui.button variant="secondary" :href="route('admin.questions.index', ['view' => 'all']).'#question-results'">
+                        View all questions
+                    </x-ui.button>
                 </div>
 
-                <div>
-                    <label for="domain_id" class="mb-1 block text-xs font-extrabold uppercase tracking-wider text-muted-ink">Domain</label>
-                    <select id="domain_id" name="domain_id"
-                        class="w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary">
-                        <option value="">All domains</option>
-                        @foreach ($domains as $domain)
-                            <option value="{{ $domain->domain_id }}"
-                                @selected((string) $filters['domain_id'] === (string) $domain->domain_id)>
-                                {{ $domain->domain_number }}. {{ $domain->domain_name }}
-                            </option>
-                        @endforeach
-                    </select>
+                <ul class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    @forelse ($domains as $domain)
+                        <li class="min-w-0">
+                            <a href="{{ route('admin.questions.index', ['domain_id' => $domain->domain_id]) }}#question-results"
+                                class="flex h-full items-center gap-3 rounded-xl border border-line bg-surface p-4 hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+                                <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-primary-tint text-primary-ink">
+                                    <x-admin.icon name="questions" class="size-5" aria-hidden="true" />
+                                </span>
+                                <span class="min-w-0 flex-1 break-words font-display text-base font-bold leading-snug text-ink">
+                                    {{ $domain->domain_name }}
+                                </span>
+                                <x-admin.icon name="arrow" class="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
+                            </a>
+                        </li>
+                    @empty
+                        <li class="col-span-full p-4 text-sm text-ink-muted">No subjects are configured yet.</li>
+                    @endforelse
+                </ul>
+            </section>
+        @else
+            <section id="question-results" aria-labelledby="question-results-title" class="scroll-mt-32 space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <h2 id="question-results-title" class="min-w-0 break-words font-display text-xl font-extrabold text-ink">
+                        {{ $selectedSubject?->domain_name ?? 'All questions' }}
+                    </h2>
+                    <x-ui.button variant="ghost" :href="route('admin.questions.index')">All subjects</x-ui.button>
                 </div>
 
-                <div>
-                    <label for="status" class="mb-1 block text-xs font-extrabold uppercase tracking-wider text-muted-ink">Status</label>
-                    <select id="status" name="status"
-                        class="w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary">
-                        <option value="">Any status</option>
-                        @foreach ([
-                            'editable' => 'Editable',
-                            'locked' => 'Locked',
-                            'validated' => 'Validated',
-                            'unvalidated' => 'Unvalidated',
-                            'awaiting_validation' => 'Awaiting validation',
-                            'validation_issue' => 'Validation issue',
-                            'served' => 'Served',
-                            'unserved' => 'Never served',
-                            'active' => 'Active',
-                            'inactive' => 'Inactive',
-                            'placeholder' => 'Placeholders',
-                        ] as $value => $label)
-                            <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                <div class="rounded-2xl border border-line bg-surface">
+                    @if ($questions->hasPages())
+                        <div class="border-b border-line">
+                            <x-admin.pager :paginator="$questions" label="Question results at top" />
+                        </div>
+                    @endif
 
-                <div class="rx-admin-actions flex flex-wrap items-end gap-2">
-                    <button type="submit" style="--lip: rgb(var(--color-primary-lip));"
-                        class="btn-press flex-1 rounded-xl bg-primary px-4 py-2.5 font-display text-sm font-bold text-white shadow-md">
-                        Filter
-                    </button>
+                    <ul class="divide-y divide-line">
+                        @forelse ($questions as $question)
+                            @php
+                                $formName = match ($question->research_form) {
+                                    'pre_test_a' => 'Form A',
+                                    'post_test_b' => 'Form B',
+                                    default => $question->research_form ?? 'Practice',
+                                };
+                                $domainName = $question->competency?->domain?->domain_name;
+                                $isValidated = $question->research_validated_at !== null && $question->research_validated_by !== null;
+                                $hasValidationIssue = ($question->research_validated_at === null) !== ($question->research_validated_by === null);
+                                $isPlaceholder = str_starts_with($question->question_text, '[DEVELOPMENT MOCK - NOT VALIDATED]');
+                            @endphp
 
-                    <a href="{{ route('admin.questions.index') }}" style="--lip: #CBD5E1;"
-                        class="btn-press rounded-xl border-2 border-b-4 border-slate-300 bg-white px-4 py-2 font-display text-sm font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50">
-                        Clear
-                    </a>
-                </div>
-            </form>
-
-            <div class="overflow-hidden rounded-3xl border-2 border-b-4 border-slate-200 bg-white shadow-sm">
-                <div class="overflow-x-auto">
-                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
-                    <table class="min-w-full text-left text-sm">
-                        <thead class="bg-slate-50 text-xs font-extrabold uppercase tracking-wider text-muted-ink">
-                            <tr>
-                                <th class="px-4 py-4">Form</th>
-                                <th class="px-4 py-4">Domain</th>
-                                <th class="px-4 py-4">Question</th>
-                                <th class="px-4 py-4">State</th>
-                                <th class="px-4 py-4">Availability</th>
-                                <th class="px-4 py-4 text-right">Action</th>
-                            </tr>
-                        </thead>
-
-                        <tbody class="divide-y divide-slate-100">
-                            @forelse ($questions as $question)
-                                @php
-                                    $isValidated = $question->research_validated_at !== null && $question->research_validated_by !== null;
-
-                                    $hasValidationIssue = ($question->research_validated_at === null) !== ($question->research_validated_by === null);
-
-                                    $isLocked = $question->contentIsFrozen();
-
-                                    $isPlaceholder = str_starts_with($question->question_text, '[DEVELOPMENT MOCK - NOT VALIDATED]');
-                                @endphp
-
-                                <tr class="align-top hover:bg-slate-50/70">
-                                    <td class="whitespace-nowrap px-4 py-4">
-                                        <div class="font-display font-black text-slate-800">
-                                            {{ $question->research_form ?? 'Practice' }}
-                                        </div>
-
-                                        @if ($question->formVersion)
-                                            <div class="mt-1 font-mono text-xs font-bold text-primary">
-                                                {{ $question->formVersion->version_code }}
-                                            </div>
-
-                                            <span
-                                                class="mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold
-                                                    {{ $question->formVersion->is_active
-                                                        ? 'bg-emerald-100 text-emerald-800'
-                                                        : 'bg-slate-100 text-slate-600' }}"
-                                            >
-                                                {{ $question->formVersion->is_active
-                                                    ? 'Current version'
-                                                    : 'Historical version' }}
-                                            </span>
-                                        @endif
-
+                            <li class="grid gap-3 p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                                <div class="min-w-0 space-y-2 break-words">
+                                    <p class="text-sm text-ink-muted">
+                                        <span class="font-bold text-ink">{{ $formName }}</span>
                                         @if ($question->form_position !== null)
-                                            <div class="mt-1 text-xs text-muted-ink">
-                                                Position {{ $question->form_position }}
-                                            </div>
+                                            · Item {{ $question->form_position }}
                                         @endif
-                                    </td>
+                                        @if ($question->formVersion)
+                                            · {{ $question->formVersion->version_code }}
+                                            ({{ $question->formVersion->is_active ? 'current' : 'historical' }})
+                                        @endif
+                                        @if (! $selectedSubject)
+                                            · {{ $domainName ?? 'Unknown subject' }}
+                                        @endif
+                                        @if ($question->competency?->competency_code)
+                                            · {{ $question->competency->competency_code }}
+                                        @endif
+                                    </p>
 
-                                    <td class="px-4 py-4 text-xs text-slate-600">
-                                        <div class="font-semibold">{{ $question->competency?->domain?->domain_name ?? 'Unknown domain' }}</div>
-                                        <div class="mt-1 font-mono">{{ $question->competency?->competency_code }}</div>
-                                    </td>
+                                    <p class="line-clamp-3 text-base font-semibold leading-relaxed text-ink">
+                                        {{ $question->question_text }}
+                                    </p>
 
-                                    <td class="max-w-xl px-4 py-4">
-                                        <p class="line-clamp-3 font-medium text-slate-900">{{ $question->question_text }}</p>
-
+                                    <div class="flex flex-wrap gap-1.5">
                                         @if ($isPlaceholder)
-                                            <span class="mt-2 inline-flex rounded-full bg-amber-100 px-2 py-1 text-[10px] font-extrabold uppercase text-amber-800">
-                                                Development placeholder
-                                            </span>
+                                            <x-ui.badge variant="warning">Development placeholder</x-ui.badge>
                                         @endif
-                                    </td>
 
-                                    <td class="px-4 py-4">
-                                        <div class="flex flex-col items-start gap-1">
-                                            @if ($hasValidationIssue)
-                                                <span class="rounded-full bg-rose-100 px-2 py-1 font-display text-xs font-bold text-rose-700">Validation issue</span>
-                                            @elseif ($isValidated)
-                                                <span class="rounded-full bg-emerald-100 px-2 py-1 font-display text-xs font-bold text-emerald-700">Validated</span>
-                                            @else
-                                                <span class="rounded-full bg-slate-100 px-2 py-1 font-display text-xs font-bold text-slate-600">Unvalidated</span>
-                                            @endif
-
-                                            @if ($question->first_served_at)
-                                                <span class="rounded-full bg-amber-100 px-2 py-1 font-display text-xs font-bold text-amber-800">Served</span>
-                                            @endif
-
-                                            <span class="rounded-full px-2 py-1 font-display text-xs font-bold {{ $isLocked ? 'bg-violet-100 text-violet-700' : 'bg-sky-100 text-sky-700' }}">
-                                                {{ $isLocked ? 'Locked' : 'Editable' }}
-                                            </span>
-                                        </div>
-                                    </td>
-
-                                    <td class="px-4 py-4">
-                                        @if ($question->is_active)
-                                            <span class="rounded-full bg-emerald-100 px-2.5 py-1 font-display text-xs font-bold text-emerald-700">Active</span>
+                                        @if ($hasValidationIssue)
+                                            <x-ui.badge variant="danger">Validation issue</x-ui.badge>
+                                        @elseif ($isValidated)
+                                            <x-ui.badge variant="success">Validated</x-ui.badge>
                                         @else
-                                            <span class="rounded-full bg-rose-100 px-2.5 py-1 font-display text-xs font-bold text-rose-700">Inactive</span>
+                                            <x-ui.badge>Unvalidated</x-ui.badge>
                                         @endif
-                                    </td>
 
-                                    <td class="px-4 py-4 text-right">
-                                        <a href="{{ route('admin.questions.show', ['question' => $question->question_id]) }}"
-                                            style="--lip: #CBD5E1;"
-                                            class="btn-press inline-flex rounded-xl border-2 border-b-4 border-slate-300 bg-white px-3 py-1.5 font-display text-xs font-bold text-primary shadow-2xs transition hover:bg-primary-tint">
-                                            View
-                                        </a>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="px-4 py-12 text-center text-xs font-semibold text-muted-ink">
-                                        No questions match the selected filters.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                                        <x-ui.badge>{{ $question->contentIsFrozen() ? 'Locked' : 'Editable' }}</x-ui.badge>
+
+                                        @if ($question->first_served_at)
+                                            <x-ui.badge>Served</x-ui.badge>
+                                        @endif
+
+                                        <x-ui.badge :variant="$question->is_active ? 'neutral' : 'warning'">
+                                            {{ $question->is_active ? 'Active' : 'Inactive' }}
+                                        </x-ui.badge>
+                                    </div>
+                                </div>
+
+                                <x-ui.button variant="secondary" class="justify-self-start"
+                                    :href="route('admin.questions.show', ['question' => $question->question_id, 'bank' => $bankContext])">
+                                    View question
+                                </x-ui.button>
+                            </li>
+                        @empty
+                            <li class="p-6 text-sm text-ink-muted">
+                                {{ $questions->total() ? 'There are no questions on this page.' : 'No questions match these filters.' }}
+                            </li>
+                        @endforelse
+                    </ul>
+
+                    <div class="border-t border-line">
+                        <x-admin.pager :paginator="$questions" label="Question results" />
                     </div>
                 </div>
-
-                <div class="border-t border-slate-100 px-5 py-4">
-                    {{ $questions->links() }}
-                </div>
-            </div>
-        </div>
+            </section>
+        @endif
     </div>
 </x-app-layout>

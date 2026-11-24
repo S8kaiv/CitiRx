@@ -11,6 +11,7 @@ use App\Models\UserBadge;
 use App\Services\AdminDashboardService;
 use App\Services\ReadinessService;
 use App\Services\StudyRecommendationService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -100,5 +101,40 @@ class DashboardController extends Controller
                 'Unknown role.',
             ),
         };
+    }
+
+    public function studyCoach(Request $request): JsonResponse
+    {
+        $recommendation = $this->studyRecommendations->forUser($request->user());
+        $pearl = $recommendation['recommended_pearls'][0] ?? null;
+        $practice = $recommendation['recommended_action'];
+
+        [$label, $url] = match (true) {
+            $recommendation['requires_diagnostic'] => [
+                'Start diagnostic',
+                route('diagnostic.intro'),
+            ],
+            $pearl !== null => [
+                'Read '.$pearl['title'],
+                route('pearls.show', ['pearl' => $pearl['slug']]),
+            ],
+            $practice !== null => [
+                'Set up focused practice',
+                route('practice.intro', [
+                    'domain_filter_id' => $practice['domain_id'],
+                    'length' => $practice['suggested_length'],
+                ]),
+            ],
+            default => [
+                'Browse Micro Pearls',
+                route('pearls.index'),
+            ],
+        };
+
+        return response()->json([
+            'message' => $recommendation['reason'],
+            'label' => $label,
+            'url' => $url,
+        ], 200, ['Cache-Control' => 'private, no-store']);
     }
 }

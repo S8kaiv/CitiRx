@@ -425,14 +425,7 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                                 <template x-for="theme in themes" :key="theme.id">
                                     <div class="flex min-w-0 flex-col gap-1">
                                         <button type="button"
-                                            x-data="{ playing: false }"
-                                            @click="
-                                                const changed = globalTheme !== theme.id;
-                                                if (applyTheme(theme.id) && changed && $event.detail > 0) {
-                                                    playing = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                                                }
-                                            "
-                                            :data-theme-playing="playing"
+                                            @click="applyTheme(theme.id)"
                                             :disabled="!isUnlocked(theme)"
                                             :aria-pressed="globalTheme === theme.id"
                                             :aria-label="isUnlocked(theme)
@@ -443,8 +436,7 @@ $readinessStyles = match ($readinessBand ?? 'pending') {
                                                 : 'border-line bg-surface'"
                                             class="theme-locker-card flex flex-1 flex-col items-center rounded-2xl border-2 border-b-4 p-3 text-center disabled:cursor-not-allowed">
                                             <span class="theme-locker-preview" aria-hidden="true">
-                                                <span class="theme-locker-art" :data-theme-preview="theme.id"
-                                                    @animationend="playing = false" @animationcancel="playing = false"></span>
+                                                <span class="theme-locker-art" :data-theme-preview="theme.id"></span>
                                             </span>
 
                                             <span class="font-display text-sm font-black text-ink" x-text="theme.name"></span>

@@ -1,9 +1,7 @@
 <x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
-            title="Pilot controls"
-            description="Control official research phases and protect configuration after data collection begins."
-        >
+            title="Pilot controls">
             <x-slot:actions>
                 <a
                     href="{{ route(
@@ -42,7 +40,7 @@
                     {{ session('status') }}
                 </div>
             @endif
-            
+
             @if ($errors->any())
                 <div
                     role="alert"
@@ -182,6 +180,9 @@
                         Students without cohorts: {{ $studentsWithoutCohorts }} ·
                         Unverified students: {{ $unverifiedStudents }}
                     </p>
+                    <p class="mt-1 text-sm text-ink-muted">
+                        Form A follows the study-wide phase. Each cohort has its own schedule for Form B.
+                    </p>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -194,7 +195,7 @@
                                 <th class="px-4 py-3 text-left">Diagnostic</th>
                                 <th class="px-4 py-3 text-left">Post-test</th>
                                 <th class="px-4 py-3 text-left">Submissions</th>
-                                <th class="px-4 py-3 text-left">Window</th>
+                                <th class="px-4 py-3 text-left">Form B window</th>
                             </tr>
                         </thead>
 
@@ -207,7 +208,9 @@
 
                                 <tr>
                                     <td class="px-4 py-3 font-bold">
-                                        {{ $cohort->cohort_name }}
+                                        <a href="{{ route('admin.cohorts.show', $cohort) }}" class="font-bold text-primary-ink underline underline-offset-4">
+                                            {{ $cohort->cohort_name }}
+                                        </a>
                                     </td>
 
                                     <td class="px-4 py-3">
@@ -242,7 +245,7 @@
                                     </td>
 
                                     <td class="px-4 py-3">
-                                        {{ str($cohort->postTestWindowStatus())->title() }}
+                                        {{ $cohort->postTestWindowStatus() === 'closed' ? 'Unscheduled' : ucfirst($cohort->postTestWindowStatus()) }}
                                     </td>
                                 </tr>
                             @empty
@@ -297,7 +300,7 @@
 
             <section class="rounded-3xl border border-warning-strong/40 bg-warning-tint p-4 text-warning-ink sm:p-6">
                 <h2 class="text-lg font-black text-warning-ink">
-                    Change pilot phase
+                    Change study-wide pilot phase
                 </h2>
 
                 <p class="mt-1 text-sm text-warning-ink/90">

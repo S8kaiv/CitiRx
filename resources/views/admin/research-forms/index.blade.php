@@ -1,9 +1,6 @@
 <x-app-layout surface="admin">
     <x-slot name="header">
-        <x-admin.page-header
-            title="Research Form Readiness"
-            description="Manage immutable versions, validation readiness, publication status, and pilot eligibility."
-        >
+        <x-admin.page-header title="Research Form Readiness">
             <x-slot:actions>
                 <x-ui.button :href="route('research-editor.index')">Edit forms in app</x-ui.button>
                 <a
@@ -60,24 +57,279 @@
                 </div>
             @endif
 
-            <section class="rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-sm">
-                <div>
-                    <p class="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                        Immutable version history
+            <div class="grid gap-6 xl:grid-cols-2">
+                @foreach ($reports as $report)
+                    @php
+                        $statusClasses = match ($report['status']['key']) {
+                            'development' => 'border-amber-200 bg-amber-50 text-amber-800',
+                            'needs_review' => 'border-red-200 bg-red-50 text-red-800',
+                            'structurally_valid' => 'border-blue-200 bg-blue-50 text-blue-800',
+                            'validated' => 'border-violet-200 bg-violet-50 text-violet-800',
+                            'locked' => 'border-slate-300 bg-slate-100 text-slate-800',
+                            'ready_for_pilot' => 'border-emerald-200 bg-emerald-50 text-emerald-800',
+                            default => 'border-slate-200 bg-slate-50 text-slate-700',
+                        };
+                    @endphp
+
+                    <article class="overflow-hidden rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
+                        <div class="border-b border-slate-200 p-6">
+                            <div class="flex flex-wrap items-start justify-between gap-4">
+                                <div>
+                                    <p class="font-mono text-xs text-slate-500">
+                                        {{ $report['form'] }}
+                                    </p>
+
+                                    <h3 class="mt-1 font-display text-xl font-extrabold text-slate-900">
+                                        {{ $report['label'] }}
+                                    </h3>
+
+                                    <p class="mt-2 text-sm text-slate-600">
+                                        Expected version:
+                                        <strong class="text-slate-900">
+                                            {{ $report['expected_version'] }}
+                                        </strong>
+                                    </p>
+
+                                    <p class="mt-1 text-xs text-amber-700">
+                                        {{ $report['version_binding'] }}
+                                    </p>
+                                </div>
+
+                                <span
+                                    class="rounded-full border px-3 py-1 text-xs font-extrabold {{ $statusClasses }}">
+                                    {{ $report['status']['label'] }}
+                                </span>
+                            </div>
+
+                            <dl class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                <div class="rounded-2xl bg-slate-50 p-3">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                                        Active
+                                    </dt>
+
+                                    <dd class="mt-1 text-xl font-extrabold text-slate-900">
+                                        {{ $report['active_questions'] }}/{{ $report['required_questions'] }}
+                                    </dd>
+                                </div>
+
+                                <div class="rounded-2xl bg-slate-50 p-3">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                                        Validated
+                                    </dt>
+
+                                    <dd class="mt-1 text-xl font-extrabold text-slate-900">
+                                        {{ $report['fully_validated'] }}/{{ $report['required_questions'] }}
+                                    </dd>
+                                </div>
+
+                                <div class="rounded-2xl bg-slate-50 p-3">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                                        Placeholders
+                                    </dt>
+
+                                    <dd
+                                        class="mt-1 text-xl font-extrabold {{ $report['placeholders'] > 0 ? 'text-amber-700' : 'text-emerald-700' }}">
+                                        {{ $report['placeholders'] }}
+                                    </dd>
+                                </div>
+
+                                <div class="rounded-2xl bg-slate-50 p-3">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                                        Served
+                                    </dt>
+
+                                    <dd class="mt-1 text-xl font-extrabold text-slate-900">
+                                        {{ $report['served_questions'] }}
+                                    </dd>
+                                </div>
+                            </dl>
+                        </div>
+
+                        <x-admin.disclosure title="Readiness details" :open="count($report['errors']) > 0" class="m-4">
+                        <div class="space-y-6 p-4">
+                            <section>
+                                <h4 class="font-display text-sm font-extrabold text-slate-900">
+                                    Integrity checks
+                                </h4>
+
+                                <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+                                    @php
+                                        $checks = [
+                                            'Positions 1–60' => $report['positions_complete'],
+                                            'Six domains × 10' => $report['domains_matching'] === 6,
+                                            'Competency blueprint' =>
+                                                $report['competencies_matching'] === count($report['competency_rows']),
+                                            'Choice structures' => $report['invalid_choice_structures'] === 0,
+                                            'Stems and choices' => $report['missing_stems_or_choices'] === 0,
+                                            'Rationales' => $report['missing_rationales'] === 0,
+                                            'Cognitive levels' => $report['invalid_cognitive_levels'] === 0,
+                                            'Duplicate stems' => $report['duplicate_stem_groups'] === 0,
+                                            'Validation metadata' => $report['partial_validation'] === 0,
+                                        ];
+                                    @endphp
+
+                                    @foreach ($checks as $label => $passes)
+                                        <div
+                                            class="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-3 py-2">
+                                            <dt class="text-slate-600">
+                                                {{ $label }}
+                                            </dt>
+
+                                            <dd class="font-bold {{ $passes ? 'text-emerald-700' : 'text-red-700' }}">
+                                                {{ $passes ? 'Pass' : 'Fail' }}
+                                            </dd>
+                                        </div>
+                                    @endforeach
+                                </dl>
+                            </section>
+
+                            <section>
+                                <h4 class="font-display text-sm font-extrabold text-slate-900">
+                                    First-served status
+                                </h4>
+
+                                <p class="mt-2 text-sm text-slate-600">
+                                    @if ($report['first_served_at'])
+                                        First served:
+                                        <strong class="text-slate-900">
+                                            {{ \Illuminate\Support\Carbon::parse($report['first_served_at'])->timezone(config('app.timezone'))->format('M j, Y g:i A') }}
+                                        </strong>
+                                    @else
+                                        This form has not been served.
+                                    @endif
+                                </p>
+
+                                <p class="mt-1 text-xs text-slate-500">
+                                    Locked questions:
+                                    {{ $report['locked_questions'] }}
+                                </p>
+                            </section>
+
+                            <section>
+                                <h4 class="font-display text-sm font-extrabold text-slate-900">
+                                    Domain allocation
+                                </h4>
+
+                                <div class="mt-3 overflow-x-auto">
+                                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                                    <table class="min-w-full text-left text-sm">
+                                        <thead class="text-xs uppercase text-slate-500">
+                                            <tr>
+                                                <th class="px-3 py-2">Domain</th>
+                                                <th class="px-3 py-2 text-right">Expected</th>
+                                                <th class="px-3 py-2 text-right">Actual</th>
+                                                <th class="px-3 py-2 text-right">Status</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody class="divide-y divide-slate-100">
+                                            @foreach ($report['domain_rows'] as $domain)
+                                                <tr>
+                                                    <td class="px-3 py-2 font-semibold text-slate-800">
+                                                        {{ $domain['domain_number'] }}.
+                                                        {{ $domain['domain_name'] }}
+                                                    </td>
+
+                                                    <td class="px-3 py-2 text-right">
+                                                        {{ $domain['expected'] }}
+                                                    </td>
+
+                                                    <td class="px-3 py-2 text-right">
+                                                        {{ $domain['actual'] }}
+                                                    </td>
+
+                                                    <td
+                                                        class="px-3 py-2 text-right font-bold {{ $domain['matches'] ? 'text-emerald-700' : 'text-red-700' }}">
+                                                        {{ $domain['matches'] ? 'Match' : 'Mismatch' }}
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                    </div>
+                                </div>
+                            </section>
+
+                            <section>
+                                <h4 class="font-display text-sm font-extrabold text-slate-900">
+                                    Competency blueprint
+                                </h4>
+
+                                <div class="mt-3 overflow-x-auto">
+                                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                                    <table class="min-w-full text-left text-sm">
+                                        <thead class="text-xs uppercase text-slate-500">
+                                            <tr>
+                                                <th class="px-3 py-2">Domain</th>
+                                                <th class="px-3 py-2">Code</th>
+                                                <th class="px-3 py-2 text-right">Expected</th>
+                                                <th class="px-3 py-2 text-right">Actual</th>
+                                                <th class="px-3 py-2 text-right">Status</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody class="divide-y divide-slate-100">
+                                            @foreach ($report['competency_rows'] as $competency)
+                                                <tr>
+                                                    <td class="px-3 py-2">
+                                                        {{ $competency['domain_number'] }}
+                                                    </td>
+
+                                                    <td class="px-3 py-2 font-mono font-bold text-slate-800">
+                                                        {{ $competency['competency_code'] }}
+                                                    </td>
+
+                                                    <td class="px-3 py-2 text-right">
+                                                        {{ $competency['expected'] }}
+                                                    </td>
+
+                                                    <td class="px-3 py-2 text-right">
+                                                        {{ $competency['actual'] }}
+                                                    </td>
+
+                                                    <td
+                                                        class="px-3 py-2 text-right font-bold {{ $competency['matches'] ? 'text-emerald-700' : 'text-red-700' }}">
+                                                        {{ $competency['matches'] ? 'Match' : 'Mismatch' }}
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                    </div>
+                                </div>
+                            </section>
+
+                            <section>
+                                <h4 class="font-display text-sm font-extrabold text-slate-900">
+                                    Audit findings
+                                </h4>
+
+                                @if ($report['errors'] === [])
+                                    <div
+                                        class="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
+                                        No content or validation errors were found.
+                                    </div>
+                                @else
+                                    <ul class="mt-3 space-y-2">
+                                        @foreach ($report['errors'] as $error)
+                                            <li
+                                                class="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-800">
+                                                {{ $error }}
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            </section>
+                        </div>
+                        </x-admin.disclosure>
+                    </article>
+                @endforeach
+            </div>
+            <x-admin.disclosure title="Research Form Versions">
+                <div class="min-w-0 p-4">
+                    <p class="text-sm text-ink-muted">
+                        Copy a version before changing its questions. Publishing requires structural checks, validation, a reason, and your current password.
                     </p>
-
-                    <h3 class="mt-1 font-display text-lg font-extrabold text-slate-900">
-                        Research Form Versions
-                    </h3>
-
-                    <p class="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">
-                        Copy an existing version before changing question content.
-                        Published and previously served versions remain immutable.
-                        Publishing requires a complete structural audit, all required validated
-                        questions, a reason, and your current password.
-                    </p>
-                </div>
-
                 <div class="mt-6 space-y-6">
                     @foreach ($versions as $form => $formVersions)
                         <div class="overflow-hidden rounded-2xl border border-slate-200">
@@ -271,274 +523,9 @@
                         </div>
                     @endforeach
                 </div>
-            </section>
+                </div>
+            </x-admin.disclosure>
 
-            <div class="grid gap-6 xl:grid-cols-2">
-                @foreach ($reports as $report)
-                    @php
-                        $statusClasses = match ($report['status']['key']) {
-                            'development' => 'border-amber-200 bg-amber-50 text-amber-800',
-                            'needs_review' => 'border-red-200 bg-red-50 text-red-800',
-                            'structurally_valid' => 'border-blue-200 bg-blue-50 text-blue-800',
-                            'validated' => 'border-violet-200 bg-violet-50 text-violet-800',
-                            'locked' => 'border-slate-300 bg-slate-100 text-slate-800',
-                            'ready_for_pilot' => 'border-emerald-200 bg-emerald-50 text-emerald-800',
-                            default => 'border-slate-200 bg-slate-50 text-slate-700',
-                        };
-                    @endphp
-
-                    <article class="overflow-hidden rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
-                        <div class="border-b border-slate-200 p-6">
-                            <div class="flex flex-wrap items-start justify-between gap-4">
-                                <div>
-                                    <p class="font-mono text-xs text-slate-500">
-                                        {{ $report['form'] }}
-                                    </p>
-
-                                    <h3 class="mt-1 font-display text-xl font-extrabold text-slate-900">
-                                        {{ $report['label'] }}
-                                    </h3>
-
-                                    <p class="mt-2 text-sm text-slate-600">
-                                        Expected version:
-                                        <strong class="text-slate-900">
-                                            {{ $report['expected_version'] }}
-                                        </strong>
-                                    </p>
-
-                                    <p class="mt-1 text-xs text-amber-700">
-                                        {{ $report['version_binding'] }}
-                                    </p>
-                                </div>
-
-                                <span
-                                    class="rounded-full border px-3 py-1 text-xs font-extrabold {{ $statusClasses }}">
-                                    {{ $report['status']['label'] }}
-                                </span>
-                            </div>
-
-                            <dl class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                                <div class="rounded-2xl bg-slate-50 p-3">
-                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                                        Active
-                                    </dt>
-
-                                    <dd class="mt-1 text-xl font-extrabold text-slate-900">
-                                        {{ $report['active_questions'] }}/{{ $report['required_questions'] }}
-                                    </dd>
-                                </div>
-
-                                <div class="rounded-2xl bg-slate-50 p-3">
-                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                                        Validated
-                                    </dt>
-
-                                    <dd class="mt-1 text-xl font-extrabold text-slate-900">
-                                        {{ $report['fully_validated'] }}/{{ $report['required_questions'] }}
-                                    </dd>
-                                </div>
-
-                                <div class="rounded-2xl bg-slate-50 p-3">
-                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                                        Placeholders
-                                    </dt>
-
-                                    <dd
-                                        class="mt-1 text-xl font-extrabold {{ $report['placeholders'] > 0 ? 'text-amber-700' : 'text-emerald-700' }}">
-                                        {{ $report['placeholders'] }}
-                                    </dd>
-                                </div>
-
-                                <div class="rounded-2xl bg-slate-50 p-3">
-                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                                        Served
-                                    </dt>
-
-                                    <dd class="mt-1 text-xl font-extrabold text-slate-900">
-                                        {{ $report['served_questions'] }}
-                                    </dd>
-                                </div>
-                            </dl>
-                        </div>
-
-                        <div class="space-y-6 p-6">
-                            <section>
-                                <h4 class="font-display text-sm font-extrabold text-slate-900">
-                                    Integrity checks
-                                </h4>
-
-                                <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-                                    @php
-                                        $checks = [
-                                            'Positions 1–60' => $report['positions_complete'],
-                                            'Six domains × 10' => $report['domains_matching'] === 6,
-                                            'Competency blueprint' =>
-                                                $report['competencies_matching'] === count($report['competency_rows']),
-                                            'Choice structures' => $report['invalid_choice_structures'] === 0,
-                                            'Stems and choices' => $report['missing_stems_or_choices'] === 0,
-                                            'Rationales' => $report['missing_rationales'] === 0,
-                                            'Cognitive levels' => $report['invalid_cognitive_levels'] === 0,
-                                            'Duplicate stems' => $report['duplicate_stem_groups'] === 0,
-                                            'Validation metadata' => $report['partial_validation'] === 0,
-                                        ];
-                                    @endphp
-
-                                    @foreach ($checks as $label => $passes)
-                                        <div
-                                            class="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-3 py-2">
-                                            <dt class="text-slate-600">
-                                                {{ $label }}
-                                            </dt>
-
-                                            <dd class="font-bold {{ $passes ? 'text-emerald-700' : 'text-red-700' }}">
-                                                {{ $passes ? 'Pass' : 'Fail' }}
-                                            </dd>
-                                        </div>
-                                    @endforeach
-                                </dl>
-                            </section>
-
-                            <section>
-                                <h4 class="font-display text-sm font-extrabold text-slate-900">
-                                    First-served status
-                                </h4>
-
-                                <p class="mt-2 text-sm text-slate-600">
-                                    @if ($report['first_served_at'])
-                                        First served:
-                                        <strong class="text-slate-900">
-                                            {{ \Illuminate\Support\Carbon::parse($report['first_served_at'])->timezone(config('app.timezone'))->format('M j, Y g:i A') }}
-                                        </strong>
-                                    @else
-                                        This form has not been served.
-                                    @endif
-                                </p>
-
-                                <p class="mt-1 text-xs text-slate-500">
-                                    Locked questions:
-                                    {{ $report['locked_questions'] }}
-                                </p>
-                            </section>
-
-                            <section>
-                                <h4 class="font-display text-sm font-extrabold text-slate-900">
-                                    Domain allocation
-                                </h4>
-
-                                <div class="mt-3 overflow-x-auto">
-                                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
-                                    <table class="min-w-full text-left text-sm">
-                                        <thead class="text-xs uppercase text-slate-500">
-                                            <tr>
-                                                <th class="px-3 py-2">Domain</th>
-                                                <th class="px-3 py-2 text-right">Expected</th>
-                                                <th class="px-3 py-2 text-right">Actual</th>
-                                                <th class="px-3 py-2 text-right">Status</th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody class="divide-y divide-slate-100">
-                                            @foreach ($report['domain_rows'] as $domain)
-                                                <tr>
-                                                    <td class="px-3 py-2 font-semibold text-slate-800">
-                                                        {{ $domain['domain_number'] }}.
-                                                        {{ $domain['domain_name'] }}
-                                                    </td>
-
-                                                    <td class="px-3 py-2 text-right">
-                                                        {{ $domain['expected'] }}
-                                                    </td>
-
-                                                    <td class="px-3 py-2 text-right">
-                                                        {{ $domain['actual'] }}
-                                                    </td>
-
-                                                    <td
-                                                        class="px-3 py-2 text-right font-bold {{ $domain['matches'] ? 'text-emerald-700' : 'text-red-700' }}">
-                                                        {{ $domain['matches'] ? 'Match' : 'Mismatch' }}
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                    </div>
-                                </div>
-                            </section>
-
-                            <section>
-                                <h4 class="font-display text-sm font-extrabold text-slate-900">
-                                    Competency blueprint
-                                </h4>
-
-                                <div class="mt-3 overflow-x-auto">
-                                    <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
-                                    <table class="min-w-full text-left text-sm">
-                                        <thead class="text-xs uppercase text-slate-500">
-                                            <tr>
-                                                <th class="px-3 py-2">Domain</th>
-                                                <th class="px-3 py-2">Code</th>
-                                                <th class="px-3 py-2 text-right">Expected</th>
-                                                <th class="px-3 py-2 text-right">Actual</th>
-                                                <th class="px-3 py-2 text-right">Status</th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody class="divide-y divide-slate-100">
-                                            @foreach ($report['competency_rows'] as $competency)
-                                                <tr>
-                                                    <td class="px-3 py-2">
-                                                        {{ $competency['domain_number'] }}
-                                                    </td>
-
-                                                    <td class="px-3 py-2 font-mono font-bold text-slate-800">
-                                                        {{ $competency['competency_code'] }}
-                                                    </td>
-
-                                                    <td class="px-3 py-2 text-right">
-                                                        {{ $competency['expected'] }}
-                                                    </td>
-
-                                                    <td class="px-3 py-2 text-right">
-                                                        {{ $competency['actual'] }}
-                                                    </td>
-
-                                                    <td
-                                                        class="px-3 py-2 text-right font-bold {{ $competency['matches'] ? 'text-emerald-700' : 'text-red-700' }}">
-                                                        {{ $competency['matches'] ? 'Match' : 'Mismatch' }}
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                    </div>
-                                </div>
-                            </section>
-
-                            <section>
-                                <h4 class="font-display text-sm font-extrabold text-slate-900">
-                                    Audit findings
-                                </h4>
-
-                                @if ($report['errors'] === [])
-                                    <div
-                                        class="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
-                                        No content or validation errors were found.
-                                    </div>
-                                @else
-                                    <ul class="mt-3 space-y-2">
-                                        @foreach ($report['errors'] as $error)
-                                            <li
-                                                class="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-800">
-                                                {{ $error }}
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @endif
-                            </section>
-                        </div>
-                    </article>
-                @endforeach
-            </div>
         </div>
     </div>
 </x-app-layout>

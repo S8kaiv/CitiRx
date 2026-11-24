@@ -129,8 +129,10 @@ class QuestionController extends Controller
             ->orderByDesc(
                 'created_at',
             )
-            ->paginate(30)
-            ->withQueryString();
+            ->orderBy('question_id')
+            ->paginate(10)
+            ->withQueryString()
+            ->fragment('question-results');
 
         return view(
             'admin.questions.index',
@@ -168,11 +170,11 @@ class QuestionController extends Controller
          * loading every edit ever made.
          */
         $history = $question->edits()
-            ->with(
-                'editor',
-            )
+            ->with('editor')
+            ->orderByDesc('edit_id')
             ->paginate(20)
-            ->withQueryString();
+            ->withQueryString()
+            ->fragment('question-history');
 
         return view(
             'admin.questions.show',

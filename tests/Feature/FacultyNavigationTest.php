@@ -40,16 +40,16 @@ it('shows the complete faculty navigation on pearl management pages', function (
         ->assertSee('aria-current="page"', false);
 });
 
-it('shows a useful first-pearl empty state', function (): void {
+it('shows the empty pearl results and the draft action to faculty', function (): void {
     $faculty = User::factory()->create([
         'role' => 'faculty',
         'email_verified_at' => now(),
     ]);
 
-    $this
-        ->actingAs($faculty)
-        ->get(route('content.pearls.index'))
+    $this->actingAs($faculty)
+        ->get(route('content.pearls.index', ['view' => 'all']))
         ->assertOk()
-        ->assertSeeText('No Micro Pearls have been created yet.')
-        ->assertSeeText('Create First Draft');
+        ->assertSeeText('No Micro Pearls match these filters.')
+        ->assertSeeText('Create Draft')
+        ->assertSee(route('content.pearls.create'));
 });
