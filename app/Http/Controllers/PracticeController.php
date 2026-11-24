@@ -10,6 +10,7 @@ use App\Services\PracticeService;
 use App\Services\StudyRecommendationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Session\Store;
 use Illuminate\View\View;
 use InvalidArgumentException;
 use LogicException;
@@ -31,7 +32,9 @@ class PracticeController extends Controller
         Request $request,
     ): View|RedirectResponse {
         if ($request->header('X-CitiRx-Practice') === 'panel') {
-            $request->session()->keep(['level_up', 'status', 'error']);
+            /** @var Store $flashSession */
+            $flashSession = $request->session();
+            $flashSession->keep(['level_up', 'status', 'error']);
         }
 
         $user = $request->user();
@@ -232,19 +235,10 @@ class PracticeController extends Controller
         }
 
         try {
-            /*
-            * PracticeService handles both:
-            *
-            * - resuming the current unanswered question
-            * - selecting a new question
-            *
-            * It also resets the response timer when a
-            * question is resumed.
-            */
-            $question = $this->practice
-                ->pickNextQuestion(
-                    $session
-                );
+            $question = $this->practice->pickNextQuestion(
+                $session,
+                resetCurrentTimer: $request->header('X-CitiRx-Practice') !== 'panel',
+            );
 
             if ($question) {
                 $question->load([
@@ -583,7 +577,9 @@ class PracticeController extends Controller
 
         // The background fetch precedes the visible navigation to this terminal page.
         if ($request->header('X-CitiRx-Practice') === 'panel') {
-            $request->session()->keep(['level_up', 'status', 'error']);
+            /** @var Store $flashSession */
+            $flashSession = $request->session();
+            $flashSession->keep(['level_up', 'status', 'error']);
         }
 
         $session =

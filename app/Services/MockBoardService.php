@@ -386,10 +386,6 @@ class MockBoardService
 
         return [
             'responses' => $responses,
-            'seconds_remaining' => max(
-                0,
-                $session->expires_at->timestamp - now()->timestamp,
-            ),
         ];
     }
 

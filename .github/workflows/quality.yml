@@ -121,3 +121,9 @@ jobs:
 
       - name: Run automated tests
         run: php artisan test --display-warnings --colors=never
+
+      - name: Install Chromium for browser tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser tests
+        run: php vendor/bin/pest tests/Browser --colors=never

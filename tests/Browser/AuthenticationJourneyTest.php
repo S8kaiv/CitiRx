@@ -21,7 +21,7 @@ it(
             ->assertSee('Welcome back')
             ->fill('email', $user->email)
             ->fill('password', 'password')
-            ->click('Sign In')
+            ->click('form[action$="/login"] button[type="submit"]')
             ->assertPathIs('/dashboard')
             ->assertSee('Student Dashboard')
             ->assertSee(

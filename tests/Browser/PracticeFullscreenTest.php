@@ -60,9 +60,20 @@ function openFullscreenPracticeFixture(): array
 
 it('keeps the same fullscreen document for answers, bookmarks and Continue, then leaves for the summary', function (): void {
     [$page, $session] = openFullscreenPracticeFixture();
+
+    $startedAt = now()->subSeconds(20)->startOfSecond();
+
+    $session->refresh()->forceFill([
+        'current_question_started_at' => $startedAt,
+    ])->save();
+
     $page->assertSee('Question 1 of 2')->click('button[aria-label="Bookmark this question"]')->assertSee('Bookmark saved.')
         ->assertScript('document === window.__practiceDocument')
         ->assertScript('document.fullscreenElement === document.documentElement');
+
+    expect($session->fresh()->current_question_started_at->timestamp)
+        ->toBe($startedAt->timestamp);
+
     $page->click('Answer Alpha')->click('Submit Answer')->assertSee('Clinical rationale')
         ->assertScript('document === window.__practiceDocument')
         ->assertScript('document.fullscreenElement === document.documentElement')
@@ -70,6 +81,8 @@ it('keeps the same fullscreen document for answers, bookmarks and Continue, then
         ->click('Continue')->assertSee('Question 2 of 2')
         ->assertScript('document === window.__practiceDocument')
         ->assertScript('document.fullscreenElement === document.documentElement');
+
+    expect($session->telemetryLogs()->sole()->is_speed_flagged)->toBeFalse();
 
     $page->script(<<<'JS'
         window.__practiceFullscreen = null;

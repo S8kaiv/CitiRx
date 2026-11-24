@@ -31,15 +31,12 @@ test('new users can register and receive verification email', function () {
     );
 
     $user = User::query()
-        ->where(
-            'email',
-            'citirx.registration@gmail.com',
-        )
+        ->where('email', 'citirx.registration@gmail.com')
         ->firstOrFail();
 
-    $this->assertAuthenticatedAs(
-        $user,
-    );
+    expect($user->student_approval_pending)->toBeTrue();
+
+    $this->assertAuthenticatedAs($user);
 
     expect(
         $user->email_verified_at,
@@ -188,4 +185,44 @@ test('strict allowlist rejects domains that are not approved', function () {
         );
 
     $this->assertGuest();
+});
+
+test('either the dean or an admin can approve a confirmed student', function (string $role): void {
+    $student = User::factory()->create(['role' => 'student']);
+    $student->forceFill(['student_approval_pending' => true])->save();
+
+    $this->actingAs($student)
+        ->get(route('dashboard'))
+        ->assertRedirect(route('verification.notice'));
+
+    $url = route('student-approvals.store', $student);
+    $data = ['reviewed_email' => $student->email];
+
+    $this->post($url, $data)->assertRedirect(route('verification.notice'));
+
+    $activeStudent = User::factory()->create(['role' => 'student']);
+
+    $this->actingAs($activeStudent)->post($url, $data)->assertForbidden();
+
+    expect($student->fresh()->student_approval_pending)->toBeTrue();
+
+    $this->actingAs(User::factory()->create(['role' => $role]))
+        ->post($url, $data)
+        ->assertRedirect(route('student-approvals.index'))
+        ->assertSessionHas('status', 'Student account approved.');
+
+    expect($student->fresh()->student_approval_pending)->toBeFalse();
+})->with(['admin', 'dean']);
+
+test('staff cannot approve a student before email confirmation', function (): void {
+    $student = User::factory()->unverified()->create(['role' => 'student']);
+    $student->forceFill(['student_approval_pending' => true])->save();
+
+    $this->actingAs(User::factory()->create(['role' => 'admin']))
+        ->post(route('student-approvals.store', $student), [
+            'reviewed_email' => $student->email,
+        ])
+        ->assertSessionHas('error');
+
+    expect($student->fresh()->student_approval_pending)->toBeTrue();
 });
