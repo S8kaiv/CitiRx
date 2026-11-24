@@ -32,7 +32,6 @@ use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\ReadinessController;
 use App\Http\Controllers\ResearchFormEditorController;
 use App\Http\Controllers\RxVaultController;
-use App\Http\Controllers\StudentAccountApprovalController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -47,15 +46,6 @@ Route::get('/', function () {
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
-
-Route::middleware(['auth', 'verified'])->group(function (): void {
-    Route::get('/student-approvals', [StudentAccountApprovalController::class, 'index'])
-        ->name('student-approvals.index');
-
-    Route::post('/student-approvals/{student}', [StudentAccountApprovalController::class, 'store'])
-        ->whereUuid('student')
-        ->name('student-approvals.store');
-});
 
 Route::middleware(['auth', 'verified', 'research-editor'])->prefix('research-forms')->name('research-editor.')->group(function (): void {
     Route::get('/', [ResearchFormEditorController::class, 'index'])->name('index');
@@ -909,6 +899,10 @@ Route::middleware([
         )
             ->whereUuid('userId')
             ->name('users.edit');
+
+        Route::post('/users/{userId}/verify-email', [UserController::class, 'verifyEmail'])
+            ->whereUuid('userId')
+            ->name('users.verify-email');
 
         Route::put(
             '/users/{userId}',

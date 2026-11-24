@@ -60,7 +60,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'streak_count' => 'integer',
         'last_active_date' => 'date',
         'deleted_at' => 'datetime',
-        'student_approval_pending' => 'boolean',
     ];
 
     // ------------------------------------------------------------------

@@ -54,23 +54,32 @@
                 required autocomplete="username" />
             <x-input-error class="mt-2" id="email-error" :messages="$errors->get('email')" />
 
-            @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail())
-                <div>
-                    <p                     class="mt-2 text-sm text-slate-700">
-                        {{ __('Your email address is unverified.') }}
-
-                        <button form="send-verification"
-                            class="rounded-lg font-semibold text-primary underline decoration-primary/40 underline-offset-2 transition hover:text-primary-lip focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
-                            {{ __('Click here to re-send the verification email.') }}
-                        </button>
+            @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
+                @if ($user->role === 'student')
+                    <p class="mt-2 text-sm text-slate-700">
+                        An administrator needs to verify this email address.
                     </p>
+                @else
+                    <div>
+                        <p class="mt-2 text-sm text-slate-700">
+                            {{ __('Your email address is unverified.') }}
 
-                    @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-display text-xs font-bold text-strong-ink">
-                            {{ __('A new verification link has been sent to your email address.') }}
+                            <button
+                                type="submit"
+                                form="send-verification"
+                                class="rounded-lg font-semibold text-primary underline decoration-primary/40 underline-offset-2 transition hover:text-primary-lip focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                            >
+                                {{ __('Click here to re-send the verification email.') }}
+                            </button>
                         </p>
-                    @endif
-                </div>
+
+                        @if (session('status') === 'verification-link-sent')
+                            <p class="mt-2 font-display text-xs font-bold text-strong-ink">
+                                {{ __('A new verification link has been sent to your email address.') }}
+                            </p>
+                        @endif
+                    </div>
+                @endif
             @endif
         </div>
 

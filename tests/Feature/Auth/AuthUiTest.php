@@ -35,13 +35,12 @@ it('renders the password confirmation page without native autofocus', function (
         ->assertSee('pointer: fine', false);
 });
 
-it('renders the verification page for an unverified user', function () {
+it('renders the verification page for an unverified faculty user', function () {
     $user = User::factory()
         ->unverified()
-        ->create();
+        ->create(['role' => 'faculty']);
 
-    $this
-        ->actingAs($user)
+    $this->actingAs($user)
         ->get(route('verification.notice'))
         ->assertOk()
         ->assertSee('Resend verification email');

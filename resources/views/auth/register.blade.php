@@ -1,6 +1,6 @@
 <x-rx-auth-layout
     title="Make room for your next chapter."
-    subtitle="Confirm your email after registering. A Dean or Admin will then review your student account."
+    subtitle="Create your CitiRx account. An administrator will verify your email before you can start reviewing."
     headline="Big goals. Small steps. Your pace."
     description="Start with a diagnostic, focus on the topics that need you, and build a review habit that lasts."
     bubble="Let’s take the first step."
