@@ -1,656 +1,256 @@
 <x-app-layout surface="admin">
     <x-slot name="header">
-        <x-admin.page-header
-        title="Admin Dashboard"
-            description="Manage accounts, research readiness, content, pilot controls, and operational health."
-        >
+        <x-admin.page-header title="Admin Dashboard">
             <x-slot:actions>
-                <a
-                    href="{{ route('admin.system-health.index') }}"
-                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
-                >
+                <x-ui.button variant="secondary" :href="route('admin.system-health.index')">
                     System health
-                </a>
+                </x-ui.button>
 
-                <a
-                    href="{{ route('admin.pilot.index') }}"
-                    class="btn-press inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
-                    style="--lip: rgb(var(--color-primary-lip));"
-                >
+                <x-ui.button :href="route('admin.pilot.index')">
                     Pilot controls
-                </a>
+                </x-ui.button>
             </x-slot:actions>
         </x-admin.page-header>
     </x-slot>
 
-    <section class="rx-admin-welcome" aria-labelledby="admin-welcome-title">
-        <div>
-            <h2 id="admin-welcome-title">Keep the learning moving.</h2>
-            <p>Your workspace for people, review content, and research readiness.</p>
-            <a href="{{ route('admin.users.index') }}" class="rx-admin-welcome-link">
-                Manage accounts <span aria-hidden="true">&rarr;</span>
-            </a>
-        </div>
-        <picture>
-            <source media="(min-width: 640px)" type="image/webp"
-                srcset="{{ asset('image/pill-mascot-admin.webp') }}">
-            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-                alt="CitiRx’s welcoming pill mascot" width="220" height="220" decoding="async">
-        </picture>
-    </section>
-
     @php
-        $withoutCohort =
-            $accountStats['students_without_cohort']
-            + $accountStats['faculty_without_cohort'];
-
-        $researchFormsNeedingAttention = collect(
-            $formStats,
-        )
-            ->filter(
-                fn (array $stats): bool =>
-                    ! $stats['validation_complete'],
-            )
+        $withoutCohort = $accountStats['students_without_cohort'] + $accountStats['faculty_without_cohort'];
+        $formsNeedingAttention = collect($formStats)
+            ->filter(fn (array $form) => ! $form['validation_complete'])
             ->count();
 
-        $attentionItems = [
+        $attention = array_filter([
             [
-                'count' => $withoutCohort,
-                'label' => 'Accounts without cohort assignments',
-                'description' => 'Assign students and faculty before cohort reporting or intervention work.',
-                'route' => route(
-                    'admin.users.index',
-                    [
-                        'no_cohort' => 1,
-                    ],
-                ),
-                'tone' => 'bg-amber-100 text-amber-900',
+                'label' => 'Research forms needing attention',
+                'count' => $formsNeedingAttention,
+                'url' => route('admin.research-forms.index'),
             ],
             [
-                'count' => $researchFormsNeedingAttention,
-                'label' => 'Research forms requiring attention',
-                'description' => 'Resolve structural, validation, or publication readiness requirements.',
-                'route' => route(
-                    'admin.research-forms.index',
-                ),
-                'tone' => 'bg-red-100 text-red-800',
+                'label' => 'Questions with validation issues',
+                'count' => $questionStats['validation_issues'],
+                'url' => route('admin.questions.index', ['status' => 'validation_issue']),
             ],
             [
+                'label' => 'Questions awaiting validation',
                 'count' => $questionStats['needing_review'],
-                'label' => 'Research questions awaiting validation',
-                'description' => 'Review active research questions submitted for faculty validation.',
-                'route' => route(
-                    'admin.questions.index',
-                    [
-                        'status' => 'awaiting_validation',
-                    ],
-                ),
-                'tone' => 'bg-primary-tint text-primary',
+                'url' => route('admin.questions.index', ['status' => 'awaiting_validation']),
             ],
             [
-                'count' => $pearlStats['in_review'],
-                'label' => 'Micro Pearls awaiting review',
-                'description' => 'Review submitted Micro Pearls before publication.',
-                'route' => route(
-                    'content.pearls.index',
-                    [
-                        'status' => 'in_review',
-                    ],
-                ),
-                'tone' => 'bg-violet-100 text-violet-800',
+                'label' => 'Accounts without a cohort',
+                'count' => $withoutCohort,
+                'url' => route('admin.users.index', ['no_cohort' => 1]),
             ],
             [
-                'count' => $accountStats['unverified'],
                 'label' => 'Unverified accounts',
-                'description' => 'Check accounts that cannot yet access verified application routes.',
-                'route' => route(
-                    'admin.users.index',
-                    [
-                        'verification' => 'unverified',
-                    ],
-                ),
-                'tone' => 'bg-slate-100 text-slate-800',
+                'count' => $accountStats['unverified'],
+                'url' => route('admin.users.index', ['verification' => 'unverified']),
             ],
-        ];
-
-        $attentionTotal = collect(
-            $attentionItems,
-        )->sum('count');
+            [
+                'label' => 'Micro Pearls awaiting review',
+                'count' => $pearlStats['in_review'],
+                'url' => route('content.pearls.index', ['status' => 'in_review']),
+            ],
+        ], fn (array $item) => $item['count'] > 0);
     @endphp
 
-    <div class="admin-surface pt-6 pb-6 sm:pb-8">
-        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-            <x-admin.flash />
+<div class="admin-surface py-6 sm:pb-8">
+    <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+        <x-admin.flash />
 
-            <section
-                aria-labelledby="admin-attention-heading"
-                class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
-            >
-                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
-                    <div>
-                        <h2
-                            id="admin-attention-heading"
-                            class="font-display text-lg font-extrabold text-slate-950"
-                        >
-                            Needs attention
-                        </h2>
+        <section aria-labelledby="admin-overview-heading" class="space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 id="admin-overview-heading" class="font-display text-xl font-extrabold text-ink">
+                    Overview
+                </h2>
 
-                        <p class="mt-1 text-sm text-slate-600">
-                            Work requiring administrative action
-                        </p>
-                    </div>
+                @if ($attention === [])
+                    <x-ui.badge variant="success">All clear</x-ui.badge>
+                @endif
+            </div>
 
-                    <span
-                        class="rounded-full px-3 py-1 text-xs font-bold
-                            {{ $attentionTotal > 0
-                                ? 'bg-amber-100 text-amber-900'
-                                : 'bg-emerald-100 text-emerald-800' }}"
-                    >
-                        {{ $attentionTotal > 0
-                            ? number_format($attentionTotal).' open'
-                            : 'All clear' }}
-                    </span>
-                </div>
+            @if ($attention !== [])
+                <section aria-labelledby="admin-attention-heading"
+                    class="overflow-hidden rounded-2xl border border-warning-strong/40 bg-surface">
+                    <h3 id="admin-attention-heading" class="bg-warning-tint px-4 py-3 font-bold text-warning-ink">
+                        Needs attention
+                    </h3>
 
-                @if ($attentionTotal > 0)
-                    <ul class="divide-y divide-slate-100">
-                        @foreach ($attentionItems as $item)
-                            @continue($item['count'] === 0)
-
+                    <ul class="divide-y divide-line">
+                        @foreach ($attention as $item)
                             <li>
-                                <a
-                                    href="{{ $item['route'] }}"
-                                    class="rx-admin-attention-link group flex min-h-16 items-center gap-4 px-5 py-3 transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-primary/25"
-                                >
-                                    <span
-                                        class="flex h-9 min-w-9 items-center justify-center rounded-full px-2 font-display text-sm font-extrabold tabular-nums {{ $item['tone'] }}"
-                                    >
+                                <a href="{{ $item['url'] }}"
+                                    class="rx-admin-attention-link flex min-h-12 items-center gap-3 px-4 py-2.5 text-sm focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary">
+                                    <span class="min-w-0 flex-1 break-words font-bold text-ink">
+                                        {{ $item['label'] }}
+                                    </span>
+                                    <span class="shrink-0 font-extrabold tabular-nums text-warning-ink">
                                         {{ number_format($item['count']) }}
                                     </span>
-
-                                    <span class="min-w-0 flex-1">
-                                        <span class="block font-bold text-slate-900">
-                                            {{ $item['label'] }}
-                                        </span>
-
-                                        <span class="mt-0.5 block text-xs leading-relaxed text-slate-500">
-                                            {{ $item['description'] }}
-                                        </span>
-                                    </span>
-
-                                    <x-admin.icon
-                                        name="arrow"
-                                        class="h-5 w-5 shrink-0 text-slate-400 transition-transform group-hover:translate-x-1"
-                                    />
+                                    <x-admin.icon name="arrow" class="h-4 w-4 shrink-0 text-ink-muted" />
                                 </a>
                             </li>
                         @endforeach
                     </ul>
-                @else
-                    <div class="px-5 py-8 text-center">
-                        <p class="font-bold text-emerald-800">
-                            No immediate administrative action is required.
-                        </p>
+                </section>
+            @endif
 
-                        <p class="mt-1 text-sm text-slate-500">
-                            Continue monitoring pilot readiness and system health.
-                        </p>
+            <dl class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                @foreach ([
+                    'Active students' => $accountStats['students'],
+                    'Active faculty' => $accountStats['faculty'],
+                    'Active cohorts' => $cohortStats['active'],
+                    'Unassigned accounts' => $withoutCohort,
+                ] as $label => $total)
+                    <div class="min-w-0 rounded-2xl border border-line bg-surface px-4 py-3 sm:px-5 sm:py-4">
+                        <dt class="text-sm font-medium text-ink-muted">{{ $label }}</dt>
+                        <dd class="mt-1 font-display text-2xl font-extrabold tabular-nums text-ink">
+                            {{ number_format($total) }}
+                        </dd>
+
+                        @if ($label === 'Active cohorts' && $cohortStats['archived'] > 0)
+                            <dd class="mt-1 text-xs text-ink-muted">
+                                {{ number_format($cohortStats['archived']) }} archived
+                            </dd>
+                        @endif
                     </div>
-                @endif
-            </section>
+                @endforeach
+            </dl>
+        </section>
 
-            <section aria-labelledby="admin-overview-heading">
-                <div class="mb-3">
-                    <h2
-                        id="admin-overview-heading"
-                        class="font-display text-lg font-extrabold text-slate-950"
-                    >
-                        Account overview
-                    </h2>
+        <div class="grid gap-5 xl:grid-cols-2">
+            <x-admin.panel id="assessment-overview-heading" title="Assessment progress"
+                description="Completion across active student accounts.">
+                <x-slot:actions>
+                    <x-ui.button variant="secondary" :href="route('admin.research-analytics.index')">
+                        Open analytics
+                    </x-ui.button>
+                </x-slot:actions>
 
-                    <p class="mt-1 text-sm text-slate-600">
-                        Current active accounts and cohort coverage
-                    </p>
+                <div class="space-y-4 rounded-xl border border-primary/25 bg-primary-tint/35 p-4">
+                    <x-admin.progress label="Form A diagnostic"
+                        :value="$assessmentStats['diagnostic_rate']"
+                        :completed="$assessmentStats['diagnostic_completed']"
+                        :total="$accountStats['students']" />
+
+                    <x-admin.progress label="Form B mock board"
+                        :value="$assessmentStats['mock_board_rate']"
+                        :completed="$assessmentStats['mock_board_completed']"
+                        :total="$accountStats['students']"
+                        tone="success" />
                 </div>
 
-                <dl class="grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4">
-                    <x-admin.metric
-                        label="Active students"
-                        :value="number_format(
-                            $accountStats['students'],
-                        )"
-                    />
-
-                    <x-admin.metric
-                        label="Active faculty"
-                        :value="number_format(
-                            $accountStats['faculty'],
-                        )"
-                    />
-
-                    <x-admin.metric
-                        label="Active cohorts"
-                        :value="number_format(
-                            $cohortStats['active'],
-                        )"
-                        :hint="$cohortStats['archived'].' archived'"
-                        tone="primary"
-                    />
-
-                    <x-admin.metric
-                        label="Without cohorts"
-                        :value="number_format($withoutCohort)"
-                        hint="Students and faculty"
-                        :tone="$withoutCohort > 0
-                            ? 'warning'
-                            : 'success'"
-                    />
-                </dl>
-            </section>
-
-            <div class="grid gap-6 xl:grid-cols-2">
-                <x-admin.panel
-                    id="assessment-participation-heading"
-                    title="Assessment participation"
-                    description="Completion across active student accounts."
-                >
-                    <x-slot:actions>
-                        <a
-                            href="{{ route(
-                                'admin.research-analytics.index',
-                            ) }}"
-                            class="text-sm font-bold text-primary underline-offset-4 hover:underline"
-                        >
-                            Open analytics
-                        </a>
-                    </x-slot:actions>
-
-                    <div class="space-y-6">
-                        <x-admin.progress
-                            label="Diagnostic completed"
-                            :value="$assessmentStats[
-                                'diagnostic_rate'
-                            ]"
-                            :completed="$assessmentStats[
-                                'diagnostic_completed'
-                            ]"
-                            :total="$accountStats['students']"
-                        />
-
-                        <x-admin.progress
-                            label="Mock Board finalized"
-                            :value="$assessmentStats[
-                                'mock_board_rate'
-                            ]"
-                            :completed="$assessmentStats[
-                                'mock_board_completed'
-                            ]"
-                            :total="$accountStats['students']"
-                            tone="success"
-                        />
+                <div class="mt-5 border-t border-line pt-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <h3 class="font-display text-base font-extrabold text-ink">Form readiness</h3>
+                        <x-ui.button variant="ghost" :href="route('admin.research-forms.index')">
+                            Manage forms
+                        </x-ui.button>
                     </div>
-                </x-admin.panel>
 
-                <x-admin.panel
-                    id="question-bank-heading"
-                    title="Question bank"
-                    description="Availability, locks, and validation readiness."
-                >
-                    <x-slot:actions>
-                        <a
-                            href="{{ route(
-                                'admin.questions.index',
-                            ) }}"
-                            class="text-sm font-bold text-primary underline-offset-4 hover:underline"
-                        >
-                            Open question bank
-                        </a>
-                    </x-slot:actions>
+                    <ul class="divide-y divide-line">
+                        @foreach ($formStats as $form => $stats)
+                            <li class="py-3 last:pb-0">
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <a href="{{ route('admin.questions.index', ['form' => $form]) }}"
+                                        class="font-bold text-primary-ink underline-offset-4 hover:underline">
+                                        {{ $stats['label'] }}
+                                    </a>
 
-                    <dl class="divide-y divide-slate-100">
-                        @foreach ([
-                            [
-                                'label' => 'Total questions',
-                                'value' => $questionStats['total'],
-                                'class' => 'text-slate-950',
-                            ],
-                            [
-                                'label' => 'Locked questions',
-                                'value' => $questionStats['locked'],
-                                'class' => 'text-slate-950',
-                            ],
-                            [
-                                'label' => 'Needing review',
-                                'value' => $questionStats[
-                                    'needing_review'
-                                ],
-                                'class' => 'text-amber-800',
-                            ],
-                            [
-                                'label' => 'Validation issues',
-                                'value' => $questionStats[
-                                    'validation_issues'
-                                ],
-                                'class' => 'text-red-700',
-                            ],
-                            [
-                                'label' => 'Development placeholders',
-                                'value' => $questionStats[
-                                    'placeholders'
-                                ],
-                                'class' => $questionStats[
-                                    'placeholders'
-                                ] > 0
-                                    ? 'text-amber-800'
-                                    : 'text-emerald-700',
-                            ],
-                        ] as $item)
-                            <div class="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
-                                <dt class="text-sm text-slate-600">
-                                    {{ $item['label'] }}
-                                </dt>
+                                    <x-ui.badge :variant="$stats['validation_complete'] ? 'success' : 'warning'">
+                                        {{ $stats['validation_complete'] ? 'Content ready' : 'Review needed' }}
+                                    </x-ui.badge>
+                                </div>
 
-                                <dd class="font-display text-lg font-extrabold tabular-nums {{ $item['class'] }}">
-                                    {{ number_format(
-                                        $item['value'],
-                                    ) }}
-                                </dd>
-                            </div>
+                                <p class="mt-1 text-xs text-ink-muted">
+                                    {{ $stats['validated_questions'] }}/{{ \App\Services\ResearchFormBlueprint::total($form) }} validated
+                                    &middot; {{ $stats['active_questions'] }} active
+                                    @if ($stats['placeholders'] > 0)
+                                        &middot; {{ $stats['placeholders'] }} placeholders
+                                    @endif
+                                    @unless ($stats['positions_complete'])
+                                        &middot; Incomplete positions
+                                    @endunless
+                                </p>
+                            </li>
                         @endforeach
-                    </dl>
-                </x-admin.panel>
-            </div>
-
-            <section aria-labelledby="research-forms-heading">
-                <div class="mb-3 flex flex-wrap items-end justify-between gap-4">
-                    <div>
-                        <h2
-                            id="research-forms-heading"
-                            class="font-display text-lg font-extrabold text-slate-950"
-                        >
-                            Research forms
-                        </h2>
-
-                        <p class="mt-1 text-sm text-slate-600">
-                            Published content and validation readiness
-                        </p>
-                    </div>
-
-                    <a
-                        href="{{ route(
-                            'admin.research-forms.index',
-                        ) }}"
-                        class="text-sm font-bold text-primary underline-offset-4 hover:underline"
-                    >
-                        Open readiness workflow
-                    </a>
+                    </ul>
                 </div>
+            </x-admin.panel>
 
-                <div class="grid gap-6 lg:grid-cols-2">
-                    @foreach ($formStats as $form => $stats)
-                        <x-admin.panel
-                            :id="'research-form-'.$form"
-                            :title="$stats['label']"
-                            :description="$form"
-                        >
-                            <x-slot:actions>
-                                <span
-                                    class="rounded-full px-3 py-1 text-xs font-bold
-                                        {{ $stats[
-                                            'validation_complete'
-                                        ]
-                                            ? 'bg-emerald-100 text-emerald-800'
-                                            : 'bg-amber-100 text-amber-900' }}"
-                                >
-                                    {{ $stats[
-                                        'validation_complete'
-                                    ]
-                                        ? 'Validation complete'
-                                        : 'Needs attention' }}
-                                </span>
-                            </x-slot:actions>
+            <x-admin.panel id="recent-admin-activity-heading" title="Recent activity">
+                <x-slot:actions>
+                    <x-ui.button variant="ghost" :href="route('admin.audit-logs.index')">
+                        Audit history
+                    </x-ui.button>
+                </x-slot:actions>
 
-                            <dl class="grid grid-cols-2 divide-x divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200">
-                                <div class="p-3">
-                                    <dt class="text-xs text-slate-500">
-                                        Questions
-                                    </dt>
+                <ol class="divide-y divide-line">
+                    @forelse ($recentAudits->take(5) as $log)
+                        <li class="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                            <div class="min-w-0">
+                                <p class="break-words text-sm font-bold text-ink">
+                                    {{ str($log->action)->replace(['.', '_'], ' ')->headline() }}
+                                </p>
+                                <p class="mt-1 break-words text-xs text-ink-muted">
+                                    {{ $log->actorDisplayName() }}
+                                </p>
+                            </div>
 
-                                    <dd class="mt-1 font-bold text-slate-950">
-                                        {{ $stats[
-                                            'active_questions'
-                                        ] }}/{{ \App\Services\ResearchFormBlueprint::total($form) }}
-                                    </dd>
-                                </div>
+                            <time datetime="{{ $log->created_at->toIso8601String() }}"
+                                title="{{ $log->created_at->format('M j, Y g:i A') }}"
+                                class="mt-0.5 shrink-0 text-xs tabular-nums text-ink-muted">
+                                {{ $log->created_at->diffForHumans(short: true) }}
+                            </time>
+                        </li>
+                    @empty
+                        <li class="text-sm text-ink-muted">No administrative activity yet.</li>
+                    @endforelse
+                </ol>
+            </x-admin.panel>
 
-                                <div class="p-3">
-                                    <dt class="text-xs text-slate-500">
-                                        Validated
-                                    </dt>
+            <x-admin.panel id="question-bank-heading" title="Question Bank">
+                <x-slot:actions>
+                    <x-ui.button variant="ghost" :href="route('admin.questions.index')">
+                        Browse {{ number_format($questionStats['total']) }} questions
+                    </x-ui.button>
+                </x-slot:actions>
 
-                                    <dd class="mt-1 font-bold text-slate-950">
-                                        {{ $stats[
-                                            'validated_questions'
-                                        ] }}/{{ \App\Services\ResearchFormBlueprint::total($form) }}
-                                    </dd>
-                                </div>
-
-                                <div class="p-3">
-                                    <dt class="text-xs text-slate-500">
-                                        Positions
-                                    </dt>
-
-                                    <dd
-                                        class="mt-1 font-bold
-                                            {{ $stats[
-                                                'positions_complete'
-                                            ]
-                                                ? 'text-emerald-700'
-                                                : 'text-red-700' }}"
-                                    >
-                                        {{ $stats[
-                                            'positions_complete'
-                                        ]
-                                            ? 'Complete'
-                                            : 'Incomplete' }}
-                                    </dd>
-                                </div>
-
-                                <div class="p-3">
-                                    <dt class="text-xs text-slate-500">
-                                        Placeholders
-                                    </dt>
-
-                                    <dd
-                                        class="mt-1 font-bold
-                                            {{ $stats[
-                                                'placeholders'
-                                            ] === 0
-                                                ? 'text-emerald-700'
-                                                : 'text-amber-800' }}"
-                                    >
-                                        {{ $stats['placeholders'] }}
-                                    </dd>
-                                </div>
-                            </dl>
-
-                            <a
-                                href="{{ route(
-                                    'admin.questions.index',
-                                    [
-                                        'form' => $form,
-                                    ],
-                                ) }}"
-                                class="mt-4 inline-flex min-h-11 items-center text-sm font-bold text-primary underline-offset-4 hover:underline"
-                            >
-                                Review form questions
-                            </a>
-                        </x-admin.panel>
+                <dl class="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+                    @foreach ([
+                        'Locked' => 'locked',
+                        'Awaiting validation' => 'needing_review',
+                        'Validation issues' => 'validation_issues',
+                        'Placeholders' => 'placeholders',
+                    ] as $label => $key)
+                        <div class="min-w-0">
+                            <dt class="text-ink-muted">{{ $label }}</dt>
+                            <dd class="mt-1 font-display text-lg font-extrabold tabular-nums text-ink">
+                                {{ number_format($questionStats[$key]) }}
+                            </dd>
+                        </div>
                     @endforeach
-                </div>
-            </section>
+                </dl>
+            </x-admin.panel>
 
-            <div class="grid gap-6 xl:grid-cols-[0.85fr_1.4fr]">
-                <x-admin.panel
-                    id="content-workflow-heading"
-                    title="Content workflow"
-                    description="Micro Pearl authoring and publication."
-                >
-                    <x-slot:actions>
-                        <a
-                            href="{{ route(
-                                'content.pearls.index',
-                            ) }}"
-                            class="text-sm font-bold text-primary underline-offset-4 hover:underline"
-                        >
-                            Manage pearls
-                        </a>
-                    </x-slot:actions>
+            <x-admin.panel id="content-workflow-heading" title="Micro Pearls">
+                <x-slot:actions>
+                    <x-ui.button variant="ghost" :href="route('content.pearls.index')">
+                        Manage pearls
+                    </x-ui.button>
+                </x-slot:actions>
 
-                    <dl class="divide-y divide-slate-100">
-                        <div class="flex items-center justify-between gap-4 py-3 first:pt-0">
-                            <dt class="text-sm text-slate-600">
-                                Drafts
-                            </dt>
-
-                            <dd class="font-display text-lg font-extrabold tabular-nums text-slate-950">
-                                {{ $pearlStats['drafts'] }}
+                <dl class="grid grid-cols-3 gap-3 text-sm">
+                    @foreach (['Drafts' => 'drafts', 'In review' => 'in_review', 'Published' => 'published'] as $label => $key)
+                        <div class="min-w-0">
+                            <dt class="text-ink-muted">{{ $label }}</dt>
+                            <dd class="mt-1 font-display text-lg font-extrabold tabular-nums text-ink">
+                                {{ number_format($pearlStats[$key]) }}
                             </dd>
                         </div>
-
-                        <div class="flex items-center justify-between gap-4 py-3">
-                            <dt class="text-sm text-slate-600">
-                                Awaiting review
-                            </dt>
-
-                            <dd class="font-display text-lg font-extrabold tabular-nums text-amber-800">
-                                {{ $pearlStats['in_review'] }}
-                            </dd>
-                        </div>
-
-                        <div class="flex items-center justify-between gap-4 py-3 last:pb-0">
-                            <dt class="text-sm text-slate-600">
-                                Published
-                            </dt>
-
-                            <dd class="font-display text-lg font-extrabold tabular-nums text-emerald-700">
-                                {{ $pearlStats['published'] }}
-                            </dd>
-                        </div>
-                    </dl>
-                </x-admin.panel>
-
-                <x-admin.panel
-                    id="recent-admin-activity-heading"
-                    title="Recent administrative activity"
-                    description="Latest recorded governance actions."
-                >
-                    <x-slot:actions>
-                        <a
-                            href="{{ route(
-                                'admin.audit-logs.index',
-                            ) }}"
-                            class="text-sm font-bold text-primary underline-offset-4 hover:underline"
-                        >
-                            View audit history
-                        </a>
-                    </x-slot:actions>
-
-                    <ol class="divide-y divide-slate-100">
-                        @forelse ($recentAudits as $log)
-                            <li class="py-4 first:pt-0 last:pb-0">
-                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
-                                    <span class="font-bold text-slate-900">
-                                        {{ $log->actorDisplayName() }}
-                                    </span>
-
-                                    <span aria-hidden="true">·</span>
-
-                                    <span>
-                                        {{ str($log->action)
-                                            ->replace('_', ' ')
-                                            ->title() }}
-                                    </span>
-
-                                    <span aria-hidden="true">·</span>
-
-                                    <time
-                                        datetime="{{ $log
-                                            ->created_at
-                                            ->toIso8601String() }}"
-                                        title="{{ $log
-                                            ->created_at
-                                            ->format(
-                                                'M j, Y g:i A',
-                                            ) }}"
-                                    >
-                                        {{ $log
-                                            ->created_at
-                                            ->diffForHumans() }}
-                                    </time>
-                                </div>
-
-                                @if ($log->reason)
-                                    <p class="mt-2 text-sm leading-relaxed text-slate-700">
-                                        {{ \Illuminate\Support\Str::limit(
-                                            $log->reason,
-                                            160,
-                                        ) }}
-                                    </p>
-                                @endif
-                            </li>
-                        @empty
-                            <li class="py-8 text-center text-sm text-slate-500">
-                                No administrative activity has been recorded.
-                            </li>
-                        @endforelse
-                    </ol>
-                </x-admin.panel>
-            </div>
-
-            <nav
-                aria-label="Administrative shortcuts"
-                class="flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-200 pt-5 text-sm font-bold"
-            >
-                <a
-                    href="{{ route('admin.users.index') }}"
-                    class="min-h-11 content-center text-primary underline-offset-4 hover:underline"
-                >
-                    Users
-                </a>
-
-                <a
-                    href="{{ route('admin.cohorts.index') }}"
-                    class="min-h-11 content-center text-primary underline-offset-4 hover:underline"
-                >
-                    Cohorts
-                </a>
-
-                <a
-                    href="{{ route(
-                        'admin.research-form-imports.index',
-                    ) }}"
-                    class="min-h-11 content-center text-primary underline-offset-4 hover:underline"
-                >
-                    Import research CSV
-                </a>
-
-                <a
-                    href="{{ route(
-                        'admin.research-participants.index',
-                    ) }}"
-                    class="min-h-11 content-center text-primary underline-offset-4 hover:underline"
-                >
-                    Participant scope
-                </a>
-
-                <a
-                    href="{{ route('admin.audit-logs.index') }}"
-                    class="min-h-11 content-center text-primary underline-offset-4 hover:underline"
-                >
-                    Audit history
-                </a>
-            </nav>
+                    @endforeach
+                </dl>
+            </x-admin.panel>
         </div>
     </div>
+</div>
 </x-app-layout>

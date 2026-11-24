@@ -29,7 +29,7 @@ class MicroPearlManagementController extends Controller
 
     public function index(
         Request $request,
-    ): View {
+    ): View|RedirectResponse {
         $status = $request->string('status')
             ->trim()
             ->value();
@@ -37,6 +37,13 @@ class MicroPearlManagementController extends Controller
         $search = $request->string('q')
             ->trim()
             ->value();
+
+        $domainId = $request->validate([
+            'domain_id' => ['nullable', 'integer', 'exists:tos_domains,domain_id'],
+        ])['domain_id'] ?? null;
+
+        $domains = TosDomain::query()->orderBy('domain_number')->get();
+        $domain = $domains->firstWhere('domain_id', $domainId);
 
         $pearls = MicroPearl::query()
             ->when($request->user()->role === 'faculty', fn ($query) => $query->where(fn ($query) => $query
@@ -91,9 +98,18 @@ class MicroPearlManagementController extends Controller
                     );
                 },
             )
+            ->when($domain, fn (Builder $query) => $query
+                ->whereHas('competency', fn (Builder $competencies) => $competencies
+                    ->where('domain_id', $domain->domain_id)))
             ->latest('updated_at')
-            ->paginate(25)
-            ->withQueryString();
+            ->orderBy('pearl_id')
+            ->paginate(10)
+            ->withQueryString()
+            ->fragment('pearl-results');
+
+        if ($pearls->currentPage() > $pearls->lastPage()) {
+            return redirect($pearls->url($pearls->lastPage()));
+        }
 
         $publishableIds = $pearls->getCollection()
             ->filter(fn (MicroPearl $pearl) => $this->workflow->canPublish($request->user(), $pearl))
@@ -106,6 +122,8 @@ class MicroPearlManagementController extends Controller
                 'status',
                 'search',
                 'publishableIds',
+                'domains',
+                'domain',
             ),
         );
     }
@@ -144,19 +162,34 @@ class MicroPearlManagementController extends Controller
     }
 
     public function edit(
+        Request $request,
         MicroPearl $pearl,
     ): View {
-        abort_if(auth()->user()->role === 'faculty' && $pearl->content_status === MicroPearl::STATUS_DRAFT
-            && $pearl->created_by !== auth()->id(), 403);
+        $user = $request->user();
+
+        abort_if(
+            $user->role === 'faculty'
+                && $pearl->content_status === MicroPearl::STATUS_DRAFT
+                && $pearl->created_by !== $user->getAuthIdentifier(),
+            403,
+        );
+
         $pearl->load([
             'competency.domain',
             'creator',
             'reviewer',
-            'edits.editor',
         ]);
+
+        $history = $pearl->edits()
+            ->with('editor')
+            ->orderByDesc('edit_id')
+            ->paginate(10, ['*'], 'history_page')
+            ->withQueryString()
+            ->fragment('pearl-history');
 
         return view('content.pearls.edit', [
             'pearl' => $pearl,
+            'history' => $history,
             'domains' => $this->domains(),
         ]);
     }

@@ -46,10 +46,22 @@ test('non administrators cannot assign cohorts', function (string $role): void {
         ->post(route('admin.users.assign-cohort'))->assertForbidden();
 })->with(['student', 'faculty', 'dean']);
 
-test('the user list exposes selection without changing accounts', function (): void {
+test('bulk selection is available in assignment mode without changing accounts', function (): void {
+    bulkCohort();
     $student = User::factory()->create(['role' => 'student', 'cohort_id' => null]);
-    $this->actingAs(bulkCohortAdmin())->get(route('admin.users.index'))
-        ->assertOk()->assertSee('student_ids[]', false)->assertSeeText('Select all eligible on this page');
+
+    $this->actingAs(bulkCohortAdmin())
+        ->get(route('admin.users.index'))
+        ->assertOk()
+        ->assertSeeText('Assign cohorts')
+        ->assertDontSee('name="student_ids[]"', false);
+
+    $this->get(route('admin.users.index', ['assign' => 1]))
+        ->assertOk()
+        ->assertSeeText('Select all eligible on this page')
+        ->assertSee('name="student_ids[]"', false)
+        ->assertSee('name="original_cohorts['.$student->user_id.']"', false);
+
     expect($student->fresh()->cohort_id)->toBeNull();
 });
 

@@ -1,39 +1,38 @@
 <x-app-layout>
+    @php
+        $statusVariant = match ($pearl->content_status) {
+            'published' => 'success',
+            'in_review' => 'warning',
+            'retired' => 'danger',
+            default => 'neutral',
+        };
+
+        $listContext = array_filter(
+            \Illuminate\Support\Arr::only(request()->array('list'), ['q', 'status', 'domain_id', 'view', 'page']),
+            fn ($value) => is_scalar($value) && filled($value),
+        );
+
+        $listUrl = route('content.pearls.index', $listContext);
+    @endphp
+
     <x-slot name="header">
-        @php
-            $statusVariant = match ($pearl->content_status) {
-                'published' => 'success',
-                'in_review' => 'warning',
-                'retired' => 'danger',
-                default => 'neutral',
-            };
-        @endphp
-
-        <x-ui.page-header
-            :title="$pearl->title"
-            :description="$pearl->competency->competency_code
-                .' · '
-                .$pearl->competency->title"
-        >
-            <x-slot:actions>
-                <x-ui.badge :variant="$statusVariant">
-                    {{ str($pearl->content_status)
-                        ->replace('_', ' ')
-                        ->title() }}
-                </x-ui.badge>
-
-                <x-ui.button
-                    variant="secondary"
-                    :href="route('content.pearls.index')"
-                >
-                    Back to Pearl Management
-                </x-ui.button>
-            </x-slot:actions>
-        </x-ui.page-header>
+        <x-ui.page-header :title="$pearl->title"
+            :description="$pearl->competency
+                ? $pearl->competency->competency_code.' · '.$pearl->competency->title
+                : 'Unassigned competency'" />
     </x-slot>
 
     <div class="pt-6 pb-6 sm:pb-8">
         <div class="mx-auto max-w-6xl space-y-6 px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <x-ui.button variant="ghost" :href="$listUrl.($listContext ? '#pearl-results' : '')">
+                    {{ $listContext ? 'Back to pearl results' : 'Back to Micro Pearls' }}
+                </x-ui.button>
+
+                <x-ui.badge :variant="$statusVariant">
+                    {{ str($pearl->content_status)->replace('_', ' ')->title() }}
+                </x-ui.badge>
+            </div>
             @if (session('status'))
                 <x-ui.alert variant="success">
                     {{ session('status') }}
@@ -338,7 +337,7 @@
                 </x-ui.alert>
             @endif
 
-            <x-ui.card>
+            <x-ui.card id="pearl-history" class="scroll-mt-32">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <h2 class="font-display text-lg font-extrabold text-ink">
@@ -356,7 +355,7 @@
                 </div>
 
                 <div class="mt-5 space-y-3">
-                    @forelse ($pearl->edits as $edit)
+                    @forelse ($history as $edit)
                         <article class="rounded-2xl border border-line bg-surface-2 p-4">
                             <div class="flex flex-wrap items-start justify-between gap-2">
                                 <h3 class="font-bold text-ink">
@@ -389,6 +388,13 @@
                         </p>
                     @endforelse
                 </div>
+
+                @if ($history->hasPages())
+                    <div class="mt-4 border-t border-line">
+                        <x-admin.pager :paginator="$history" label="Micro Pearl edit history" />
+                    </div>
+                @endif
+
             </x-ui.card>
         </div>
     </div>

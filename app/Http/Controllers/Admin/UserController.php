@@ -35,9 +35,17 @@ class UserController extends Controller
                 'verification' => null,
                 'status' => 'active',
                 'no_cohort' => false,
+                'assign' => false,
             ],
             $request->validated(),
         );
+
+        $filters['status'] ??= 'active';
+
+        if ((bool) $filters['assign']) {
+            $filters['role'] = 'student';
+            $filters['status'] = 'active';
+        }
 
         $query = match ($filters['status']) {
             'deleted' => User::onlyTrashed(),
@@ -114,10 +122,23 @@ class UserController extends Controller
             );
         }
 
+        if ($filters['role'] === 'student') {
+            $query
+                ->orderByRaw('users.cohort_id IS NULL')
+                ->orderBy(
+                    Cohort::query()
+                        ->select('cohort_name')
+                        ->whereColumn('cohorts.cohort_id', 'users.cohort_id')
+                        ->limit(1),
+                )
+                ->orderBy('users.cohort_id');
+        }
+
         return view('admin.users.index', [
             'users' => $query
                 ->orderBy('last_name')
                 ->orderBy('first_name')
+                ->orderBy('user_id')
                 ->paginate(30)
                 ->withQueryString(),
 

@@ -10,9 +10,11 @@ use App\Http\Requests\Admin\UpdatePostTestWindowRequest;
 use App\Models\AdminAuditLog;
 use App\Models\AssessmentSession;
 use App\Models\Cohort;
+use App\Models\PilotControl;
 use App\Models\User;
 use App\Services\AdminCohortService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 use LogicException;
 use RuntimeException;
@@ -62,8 +64,13 @@ class CohortController extends Controller
     }
 
     public function show(
+        Request $request,
         Cohort $cohort,
     ): View {
+        $filters = $request->validate(['q' => ['nullable', 'string', 'max:100']]);
+        $rosterSearch = trim($filters['q'] ?? '');
+        $pattern = '%'.addcslashes($rosterSearch, '\\%_').'%';
+
         $studentIds = User::query()
             ->select('user_id')
             ->where(
@@ -125,9 +132,26 @@ class CohortController extends Controller
         return view('admin.cohorts.show', [
             'cohort' => $cohort,
 
-            'students' => $cohort
-                ->students()
+            'rosterSearch' => $rosterSearch,
+
+            'collectionStarted' => PilotControl::query()
+                ->whereNotNull('official_collection_started_at')
+                ->exists(),
+
+            'students' => $cohort->students()
+                ->withExists([
+                    'assessmentSessions as form_a_complete' => fn ($query) => $query
+                        ->where('research_phase', 'pre_test')
+                        ->whereNotNull('completed_at'),
+                    'assessmentSessions as form_b_complete' => fn ($query) => $query
+                        ->where('research_phase', 'post_test')
+                        ->whereNotNull('completed_at'),
+                ])
+                ->when($rosterSearch !== '', fn ($query) => $query
+                    ->whereAny(['first_name', 'last_name', 'email', 'student_id'], 'like', $pattern))
                 ->orderBy('last_name')
+                ->orderBy('first_name')
+                ->orderBy('user_id')
                 ->paginate(20)
                 ->withQueryString(),
 
@@ -154,8 +178,8 @@ class CohortController extends Controller
                     $cohort->cohort_id,
                 )
                 ->with('admin')
-                ->latest('created_at')
-                ->limit(20)
+                ->latest('log_id')
+                ->limit(5)
                 ->get(),
         ]);
     }

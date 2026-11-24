@@ -1,271 +1,298 @@
 <x-app-layout surface="admin">
     <x-slot name="header">
-        <x-admin.page-header
-            title="Users"
-            description="Manage roles, email verification, cohort assignments, and account access."
-        >
-            <x-slot:actions>
-                <a
-                    href="#bulk-cohort"
-                    class="btn-press inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
-                    style="--lip: rgb(var(--color-primary-lip));"
-                >
-                    Bulk assign cohorts
-                </a>
-            </x-slot:actions>
-        </x-admin.page-header>
+        <x-admin.page-header title="Users" />
     </x-slot>
 
-    <div class="pt-6 pb-8">
-        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-            <form
-                method="GET"
-                class="grid gap-3 rounded-3xl border-2 border-slate-200 bg-white p-5 md:grid-cols-3"
-            >
-                <div class="min-w-0 space-y-1.5">
-                    <label
-                        for="users-search"
-                        class="block text-sm font-bold text-ink"
-                    >
-                        Search users
-                    </label>
+    @php
+        $assigning = (bool) $filters['assign'];
+        $studentsOnly = $filters['role'] === 'student';
+        $unassigned = (bool) $filters['no_cohort'];
+        $activeCohorts = $cohorts->whereNull('archived_at');
+        $canSelect = $assigning && $activeCohorts->isNotEmpty();
+        $canAssign = $canSelect && $users->getCollection()->contains(fn ($student) => ! $student->research_locked);
 
-                    <input
-                        id="users-search"
-                        type="text"
-                        name="q"
-                        value="{{ $filters['q'] }}"
-                        placeholder="Name, email, or student ID"
-                        class="min-h-[var(--control-h)] w-full rounded-xl border-slate-300"
-                    >
+        $roleFilterActive = filled($filters['role']) && ! $studentsOnly;
+        $moreFiltersOpen = filled($filters['verification']) || $filters['status'] !== 'active' || $roleFilterActive;
+        $hasFilters = $moreFiltersOpen || filled($filters['q']) || filled($filters['cohort_id']) || $unassigned;
+        $resetFilters = $assigning ? ['assign' => 1] : ['role' => $studentsOnly ? 'student' : null];
+
+        $userGroups = $studentsOnly
+            ? $users->getCollection()->groupBy(fn ($student) => $student->cohort_id ?? 'unassigned')
+            : collect([$users->getCollection()]);
+
+        $scopeLinks = [
+            [
+                'label' => 'All users',
+                'selected' => $filters['role'] === null && ! $unassigned,
+                'params' => ['role' => null, 'no_cohort' => null],
+            ],
+            [
+                'label' => 'Students',
+                'selected' => $studentsOnly && ! $unassigned,
+                'params' => ['role' => 'student', 'no_cohort' => null],
+            ],
+            [
+                'label' => 'Unassigned students',
+                'selected' => $studentsOnly && $unassigned,
+                'params' => ['role' => 'student', 'cohort_id' => null, 'no_cohort' => 1],
+            ],
+        ];
+    @endphp
+
+    <div class="mx-auto max-w-7xl space-y-5 px-4 py-6 sm:px-6 lg:px-8">
+        <x-admin.flash />
+
+        <section aria-labelledby="users-heading" class="space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 id="users-heading" class="font-display text-xl font-extrabold text-ink">
+                        {{ $assigning ? 'Assign students to a cohort' : 'Account directory' }}
+                    </h2>
+                    <p class="mt-1 text-sm text-ink-muted">
+                        {{ number_format($users->total()) }} matching accounts
+                    </p>
                 </div>
 
-                <div class="min-w-0 space-y-1.5">
-                    <label
-                        for="users-role"
-                        class="block text-sm font-bold text-ink"
-                    >
-                        Role
-                    </label>
-
-                    <select
-                        id="users-role"
-                        name="role"
-                        class="min-h-[var(--control-h)] w-full rounded-xl border-slate-300"
-                    >
-                        <option value="">All roles</option>
-
-                        @foreach (['student', 'faculty', 'admin', 'dean'] as $role)
-                            <option
-                                value="{{ $role }}"
-                                @selected($filters['role'] === $role)
-                            >
-                                {{ ucfirst($role) }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="min-w-0 space-y-1.5">
-                    <label
-                        for="users-cohort"
-                        class="block text-sm font-bold text-ink"
-                    >
-                        Cohort
-                    </label>
-
-                    <select
-                        id="users-cohort"
-                        name="cohort_id"
-                        class="min-h-[var(--control-h)] w-full rounded-xl border-slate-300"
-                    >
-                        <option value="">All cohorts</option>
-
-                        @foreach ($cohorts as $cohort)
-                            <option
-                                value="{{ $cohort->cohort_id }}"
-                                @selected(
-                                    $filters['cohort_id'] === $cohort->cohort_id
-                                )
-                            >
-                                {{ $cohort->cohort_name }} — {{ $cohort->academic_year }}
-                                {{ $cohort->archived_at ? '(Archived)' : '' }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="min-w-0 space-y-1.5">
-                    <label
-                        for="users-verification"
-                        class="block text-sm font-bold text-ink"
-                    >
-                        Email status
-                    </label>
-
-                    <select
-                        id="users-verification"
-                        name="verification"
-                        class="min-h-[var(--control-h)] w-full rounded-xl border-slate-300"
-                    >
-                        <option value="">Any email status</option>
-
-                        <option
-                            value="verified"
-                            @selected($filters['verification'] === 'verified')
-                        >
-                            Verified
-                        </option>
-
-                        <option
-                            value="unverified"
-                            @selected($filters['verification'] === 'unverified')
-                        >
-                            Unverified
-                        </option>
-                    </select>
-                </div>
-
-                <div class="min-w-0 space-y-1.5">
-                    <label
-                        for="users-status"
-                        class="block text-sm font-bold text-ink"
-                    >
-                        Account status
-                    </label>
-
-                    <select
-                        id="users-status"
-                        name="status"
-                        class="min-h-[var(--control-h)] w-full rounded-xl border-slate-300"
-                    >
-                        <option
-                            value="active"
-                            @selected($filters['status'] === 'active')
-                        >
-                            Active
-                        </option>
-
-                        <option
-                            value="deleted"
-                            @selected($filters['status'] === 'deleted')
-                        >
-                            Deleted
-                        </option>
-
-                        <option
-                            value="all"
-                            @selected($filters['status'] === 'all')
-                        >
-                            All
-                        </option>
-                    </select>
-                </div>
-
-                <div class="flex items-end">
-                    <label
-                        class="flex min-h-[var(--control-h)] cursor-pointer items-center gap-2 text-sm text-slate-700"
-                    >
-                        <input
-                            type="checkbox"
-                            name="no_cohort"
-                            value="1"
-                            @checked($filters['no_cohort'])
-                        >
-
-                        <span>Without cohort</span>
-                    </label>
-                </div>
-
-                <div class="rx-admin-actions flex flex-wrap gap-2 md:col-span-3">
-                    <button
-                        type="submit"
-                        class="inline-flex min-h-[var(--control-h)] items-center justify-center rounded-xl bg-primary px-4 py-2 font-bold text-white"
-                    >
-                        Apply Filters
-                    </button>
-
-                    <a
-                        href="{{ route('admin.users.index') }}"
-                        class="inline-flex min-h-[var(--control-h)] items-center justify-center rounded-xl border-2 border-slate-200 px-4 py-2 font-bold text-slate-700"
-                    >
-                        Reset
-                    </a>
-                </div>
-            </form>
-
-            @if(session('status'))<x-ui.alert variant="success">{{ session('status') }}</x-ui.alert>@endif
-            <form id="bulk-cohort" method="POST" action="{{ route('admin.users.assign-cohort') }}" data-bulk data-confirm="Assign the selected students to this active cohort? All changes are recorded in the audit history." class="space-y-4">
-            @csrf
-            <x-ui.selection-controls />
-            <x-ui.field name="cohort_id" id="bulk-cohort-target" label="Assign selected students to" type="select" data-cohort-target required><option value="">Choose an active cohort</option>@foreach($cohorts->whereNull('archived_at') as $cohort)<option value="{{ $cohort->cohort_id }}">{{ $cohort->cohort_name }}</option>@endforeach</x-ui.field>
-            @error('student_ids')<p class="text-sm text-danger-ink" role="alert">{{ $message }}</p>@enderror
-            <p class="text-sm text-ink-muted">Select active students below. Students who have started official research assessments are locked to their cohort.</p>
-            <div class="overflow-x-auto rounded-3xl border-2 border-line bg-surface">
-                <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
-                <table class="min-w-full divide-y divide-slate-200 text-sm">
-                    <thead class="bg-slate-50 text-left">
-                        <tr>
-                            <th class="p-4">Select</th>
-                            <th class="p-4">User</th>
-                            <th class="p-4">Role</th>
-                            <th class="p-4">Cohort</th>
-                            <th class="p-4">Email</th>
-                            <th class="p-4">Status</th>
-                            <th class="p-4"></th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @forelse ($users as $managedUser)
-                            <tr>
-                                <td class="p-4"><label class="inline-flex min-h-11 items-center gap-2"><input type="checkbox" name="student_ids[]" value="{{ $managedUser->user_id }}" data-row-select data-cohort="{{ $managedUser->cohort_id }}" @disabled($managedUser->role !== 'student' || $managedUser->trashed() || $managedUser->research_locked) aria-label="Select {{ $managedUser->fullName() }}">@if($managedUser->research_locked)<span class="text-xs text-ink-muted">Research locked</span>@endif</label><input type="hidden" name="original_cohorts[{{ $managedUser->user_id }}]" value="{{ $managedUser->cohort_id }}"></td>
-                                <td class="p-4">
-                                    <div class="font-bold">
-                                        {{ $managedUser->fullName() }}
-                                    </div>
-                                    <div class="text-xs text-slate-500">
-                                        {{ $managedUser->student_id ?? 'No student ID' }}
-                                    </div>
-                                </td>
-                                <td class="p-4">
-                                    {{ ucfirst($managedUser->role) }}
-                                </td>
-                                <td class="p-4">
-                                    {{ $managedUser->cohort?->cohort_name ?? 'Unassigned' }}
-                                </td>
-                                <td class="p-4">
-                                    <div>{{ $managedUser->email }}</div>
-                                    <div class="text-xs {{ $managedUser->email_verified_at ? 'text-green-700' : 'text-amber-700' }}">
-                                        {{ $managedUser->email_verified_at ? 'Verified' : 'Unverified' }}
-                                    </div>
-                                </td>
-                                <td class="p-4">
-                                    {{ $managedUser->trashed() ? 'Deleted' : 'Active' }}
-                                </td>
-                                <td class="p-4 text-right">
-                                    <a
-                                        href="{{ route('admin.users.edit', ['userId' => $managedUser->user_id]) }}"
-                                        class="inline-flex min-h-11 items-center justify-center rounded-lg px-2 font-bold text-primary"
-                                    >
-                                        Manage
-                                    </a>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="p-8 text-center text-slate-500">
-                                    No users match these filters.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-                    </div>
+                @if ($assigning)
+                    <x-ui.button variant="secondary"
+                        :href="route('admin.users.index', [...$filters, 'assign' => null])">
+                        Back to users
+                    </x-ui.button>
+                @else
+                    <x-ui.button variant="secondary"
+                        :href="route('admin.users.index', [...($studentsOnly ? $filters : []), 'assign' => 1])">
+                        Assign cohorts
+                    </x-ui.button>
+                @endif
             </div>
 
-            {{ $users->links() }}
-            <x-ui.button type="submit" data-bulk-submit>Assign cohort</x-ui.button>
+            <form method="GET" action="{{ route('admin.users.index') }}"
+                class="space-y-4 rounded-2xl border border-line bg-surface p-4 sm:p-5">
+                @if ($assigning)
+                    <input type="hidden" name="assign" value="1">
+                @else
+                    <nav aria-label="User scope" class="grid grid-cols-[1fr_1fr_1.5fr] gap-1 sm:flex sm:flex-wrap sm:gap-2">
+                        @foreach ($scopeLinks as $scope)
+                            <a href="{{ route('admin.users.index', [...$filters, ...$scope['params']]) }}"
+                                @if ($scope['selected']) aria-current="page" @endif
+                                class="inline-flex min-h-11 min-w-0 items-center justify-center rounded-lg px-1.5 py-1 text-center text-sm font-bold leading-tight sm:px-3
+                                    {{ $scope['selected'] ? 'bg-primary-tint text-primary-ink' : 'text-ink-muted hover:bg-surface-2' }}">
+                                {{ $scope['label'] }}
+                            </a>
+                        @endforeach
+                    </nav>
+                @endif
+
+                <div class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto]">
+                    <div class="col-span-2 min-w-0 md:col-span-1">
+                        <x-ui.field id="users-search" name="q" type="search" label="Search users"
+                            :value="$filters['q']" maxlength="100" placeholder="Name, email, or student ID" />
+                    </div>
+
+                    <div class="min-w-0 space-y-1.5">
+                        <label for="users-cohort" class="block text-sm font-bold text-ink">Cohort</label>
+                        <select id="users-cohort" name="cohort_id" class="ui-field-control">
+                            <option value="">All cohorts</option>
+                            <option value="unassigned" @selected($unassigned)>Without a cohort</option>
+                            @foreach ($cohorts as $cohort)
+                                <option value="{{ $cohort->cohort_id }}"
+                                    @selected(! $unassigned && $filters['cohort_id'] === $cohort->cohort_id)>
+                                    {{ $cohort->cohort_name }} ({{ $cohort->academic_year }}){{ $cohort->archived_at ? ' · Archived' : '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <x-ui.button type="submit" class="min-h-11">Apply filters</x-ui.button>
+                </div>
+
+                <x-admin.disclosure title="More filters" :open="$moreFiltersOpen">
+                    <div class="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+                        @unless ($assigning)
+                            <x-ui.field id="users-role" name="role" type="select" label="Role">
+                                <option value="">All roles</option>
+                                @foreach (['student' => 'Student', 'faculty' => 'Faculty', 'dean' => 'Dean', 'admin' => 'Administrator'] as $role => $label)
+                                    <option value="{{ $role }}" @selected($filters['role'] === $role)>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </x-ui.field>
+                        @endunless
+
+                        <x-ui.field id="users-verification" name="verification" type="select" label="Email status">
+                            <option value="">Any email status</option>
+                            <option value="verified" @selected($filters['verification'] === 'verified')>Verified</option>
+                            <option value="unverified" @selected($filters['verification'] === 'unverified')>Unverified</option>
+                        </x-ui.field>
+
+                        @unless ($assigning)
+                            <x-ui.field id="users-status" name="status" type="select" label="Account status">
+                                <option value="active" @selected($filters['status'] === 'active')>Active</option>
+                                <option value="deleted" @selected($filters['status'] === 'deleted')>Deleted</option>
+                                <option value="all" @selected($filters['status'] === 'all')>All accounts</option>
+                            </x-ui.field>
+                        @endunless
+                    </div>
+                </x-admin.disclosure>
+
+                @if ($hasFilters)
+                    <a href="{{ route('admin.users.index', $resetFilters) }}"
+                        class="inline-flex min-h-11 items-center text-sm font-bold text-primary-ink underline underline-offset-4">
+                        Clear filters
+                    </a>
+                @endif
             </form>
-        </div>
+
+            @if ($assigning)
+                <form id="bulk-cohort" method="POST" action="{{ route('admin.users.assign-cohort') }}"
+                    data-bulk data-confirm="Move the selected students to the chosen cohort? This is recorded in Audit History."
+                    class="space-y-4">
+                    @csrf
+
+                    @if ($errors->hasAny(['student_ids', 'student_ids.*', 'original_cohorts', 'original_cohorts.*']))
+                        <x-ui.alert variant="danger">
+                            {{ $errors->first('student_ids') ?: $errors->first('student_ids.*') ?: $errors->first('original_cohorts') ?: $errors->first('original_cohorts.*') }}
+                        </x-ui.alert>
+                    @endif
+
+                    @if ($canAssign)
+                        <div class="space-y-3 rounded-2xl border border-line bg-surface p-4">
+                            <p class="text-sm text-ink-muted">
+                                Select students on this page and choose their destination cohort. Research-locked students cannot be moved.
+                            </p>
+
+                            <x-ui.selection-controls />
+
+                            <div class="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                                <x-ui.field id="bulk-cohort-target" name="cohort_id" type="select"
+                                    label="Destination cohort" data-cohort-target required>
+                                    <option value="">Choose an active cohort</option>
+                                    @foreach ($activeCohorts as $cohort)
+                                        <option value="{{ $cohort->cohort_id }}"
+                                            @selected(old('cohort_id') === $cohort->cohort_id)>
+                                            {{ $cohort->cohort_name }} ({{ $cohort->academic_year }})
+                                        </option>
+                                    @endforeach
+                                </x-ui.field>
+
+                                <x-ui.button type="submit" data-bulk-submit disabled>
+                                    Assign selected students
+                                </x-ui.button>
+                            </div>
+                        </div>
+                    @elseif ($errors->has('cohort_id'))
+                        <x-ui.alert variant="danger">{{ $errors->first('cohort_id') }}</x-ui.alert>
+                    @elseif ($users->isNotEmpty())
+                        <x-ui.alert variant="warning">
+                            {{ $activeCohorts->isEmpty()
+                                ? 'Create or restore an active cohort before assigning students.'
+                                : 'No students on this page can be moved.' }}
+                        </x-ui.alert>
+                    @endif
+            @endif
+
+            @if ($users->isEmpty())
+                <p class="rounded-2xl border border-line bg-surface p-6 text-sm text-ink-muted">
+                    No users match these filters.
+                </p>
+            @else
+                @foreach ($userGroups as $group)
+                    @php($cohort = $group->first()->cohort)
+
+                    <div class="overflow-hidden rounded-2xl border border-line bg-surface">
+                        @if ($studentsOnly)
+                            <div class="border-b border-line bg-surface-2 px-4 py-3">
+                                <h3 class="font-display font-extrabold text-ink">
+                                    {{ $cohort?->cohort_name ?? 'Without a cohort' }}
+                                </h3>
+                                @if ($cohort)
+                                    <p class="mt-0.5 text-xs text-ink-muted">
+                                        {{ $cohort->academic_year }}{{ $cohort->archived_at ? ' · Archived' : '' }}
+                                    </p>
+                                @endif
+                            </div>
+                        @endif
+
+                        <ul class="divide-y divide-line">
+                            @foreach ($group as $managedUser)
+                                <li class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2 px-4 py-3
+                                    md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1.1fr)_6rem] md:items-center md:gap-x-4 md:py-4">
+                                    <div class="col-start-1 row-start-1 min-w-0">
+                                        <p class="break-words text-base font-bold leading-snug text-ink">
+                                            {{ $managedUser->fullName() }}
+                                        </p>
+                                        <p class="mt-0.5 text-sm leading-5 text-ink-muted [overflow-wrap:anywhere]">
+                                            {{ $managedUser->email }}
+                                        </p>
+                                    </div>
+
+                                    <div class="col-span-2 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5 text-sm md:col-span-1 md:block">
+                                        @if ($studentsOnly)
+                                            <span class="text-ink-muted md:block md:text-xs">Student ID</span>
+                                            <span class="break-words font-medium tabular-nums text-ink md:block">
+                                                {{ $managedUser->student_id ?? 'Not set' }}
+                                            </span>
+                                        @else
+                                            <span class="font-medium text-ink md:block">{{ ucfirst($managedUser->role) }}</span>
+                                            @if ($managedUser->role === 'student' || $managedUser->role === 'faculty')
+                                                <span class="break-words text-ink-muted md:block md:text-xs">
+                                                    {{ $managedUser->cohort?->cohort_name ?? 'Without a cohort' }}
+                                                </span>
+                                            @endif
+                                            @if ($managedUser->student_id)
+                                                <span class="tabular-nums text-ink-muted md:block md:text-xs">
+                                                    {{ $managedUser->student_id }}
+                                                </span>
+                                            @endif
+                                        @endif
+                                    </div>
+
+                                    <div class="col-span-2 flex min-w-0 flex-wrap gap-1.5 md:col-span-1">
+                                        <x-ui.badge :variant="$managedUser->email_verified_at ? 'success' : 'warning'">
+                                            {{ $managedUser->email_verified_at ? 'Email verified' : 'Email unverified' }}
+                                        </x-ui.badge>
+
+                                        @if ($managedUser->trashed())
+                                            <x-ui.badge variant="danger">Deleted</x-ui.badge>
+                                        @endif
+
+                                        @if ($managedUser->research_locked)
+                                            <x-ui.badge>Research locked</x-ui.badge>
+                                        @endif
+                                    </div>
+
+                                    <div class="col-start-2 row-start-1 justify-self-end md:col-start-4"
+                                        @if ($assigning && (! $canSelect || $managedUser->research_locked)) hidden @endif>
+                                        @if (! $assigning)
+                                            <x-ui.button variant="ghost" class="min-h-11 px-2 md:px-4"
+                                                :href="route('admin.users.edit', ['userId' => $managedUser->user_id])"
+                                                :aria-label="'Manage '.$managedUser->fullName()">
+                                                Manage
+                                            </x-ui.button>
+                                        @elseif ($canSelect && ! $managedUser->research_locked)
+                                            <label class="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-ink">
+                                                <input type="checkbox" class="rounded border-line" name="student_ids[]"
+                                                    value="{{ $managedUser->user_id }}" data-row-select
+                                                    data-cohort="{{ $managedUser->cohort_id }}"
+                                                    aria-label="Select {{ $managedUser->fullName() }} for cohort assignment">
+                                                Select
+                                            </label>
+                                            <input type="hidden" name="original_cohorts[{{ $managedUser->user_id }}]"
+                                                value="{{ $managedUser->cohort_id }}">
+                                        @endif
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endforeach
+            @endif
+
+            @if ($assigning)
+                </form>
+            @endif
+
+            <x-admin.pager :paginator="$users" label="Users" />
+        </section>
     </div>
 </x-app-layout>

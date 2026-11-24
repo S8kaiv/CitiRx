@@ -1,21 +1,6 @@
 <x-app-layout surface="admin">
     <x-slot name="header">
-        <x-admin.page-header
-            title="Question detail"
-            :description="'Question version '
-                .$question->edit_version"
-        >
-            <x-slot:actions>
-                <a
-                    href="{{ route(
-                        'admin.questions.index',
-                    ) }}"
-                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
-                >
-                    Back to question bank
-                </a>
-            </x-slot:actions>
-        </x-admin.page-header>
+        <x-admin.page-header title="Question detail" :description="'Question version '.$question->edit_version" />
     </x-slot>
 
     @php
@@ -38,6 +23,16 @@
 
     <div class="py-6 font-sans text-slate-900 antialiased">
         <div class="mx-auto max-w-5xl space-y-6 px-4 sm:px-6 lg:px-8">
+            @php
+                $bankContext = array_filter(\Illuminate\Support\Arr::only(request()->array('bank'), ['q', 'form', 'domain_id', 'status', 'view', 'page']),
+                    fn ($value) => is_scalar($value) && filled($value),
+                );
+                $bankUrl = route('admin.questions.index', $bankContext);
+            @endphp
+
+            <x-ui.button variant="ghost" :href="$bankUrl.($bankContext ? '#question-results' : '')">
+                {{ $bankContext ? 'Back to question results' : 'Back to Question Bank' }}
+            </x-ui.button>
             @if ($isLocked)
                 <div class="rounded-3xl border-2 border-b-4 border-amber-300 bg-gradient-to-br from-amber-50/80 via-white to-white p-5 sm:p-6 shadow-sm">
                     <h3 class="font-display text-lg font-black text-amber-900">Locked question</h3>
@@ -215,7 +210,7 @@
                 @endif
             </section>
 
-            <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+            <section id="question-history" class="scroll-mt-32 rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-sm sm:p-6">
                 <h3 class="font-display text-lg font-black text-slate-900">Audit History</h3>
 
                 <div class="mt-5 space-y-4">
@@ -268,8 +263,8 @@
                 </div>
 
                 @if ($history->hasPages())
-                    <div class="mt-5 border-t border-slate-100 pt-4">
-                        {{ $history->links() }}
+                    <div class="mt-5 border-t border-line">
+                        <x-admin.pager :paginator="$history" label="Question audit history" />
                     </div>
                 @endif
             </section>

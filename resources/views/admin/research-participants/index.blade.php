@@ -1,9 +1,7 @@
 <x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
-            title="Research Participants"
-            description="Manage explicit inclusion, exclusion, withdrawal, and development-data classifications."
-        >
+            title="Research Participants">
             <x-slot:actions>
                 <a
                     href="{{ route(
@@ -19,39 +17,19 @@
 
     <div class="pt-6 pb-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-            <section class="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
-                <h2 class="font-black text-slate-900">
-                    Participant-scope policy
-                </h2>
-
-                <p class="mt-2 text-sm text-slate-600">
-                    Only students explicitly marked <strong>Included</strong>
-                    enter official analytics. Eligible, excluded, withdrawn,
-                    development, and unregistered accounts remain outside the
-                    primary report. Soft deletion does not change research status.
-                </p>
-            </section>
-
-            <section class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-                @foreach ([
-                    \App\Models\ResearchParticipant::STATUS_INCLUDED,
-                    \App\Models\ResearchParticipant::STATUS_ELIGIBLE,
-                    \App\Models\ResearchParticipant::STATUS_EXCLUDED,
-                    \App\Models\ResearchParticipant::STATUS_WITHDRAWN,
-                    \App\Models\ResearchParticipant::STATUS_DEVELOPMENT,
-                    \App\Models\ResearchParticipant::STATUS_UNREGISTERED,
-                ] as $status)
-                    <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                        <p class="text-xs font-black uppercase tracking-wider text-slate-500">
-                            {{ \App\Models\ResearchParticipant::label($status) }}
-                        </p>
-
-                        <p class="mt-2 text-2xl font-black text-slate-900">
-                            {{ $statusCounts[$status] ?? 0 }}
-                        </p>
-                    </article>
-                @endforeach
-            </section>
+            <x-admin.disclosure title="Participant scope at a glance">
+                <div class="min-w-0 space-y-3 p-4">
+                    <p class="text-sm text-ink-muted">Official analytics includes students marked Included. Account deletion and research status are managed independently.</p>
+                    <dl class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        @foreach ($statusCounts as $status => $count)
+                            <div class="rounded-xl bg-surface-2 p-3">
+                                <dt class="text-sm text-ink-muted">{{ \App\Models\ResearchParticipant::label($status) }}</dt>
+                                <dd class="font-bold text-ink">{{ $count }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                </div>
+            </x-admin.disclosure>
 
             <form
                 method="GET"
@@ -193,7 +171,7 @@
                     </div>
             </div>
 
-            {{ $participants->links() }}
+            <x-admin.pager :paginator="$participants" label="Participants" />
         </div>
     </div>
 </x-app-layout>

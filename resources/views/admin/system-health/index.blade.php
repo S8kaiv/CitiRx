@@ -1,9 +1,7 @@
 <x-app-layout surface="admin">
     <x-slot name="header">
         <x-admin.page-header
-            title="System health"
-            description="Review read-only operational checks without exposing credentials, connection strings, or sensitive configuration."
-        >
+            title="System health">
             <x-slot:actions>
                 <a
                     href="{{ route(

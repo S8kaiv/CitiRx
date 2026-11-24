@@ -1,355 +1,304 @@
 <x-app-layout surface="admin">
     <x-slot name="header">
-        <x-admin.page-header
-            :title="$cohort->cohort_name"
-            :description="$cohort->academic_year"
-        >
-            <x-slot:actions>
-                @if (! $cohort->archived_at)
-                    <a
-                        href="{{ route(
-                            'admin.cohorts.edit',
-                            [
-                                'cohort' => $cohort,
-                            ],
-                        ) }}"
-                        class="btn-press inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
-                        style="--lip: rgb(var(--color-primary-lip));"
-                    >
-                        Edit cohort
-                    </a>
-                @endif
-
-                <a
-                    href="{{ route('admin.cohorts.index') }}"
-                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
-                >
-                    All cohorts
-                </a>
-            </x-slot:actions>
-        </x-admin.page-header>
+        <x-admin.page-header :title="$cohort->cohort_name" :description="$cohort->academic_year" />
     </x-slot>
 
     @php
-        $windowStatus = $cohort->postTestWindowStatus();
-
-        $windowClasses = match ($windowStatus) {
-            'open' => 'border-emerald-300 bg-emerald-50 text-emerald-800',
-            'scheduled' => 'border-sky-300 bg-sky-50 text-sky-800',
-            'ended' => 'border-slate-300 bg-slate-50 text-slate-700',
-            'archived' => 'border-rose-300 bg-rose-50 text-rose-800',
-            default => 'border-amber-300 bg-amber-50 text-amber-800',
-        };
+        $window = $cohort->postTestWindowStatus();
+        $isArchived = $cohort->archived_at !== null;
+        $lastAction = old('_cohort_action');
+        $archiveBlocked = ! $isArchived && $collectionStarted && in_array($window, ['open', 'scheduled'], true);
     @endphp
 
-    <div class="py-6 font-sans text-slate-900 antialiased">
-        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl space-y-5 px-4 py-6 sm:px-6 lg:px-8">
+        <x-admin.flash />
 
-            {{-- Overview --}}
-            <section class="relative overflow-hidden rounded-[1.5rem] border-2 border-b-4 border-primary/30 bg-gradient-to-br from-primary-tint via-[#FAF8FF] to-white p-6 sm:p-8 shadow-sm">
-                <dl class="grid gap-3 sm:grid-cols-3">
-                    <div class="rounded-2xl border-2 border-white bg-white/80 p-4 shadow-2xs">
-                        <dt class="text-[10px] font-extrabold uppercase tracking-wider text-muted-ink">Academic Year</dt>
-                        <dd class="mt-1 font-display text-lg font-black text-slate-900">{{ $cohort->academic_year }}</dd>
-                    </div>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2">
+                <x-ui.badge :variant="$isArchived ? 'neutral' : 'success'">
+                    {{ $isArchived ? 'Archived' : 'Active' }}
+                </x-ui.badge>
+                <p class="text-sm text-ink-muted">
+                    Target PhLE: {{ $cohort->target_phle_date?->format('M j, Y') ?? 'Not set' }}
+                </p>
+            </div>
 
-                    <div class="rounded-2xl border-2 border-white bg-white/80 p-4 shadow-2xs">
-                        <dt class="text-[10px] font-extrabold uppercase tracking-wider text-muted-ink">Target PhLE</dt>
-                        <dd class="mt-1 font-display text-lg font-black text-slate-900">
-                            {{ $cohort->target_phle_date?->format('M j, Y') ?? 'Not set' }}
-                        </dd>
-                    </div>
-
-                    <div class="rounded-2xl border-2 border-white bg-white/80 p-4 shadow-2xs">
-                        <dt class="text-[10px] font-extrabold uppercase tracking-wider text-muted-ink">Account Status</dt>
-                        <dd class="mt-1 font-display text-lg font-black {{ $cohort->archived_at ? 'text-rose-700' : 'text-emerald-700' }}">
-                            {{ $cohort->archived_at ? 'Archived' : 'Active' }}
-                        </dd>
-                    </div>
-                </dl>
-            </section>
-
-            {{-- Assessment statistics --}}
-            <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                @foreach ([
-                    'Students' => $counts['students'],
-                    'Diagnostic Started' => $counts['diagnostic_started'],
-                    'Diagnostic Completed' => $counts['diagnostic_completed'],
-                    'Mock Started' => $counts['mock_started'],
-                    'Mock Completed' => $counts['mock_completed'],
-                ] as $label => $value)
-                    <div class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 shadow-sm">
-                        <div class="text-xs font-extrabold uppercase tracking-wider text-muted-ink">{{ $label }}</div>
-                        <div class="mt-2 font-display text-3xl font-black text-slate-900">{{ $value }}</div>
-                    </div>
-                @endforeach
-            </section>
-
-            <div class="grid gap-6 lg:grid-cols-3">
-                {{-- MAIN COLUMN --}}
-                <div class="space-y-6 lg:col-span-2">
-
-                    {{-- Post-test window --}}
-                    <section class="space-y-5 rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-                        <div class="flex flex-wrap items-center justify-between gap-3">
-                            <div>
-                                <h3 class="font-display text-lg font-black text-slate-900">Post-test Window</h3>
-                                <p class="mt-0.5 text-xs font-semibold text-muted-ink">
-                                    Form B is only available during this period.
-                                </p>
-                            </div>
-
-                            <span class="rounded-full border px-3 py-1 font-display text-xs font-bold capitalize {{ $windowClasses }}">
-                                {{ $windowStatus }}
-                            </span>
-                        </div>
-
-                        @if ($cohort->archived_at)
-                            <div class="rounded-2xl border-2 border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-800">
-                                Archived cohorts cannot open a post-test window.
-                            </div>
-                        @else
-                            <form method="POST" action="{{ route('admin.cohorts.post-test-window', ['cohort' => $cohort]) }}"
-                                class="grid gap-4 md:grid-cols-2">
-                                @csrf
-                                @method('PATCH')
-
-                                <div>
-                                    <label for="post_test_opens_at" class="block text-xs font-extrabold uppercase tracking-wider text-muted-ink">
-                                        Opens At
-                                    </label>
-
-                                    <input id="post_test_opens_at" name="post_test_opens_at" type="datetime-local" required
-                                        value="{{ old('post_test_opens_at', $cohort->post_test_opens_at?->format('Y-m-d\TH:i')) }}"
-                                        class="mt-1 w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary">
-
-                                    @error('post_test_opens_at')
-                                        <p class="mt-1 text-xs font-bold text-rose-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
-                                <div>
-                                    <label for="post_test_closes_at" class="block text-xs font-extrabold uppercase tracking-wider text-muted-ink">
-                                        Closes At
-                                    </label>
-
-                                    <input id="post_test_closes_at" name="post_test_closes_at" type="datetime-local" required
-                                        value="{{ old('post_test_closes_at', $cohort->post_test_closes_at?->format('Y-m-d\TH:i')) }}"
-                                        class="mt-1 w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary">
-
-                                    @error('post_test_closes_at')
-                                        <p class="mt-1 text-xs font-bold text-rose-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
-                                <div class="md:col-span-2">
-                                    <label for="window_reason" class="block text-xs font-extrabold uppercase tracking-wider text-muted-ink">
-                                        Reason
-                                    </label>
-
-                                    <textarea id="window_reason" name="reason" rows="2" required minlength="5" maxlength="500"
-                                        class="mt-1 w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary">{{ old('reason') }}</textarea>
-
-                                    @error('reason')
-                                        <p class="mt-1 text-xs font-bold text-rose-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
-                                <div class="md:col-span-2">
-                                    <button style="--lip: rgb(var(--color-primary-lip));"
-                                        class="btn-press rounded-2xl bg-primary px-6 py-3 font-display text-sm font-bold text-white shadow-md">
-                                        Save Post-test Window
-                                    </button>
-                                </div>
-                            </form>
-
-                            @if ($cohort->post_test_opens_at || $cohort->post_test_closes_at)
-                                <form method="POST" action="{{ route('admin.cohorts.post-test-window', ['cohort' => $cohort]) }}"
-                                    class="space-y-3 border-t border-slate-100 pt-5"
-                                    onsubmit="return confirm('Clear this post-test schedule?');">
-                                    @csrf
-                                    @method('PATCH')
-
-                                    <input type="hidden" name="clear_window" value="1">
-
-                                    <div>
-                                        <label for="clear_window_reason" class="block text-xs font-extrabold uppercase tracking-wider text-muted-ink">
-                                            Reason for clearing
-                                        </label>
-
-                                        <textarea id="clear_window_reason" name="reason" rows="2" required minlength="5" maxlength="500"
-                                            class="mt-1 w-full rounded-xl border-2 border-slate-200 text-sm font-medium focus:border-primary focus:ring-primary"></textarea>
-                                    </div>
-
-                                    <button style="--lip: #B45309;"
-                                        class="btn-press rounded-2xl bg-amber-500 px-6 py-3 font-display text-sm font-bold text-white shadow-md hover:bg-amber-600">
-                                        Clear Schedule
-                                    </button>
-                                </form>
-                            @endif
-                        @endif
-                    </section>
-
-                    {{-- Students --}}
-                    <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-                        <h3 class="font-display text-lg font-black text-slate-900">Enrolled Students</h3>
-
-                        <div class="mt-4 overflow-x-auto">
-                            <div class="rx-admin-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
-                            <table class="min-w-full divide-y divide-slate-200 text-sm">
-                                <thead>
-                                    <tr class="text-left text-xs font-extrabold uppercase tracking-wider text-muted-ink">
-                                        <th class="py-3 pr-4">Student</th>
-                                        <th class="px-4 py-3">Student ID</th>
-                                        <th class="px-4 py-3">Email</th>
-                                        <th class="py-3 pl-4"></th>
-                                    </tr>
-                                </thead>
-
-                                <tbody class="divide-y divide-slate-100">
-                                    @forelse ($students as $student)
-                                        <tr>
-                                            <td class="py-3 pr-4 font-display font-black text-slate-900">{{ $student->fullName() }}</td>
-                                            <td class="px-4 py-3 text-slate-600">{{ $student->student_id ?? '—' }}</td>
-                                            <td class="px-4 py-3 text-slate-600">{{ $student->email }}</td>
-                                            <td class="py-3 pl-4 text-right">
-                                                <a href="{{ route('admin.users.edit', ['userId' => $student->user_id]) }}"
-                                                    style="--lip: #CBD5E1;"
-                                                    class="btn-press inline-flex rounded-xl border-2 border-b-4 border-slate-300 bg-white px-3 py-1.5 font-display text-xs font-bold text-primary shadow-2xs transition hover:bg-primary-tint">
-                                                    Manage
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="4" class="py-8 text-center text-xs font-semibold text-muted-ink">
-                                                No students are assigned to this cohort.
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                    </div>
-                        </div>
-
-                        <div class="mt-4">{{ $students->links() }}</div>
-                    </section>
-
-                    {{-- Audit history --}}
-                    <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-                        <div class="rx-admin-actions flex flex-wrap items-center justify-between gap-3">
-                            <h3 class="font-display text-lg font-black text-slate-900">Recent Changes</h3>
-
-                            <a href="{{ route('admin.audit-logs.index', ['target_type' => \App\Models\Cohort::class]) }}"
-                                class="font-display text-xs font-bold text-primary hover:underline">
-                                View all audits →
-                            </a>
-                        </div>
-
-                        <div class="mt-4 space-y-3">
-                            @forelse ($recentAudits as $log)
-                                <div class="rounded-2xl border-2 border-slate-100 bg-slate-50/50 p-4">
-                                    <div class="font-display font-black text-slate-900">{{ $log->action }}</div>
-
-                                    <div class="text-xs font-semibold text-muted-ink">
-                                        {{ $log->created_at->format('M j, Y g:i A') }}
-                                        ·
-                                        {{ $log->admin?->fullName() ?? 'Unknown administrator' }}
-                                    </div>
-
-                                    @if ($log->reason)
-                                        <p class="mt-1.5 text-xs font-medium leading-relaxed text-slate-700">{{ $log->reason }}</p>
-                                    @endif
-                                </div>
-                            @empty
-                                <div class="rounded-2xl border-2 border-slate-100 bg-slate-50 p-6 text-center text-xs font-semibold text-muted-ink">
-                                    No administrative changes recorded.
-                                </div>
-                            @endforelse
-                        </div>
-                    </section>
-                </div>
-
-                {{-- SIDEBAR --}}
-                <aside class="space-y-6">
-
-                    {{-- Faculty --}}
-                    <section class="rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-6 shadow-sm">
-                        <h3 class="font-display text-xs font-extrabold uppercase tracking-wider text-muted-ink">
-                            Assigned Faculty
-                        </h3>
-
-                        <div class="mt-4 space-y-3">
-                            @forelse ($faculty as $facultyMember)
-                                <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-slate-100 bg-slate-50 p-3.5">
-                                    <div class="min-w-0">
-                                        <div class="font-display font-black text-slate-900">{{ $facultyMember->fullName() }}</div>
-                                        <div class="break-all text-xs text-muted-ink">{{ $facultyMember->email }}</div>
-                                    </div>
-
-                                    <a href="{{ route('admin.users.edit', ['userId' => $facultyMember->user_id]) }}"
-                                        class="font-display text-xs font-bold text-primary hover:underline">
-                                        Manage →
-                                    </a>
-                                </div>
-                            @empty
-                                <p class="text-xs font-semibold text-muted-ink">
-                                    No faculty member is assigned to this cohort.
-                                </p>
-                            @endforelse
-                        </div>
-                    </section>
-
-                    {{-- Archive and restore --}}
-                    @if (! $cohort->archived_at)
-                        <section class="rounded-3xl border-2 border-b-4 border-rose-300 bg-gradient-to-br from-rose-50/80 via-white to-white p-6 shadow-sm">
-                            <h3 class="font-display text-lg font-black text-rose-900">Archive Cohort</h3>
-
-                            <p class="mt-1 text-xs font-semibold text-rose-700">
-                                Existing user assignments and research history will be preserved.
-                            </p>
-
-                            <form method="POST" action="{{ route('admin.cohorts.archive', ['cohort' => $cohort]) }}"
-                                class="mt-4 space-y-3" onsubmit="return confirm('Archive this cohort?');">
-                                @csrf
-                                @method('PATCH')
-
-                                <textarea name="reason" rows="2" required minlength="5" maxlength="500"
-                                    placeholder="Reason for archiving"
-                                    class="w-full rounded-xl border-2 border-rose-200 text-sm font-medium focus:border-rose-400 focus:ring-rose-400"></textarea>
-
-                                <button style="--lip: #BE123C;"
-                                    class="btn-press block w-full rounded-2xl bg-rose-500 py-3 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-md hover:bg-rose-600">
-                                    Archive Cohort
-                                </button>
-                            </form>
-                        </section>
-                    @else
-                        <section class="rounded-3xl border-2 border-b-4 border-emerald-300 bg-gradient-to-br from-emerald-50/80 via-white to-white p-6 shadow-sm">
-                            <h3 class="font-display text-lg font-black text-emerald-900">Restore Cohort</h3>
-
-                            <p class="mt-1 text-xs font-semibold text-emerald-700">
-                                Restoring the cohort will not reopen its post-test window.
-                            </p>
-
-                            <form method="POST" action="{{ route('admin.cohorts.unarchive', ['cohort' => $cohort]) }}"
-                                class="mt-4 space-y-3">
-                                @csrf
-                                @method('PATCH')
-
-                                <textarea name="reason" rows="2" required minlength="5" maxlength="500"
-                                    placeholder="Reason for restoring"
-                                    class="w-full rounded-xl border-2 border-emerald-200 text-sm font-medium focus:border-emerald-400 focus:ring-emerald-400"></textarea>
-
-                                <button style="--lip: #047857;"
-                                    class="btn-press block w-full rounded-2xl bg-emerald-600 py-3 text-center font-display text-xs font-black uppercase tracking-wider text-white shadow-md hover:bg-emerald-700">
-                                    Unarchive Cohort
-                                </button>
-                            </form>
-                        </section>
-                    @endif
-                </aside>
+            <div class="flex flex-wrap gap-2">
+                <x-ui.button variant="secondary" :href="route('admin.cohorts.index')">All cohorts</x-ui.button>
+                @unless ($isArchived)
+                    <x-ui.button variant="secondary" :href="route('admin.cohorts.edit', $cohort)">Edit cohort</x-ui.button>
+                @endunless
             </div>
         </div>
+
+        <dl aria-label="Cohort assessment summary" class="grid gap-3 sm:grid-cols-3">
+            @foreach ([
+                ['label' => 'Enrolled students', 'count' => $counts['students'], 'suffix' => '', 'started' => null],
+                ['label' => 'Form A · Diagnostic', 'count' => $counts['diagnostic_completed'], 'suffix' => 'completed', 'started' => $counts['diagnostic_started']],
+                ['label' => 'Form B · Mock board', 'count' => $counts['mock_completed'], 'suffix' => 'finalized', 'started' => $counts['mock_started']],
+            ] as $metric)
+                <div class="min-w-0 rounded-2xl border border-line bg-surface p-4">
+                    <dt class="text-sm font-bold text-ink-muted">{{ $metric['label'] }}</dt>
+                    <dd class="mt-1 text-ink">
+                        <span class="font-display text-2xl font-extrabold tabular-nums">{{ number_format($metric['count']) }}</span>
+                        <span class="text-sm">{{ $metric['suffix'] }}</span>
+                    </dd>
+                    @if ($metric['started'] !== null)
+                        <dd class="mt-1 text-sm text-ink-muted">{{ number_format($metric['started']) }} started</dd>
+                    @endif
+                </div>
+            @endforeach
+        </dl>
+
+        <div class="grid items-start gap-5 xl:grid-cols-3">
+            <x-admin.panel id="cohort-roster" title="Student roster" class="min-w-0 xl:col-span-2">
+                <x-slot:actions>
+                    @unless ($isArchived)
+                        <x-ui.button variant="secondary"
+                            :href="route('admin.users.index', ['assign' => 1, 'no_cohort' => 1])">
+                            Find unassigned students
+                        </x-ui.button>
+                    @endunless
+                </x-slot:actions>
+
+                <form method="GET" action="{{ route('admin.cohorts.show', $cohort) }}"
+                    class="grid items-end gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                    <x-ui.field name="q" id="cohort-roster-search" type="search" label="Find a student"
+                        :value="$rosterSearch" maxlength="100" placeholder="First name, surname, email, or ID" />
+                    <x-ui.button type="submit">Search</x-ui.button>
+                </form>
+
+                @if ($rosterSearch !== '')
+                    <a href="{{ route('admin.cohorts.show', $cohort) }}"
+                        class="inline-flex min-h-11 items-center text-sm font-bold text-primary-ink underline underline-offset-4">
+                        Clear search
+                    </a>
+                @endif
+
+                <ul class="mt-3 divide-y divide-line border-t border-line">
+                    @forelse ($students as $student)
+                        <li class="grid items-start gap-2 py-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)_5rem] sm:items-center sm:gap-4">
+                            <div class="min-w-0">
+                                <p class="break-words font-bold text-ink">{{ $student->fullName() }}</p>
+                                <p class="break-all text-sm text-ink-muted">{{ $student->email }}</p>
+                                @if ($student->student_id)
+                                    <p class="text-xs text-ink-muted">ID {{ $student->student_id }}</p>
+                                @endif
+                            </div>
+
+                            <div class="flex min-w-0 flex-wrap gap-1.5">
+                                <x-ui.badge :variant="$student->form_a_complete ? 'success' : 'neutral'">
+                                    {{ $student->form_a_complete ? 'Form A completed' : 'Form A pending' }}
+                                </x-ui.badge>
+                                <x-ui.badge :variant="$student->form_b_finalized ? 'success' : 'neutral'">
+                                    {{ $student->form_b_finalized ? 'Form B finalized' : 'Form B pending' }}
+                                </x-ui.badge>
+                            </div>
+
+                            <div class="sm:justify-self-end">
+                                <x-ui.button variant="ghost"
+                                    :href="route('admin.users.edit', ['userId' => $student->user_id])"
+                                    :aria-label="'Manage '.$student->fullName()">
+                                    Manage
+                                </x-ui.button>
+                            </div>
+                        </li>
+                    @empty
+                        <li class="py-5 text-sm text-ink-muted">
+                            {{ $rosterSearch === ''
+                                ? 'No students are assigned to this cohort.'
+                                : 'No students in this cohort match your search.' }}
+                        </li>
+                    @endforelse
+                </ul>
+
+                <x-admin.pager :paginator="$students" label="Student roster" />
+            </x-admin.panel>
+
+            <div class="min-w-0 space-y-5">
+                <x-admin.panel id="form-b-window" title="Form B window">
+                    <x-slot:actions>
+                        <x-ui.badge :variant="match ($window) {
+                            'open' => 'success',
+                            'scheduled' => 'info',
+                            default => 'neutral',
+                        }">
+                            {{ $window === 'closed' ? 'Unscheduled' : ucfirst($window) }}
+                        </x-ui.badge>
+                    </x-slot:actions>
+
+                    <div class="space-y-3">
+                        <dl class="grid gap-3 text-sm">
+                            <div>
+                                <dt class="text-ink-muted">Opens at</dt>
+                                <dd class="font-bold text-ink">
+                                    {{ $cohort->post_test_opens_at?->format('M j, Y g:i A') ?? 'Not set' }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-ink-muted">Closes at</dt>
+                                <dd class="font-bold text-ink">
+                                    {{ $cohort->post_test_closes_at?->format('M j, Y g:i A') ?? 'Not set' }}
+                                </dd>
+                            </div>
+                        </dl>
+
+                        <p class="text-xs text-ink-muted">
+                            Times in {{ config('app.timezone') }}. Form B also requires the study-wide Post Test Open phase.
+                        </p>
+
+                        @if ($isArchived)
+                            <p class="text-sm text-ink-muted">Archived cohort schedules are read-only.</p>
+                        @elseif ($collectionStarted)
+                            <x-ui.alert variant="warning">
+                                The schedule is locked because official collection has started.
+                            </x-ui.alert>
+                        @else
+                            <x-admin.disclosure title="Edit schedule" :open="$lastAction === 'window'">
+                                <form method="POST" action="{{ route('admin.cohorts.post-test-window', $cohort) }}"
+                                    class="space-y-3 p-4">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="_cohort_action" value="window">
+
+                                    <x-ui.field name="post_test_opens_at" type="datetime-local" label="Opens at"
+                                        :value="$cohort->post_test_opens_at?->format('Y-m-d\TH:i')" required />
+                                    <x-ui.field name="post_test_closes_at" type="datetime-local" label="Closes at"
+                                        :value="$cohort->post_test_closes_at?->format('Y-m-d\TH:i')" required />
+
+                                    <div class="space-y-1.5">
+                                        <label for="window-reason" class="block text-sm font-bold text-ink">Reason</label>
+                                        <textarea id="window-reason" name="reason" rows="2" required minlength="5" maxlength="500"
+                                            class="ui-field-control">{{ $lastAction === 'window' ? old('reason') : '' }}</textarea>
+                                        @if ($lastAction === 'window')
+                                            @error('reason')
+                                                <p class="text-sm text-danger-ink" role="alert">{{ $message }}</p>
+                                            @enderror
+                                        @endif
+                                    </div>
+
+                                    <x-ui.button type="submit">Save schedule</x-ui.button>
+                                </form>
+                            </x-admin.disclosure>
+
+                            @if ($cohort->post_test_opens_at || $cohort->post_test_closes_at)
+                                <x-admin.disclosure title="Clear schedule" :open="$lastAction === 'clear'">
+                                    <form method="POST" action="{{ route('admin.cohorts.post-test-window', $cohort) }}"
+                                        data-confirm="Clear the Form B schedule for this cohort?" class="space-y-3 p-4">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="_cohort_action" value="clear">
+                                        <input type="hidden" name="clear_window" value="1">
+
+                                        <div class="space-y-1.5">
+                                            <label for="clear-reason" class="block text-sm font-bold text-ink">Reason for clearing</label>
+                                            <textarea id="clear-reason" name="reason" rows="2" required minlength="5" maxlength="500"
+                                                class="ui-field-control">{{ $lastAction === 'clear' ? old('reason') : '' }}</textarea>
+                                            @if ($lastAction === 'clear')
+                                                @error('reason')
+                                                    <p class="text-sm text-danger-ink" role="alert">{{ $message }}</p>
+                                                @enderror
+                                            @endif
+                                        </div>
+
+                                        <x-ui.button type="submit" variant="danger">Clear schedule</x-ui.button>
+                                    </form>
+                                </x-admin.disclosure>
+                            @endif
+                        @endif
+                    </div>
+                </x-admin.panel>
+
+                <x-admin.panel id="cohort-faculty" title="Assigned faculty">
+                    <ul class="divide-y divide-line">
+                        @forelse ($faculty as $member)
+                            <li class="flex flex-wrap items-center justify-between gap-2 py-2 first:pt-0 last:pb-0">
+                                <div class="min-w-0">
+                                    <p class="break-words font-bold text-ink">{{ $member->fullName() }}</p>
+                                    <p class="break-all text-xs text-ink-muted">{{ $member->email }}</p>
+                                </div>
+                                <x-ui.button variant="ghost"
+                                    :href="route('admin.users.edit', ['userId' => $member->user_id])"
+                                    :aria-label="'Manage '.$member->fullName()">
+                                    Manage
+                                </x-ui.button>
+                            </li>
+                        @empty
+                            <li class="text-sm text-ink-muted">No faculty assigned.</li>
+                        @endforelse
+                    </ul>
+                </x-admin.panel>
+            </div>
+        </div>
+
+        <x-admin.panel id="cohort-history" title="Recent changes">
+            <x-slot:actions>
+                <x-ui.button variant="ghost" :href="route('admin.audit-logs.index', [
+                    'target_type' => \App\Models\Cohort::class,
+                    'target_id' => $cohort->cohort_id,
+                ])">
+                    View cohort audit history
+                </x-ui.button>
+            </x-slot:actions>
+
+            <ol class="divide-y divide-line">
+                @forelse ($recentAudits as $log)
+                    <li class="py-2 first:pt-0 last:pb-0">
+                        <div class="flex flex-wrap items-baseline justify-between gap-2">
+                            <p class="break-words font-bold text-ink">
+                                {{ str($log->action)->replace(['.', '_'], ' ')->headline() }}
+                            </p>
+                            <time datetime="{{ $log->created_at->toIso8601String() }}"
+                                class="text-xs tabular-nums text-ink-muted">
+                                {{ $log->created_at->format('M j, Y g:i A') }}
+                            </time>
+                        </div>
+                        <p class="text-sm text-ink-muted">{{ $log->actorDisplayName() }}</p>
+                    </li>
+                @empty
+                    <li class="text-sm text-ink-muted">No administrative changes recorded.</li>
+                @endforelse
+            </ol>
+        </x-admin.panel>
+
+        <x-admin.disclosure :title="$isArchived ? 'Restore cohort' : 'Archive cohort'" :open="$lastAction === 'lifecycle'">
+            <div class="space-y-3 p-4">
+                @if ($archiveBlocked)
+                    <p class="text-sm text-ink-muted">
+                        This cohort has a scheduled or open official Form B window. It can be archived after the window ends.
+                    </p>
+                @else
+                    <p class="text-sm text-ink-muted">
+                        {{ $isArchived
+                            ? 'Restoring makes the cohort active again. Form B follows the saved schedule and study phase.'
+                            : 'Archiving preserves existing assignments and research history.' }}
+                    </p>
+
+                    <form method="POST"
+                        action="{{ route($isArchived ? 'admin.cohorts.unarchive' : 'admin.cohorts.archive', $cohort) }}"
+                        data-confirm="{{ $isArchived ? 'Restore this cohort?' : 'Archive this cohort?' }}"
+                        class="space-y-3">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="_cohort_action" value="lifecycle">
+
+                        <div class="space-y-1.5">
+                            <label for="lifecycle-reason" class="block text-sm font-bold text-ink">Reason</label>
+                            <textarea id="lifecycle-reason" name="reason" rows="2" required minlength="5" maxlength="500"
+                                class="ui-field-control">{{ $lastAction === 'lifecycle' ? old('reason') : '' }}</textarea>
+                            @if ($lastAction === 'lifecycle')
+                                @error('reason')
+                                    <p class="text-sm text-danger-ink" role="alert">{{ $message }}</p>
+                                @enderror
+                            @endif
+                        </div>
+
+                        <x-ui.button type="submit" :variant="$isArchived ? 'secondary' : 'danger'">
+                            {{ $isArchived ? 'Restore cohort' : 'Archive cohort' }}
+                        </x-ui.button>
+                    </form>
+                @endif
+            </div>
+        </x-admin.disclosure>
     </div>
 </x-app-layout>

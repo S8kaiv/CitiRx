@@ -47,15 +47,18 @@ class IndexUserRequest extends AdminRequest
                 'nullable',
                 'boolean',
             ],
+            'assign' => ['sometimes', 'boolean'],
         ];
     }
 
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'q' => trim(
-                (string) $this->input('q'),
-            ),
+            'q' => trim((string) $this->input('q')),
         ]);
+
+        if ($this->input('cohort_id') === 'unassigned') {
+            $this->merge(['cohort_id' => null, 'no_cohort' => true]);
+        }
     }
 }
