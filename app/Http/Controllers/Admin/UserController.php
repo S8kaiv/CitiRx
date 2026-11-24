@@ -10,9 +10,11 @@ use App\Http\Requests\Admin\UpdateUserAssignmentRequest;
 use App\Models\AdminAuditLog;
 use App\Models\Cohort;
 use App\Models\User;
+use App\Services\AdminAuditService;
 use App\Services\AdminUserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use LogicException;
 
@@ -158,6 +160,45 @@ class UserController extends Controller
                 ->limit(20)
                 ->get(),
         ]);
+    }
+
+    public function verifyEmail(
+        AdminActionRequest $request,
+        string $userId,
+        AdminAuditService $audit,
+    ): RedirectResponse {
+        $data = $request->validate([
+            'reviewed_email' => ['required', 'string', 'max:255'],
+        ]);
+
+        $verified = DB::transaction(function () use ($request, $userId, $data, $audit): bool {
+            $student = User::query()
+                ->where('role', 'student')
+                ->lockForUpdate()
+                ->findOrFail($userId);
+
+            if ($student->email !== $data['reviewed_email']) {
+                return false;
+            }
+
+            if (! $student->hasVerifiedEmail()) {
+                $student->markEmailAsVerified();
+
+                $audit->record($request->user(), 'user.email_verified', $student, [
+                    'email_verified_at' => [
+                        'old' => null,
+                        'new' => $student->email_verified_at->toDateTimeString(),
+                    ],
+                ], $request->validated('reason'));
+            }
+
+            return true;
+        });
+
+        return redirect()->route('admin.users.edit', ['userId' => $userId])->with(
+            $verified ? 'status' : 'error',
+            $verified ? 'Student email verified.' : 'The email changed. Review the current address before verifying.',
+        );
     }
 
     public function assignCohort(Request $request): RedirectResponse

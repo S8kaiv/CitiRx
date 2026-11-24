@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Middleware\EnsureAccountIsVerified;
 use App\Http\Middleware\EnsureUserCanEditResearchForms;
 use App\Http\Middleware\EnsureUserCanManageMicroPearls;
 use App\Http\Middleware\EnsureUserIsAdmin;
@@ -40,7 +39,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'faculty' => EnsureUserIsFaculty::class,
             'student' => EnsureUserIsStudent::class,
             'pearl-editor' => EnsureUserCanManageMicroPearls::class,
-            'verified' => EnsureAccountIsVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

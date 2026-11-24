@@ -2,9 +2,6 @@
     <x-slot name="header">
         <x-ui.page-header title="Dean workspace" description="Review student support, official names, and research forms.">
             <x-slot:actions>
-                <x-ui.button variant="secondary" :href="route('student-approvals.index')">
-                    Student account approvals
-                </x-ui.button>
                 <x-ui.button variant="secondary" :href="route('dean.practice-questions.index')">Practice questions</x-ui.button>
             </x-slot:actions>
         </x-ui.page-header>

@@ -5,9 +5,6 @@
             description="Manage roles, email verification, cohort assignments, and account access."
         >
             <x-slot:actions>
-                <x-ui.button variant="secondary" :href="route('student-approvals.index')">
-                    Student account approvals
-                </x-ui.button>
                 <a
                     href="#bulk-cohort"
                     class="btn-press inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"

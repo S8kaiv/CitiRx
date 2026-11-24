@@ -58,8 +58,6 @@ class LeaderboardService
                 'role',
                 'student',
             )
-            ->where('student_approval_pending', false)
-
             ->whereNotNull(
                 'email_verified_at',
             )

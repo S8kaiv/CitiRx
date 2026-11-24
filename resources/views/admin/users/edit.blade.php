@@ -42,6 +42,40 @@
                 </dl>
             </section>
 
+            @if (session('status'))
+                <x-ui.alert variant="success">{{ session('status') }}</x-ui.alert>
+            @endif
+
+            @if (session('error'))
+                <x-ui.alert variant="danger">{{ session('error') }}</x-ui.alert>
+            @endif
+
+            @if (! $managedUser->trashed() && $managedUser->role === 'student' && ! $managedUser->hasVerifiedEmail())
+                <form method="POST"
+                    action="{{ route('admin.users.verify-email', ['userId' => $managedUser->user_id]) }}"
+                    class="space-y-3 rounded-3xl border-2 border-line bg-surface p-5">
+                    @csrf
+                    <input type="hidden" name="reviewed_email" value="{{ $managedUser->email }}">
+
+                    <h3 class="font-display text-lg font-black text-ink">Verify student email</h3>
+                    <p class="text-sm text-ink-muted">
+                        Confirm that the person who registered is the student and owns {{ $managedUser->email }}.
+                    </p>
+
+                    <label for="verification-reason" class="block text-sm font-bold text-ink">
+                        How did you confirm the address?
+                    </label>
+                    <textarea id="verification-reason" name="reason" required minlength="5" maxlength="500"
+                        class="w-full rounded-xl border-line"
+                        placeholder="Confirmed in person using the school directory."></textarea>
+                    @error('reason')
+                        <p class="text-sm text-danger-ink">{{ $message }}</p>
+                    @enderror
+
+                    <x-ui.button type="submit">Verify email</x-ui.button>
+                </form>
+            @endif
+
             @if (! $managedUser->trashed())
                 <form method="POST" action="{{ route('admin.users.update', ['userId' => $managedUser->user_id]) }}"
                     class="space-y-4 rounded-3xl border-2 border-b-4 border-slate-200 bg-white p-5 sm:p-6 shadow-sm">

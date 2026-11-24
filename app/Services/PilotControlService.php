@@ -44,8 +44,7 @@ class PilotControlService
             ->active()
             ->withCount([
                 'students as eligible_students_count' => fn (Builder $query): Builder => $query
-                    ->whereNotNull('email_verified_at')
-                    ->where('student_approval_pending', false),
+                    ->whereNotNull('email_verified_at'),
 
                 'students as diagnostic_completed_count' => fn (Builder $query): Builder => $query
                     ->whereHas(
