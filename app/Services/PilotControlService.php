@@ -372,14 +372,28 @@ class PilotControlService
 
     private function assertFormReady(string $form): void
     {
-        $audit = $this->formAudits->audit(
-            $form,
-            true,
-        );
+        $audit = $this->formAudits->audit($form, true);
 
         if (! $audit['content_gate_ready']) {
             throw new RuntimeException(
                 "{$form} is not ready for official use.",
+            );
+        }
+
+        $versionSetting = match ($form) {
+            Question::FORM_PRE_TEST_A => 'citirx.research.pre_test_form_version',
+            Question::FORM_POST_TEST_B => 'citirx.research.post_test_form_version',
+        };
+
+        $configuredVersion = trim((string) config($versionSetting));
+        $activeVersion = $audit['expected_version'];
+
+        if ($configuredVersion !== $activeVersion) {
+            $configuredVersion = $configuredVersion === '' ? '(unset)' : $configuredVersion;
+
+            throw new RuntimeException(
+                "The active {$form} version is {$activeVersion}, but analytics is configured for {$configuredVersion}. "
+                ."Update {$versionSetting} before opening the pilot.",
             );
         }
     }

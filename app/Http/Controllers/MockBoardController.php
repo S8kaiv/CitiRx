@@ -145,7 +145,6 @@ class MockBoardController extends Controller
         return view('mock_board.take', [
             'session' => $session,
             'responses' => $data['responses'],
-            'secondsRemaining' => $data['seconds_remaining'],
         ]);
     }
 

@@ -228,9 +228,10 @@ class PracticeService
      * - no active question exists in the selected scope.
      */
     public function pickNextQuestion(
-        AssessmentSession $session
+        AssessmentSession $session,
+        bool $resetCurrentTimer = true,
     ): ?Question {
-        return DB::transaction(function () use ($session) {
+        return DB::transaction(function () use ($session, $resetCurrentTimer) {
 
             $session = AssessmentSession::query()
                 ->where(
@@ -275,16 +276,11 @@ class PracticeService
                     $this->questionUsage->markServed([
                         $question->question_id,
                     ]);
-                    /*
-                     * Reset the timer when the question is resumed.
-                     *
-                     * This prevents several hours of idle browser time
-                     * from counting as response time.
-                     */
-                    $session->current_question_started_at =
-                        now();
-
-                    $session->save();
+                    // A panel refresh keeps the same question on screen.
+                    if ($resetCurrentTimer || $session->current_question_started_at === null) {
+                        $session->current_question_started_at = now();
+                        $session->save();
+                    }
 
                     return $question;
                 }

@@ -581,3 +581,60 @@ test('emergency override cannot reopen an assessment', function (): void {
     expect($control->fresh()->phase)
         ->toBe(PilotControl::PHASE_CLOSED);
 });
+
+test('the pilot cannot open with a mismatched analytics form version', function (): void {
+    $administrator = pilotAdministrator();
+    pilotMakeResearchFormsReady($administrator);
+    pilotCohort();
+
+    config()->set('citirx.research.post_test_form_version', 'post_test_b_v999');
+
+    $control = PilotControl::query()->sole();
+
+    expect(fn () => app(PilotControlService::class)->transition(
+        $administrator,
+        pilotTransitionData($control, PilotControl::PHASE_DIAGNOSTIC_OPEN),
+    ))->toThrow(
+        RuntimeException::class,
+        'analytics is configured for post_test_b_v999',
+    );
+
+    expect($control->fresh()->phase)->toBe(PilotControl::PHASE_SETUP);
+});
+
+test('archiving preserves official post-test windows', function (string $status): void {
+    $administrator = pilotAdministrator();
+    pilotSetState(PilotControl::PHASE_DIAGNOSTIC_OPEN, $administrator);
+
+    $cohort = pilotCohort(expiredWindow: $status === 'ended');
+
+    if ($status === 'scheduled') {
+        $cohort->update([
+            'post_test_opens_at' => now()->addDay(),
+            'post_test_closes_at' => now()->addDays(2),
+        ]);
+    }
+
+    $before = $cohort->fresh();
+    expect($before->postTestWindowStatus())->toBe($status);
+
+    $archive = fn () => app(AdminCohortService::class)->archive(
+        $administrator,
+        $cohort,
+        'Test archiving a cohort during official collection.',
+    );
+
+    if ($status === 'ended') {
+        $archive();
+        expect($cohort->fresh()->archived_at)->not->toBeNull();
+    } else {
+        expect($archive)->toThrow(LogicException::class, 'cannot be archived');
+        expect($cohort->fresh()->archived_at)->toBeNull();
+    }
+
+    $after = $cohort->fresh();
+    expect($after->post_test_opens_at->timestamp)
+        ->toBe($before->post_test_opens_at->timestamp)
+        ->and($after->post_test_closes_at->timestamp)
+        ->toBe($before->post_test_closes_at->timestamp);
+})->with(['scheduled', 'open', 'ended']);

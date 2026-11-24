@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Cohort;
+use App\Models\PilotControl;
 use App\Models\Question;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -190,6 +191,7 @@ class AdminCohortService
             $cohort,
             $reason,
         ): void {
+            $pilot = PilotControl::query()->lockForUpdate()->sole();
             $cohort = Cohort::query()
                 ->lockForUpdate()
                 ->findOrFail($cohort->cohort_id);
@@ -201,6 +203,15 @@ class AdminCohortService
             }
 
             $status = $cohort->postTestWindowStatus();
+            if (
+                in_array($status, ['scheduled', 'open'], true)
+                && $pilot->officialCollectionHasStarted()
+            ) {
+                throw new LogicException(
+                    'This cohort cannot be archived while its official post-test window is scheduled or open.',
+                );
+            }
+
             $archivedAt = now();
 
             $changes = [

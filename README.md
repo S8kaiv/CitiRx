@@ -117,7 +117,7 @@ CITIRX_ALLOW_UNVALIDATED_RESEARCH_FORMS=true
 
 | Technology | Purpose |
 |---|---|
-| PHP 8.3+ | Server-side language |
+| PHP 8.4.1+ | Server-side language |
 | Laravel 13 | Application framework |
 | MySQL 8 | Relational database |
 | Blade | Server-rendered interfaces |
@@ -130,7 +130,7 @@ CITIRX_ALLOW_UNVALIDATED_RESEARCH_FORMS=true
 
 ## Requirements
 
-- PHP 8.3 or later
+- PHP 8.4.1 or later in the PHP 8 series. CI uses PHP 8.5.
 - Composer 2
 - MySQL 8 or a compatible MySQL server
 - Node.js compatible with Vite 8; Node.js 22 is recommended

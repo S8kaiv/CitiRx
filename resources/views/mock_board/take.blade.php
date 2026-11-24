@@ -487,7 +487,9 @@
             return {
                 questions: @js($questionPayload),
                 currentIndex: @js((int) $firstUnansweredIndex),
-                secondsRemaining: @js((int) $secondsRemaining),
+                expiresAtMs: @js($session->expires_at->getTimestampMs()),
+                serverRenderedAtMs: @js(now()->getTimestampMs()),
+                secondsRemaining: 0,
                 csrfToken: @js(csrf_token()),
                 introUrl: @js(route('mock-board.intro')),
 
@@ -510,17 +512,16 @@
                         ]),
                     );
 
-                    this.deadline =
-                        Date.now()
-                        + (this.secondsRemaining * 1000);
+                    const navigation = performance.getEntriesByType('navigation')[0];
+                    const responseStart = navigation?.responseStart || performance.now();
+
+                    this.deadline = responseStart
+                        + (this.expiresAtMs - this.serverRenderedAtMs);
 
                     this.tick();
 
                     if (this.secondsRemaining > 0) {
-                        this.timer = window.setInterval(
-                            () => this.tick(),
-                            1000,
-                        );
+                        this.timer = window.setInterval(() => this.tick(), 1000,);
                     }
                 },
 
@@ -625,14 +626,8 @@
                 },
 
                 tick() {
-                    this.secondsRemaining = Math.max(
-                        0,
-                        Math.ceil(
-                            (
-                                this.deadline
-                                - Date.now()
-                            ) / 1000,
-                        ),
+                    this.secondsRemaining = Math.max(0,
+                        Math.ceil((this.deadline - performance.now()) / 1000),
                     );
 
                     if (
