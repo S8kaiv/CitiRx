@@ -47,6 +47,10 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+Route::get('/dashboard/study-coach', [DashboardController::class, 'studyCoach'])
+    ->middleware(['auth', 'verified', 'student'])
+    ->name('student.study-coach');
+
 Route::middleware(['auth', 'verified', 'research-editor'])->prefix('research-forms')->name('research-editor.')->group(function (): void {
     Route::get('/', [ResearchFormEditorController::class, 'index'])->name('index');
     Route::post('/', [ResearchFormEditorController::class, 'store'])->name('store');

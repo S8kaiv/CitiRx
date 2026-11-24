@@ -326,4 +326,5 @@
             </div>
         </div>
     </div>
+    <x-study-coach />
 </x-app-layout>
